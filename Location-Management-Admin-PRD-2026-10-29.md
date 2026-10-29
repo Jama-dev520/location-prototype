@@ -91,11 +91,11 @@ Today there is no unified internal tool to manage this merged catalog. Operation
 
 ### 5.1 Core Path — Operator Batch Disable
 
-![Core Path — Operator Batch Disable](diagrams/flow1-batch-disable.png)
+![Core Path — Operator Batch Disable](https://jama-dev520.github.io/location-prototype/diagrams/flow1-batch-disable.png)
 
 ### 5.2 Daily Sync Path — Provider Status Change
 
-![Daily Sync Path — Provider Status Change](diagrams/flow2-daily-sync.png)
+![Daily Sync Path — Provider Status Change](https://jama-dev520.github.io/location-prototype/diagrams/flow2-daily-sync.png)
 
 > **Business decisions (confirmed 2026-10-29)**:
 > - New-location default `is_enable = false` — a newly synced location is NOT visible to upstream customers until a Location Manager explicitly enables it.
@@ -103,15 +103,15 @@ Today there is no unified internal tool to manage this merged catalog. Operation
 
 ### 5.3 Exception Path
 
-![Exception Path](diagrams/flow5-exception.png)
+![Exception Path](https://jama-dev520.github.io/location-prototype/diagrams/flow5-exception.png)
 
 ### 5.4 Pickup Provider (Sweeper) Edit Path
 
-![Pickup Provider (Sweeper) Edit Path](diagrams/flow3-sweeper.png)
+![Pickup Provider (Sweeper) Edit Path](https://jama-dev520.github.io/location-prototype/diagrams/flow3-sweeper.png)
 
 ### 5.5 Duplicate Review Path
 
-![Duplicate Review Path](diagrams/flow4-duplicate.png)
+![Duplicate Review Path](https://jama-dev520.github.io/location-prototype/diagrams/flow4-duplicate.png)
 
 ## 6. Page Map
 

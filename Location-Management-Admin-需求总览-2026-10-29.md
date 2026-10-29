@@ -146,23 +146,23 @@
 
 ### 3.1 核心路径 — 批量停用门店
 
-![核心路径 — 批量停用门店](diagrams/flow1-batch-disable.png)
+![核心路径 — 批量停用门店](https://jama-dev520.github.io/location-prototype/diagrams/flow1-batch-disable.png)
 
 ### 3.2 每日同步路径 — 供应商状态变化
 
-![每日同步路径 — 供应商状态变化](diagrams/flow2-daily-sync.png)
+![每日同步路径 — 供应商状态变化](https://jama-dev520.github.io/location-prototype/diagrams/flow2-daily-sync.png)
 
 ### 3.3 揽收方（Sweeper）编辑路径
 
-![揽收方（Sweeper）编辑路径](diagrams/flow3-sweeper.png)
+![揽收方（Sweeper）编辑路径](https://jama-dev520.github.io/location-prototype/diagrams/flow3-sweeper.png)
 
 ### 3.4 重复审核路径（模糊匹配）
 
-![重复审核路径（模糊匹配）](diagrams/flow4-duplicate.png)
+![重复审核路径（模糊匹配）](https://jama-dev520.github.io/location-prototype/diagrams/flow4-duplicate.png)
 
 ### 3.5 异常路径
 
-![异常路径](diagrams/flow5-exception.png)
+![异常路径](https://jama-dev520.github.io/location-prototype/diagrams/flow5-exception.png)
 
 ---
 
