@@ -161,6 +161,8 @@ table.data tbody tr.selected{background:var(--color-primary-light)}
 .p-edit-inline input,.p-edit-inline select{width:100%;box-sizing:border-box}
 .p-edit-inline .row{display:flex;gap:8px;margin-top:10px;justify-content:flex-end}
 .p-override{display:inline-block;font-size:10.5px;font-weight:600;color:var(--color-warning);background:rgba(255,193,7,.12);padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:middle}
+.p-hours{width:100%;border-collapse:collapse;font-size:12.5px}
+.p-hours td{padding:3px 0;border-bottom:1px dashed var(--bg-section)}
 
 /* ===== Detail page ===== */
 .detail-head{display:flex;align-items:flex-start;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-6)}
@@ -442,41 +444,41 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 /* ================= Data ================= */
 /* Vendor layer (provider data, read-only except sweeper) */
 var VENDORS=[
- {id:'LOC-10024',name:'Time Square News',provider:'PUDO Inc',sweeper:'LMS',type:'PUDOpoint',ref:'dealerNo 10024',addr1:'360 W 42nd St',city:'New York',state:'NY',postal:'10036',status:'active',hours:'06:00–23:59',created:'2016-06-16 12:22:42',updated:'2026-05-14 12:33:08'},
- {id:'LOC-12194',name:'Postal Annex 20018',provider:'PUDO Inc',sweeper:'PUDO Inc',type:'PUDOpoint',ref:'dealerNo 12194',addr1:'2918 Avenue I',city:'Brooklyn',state:'NY',postal:'11210',status:'active',hours:'24h',created:'2025-09-19 15:25:03',updated:'2025-09-19 15:26:01'},
- {id:'LOC-10023',name:'Reach Fast Shipping',provider:'PUDO Inc',sweeper:'PUDO Inc',type:'PUDOpoint',ref:'dealerNo 10023',addr1:'35 W 31st St',city:'New York',state:'NY',postal:'10001',status:'inactive',hours:'07:30–20:00',created:'2016-06-15 13:08:40',updated:'2026-10-28 08:15:22'},
- {id:'LOC-12193',name:'Ideal Food Basket - Lafayette Ave',provider:'PUDO Inc',sweeper:'PUDO Inc',type:'Locker',ref:'dealerNo 12193',addr1:'830 Lafayette Ave',city:'Brooklyn',state:'NY',postal:'11221',status:'active',hours:'24h',created:'2025-08-22 13:25:38',updated:'2026-10-27 16:41:09'},
- {id:'LOC-12191',name:'Ideal Food Basket - Brooklyn Ave',provider:'PUDO Inc',sweeper:'PUDO Inc',type:'Locker',ref:'dealerNo 12191',addr1:'1086 Brooklyn Ave',city:'Brooklyn',state:'NY',postal:'11203',status:'active',hours:'24h',created:'2025-08-22 13:22:59',updated:'2026-10-05 14:22:08'},
- {id:'LOC-00176',name:'Pdq Mail Plus',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_176',addr1:'2005 Palmer Ave',city:'Larchmont',state:'NY',postal:'10538',status:'active',hours:'Store hours',created:'2024-03-02 08:11:44',updated:'2026-10-05 09:40:17'},
- {id:'LOC-00177',name:'Super Postal Center',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_177',addr1:'160 W Camino Real',city:'Boca Raton',state:'FL',postal:'33432',status:'active',hours:'Store hours',created:'2024-03-02 08:12:03',updated:'2026-08-19 10:02:51'},
- {id:'LOC-00178',name:'Pack & Ship North',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_178',addr1:'9477 W 104th Ave',city:'Westminster',state:'CO',postal:'80021',status:'active',hours:'Store hours',created:'2024-03-02 08:12:21',updated:'2026-07-11 11:14:36'},
- {id:'LOC-00179',name:'The Box',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_179',addr1:'3023 S. University Drive',city:'Fort Worth',state:'TX',postal:'76109',status:'active',hours:'Store hours',created:'2024-03-02 08:12:39',updated:'2026-06-30 12:22:08'},
- {id:'LOC-00180',name:'Postal Options',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_180',addr1:'2448 Lamar Ave',city:'Paris',state:'TX',postal:'75460',status:'active',hours:'Store hours',created:'2024-03-02 08:12:57',updated:'2026-10-21 14:30:45'},
- {id:'LOC-00181',name:'Private Postal Systems',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_181',addr1:'12555 Biscayne Blvd',city:'North Miami',state:'FL',postal:'33181',status:'active',hours:'Store hours',created:'2024-03-02 08:13:15',updated:'2026-05-02 09:55:19'},
- {id:'LOC-00182',name:'Eagle Postal Center #11',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_182',addr1:'4101 W Green Oaks Blvd Ste 305',city:'Arlington',state:'TX',postal:'76016',status:'active',hours:'Store hours',created:'2024-03-02 08:13:33',updated:'2026-04-18 10:41:27'},
- {id:'LOC-00183',name:'Upost Shipping Center',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_183',addr1:'3784 Mission Ave Ste 148',city:'Oceanside',state:'CA',postal:'92058',status:'active',hours:'Store hours',created:'2024-03-02 08:13:51',updated:'2026-03-27 11:08:53'},
- {id:'LOC-00184',name:'Postal Dispatch Business Center',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_184',addr1:'5123 W 98th St',city:'Bloomington',state:'MN',postal:'55437',status:'active',hours:'Store hours',created:'2024-03-02 08:14:09',updated:'2026-02-14 12:36:40'},
- {id:'LOC-00185',name:'Intown Business Center',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_185',addr1:'245 N Highland Ave NE Ste 230',city:'Atlanta',state:'GA',postal:'30307',status:'removed',hours:'Store hours',created:'2024-03-02 08:14:27',updated:'2026-10-27 02:31:18'},
- {id:'LOC-00186',name:'Postal Annex Plus',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_186',addr1:'2918 Avenue I Ste 2',city:'Brooklyn',state:'NY',postal:'11210-2214',status:'active',hours:'Store hours',created:'2026-10-28 09:12:41',updated:'2026-10-28 09:12:41'}
+ {id:'LOC-10024',name:'Time Square News',provider:'PUDO Inc',sweeper:'LMS',type:'PUDOpoint',typeId:1,ref:'dealerNo 10024',addr1:'360 W 42nd St',addr2:'',city:'New York',state:'NY',country:'United States',postal:'10036',status:'active',phone:'8443008533',lat:40.7580804,lng:-73.9923783,timezone:'America/New_York',open24:false,supports:['FX','CP','TB'],hoursText:'Mon - Fri: 6:00am to 2:00am\nSat: 6:00am to 2:00am\nSun: 6:00am to 12:00am',hoursOfOp:[['MONDAY','06:00','23:59'],['TUESDAY','06:00','23:59'],['WEDNESDAY','06:00','23:59'],['THURSDAY','06:00','23:59'],['FRIDAY','06:00','23:59'],['SATURDAY','06:00','23:59'],['SUNDAY','06:00','23:59']],directions:'',created:'2016-06-16 12:22:42',updated:'2026-05-14 12:33:08',activated:'2016-07-18 12:50:14'},
+ {id:'LOC-12194',name:'Postal Annex 20018',provider:'PUDO Inc',sweeper:'PUDO Inc',type:'PUDOpoint',typeId:1,ref:'dealerNo 12194',addr1:'2918 Avenue I',addr2:'',city:'Brooklyn',state:'NY',country:'United States',postal:'11210',status:'active',phone:'8443008533',lat:40.628878,lng:-73.947678,timezone:'America/New_York',open24:true,supports:[],hoursText:'',hoursOfOp:[['MONDAY','00:00','23:59'],['TUESDAY','00:00','23:59'],['WEDNESDAY','00:00','23:59'],['THURSDAY','00:00','23:59'],['FRIDAY','00:00','23:59'],['SATURDAY','00:00','23:59'],['SUNDAY','00:00','23:59']],directions:'',created:'2025-09-19 15:25:03',updated:'2025-09-19 15:26:01',activated:'2025-09-19 15:26:01'},
+ {id:'LOC-10023',name:'Reach Fast Shipping',provider:'PUDO Inc',sweeper:'PUDO Inc',type:'PUDOpoint',typeId:1,ref:'dealerNo 10023',addr1:'35 W 31st St',addr2:'Unit #1',city:'New York',state:'NY',country:'United States',postal:'10001',status:'inactive',phone:'8443008533',lat:40.7474262,lng:-73.9875328,timezone:'America/New_York',open24:false,supports:['FX','CP'],hoursText:'MON - FRI: 07:30am to 08:00pm SAT: 09:00am to 07:30pm SUN: 09:30am to 06:30pm',hoursOfOp:[['MONDAY','07:30','20:00'],['TUESDAY','07:30','20:00'],['WEDNESDAY','07:30','20:00'],['THURSDAY','07:30','20:00'],['FRIDAY','07:30','20:00'],['SATURDAY','09:00','19:30'],['SUNDAY','09:30','18:30']],directions:'',created:'2016-06-15 13:08:40',updated:'2026-10-28 08:15:22',activated:'2019-11-04 17:59:30'},
+ {id:'LOC-12193',name:'Ideal Food Basket - Lafayette Ave',provider:'PUDO Inc',sweeper:'PUDO Inc',type:'Locker',typeId:2,ref:'dealerNo 12193',addr1:'830 Lafayette Ave',addr2:'',city:'Brooklyn',state:'NY',country:'United States',postal:'11221',status:'active',phone:'8443008533',lat:40.6910629,lng:-73.9393812,timezone:'America/New_York',open24:true,supports:[],hoursText:'',hoursOfOp:[['MONDAY','00:00','23:59'],['TUESDAY','00:00','23:59'],['WEDNESDAY','00:00','23:59'],['THURSDAY','00:00','23:59'],['FRIDAY','00:00','23:59'],['SATURDAY','00:00','23:59'],['SUNDAY','00:00','23:59']],directions:'',created:'2025-08-22 13:25:38',updated:'2026-10-27 16:41:09',activated:'2025-08-22 13:32:02'},
+ {id:'LOC-12191',name:'Ideal Food Basket - Brooklyn Ave',provider:'PUDO Inc',sweeper:'PUDO Inc',type:'Locker',typeId:2,ref:'dealerNo 12191',addr1:'1086 Brooklyn Ave',addr2:'',city:'Brooklyn',state:'NY',country:'United States',postal:'11203',status:'active',phone:'8443008533',lat:40.6473186,lng:-73.9437891,timezone:'America/New_York',open24:true,supports:[],hoursText:'',hoursOfOp:[['MONDAY','00:00','23:59'],['TUESDAY','00:00','23:59'],['WEDNESDAY','00:00','23:59'],['THURSDAY','00:00','23:59'],['FRIDAY','00:00','23:59'],['SATURDAY','00:00','23:59'],['SUNDAY','00:00','23:59']],directions:'',created:'2025-08-22 13:22:59',updated:'2026-10-05 14:22:08',activated:'2025-08-22 13:28:18'},
+ {id:'LOC-00176',name:'Pdq Mail Plus',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_176',locationCode:'AA0010',storeCode:'AA0010',addr1:'2005 Palmer Ave',addr2:'',city:'Larchmont',state:'NY',country:'US',postal:'10538',status:'active',phone:'',lat:40.930514,lng:-73.762192,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:11:44',updated:'2026-10-05 09:40:17'},
+ {id:'LOC-00177',name:'Super Postal Center',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_177',locationCode:'AA0013',storeCode:'AA0013',addr1:'160 W Camino Real',addr2:'',city:'Boca Raton',state:'FL',country:'US',postal:'33432',status:'active',phone:'',lat:26.340229,lng:-80.090332,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:12:03',updated:'2026-08-19 10:02:51'},
+ {id:'LOC-00178',name:'Pack & Ship North',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_178',locationCode:'AA0014',storeCode:'AA0014',addr1:'9477 W 104th Ave',addr2:'',city:'Westminster',state:'CO',country:'US',postal:'80021',status:'active',phone:'',lat:39.886107,lng:-105.103101,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:12:21',updated:'2026-07-11 11:14:36'},
+ {id:'LOC-00179',name:'The Box',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_179',locationCode:'AA0016',storeCode:'AA0016',addr1:'3023 S. University Drive',addr2:'',city:'Fort Worth',state:'TX',country:'US',postal:'76109',status:'active',phone:'',lat:32.707053,lng:-97.360128,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:12:39',updated:'2026-06-30 12:22:08'},
+ {id:'LOC-00180',name:'Postal Options',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_180',locationCode:'AA0020',storeCode:'AA0020',addr1:'2448 Lamar Ave',addr2:'',city:'Paris',state:'TX',country:'US',postal:'75460',status:'active',phone:'',lat:33.660832,lng:-95.530295,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:12:57',updated:'2026-10-21 14:30:45'},
+ {id:'LOC-00181',name:'Private Postal Systems',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_181',locationCode:'AA0021',storeCode:'AA0021',addr1:'12555 Biscayne Blvd',addr2:'',city:'North Miami',state:'FL',country:'US',postal:'33181',status:'active',phone:'',lat:25.891822,lng:-80.162421,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:13:15',updated:'2026-05-02 09:55:19'},
+ {id:'LOC-00182',name:'Eagle Postal Center #11',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_182',locationCode:'AA0029',storeCode:'AA0029',addr1:'4101 W Green Oaks Blvd Ste 305',addr2:'',city:'Arlington',state:'TX',country:'US',postal:'76016',status:'active',phone:'',lat:32.682112,lng:-97.195009,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:13:33',updated:'2026-04-18 10:41:27'},
+ {id:'LOC-00183',name:'Upost Shipping Center',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_183',locationCode:'AA0030',storeCode:'AA0030',addr1:'3784 Mission Ave Ste 148',addr2:'',city:'Oceanside',state:'CA',country:'US',postal:'92058',status:'active',phone:'',lat:33.227719,lng:-117.33188,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:13:51',updated:'2026-03-27 11:08:53'},
+ {id:'LOC-00184',name:'Postal Dispatch Business Center',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_184',locationCode:'AA0034',storeCode:'AA0034',addr1:'5123 W 98th St',addr2:'',city:'Bloomington',state:'MN',country:'US',postal:'55437',status:'active',phone:'',lat:44.824115,lng:-93.347352,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:14:09',updated:'2026-02-14 12:36:40'},
+ {id:'LOC-00185',name:'Intown Business Center',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_185',locationCode:'AA0035',storeCode:'AA0035',addr1:'245 N Highland Ave NE Ste 230',addr2:'',city:'Atlanta',state:'GA',country:'US',postal:'30307',status:'removed',phone:'',lat:33.761663,lng:-84.359729,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:14:27',updated:'2026-10-27 02:31:18'},
+ {id:'LOC-00186',name:'Postal Annex Plus',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_186',locationCode:'AA0036',storeCode:'AA0036',addr1:'2918 Avenue I Ste 2',addr2:'',city:'Brooklyn',state:'NY',country:'US',postal:'11210-2214',status:'active',phone:'',lat:40.628878,lng:-73.947678,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2026-10-28 09:12:41',updated:'2026-10-28 09:12:41'}
 ];
 
 /* OC layer (OC-owned, downstream-facing). ocId generated from vendor (1:1).
    enable lives here; status derived from linked vendor. */
 var OC_LOCATIONS=[
- {ocId:'OC-00001',name:'Time Square News',addr1:'360 W 42nd St',city:'New York',state:'NY',provider:'PUDO Inc',type:'PUDOpoint',sweeper:'LMS',hours:'06:00–23:59',enable:true,vendorIds:['LOC-10024'],created:'2016-06-16 12:22:42',updated:'2026-05-14 12:33:08'},
- {ocId:'OC-00088',name:'Postal Annex 20018',addr1:'2918 Avenue I',city:'Brooklyn',state:'NY',provider:'PUDO Inc',type:'PUDOpoint',sweeper:'PUDO Inc',hours:'24h',enable:true,vendorIds:['LOC-12194'],created:'2025-09-19 15:25:03',updated:'2025-09-19 15:26:01'},
- {ocId:'OC-00002',name:'Reach Fast Shipping',addr1:'35 W 31st St',city:'New York',state:'NY',provider:'PUDO Inc',type:'PUDOpoint',sweeper:'PUDO Inc',hours:'07:30–20:00',enable:false,vendorIds:['LOC-10023'],created:'2016-06-15 13:08:40',updated:'2026-10-28 08:15:22'},
- {ocId:'OC-00089',name:'Ideal Food Basket - Lafayette Ave',addr1:'830 Lafayette Ave',city:'Brooklyn',state:'NY',provider:'PUDO Inc',type:'Locker',sweeper:'PUDO Inc',hours:'24h',enable:false,vendorIds:['LOC-12193'],created:'2025-08-22 13:25:38',updated:'2026-10-27 16:41:09'},
- {ocId:'OC-00090',name:'Ideal Food Basket - Brooklyn Ave',addr1:'1086 Brooklyn Ave',city:'Brooklyn',state:'NY',provider:'PUDO Inc',type:'Locker',sweeper:'PUDO Inc',hours:'24h',enable:true,vendorIds:['LOC-12191'],created:'2025-08-22 13:22:59',updated:'2026-10-05 14:22:08'},
- {ocId:'OC-00101',name:'Pdq Mail Plus',addr1:'2005 Palmer Ave',city:'Larchmont',state:'NY',provider:'LMS',type:'packagehub',sweeper:'LMS',hours:'Store hours',enable:true,vendorIds:['LOC-00176'],created:'2024-03-02 08:11:44',updated:'2026-10-05 09:40:17'},
- {ocId:'OC-00102',name:'Super Postal Center',addr1:'160 W Camino Real',city:'Boca Raton',state:'FL',provider:'LMS',type:'packagehub',sweeper:'LMS',hours:'Store hours',enable:true,vendorIds:['LOC-00177'],created:'2024-03-02 08:12:03',updated:'2026-08-19 10:02:51'},
- {ocId:'OC-00103',name:'Pack & Ship North',addr1:'9477 W 104th Ave',city:'Westminster',state:'CO',provider:'LMS',type:'packagehub',sweeper:'LMS',hours:'Store hours',enable:true,vendorIds:['LOC-00178'],created:'2024-03-02 08:12:21',updated:'2026-07-11 11:14:36'},
- {ocId:'OC-00104',name:'The Box',addr1:'3023 S. University Drive',city:'Fort Worth',state:'TX',provider:'LMS',type:'packagehub',sweeper:'LMS',hours:'Store hours',enable:true,vendorIds:['LOC-00179'],created:'2024-03-02 08:12:39',updated:'2026-06-30 12:22:08'},
- {ocId:'OC-00105',name:'Postal Options',addr1:'2448 Lamar Ave',city:'Paris',state:'TX',provider:'LMS',type:'packagehub',sweeper:'LMS',hours:'Store hours',enable:false,vendorIds:['LOC-00180'],created:'2024-03-02 08:12:57',updated:'2026-10-21 14:30:45'},
- {ocId:'OC-00106',name:'Private Postal Systems',addr1:'12555 Biscayne Blvd',city:'North Miami',state:'FL',provider:'LMS',type:'packagehub',sweeper:'LMS',hours:'Store hours',enable:true,vendorIds:['LOC-00181'],created:'2024-03-02 08:13:15',updated:'2026-05-02 09:55:19'},
- {ocId:'OC-00107',name:'Eagle Postal Center #11',addr1:'4101 W Green Oaks Blvd Ste 305',city:'Arlington',state:'TX',provider:'LMS',type:'packagehub',sweeper:'LMS',hours:'Store hours',enable:true,vendorIds:['LOC-00182'],created:'2024-03-02 08:13:33',updated:'2026-04-18 10:41:27'},
- {ocId:'OC-00108',name:'Upost Shipping Center',addr1:'3784 Mission Ave Ste 148',city:'Oceanside',state:'CA',provider:'LMS',type:'packagehub',sweeper:'LMS',hours:'Store hours',enable:true,vendorIds:['LOC-00183'],created:'2024-03-02 08:13:51',updated:'2026-03-27 11:08:53'},
- {ocId:'OC-00109',name:'Postal Dispatch Business Center',addr1:'5123 W 98th St',city:'Bloomington',state:'MN',provider:'LMS',type:'packagehub',sweeper:'LMS',hours:'Store hours',enable:true,vendorIds:['LOC-00184'],created:'2024-03-02 08:14:09',updated:'2026-02-14 12:36:40'}
+ {ocId:'OC-00001',name:'Time Square News',addr1:'360 W 42nd St',addr2:'',city:'New York',state:'NY',country:'United States',postal:'10036',provider:'PUDO Inc',type:'PUDOpoint',sweeper:'LMS',phone:'8443008533',lat:40.7580804,lng:-73.9923783,timezone:'America/New_York',hoursText:'Mon - Fri: 6:00am to 2:00am\nSat: 6:00am to 2:00am\nSun: 6:00am to 12:00am',hoursOfOp:[['MONDAY','06:00','23:59'],['TUESDAY','06:00','23:59'],['WEDNESDAY','06:00','23:59'],['THURSDAY','06:00','23:59'],['FRIDAY','06:00','23:59'],['SATURDAY','06:00','23:59'],['SUNDAY','06:00','23:59']],enable:true,vendorIds:['LOC-10024'],created:'2016-06-16 12:22:42',updated:'2026-05-14 12:33:08'},
+ {ocId:'OC-00088',name:'Postal Annex 20018',addr1:'2918 Avenue I',addr2:'',city:'Brooklyn',state:'NY',country:'United States',postal:'11210',provider:'PUDO Inc',type:'PUDOpoint',sweeper:'PUDO Inc',phone:'8443008533',lat:40.628878,lng:-73.947678,timezone:'America/New_York',hoursText:'',hoursOfOp:[['MONDAY','00:00','23:59'],['TUESDAY','00:00','23:59'],['WEDNESDAY','00:00','23:59'],['THURSDAY','00:00','23:59'],['FRIDAY','00:00','23:59'],['SATURDAY','00:00','23:59'],['SUNDAY','00:00','23:59']],enable:true,vendorIds:['LOC-12194'],created:'2025-09-19 15:25:03',updated:'2025-09-19 15:26:01'},
+ {ocId:'OC-00002',name:'Reach Fast Shipping',addr1:'35 W 31st St',addr2:'Unit #1',city:'New York',state:'NY',country:'United States',postal:'10001',provider:'PUDO Inc',type:'PUDOpoint',sweeper:'PUDO Inc',phone:'8443008533',lat:40.7474262,lng:-73.9875328,timezone:'America/New_York',hoursText:'MON - FRI: 07:30am to 08:00pm SAT: 09:00am to 07:30pm SUN: 09:30am to 06:30pm',hoursOfOp:[['MONDAY','07:30','20:00'],['TUESDAY','07:30','20:00'],['WEDNESDAY','07:30','20:00'],['THURSDAY','07:30','20:00'],['FRIDAY','07:30','20:00'],['SATURDAY','09:00','19:30'],['SUNDAY','09:30','18:30']],enable:false,vendorIds:['LOC-10023'],created:'2016-06-15 13:08:40',updated:'2026-10-28 08:15:22'},
+ {ocId:'OC-00089',name:'Ideal Food Basket - Lafayette Ave',addr1:'830 Lafayette Ave',addr2:'',city:'Brooklyn',state:'NY',country:'United States',postal:'11221',provider:'PUDO Inc',type:'Locker',sweeper:'PUDO Inc',phone:'8443008533',lat:40.6910629,lng:-73.9393812,timezone:'America/New_York',hoursText:'',hoursOfOp:[['MONDAY','00:00','23:59'],['TUESDAY','00:00','23:59'],['WEDNESDAY','00:00','23:59'],['THURSDAY','00:00','23:59'],['FRIDAY','00:00','23:59'],['SATURDAY','00:00','23:59'],['SUNDAY','00:00','23:59']],enable:false,vendorIds:['LOC-12193'],created:'2025-08-22 13:25:38',updated:'2026-10-27 16:41:09'},
+ {ocId:'OC-00090',name:'Ideal Food Basket - Brooklyn Ave',addr1:'1086 Brooklyn Ave',addr2:'',city:'Brooklyn',state:'NY',country:'United States',postal:'11203',provider:'PUDO Inc',type:'Locker',sweeper:'PUDO Inc',phone:'8443008533',lat:40.6473186,lng:-73.9437891,timezone:'America/New_York',hoursText:'',hoursOfOp:[['MONDAY','00:00','23:59'],['TUESDAY','00:00','23:59'],['WEDNESDAY','00:00','23:59'],['THURSDAY','00:00','23:59'],['FRIDAY','00:00','23:59'],['SATURDAY','00:00','23:59'],['SUNDAY','00:00','23:59']],enable:true,vendorIds:['LOC-12191'],created:'2025-08-22 13:22:59',updated:'2026-10-05 14:22:08'},
+ {ocId:'OC-00101',name:'Pdq Mail Plus',addr1:'2005 Palmer Ave',addr2:'',city:'Larchmont',state:'NY',country:'US',postal:'10538',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:40.930514,lng:-73.762192,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00176'],created:'2024-03-02 08:11:44',updated:'2026-10-05 09:40:17'},
+ {ocId:'OC-00102',name:'Super Postal Center',addr1:'160 W Camino Real',addr2:'',city:'Boca Raton',state:'FL',country:'US',postal:'33432',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:26.340229,lng:-80.090332,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00177'],created:'2024-03-02 08:12:03',updated:'2026-08-19 10:02:51'},
+ {ocId:'OC-00103',name:'Pack & Ship North',addr1:'9477 W 104th Ave',addr2:'',city:'Westminster',state:'CO',country:'US',postal:'80021',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:39.886107,lng:-105.103101,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00178'],created:'2024-03-02 08:12:21',updated:'2026-07-11 11:14:36'},
+ {ocId:'OC-00104',name:'The Box',addr1:'3023 S. University Drive',addr2:'',city:'Fort Worth',state:'TX',country:'US',postal:'76109',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:32.707053,lng:-97.360128,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00179'],created:'2024-03-02 08:12:39',updated:'2026-06-30 12:22:08'},
+ {ocId:'OC-00105',name:'Postal Options',addr1:'2448 Lamar Ave',addr2:'',city:'Paris',state:'TX',country:'US',postal:'75460',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:33.660832,lng:-95.530295,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:false,vendorIds:['LOC-00180'],created:'2024-03-02 08:12:57',updated:'2026-10-21 14:30:45'},
+ {ocId:'OC-00106',name:'Private Postal Systems',addr1:'12555 Biscayne Blvd',addr2:'',city:'North Miami',state:'FL',country:'US',postal:'33181',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:25.891822,lng:-80.162421,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00181'],created:'2024-03-02 08:13:15',updated:'2026-05-02 09:55:19'},
+ {ocId:'OC-00107',name:'Eagle Postal Center #11',addr1:'4101 W Green Oaks Blvd Ste 305',addr2:'',city:'Arlington',state:'TX',country:'US',postal:'76016',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:32.682112,lng:-97.195009,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00182'],created:'2024-03-02 08:13:33',updated:'2026-04-18 10:41:27'},
+ {ocId:'OC-00108',name:'Upost Shipping Center',addr1:'3784 Mission Ave Ste 148',addr2:'',city:'Oceanside',state:'CA',country:'US',postal:'92058',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:33.227719,lng:-117.33188,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00183'],created:'2024-03-02 08:13:51',updated:'2026-03-27 11:08:53'},
+ {ocId:'OC-00109',name:'Postal Dispatch Business Center',addr1:'5123 W 98th St',addr2:'',city:'Bloomington',state:'MN',country:'US',postal:'55437',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:44.824115,lng:-93.347352,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00184'],created:'2024-03-02 08:14:09',updated:'2026-02-14 12:36:40'}
 ];
 /* NOTE: LOC-00185 (removed) and LOC-00186 (suspected duplicate) intentionally have NO OC location yet. */
 
@@ -724,25 +726,41 @@ function renderProfile(){
       : (currentUser.role==='manager'
           ? '<span class="v editable" onclick="startEditSweeper()">'+esc(v.sweeper)+' <span style="font-size:10px">✎</span></span>'
           : '<span class="v">'+esc(v.sweeper)+'</span>');
+    var isPUDO=v.provider==='PUDO Inc';
     body=
       section('Identity',
         kv('Location ID', '<span class="mono">'+esc(v.id)+'</span>')+
         kv('Name', esc(v.name))+
         kv('Provider', provBadge(v.provider))+
         kv('Reference', '<span class="mono">'+esc(v.ref||'—')+'</span>')+
-        kv('Type', esc(v.type))+
+        (isPUDO?kv('Type', esc(v.type)+' <span style="font-size:11px;color:var(--text-tertiary)">(ID '+esc(String(v.typeId))+' )</span>'):kv('Type', esc(v.type)))+
+        (v.locationCode?kv('Location Code', '<span class="mono">'+esc(v.locationCode)+'</span>'):'')+
+        (v.storeCode?kv('Store Code', '<span class="mono">'+esc(v.storeCode)+'</span>'):'')+
         kv('Status', statusBadge(v.status))
       )+
       section('Location',
         kv('Address Line 1', esc(v.addr1))+
+        (v.addr2?kv('Address Line 2', esc(v.addr2)):'')+
         kv('City', esc(v.city))+
-        kv('State', esc(v.state))+
-        kv('Postal Code', '<span class="mono">'+esc(v.postal||'—')+'</span>')
+        kv('State / Province', esc(v.state))+
+        kv('Country', esc(v.country||'—'))+
+        kv('Postal Code', '<span class="mono">'+esc(v.postal||'—')+'</span>')+
+        kv('Coordinates', '<span class="mono">'+esc(fmtCoord(v.lat))+' , '+esc(fmtCoord(v.lng))+'</span>')+
+        (v.directions?kv('Directions', esc(v.directions)):'')
+      )+
+      section('Contact',
+        kv('Phone', v.phone?'<span class="mono">'+esc(v.phone)+'</span>':'—')+
+        kv('Time Zone', '<span class="mono">'+esc(v.timezone||'—')+'</span>')
       )+
       section('Operations',
         kv('Sweeper', swEdit)+
-        kv('Opening Hours', esc(v.hours||'—'))
+        (isPUDO?kv('Open 24h', v.open24?'<span class="badge badge-green">Yes</span>':'<span class="badge badge-gray">No</span>'):kv('Cutoff Time', '<span class="mono">'+esc(v.cutoffTime||'—')+'</span>'+(v.cutoffTimezone?' <span style="font-size:11px;color:var(--text-tertiary)">('+esc(v.cutoffTimezone)+')</span>':'')))+
+        (isPUDO&&v.supports.length?kv('Dealer Supports', chipList(v.supports,'badge-teal')):'')+
+        (!isPUDO&&v.services&&v.services.length?kv('Services', chipList(v.services,'badge-blue')):'')+
+        (!isPUDO&&v.restrictions&&v.restrictions.length?kv('Restrictions', chipList(v.restrictions,'badge-orange')):'')
       )+
+      section('Opening Hours', hoursBlock(v))+
+      (v.holidayClosures&&v.holidayClosures.length?section('Holiday Closures', holidayBlock(v.holidayClosures)):'')+
       section('Linked OC Location',
         oc
           ? kv('OC Location ID', '<span class="mono link" onclick="jumpToOC(\''+oc.ocId+'\')">'+esc(oc.ocId)+'</span>')+kv('OC Status', statusBadge(ocStatus(oc)))+kv('Enable', oc.enable?'<span class="badge badge-green">enabled</span>':'<span class="badge badge-gray">disabled</span>')
@@ -750,7 +768,8 @@ function renderProfile(){
       )+
       section('Metadata',
         kv('Created', '<span class="mono">'+esc(v.created)+'</span>')+
-        kv('Updated', '<span class="mono">'+esc(v.updated)+'</span>')
+        (v.activated?kv('Activated', '<span class="mono">'+esc(v.activated)+'</span>'):'')+
+        kv('Last Updated', '<span class="mono">'+esc(v.updated)+'</span>')
       );
     foot = (ctx.mode==='view' && currentUser.role==='manager')
       ? '<button class="btn btn-secondary" onclick="startEditSweeper()">✎ Edit Sweeper</button><button class="btn btn-primary" onclick="closeProfile()">Close</button>'
@@ -761,6 +780,7 @@ function renderProfile(){
     var st=ocStatus(o);
     var vendorInactive=!linked.some(function(v){return v.status==='active';});
     name=o.name; idStr='OC Location · '+o.ocId;
+    var isPUDO=o.provider==='PUDO Inc';
     var storeEdit=(ctx.mode==='edit-store')? storeEditHtml(o) : null;
     body=
       section('Identity',
@@ -772,20 +792,32 @@ function renderProfile(){
       )+
       section('Location',
         kv('Address Line 1', esc(o.addr1))+
+        (o.addr2?kv('Address Line 2', esc(o.addr2)):'')+
         kv('City', esc(o.city))+
-        kv('State', esc(o.state))
+        kv('State / Province', esc(o.state))+
+        kv('Country', esc(o.country||'—'))+
+        kv('Postal Code', '<span class="mono">'+esc(o.postal||'—')+'</span>')+
+        kv('Coordinates', '<span class="mono">'+esc(fmtCoord(o.lat))+' , '+esc(fmtCoord(o.lng))+'</span>')
+      )+
+      section('Contact',
+        kv('Phone', o.phone?'<span class="mono">'+esc(o.phone)+'</span>':'—')+
+        kv('Time Zone', '<span class="mono">'+esc(o.timezone||'—')+'</span>')
       )+
       section('Operations',
         kv('Sweeper', esc(o.sweeper))+
-        kv('Opening Hours', esc(o.hours||'—'))+
+        (isPUDO?'':kv('Cutoff Time', '<span class="mono">'+esc(o.cutoffTime||'—')+'</span>'+(o.cutoffTimezone?' <span style="font-size:11px;color:var(--text-tertiary)">('+esc(o.cutoffTimezone)+')</span>':'')))+
+        (o.services&&o.services.length?kv('Services', chipList(o.services,'badge-blue')):'')+
+        (o.restrictions&&o.restrictions.length?kv('Restrictions', chipList(o.restrictions,'badge-orange')):'')+
         kv('Enable', enableControl(o, vendorInactive))
       )+
+      section('Opening Hours', hoursBlock(o))+
+      (o.holidayClosures&&o.holidayClosures.length?section('Holiday Closures', holidayBlock(o.holidayClosures)):'')+
       section('Linked Vendor',
         linked.map(function(v){return kv('Vendor Location ID', '<span class="mono link" onclick="jumpToVendor(\''+v.id+'\')">'+esc(v.id)+'</span> <span style="font-size:11px;color:var(--text-tertiary)">('+esc(v.provider)+')</span>');}).join('')
       )+
       section('Metadata',
         kv('Created', '<span class="mono">'+esc(o.created)+'</span>')+
-        kv('Updated', '<span class="mono">'+esc(o.updated)+'</span>')
+        kv('Last Updated', '<span class="mono">'+esc(o.updated)+'</span>')
       )+
       (storeEdit||'');
     foot = (ctx.mode==='view' && currentUser.role==='manager')
@@ -799,6 +831,79 @@ function renderProfile(){
 }
 function section(title,inner){return '<div class="p-sec"><div class="p-sec-title">'+title+'</div>'+inner+'</div>';}
 function kv(k,v){return '<div class="p-kv"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>';}
+function fmtCoord(x){return (x==null||x==='')?'—':String(x);}
+function chipList(arr,cls){return '<span class="chip-list">'+arr.map(function(s){return '<span class="badge '+(cls||'badge-gray')+'">'+esc(s)+'</span>';}).join(' ')+'</span>';}
+var DAY_ORDER=['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'];
+var DAY_SHORT={MONDAY:'Mon',TUESDAY:'Tue',WEDNESDAY:'Wed',THURSDAY:'Thu',FRIDAY:'Fri',SATURDAY:'Sat',SUNDAY:'Sun'};
+// Normalize any hours input into a canonical map: day -> ordered list of [start,end] ranges.
+// Accepts BOTH:
+//   1) nested API shape  : [{day:'MONDAY', timeRanges:[{startTime,endTime},...]}, ...]
+//   2) flat tuple shape  : [['MONDAY','06:00','23:59'], ...]  (single range per day, legacy seeds)
+// A single day may hold MULTIPLE time ranges (e.g. lunch break: 09:00-12:00 + 13:00-18:00).
+function normalizeHours(hoursOfOp){
+  var map={};
+  (hoursOfOp||[]).forEach(function(h){
+    var day, ranges;
+    if(Array.isArray(h)){
+      // flat tuple: [day, start, end]
+      day=h[0]; ranges=[[h[1],h[2]]];
+    } else {
+      // nested object: {day, timeRanges:[{startTime,endTime}]}
+      day=h.day;
+      ranges=(h.timeRanges||[]).map(function(r){return [r.startTime, r.endTime];});
+    }
+    if(!map[day])map[day]=[];
+    ranges.forEach(function(r){ if(r[0]!=null&&r[1]!=null)map[day].push(r); });
+  });
+  // sort each day's ranges by start time, and drop empty ranges
+  DAY_ORDER.forEach(function(d){
+    if(map[d]){
+      map[d]=map[d].filter(function(r){return r[0]!==''||r[1]!=='';})
+                 .sort(function(a,b){return a[0].localeCompare(b[0]);});
+    }
+  });
+  return map;
+}
+function fmtRanges(ranges){
+  return ranges.map(function(r){return r[0]+'–'+r[1];}).join(', ');
+}
+function hoursBlock(rec){
+  if(rec.hoursOfOp&&rec.hoursOfOp.length){
+    return '<table class="p-hours">'+hoursRows(rec.hoursOfOp)+'</table>';
+  }
+  if(rec.hoursText){return '<div style="font-size:12.5px;white-space:pre-line;color:var(--text-secondary)">'+esc(rec.hoursText)+'</div>';}
+  return '<div style="font-size:12.5px;color:var(--text-tertiary)">—</div>';
+}
+// Collapse consecutive days that share the SAME set of time ranges into a range
+// (e.g. "Mon – Fri 09:00–12:00, 13:00–18:00"), supporting multiple ranges per day.
+function hoursRows(hoursOfOp){
+  var map=normalizeHours(hoursOfOp);
+  // build ordered list of days that have data
+  var days=DAY_ORDER.filter(function(d){return map[d]&&map[d].length;});
+  if(!days.length)return '<tr><td colspan="2" style="color:var(--text-tertiary)">—</td></tr>';
+  var groups=[];
+  days.forEach(function(d){
+    var key=fmtRanges(map[d]);
+    var last=groups[groups.length-1];
+    if(last && last.key===key && DAY_ORDER.indexOf(d)===last.nextIdx){
+      last.end=d; last.nextIdx=DAY_ORDER.indexOf(d)+1;
+    } else {
+      groups.push({key:key,start:d,end:d,ranges:map[d],nextIdx:DAY_ORDER.indexOf(d)+1});
+    }
+  });
+  var rows=groups.map(function(g){
+    var dayLabel=(g.start===g.end)?DAY_SHORT[g.start]:DAY_SHORT[g.start]+' – '+DAY_SHORT[g.end];
+    return '<tr><td style="width:86px;color:var(--text-tertiary)">'+esc(dayLabel)+'</td><td class="mono">'+esc(g.key)+'</td></tr>';
+  });
+  // if every day is identical, collapse to a single "Daily" row
+  if(groups.length===1 && groups[0].start==='MONDAY' && groups[0].end==='SUNDAY'){
+    rows=['<tr><td style="width:86px;color:var(--text-tertiary)">Daily</td><td class="mono">'+esc(groups[0].key)+'</td></tr>'];
+  }
+  return rows.join('');
+}
+function holidayBlock(arr){
+  return arr.map(function(h){return '<div class="p-kv"><span class="k mono">'+esc(h[0])+'</span><span class="v">'+esc(h[1])+'</span></div>';}).join('');
+}
 function jumpToOC(ocId){profileContext={layer:'OC',id:ocId,mode:'view'};renderProfile();}
 function jumpToVendor(id){profileContext={layer:'VENDOR',id:id,mode:'view'};renderProfile();}
 function enableControl(o,vendorInactive){
@@ -845,7 +950,7 @@ function storeEditHtml(o){
     +'<div class="f-label">Name</div><input id="pf-name" value="'+esc(o.name)+'">'
     +'<div class="f-label" style="margin-top:10px">Address Line 1</div><input id="pf-addr" value="'+esc(o.addr1)+'">'
     +'<div class="f-label" style="margin-top:10px">City</div><input id="pf-city" value="'+esc(o.city)+'">'
-    +'<div class="f-label" style="margin-top:10px">Opening Hours</div><input id="pf-hours" value="'+esc(o.hours||'')+'" placeholder="e.g. MON–FRI 08:00–20:00">'
+    +'<div class="f-label" style="margin-top:10px">Opening Hours</div><input id="pf-hours" value="'+esc(o.hoursText||'')+'" placeholder="e.g. MON–FRI 08:00–20:00">'
     +'<div class="info-line" style="margin-top:10px">Only edit fields flagged as incorrect. Edits are recorded as STORE_DETAIL_EDIT; the underlying vendor record is untouched.</div>'
     +'<div class="row"><button class="btn btn-secondary btn-sm" onclick="cancelInlineEdit()">Cancel</button><button class="btn btn-primary btn-sm" onclick="saveStoreInline()">Save Changes</button></div>'
     +'</div></div>';
@@ -860,7 +965,7 @@ function saveStoreInline(){
   if(nn!==o.name){changes.push(['name',o.name,nn]);o.name=nn;}
   if(na!==o.addr1){changes.push(['address_line1',o.addr1,na]);o.addr1=na;}
   if(nc!==o.city){changes.push(['city',o.city,nc]);o.city=nc;}
-  if(nh!==(o.hours||'')){changes.push(['opening_hours',o.hours||'',nh]);o.hours=nh;}
+  if(nh!==(o.hoursText||'')){changes.push(['opening_hours',o.hoursText||'',nh]);o.hoursText=nh;}
   if(changes.length===0){profileContext.mode='view';renderProfile();return;}
   o.updated=nowStr();
   changes.forEach(function(c){CHANGELOG.unshift({time:nowStr(),layer:'OC',operator:currentUser.name,type:'STORE_DETAIL_EDIT',locId:o.ocId,field:c[0],old:c[1],new:c[2],remark:'OC-level override'});});
@@ -932,14 +1037,14 @@ function downloadCSV(name,head,rows){
 }
 function exportVendorCSV(){
   var rows=vendorFilters();
-  var head='Location ID,Name,Address,City,State,Provider,Sweeper,Type,Status,Created,Updated';
-  var body=rows.map(function(v){return [v.id,v.name,v.addr1,v.city,v.state,v.provider,v.sweeper,v.type,v.status,v.created,v.updated].map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');});
+  var head='Location ID,Name,Address 1,Address 2,City,State,Country,Postal,Provider,Sweeper,Type,Status,Phone,Latitude,Longitude,Time Zone,Created,Updated';
+  var body=rows.map(function(v){return [v.id,v.name,v.addr1,v.addr2||'',v.city,v.state,v.country||'',v.postal||'',v.provider,v.sweeper,v.type,v.status,v.phone||'',v.lat??'',v.lng??'',v.timezone||'',v.created,v.updated].map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');});
   downloadCSV('vendor_locations_'+nowStr().replace(/[-: ]/g,'')+'.csv',head,body);
 }
 function exportOCCSV(){
   var rows=ocFilters();
-  var head='OC Location ID,Name,Address,City,State,Provider,Type,Sweeper,Status,Enable,Linked Vendor';
-  var body=rows.map(function(o){return [o.ocId,o.name,o.addr1,o.city,o.state,o.provider,o.type,o.sweeper,ocStatus(o),o.enable?'enabled':'disabled',o.vendorIds.join(';')].map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');});
+  var head='OC Location ID,Name,Address 1,Address 2,City,State,Country,Postal,Provider,Type,Sweeper,Status,Enable,Phone,Latitude,Longitude,Time Zone,Linked Vendor';
+  var body=rows.map(function(o){return [o.ocId,o.name,o.addr1,o.addr2||'',o.city,o.state,o.country||'',o.postal||'',o.provider,o.type,o.sweeper,ocStatus(o),o.enable?'enabled':'disabled',o.phone||'',o.lat??'',o.lng??'',o.timezone||'',o.vendorIds.join(';')].map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');});
   downloadCSV('oc_locations_'+nowStr().replace(/[-: ]/g,'')+'.csv',head,body);
 }
 
