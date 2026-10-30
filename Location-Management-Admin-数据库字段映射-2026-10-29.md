@@ -230,6 +230,6 @@ oc_location (OC-owned, downstream-facing)
 | `/api/oc-locations/export` | GET | `oc_location` + mapping | export OC view |
 | `/api/changes` | GET | `change_log` | global change log |
 | `/api/duplicates` | GET | `duplicate_pair` | duplicate review queue (pending) |
-| `/api/duplicates/{id}/resolve` | POST | `duplicate_pair` + `oc_location` + `vendor_oc_mapping` + `change_log` | confirm/reject; assign OC IDs |
+| `/api/duplicates/{id}/resolve` | POST | `duplicate_pair` + `oc_location` + `vendor_oc_mapping` + `change_log` | confirm/reject; assign OC location IDs |
 | `/api/sync/status` | GET | `sync_run` | sync status |
 | `/api/stats/overview` | GET | `vendor_location` + `oc_location` + `change_log` | overview KPIs |

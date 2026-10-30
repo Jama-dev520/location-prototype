@@ -204,7 +204,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
         <tr><td>5</td><td>OC List</td><td>Find OC-00002 (linked to vendor LOC-10023 which is <b>inactive</b>) — try to enable it</td><td>Toggle blocked: "vendor location is inactive"</td></tr>
         <tr><td>6</td><td>OC List</td><td>Click "Edit" on an OC row (e.g. OC-00001)</td><td>Store-detail edit modal (address / opening hours)</td></tr>
         <tr><td>7</td><td>OC List</td><td>Tick 2–3 rows → "Batch Disable" → confirm</td><td>Rows flip to disabled + audit entries</td></tr>
-        <tr><td>8</td><td>Duplicate Review</td><td>Open sidebar → confirm/reject the pending pair</td><td>No OC ID generated until resolved</td></tr>
+        <tr><td>8</td><td>Duplicate Review</td><td>Open sidebar → confirm/reject the pending pair</td><td>No OC location ID generated until resolved</td></tr>
         <tr><td>9</td><td>Change Log / Sync</td><td>Review global log + sync status</td><td>All changes traced; status propagation logged</td></tr>
       </tbody>
     </table>
@@ -477,7 +477,7 @@ var CHANGELOG=[
  {time:'2026-10-29 02:03:09',layer:'VENDOR',operator:'System · PUDO Sync',type:'PROVIDER_FIELD_UPDATE',locId:'LOC-10024',field:'updated',old:'2026-04-30',new:'2026-05-14',remark:''},
  {time:'2026-10-29 02:31:40',layer:'VENDOR',operator:'System · LMS Sync',type:'PROVIDER_FIELD_UPDATE',locId:'LOC-00176',field:'cutoff_time',old:'16:30',new:'17:00',remark:''},
  {time:'2026-10-28 02:31:18',layer:'VENDOR',operator:'System · LMS Sync',type:'PROVIDER_REMOVED',locId:'LOC-00185',field:'status',old:'active',new:'removed',remark:'location delisted by provider'},
- {time:'2026-10-28 09:12:41',layer:'VENDOR',operator:'System · LMS Sync',type:'PROVIDER_CREATED',locId:'LOC-00186',field:'location',old:'—',new:'created — fuzzy match 75% vs LOC-12194 (pending duplicate, no OC ID)',remark:''},
+ {time:'2026-10-28 09:12:41',layer:'VENDOR',operator:'System · LMS Sync',type:'PROVIDER_CREATED',locId:'LOC-00186',field:'location',old:'—',new:'created — fuzzy match 75% vs LOC-12194 (pending duplicate, no OC location ID)',remark:''},
  {time:'2026-10-27 16:41:09',layer:'OC',operator:'Sarah Lin',type:'DISABLE',locId:'OC-00089',field:'is_enable',old:'true',new:'false',remark:''},
  {time:'2026-10-26 10:05:51',layer:'OC',operator:'Alex Chen',type:'BATCH_DISABLE',locId:'OC-00105',field:'is_enable',old:'true',new:'false',remark:''},
  {time:'2026-10-05 14:22:08',layer:'OC',operator:'Sarah Lin',type:'ENABLE',locId:'OC-00090',field:'is_enable',old:'false',new:'true',remark:''},
@@ -505,7 +505,7 @@ function findOC(id){return OC_LOCATIONS.find(function(o){return o.ocId===id;});}
 function ocStatus(oc){return oc.vendorIds.map(findVendor).filter(Boolean).some(function(v){return v.status==='active';})?'active':'inactive';}
 
 /* ================= Navigation ================= */
-var CRUMBS={p01:['Vendor Location List','raw provider locations · read-only except Sweeper'],p02:['OC Location List','OC-owned, downstream-facing · enable switch lives here'],p03:['Change Log','all changes across both layers'],p04:['Sync Status','daily provider sync runs'],p06:['Duplicate Review','cross-provider fuzzy duplicates · OC ID assignment']};
+var CRUMBS={p01:['Vendor Location List','raw provider locations · read-only except Sweeper'],p02:['OC Location List','OC-owned, downstream-facing · enable switch lives here'],p03:['Change Log','all changes across both layers'],p04:['Sync Status','daily provider sync runs'],p06:['Duplicate Review','cross-provider fuzzy duplicates · OC location ID assignment']};
 function switchPage(pid){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.getElementById('page-'+pid).classList.add('active');
@@ -785,7 +785,7 @@ function renderDup(){
       +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b class="mono">'+d.pairId+'</b><span class="badge badge-orange">'+d.score+'% match</span><span class="badge badge-gray">'+d.status+'</span></div>'
       +'<div style="font-size:13px;margin-top:8px"><b>'+esc(a.name)+'</b> <span class="mono">('+a.id+', '+a.provider+')</span> ↔ <b>'+esc(b.name)+'</b> <span class="mono">('+b.id+', '+b.provider+')</span></div>'
       +'<div style="font-size:12px;color:var(--text-tertiary);margin-top:4px">address_line1: <span class="mono">'+esc(d.diff.addr1[0])+'</span> vs <span class="mono">'+esc(d.diff.addr1[1])+'</span> · postal: <span class="mono">'+esc(d.diff.postal[0])+'</span> vs <span class="mono">'+esc(d.diff.postal[1])+'</span></div>'
-      +'<div class="info-line" style="margin-top:8px">No OC location generated yet. Resolve to link both to one OC ID (same store) or assign independent OC IDs (not same).</div>'
+      +'<div class="info-line" style="margin-top:8px">No OC location generated yet. Resolve to link both to one OC location ID (same store) or assign independent OC location IDs (not same).</div>'
       +'<div style="margin-top:10px;display:flex;gap:8px">'
         +'<button class="btn btn-primary btn-sm" onclick="resolveDup(\''+d.pairId+'\',\'confirmed\')">Same store</button>'
         +'<button class="btn btn-secondary btn-sm" onclick="resolveDup(\''+d.pairId+'\',\'rejected\')">Not same</button>'
@@ -799,7 +799,7 @@ function resolveDup(pairId,res){
   CHANGELOG.unshift({time:nowStr(),layer:'OC',operator:currentUser.name,type:res==='confirmed'?'OC_LINK_CONFIRMED':'OC_LINK_REJECTED',locId:pairId,field:'duplicate_pair',old:'pending',new:res,remark:''});
   renderDup();
   document.getElementById('dup-count-tag').textContent=DUPLICATES.filter(function(x){return x.status==='pending';}).length||'';
-  showToast(res==='confirmed'?'Confirmed same store':'Rejected',pairId+' · '+(res==='confirmed'?'both locations linked to one OC ID':'each location gets its own OC ID'));
+  showToast(res==='confirmed'?'Confirmed same store':'Rejected',pairId+' · '+(res==='confirmed'?'both locations linked to one OC location ID':'each location gets its own OC location ID'));
 }
 
 /* ================= Export ================= */

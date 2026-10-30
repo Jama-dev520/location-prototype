@@ -18,7 +18,7 @@
 ### 2. Sweeper（原 Pickup 字段统一改名）
 原 `pickup_provider` / "Pickup" 字段统一改名为 **Sweeper**，语义不变（谁实际做上门揽收），仍是 OC 可编辑、可跨供应商。
 
-### 3. OC Location 自动生成（1 个 vendor → 1 个 OC ID）
+### 3. OC Location 自动生成（1 个 vendor → 1 个 OC location ID）
 每个供应商 location（非疑似重复）自动生成一个对应的 OC location ID，回填名称/地址/营业时间，默认 `is_enable = false`。疑似重复的供应商 location **不**直接生成 OC ID，进入重复审核队列。
 
 ### 4. enable 逻辑迁移到 OC 层
@@ -41,10 +41,10 @@ OC : Vendor 原则上 1:1（一个供应商 location 对应一个 OC location，
 | **揽收字段名** | Pickup / `pickup_provider` | **Sweeper** / `sweeper`（统一改名） |
 | **enable 归属** | 挂在合并门店上 | 挂在 OC location 上 |
 | **店铺信息编辑** | 供应商字段只读 | OC 层可编辑地址/开业时间等（回填+覆盖） |
-| **OC ID 生成** | 去重后分配 | 每个 vendor 自动生成 1 个 OC ID（疑似重复除外） |
+| **OC location ID 生成** | 去重后分配 | 每个 vendor 自动生成 1 个 OC location ID（疑似重复除外） |
 | **状态联动** | 无强制联动 | 供应商 inactive → OC 自动 disable + 阻断下游 + 强制启用报错 |
 | **映射关系** | 未明确 | 原则 1:1；确认重复 2:1 |
-| **可见性规则** | 有 OC ID + active + enabled（三重门控） | OC 层 `status=active AND is_enable=true`（status 由供应商派生） |
+| **可见性规则** | 有 OC location ID + active + enabled（三重门控） | OC 层 `status=active AND is_enable=true`（status 由供应商派生） |
 
 ---
 
