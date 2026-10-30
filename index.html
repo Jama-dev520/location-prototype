@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Location Management Admin Console — Interactive Prototype (v2.4.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v2.5.0)</title>
 <!-- ============================================================
-  Location Management Admin Console · Hi-fi Prototype · v2.4.0
+  Location Management Admin Console · Hi-fi Prototype · v2.5.0
   Two-layer model: Vendor Location List (provider view) + OC Location List (OC view)
   Detail view: full page with tabs (v2.4.0 — reverted from the side drawer)
   Date: 2026-10-30 · Language: English · Canvas: Admin (1440px)
@@ -129,12 +129,12 @@ table.data tbody tr.selected{background:var(--color-primary-light)}
 .modal-mask{position:fixed;inset:0;background:rgba(15,23,42,.4);display:none;align-items:center;justify-content:center;z-index:1000;animation:fadeIn .2s}
 .modal-mask.open{display:flex}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.modal{background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:560px;max-width:92vw;max-height:86vh;overflow:auto;animation:popIn .25s cubic-bezier(.34,1.56,.64,1)}
+.modal{background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:560px;max-width:92vw;max-height:86vh;overflow:hidden;display:flex;flex-direction:column;animation:popIn .25s cubic-bezier(.34,1.56,.64,1)}
 @keyframes popIn{from{opacity:0;transform:scale(.92) translateY(10px)}to{opacity:1;transform:none}}
-.modal-header{padding:var(--space-4) var(--space-6);border-bottom:1px solid var(--bg-section);display:flex;align-items:center;font-size:15px;font-weight:600}
+.modal-header{padding:var(--space-4) var(--space-6);border-bottom:1px solid var(--bg-section);display:flex;align-items:center;font-size:15px;font-weight:600;flex-shrink:0}
 .modal-header .close{margin-left:auto;cursor:pointer;color:var(--text-tertiary);font-size:16px;padding:4px}
-.modal-body{padding:var(--space-6)}
-.modal-footer{padding:var(--space-4) var(--space-6);border-top:1px solid var(--bg-section);display:flex;justify-content:flex-end;gap:var(--space-2)}
+.modal-body{padding:var(--space-6);overflow:auto;flex:1 1 auto;min-height:0}
+.modal-footer{padding:var(--space-4) var(--space-6);border-top:1px solid var(--bg-section);display:flex;justify-content:flex-end;gap:var(--space-2);flex-shrink:0}
 .warn-line{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;border-radius:var(--radius-sm);padding:10px var(--space-4);font-size:12.5px;margin-top:var(--space-3)}
 .info-line{background:var(--color-primary-light);border:1px solid #DBEAFE;color:#1E40AF;border-radius:var(--radius-sm);padding:10px var(--space-4);font-size:12.5px;margin-top:var(--space-3)}
 .sample-ids{background:var(--bg-section);border-radius:var(--radius-sm);padding:10px var(--space-4);font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);margin-top:var(--space-3);line-height:1.7}
@@ -195,6 +195,27 @@ table.data tbody tr.selected{background:var(--color-primary-light)}
 .val-old{color:var(--color-danger);text-decoration:line-through;font-family:var(--font-mono);font-size:12px}
 .val-new{color:var(--color-success);font-family:var(--font-mono);font-size:12px;font-weight:600}
 
+/* ===== Edit modals (v2.5.0) ===== */
+.ef-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3) var(--space-4)}
+.ef-grid .f-label{font-size:11.5px;color:var(--text-tertiary);margin-bottom:4px;display:block}
+.ef-grid input{width:100%}
+.ef-grid .span2{grid-column:span 2}
+.ef-note{font-size:11.5px;color:var(--text-tertiary);margin-top:var(--space-3)}
+.eh-row{display:grid;grid-template-columns:88px 1fr;gap:var(--space-3);padding:5px 0;border-bottom:1px solid var(--bg-section);align-items:start}
+.eh-row:last-child{border-bottom:none}
+.eh-day{font-size:12.5px;color:var(--text-secondary);padding-top:5px;font-weight:500}
+.eh-ranges{display:flex;flex-direction:column;gap:4px}
+.eh-range{display:flex;align-items:center;gap:6px}
+.eh-range input[type="time"]{width:104px;font-family:var(--font-mono);font-size:12.5px;padding:3px 6px}
+.eh-sep{color:var(--text-tertiary);font-size:12px}
+.eh-del{border:none;background:transparent;color:var(--text-tertiary);cursor:pointer;font-size:13px;padding:2px 6px;border-radius:4px;line-height:1}
+.eh-del:hover{background:#FEF2F2;color:var(--color-danger)}
+.eh-add{border:none;background:transparent;color:var(--color-primary);cursor:pointer;font-size:11.5px;padding:2px 0;text-align:left}
+.eh-add:hover{text-decoration:underline}
+.eh-closed{font-size:12px;color:var(--text-tertiary);padding:6px 0}
+.eh-actions{display:flex;gap:var(--space-2);margin-top:var(--space-4);flex-wrap:wrap}
+.dp-sec-act{margin-left:auto;font-weight:400;text-transform:none;letter-spacing:0}
+
 /* ===== Version chip + history ===== */
 .ver-chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--color-primary);background:var(--color-primary-light);border:1px solid #DBEAFE;border-radius:999px;padding:4px 10px;cursor:pointer;transition:var(--transition)}
 .ver-chip:hover{background:#DBEAFE}
@@ -239,24 +260,28 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">🎬 Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3>🎬 Prototype Walkthrough — Location Management Admin Console (v2.4.0)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3>🎬 Prototype Walkthrough — Location Management Admin Console (v2.5.0)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <p style="font-size:12.5px;color:var(--text-secondary);margin-bottom:16px">Demo duration: ~6 min · Covers the two-layer model: Vendor Location List + OC Location List. Clicking a location ID opens a <b>full detail page</b> (Basic Info · Operations · Hours &amp; Services · Linked Records · Change History) where Sweeper and store-detail edits happen in place.</p>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
         <tr><td>1</td><td>Vendor List</td><td>Review the vendor table — note the <b>Sweeper</b> column (renamed from "Pickup")</td><td>Provider data read-only except Sweeper</td></tr>
         <tr><td>2</td><td>Vendor List</td><td>Click a <b>Location ID</b> (e.g. LOC-10024)</td><td>Full detail page opens on the Basic Info tab</td></tr>
-        <tr><td>3</td><td>Vendor Detail</td><td>Go to <b>Operations</b> → <b>Edit Sweeper</b> → change → Save</td><td>Sweeper updated inline · SWEEPER_CHANGE audit written</td></tr>
+        <tr><td>3</td><td>Vendor Detail</td><td>Go to <b>Operations</b> → <b>Edit Sweeper</b> → change → Save</td><td>Modal opens · SWEEPER_CHANGE audit written</td></tr>
         <tr><td>4</td><td>Vendor Detail</td><td>Switch demo role to "Viewer", reopen the detail page</td><td>Sweeper becomes read-only (no edit affordance)</td></tr>
         <tr><td>5</td><td>OC List</td><td>Open "OC Location List" — note <b>Enable</b> column and linked vendor column</td><td>OC-owned locations backfilled from vendors</td></tr>
         <tr><td>6</td><td>OC List</td><td>Click an <b>OC Location ID</b> (e.g. OC-00002, linked to inactive LOC-10023) — try Enable under Operations</td><td>Toggle blocked: "vendor location is inactive"</td></tr>
-        <tr><td>7</td><td>OC Detail</td><td>Click <b>Edit Store Details</b> → edit address/hours → Save</td><td>OC-level override saved · STORE_DETAIL_EDIT audit</td></tr>
-        <tr><td>8</td><td>OC Detail</td><td>Open the <b>Change History</b> tab</td><td>Per-location timeline: every change to this ID only</td></tr>
-        <tr><td>9</td><td>OC List</td><td>Tick 2–3 rows → "Batch Disable" → confirm</td><td>Rows flip to disabled + audit entries</td></tr>
-        <tr><td>10</td><td>Duplicate Review</td><td>Open sidebar → confirm/reject the pending pair</td><td>No OC location ID generated until resolved</td></tr>
-        <tr><td>11</td><td>Change Log / Sync</td><td>Review global log + sync status</td><td>All changes traced; status propagation logged</td></tr>
+        <tr><td>7</td><td>OC Detail</td><td>Click <b>Edit Store Details</b> → change City → Save</td><td>One grouped modal for name/address/city/state/postal/phone · STORE_DETAIL_EDIT audit per changed field</td></tr>
+        <tr><td>8</td><td>OC Detail</td><td><b>Hours &amp; Services</b> → <b>Edit opening hours</b> → add a range or copy Monday to Tue–Fri → Save</td><td>Structured 7-day editor (multi-range) · opening_hours audit with old → new summary</td></tr>
+        <tr><td>9</td><td>OC Detail</td><td>Open the <b>Change History</b> tab</td><td>Per-location timeline: every change to this ID only</td></tr>
+        <tr><td>10</td><td>OC List</td><td>Tick 2–3 rows → "Batch Disable" → confirm</td><td>Rows flip to disabled + audit entries</td></tr>
+        <tr><td>11</td><td>Duplicate Review</td><td>Open sidebar → confirm/reject the pending pair</td><td>No OC location ID generated until resolved</td></tr>
+        <tr><td>12</td><td>Change Log / Sync</td><td>Review global log + sync status</td><td>All changes traced; status propagation logged</td></tr>
       </tbody>
     </table>
+    <div style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:12px 16px;font-size:12.5px;margin-bottom:12px">
+      <b>v2.5.0 changes:</b> all editing now happens in <b>modals</b> — store details in one grouped form, opening hours in a structured 7-day editor (multi-range, add/remove, copy to weekdays), sweeper in a small dialog. No more inline form expanding at the bottom of the page.
+    </div>
     <div style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:12px 16px;font-size:12.5px;margin-bottom:12px">
       <b>v2.4.0 changes:</b> detail view returned to a <b>full page</b> (was a 640px side drawer) with tabs and a per-location change history · semantic versioning introduced (<b>major</b> architecture · <b>minor</b> feature · <b>patch</b> fix) — click the version chip in the header to see the full history.
     </div>
@@ -271,7 +296,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v2.4.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v2.5.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">🏢 Vendor Location List</div>
@@ -289,7 +314,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
     <div class="admin-header">
       <div class="breadcrumb" id="breadcrumb"><b>Vendor Location List</b> — raw provider locations</div>
       <div class="header-right">
-        <div class="ver-chip" onclick="openVersionModal()" title="Click to view the full version history"><span class="dot"></span>v2.4.0</div>
+        <div class="ver-chip" onclick="openVersionModal()" title="Click to view the full version history"><span class="dot"></span>v2.5.0</div>
         <span style="font-size:11px;color:var(--text-tertiary)">Demo role:</span>
         <div class="role-switch">
           <button class="role-btn active" id="role-manager" onclick="setRole('manager')">Location Manager</button>
@@ -476,14 +501,73 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
   </div>
 </div>
 
+<div class="modal-mask" id="modal-edit-store">
+  <div class="modal" style="width:600px">
+    <div class="modal-header">Edit Store Details <span class="p-override">OC-level override</span><span class="close" onclick="closeModal('modal-edit-store')">✕</span></div>
+    <div class="modal-body">
+      <div class="info-line" style="margin:0 0 var(--space-4)">Only edit fields flagged as incorrect. Every change is recorded as <b>STORE_DETAIL_EDIT</b> against this OC location — the linked vendor record is never modified.</div>
+      <div class="ef-grid">
+        <div class="span2"><label class="f-label">Name</label><input id="es-name"></div>
+        <div><label class="f-label">Address Line 1</label><input id="es-addr1"></div>
+        <div><label class="f-label">Address Line 2</label><input id="es-addr2" placeholder="optional"></div>
+        <div><label class="f-label">City</label><input id="es-city"></div>
+        <div><label class="f-label">State / Province</label><input id="es-state"></div>
+        <div><label class="f-label">Postal Code</label><input id="es-postal"></div>
+        <div><label class="f-label">Phone</label><input id="es-phone" placeholder="optional"></div>
+      </div>
+      <div class="ef-note">Changes become visible downstream after the next sync (PUDO Inc 02:00 · LMS 02:30).</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-edit-store')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditStore()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-mask" id="modal-edit-hours">
+  <div class="modal" style="width:660px">
+    <div class="modal-header" id="eh-title">Edit Opening Hours<span class="close" onclick="closeModal('modal-edit-hours')">✕</span></div>
+    <div class="modal-body">
+      <div class="info-line" id="eh-note" style="margin:0 0 var(--space-2)">One day can hold several ranges — e.g. a lunch break: <span class="mono">09:00–12:00</span> + <span class="mono">13:00–18:00</span>. Leave a day empty to mark it closed.</div>
+      <div id="eh-rows"></div>
+      <div class="eh-actions">
+        <button class="btn btn-secondary btn-sm" onclick="copyMondayToWeekdays()">⧉ Copy Monday → Tue–Fri</button>
+        <button class="btn btn-secondary btn-sm" onclick="copyMondayToAll()">⧉ Copy Monday → All days</button>
+        <button class="btn btn-secondary btn-sm" onclick="clearAllHours()">Clear all</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-edit-hours')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditHours()">Save Hours</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-mask" id="modal-edit-sweeper">
+  <div class="modal" style="width:460px">
+    <div class="modal-header">Edit Sweeper<span class="close" onclick="closeModal('modal-edit-sweeper')">✕</span></div>
+    <div class="modal-body">
+      <label class="f-label">Sweeper — who physically performs the pickup</label>
+      <select id="ew-sweeper" style="width:100%"><option>PUDO Inc</option><option>LMS</option></select>
+      <div class="info-line" id="ew-note" style="display:none">⚠ The new sweeper differs from the owner provider of this location.</div>
+      <div class="warn-line">⚠ Sweeper drives downstream routing. The change is recorded as <span class="mono">SWEEPER_CHANGE</span>.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-edit-sweeper')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditSweeper()">Save</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast-wrap"></div>
 
 <script>
 /* ================= Version registry ================= */
 /* Bump on every delivery: MAJOR = architecture/data-model change,
    MINOR = new capability or screen, PATCH = fix or copy/visual tweak. */
-var APP_VERSION='2.4.0';
+var APP_VERSION='2.5.0';
 var VERSIONS=[
+ {v:'2.5.0',type:'minor',date:'2026-10-30',desc:'<b>Editing moved into purpose-built modals.</b> Store details (name · address · city · state · postal · phone) edit in one grouped modal with a field-level diff; opening hours get a structured 7-day editor — multiple ranges per day, add/remove range, copy Monday to Tue–Fri or all days, end-before-start validation; sweeper edits in a small modal. OC opening hours are now backfilled from the linked vendor location, so the editor never opens empty.'},
  {v:'2.4.0',type:'minor',date:'2026-10-30',desc:'<b>Detail view restored to a full page.</b> Clicking a location ID opens a full-width detail page with tabs (Basic Info · Operations · Hours &amp; Services · Linked Records · Change History) instead of a 640px side drawer. Per-location change history brought back. Semantic versioning introduced across all deliverables.'},
  {v:'2.3.0',type:'minor',date:'2026-10-30',desc:'<b>QR-code dropoff (LMS only).</b> New <span class="mono">qr_dropoff</span> field synced at vendor layer, rolled up to OC layer ("any linked vendor supports it"). Badge + dedicated field + filter in both lists, and a value in the detail page.'},
  {v:'2.2.0',type:'minor',date:'2026-10-30',desc:'<b>Cross-layer search.</b> Vendor Location List can be filtered by OC location ID; OC Location List can be filtered by vendor location ID, including rows whose ID no longer exists.'},
@@ -581,6 +665,19 @@ var DUP_THRESHOLD=75;
 var DUPLICATES=[
  {pairId:'DUP-001',locA:'LOC-12194',locB:'LOC-00186',status:'pending',score:75,diff:{addr1:['2918 avenue i','2918 avenue i ste 2'],postal:['11210','11210-2214']},detectedAt:'2026-10-28 09:12:41'}
 ];
+
+/* Backfill: an OC location with no hours of its own inherits the hours of its linked
+   vendor location (PRD rule: OC fields are backfilled from the vendor layer). Deep-copied
+   so later OC edits never mutate the provider record. */
+OC_LOCATIONS.forEach(function(o){
+  if(o.hoursOfOp&&o.hoursOfOp.length)return;
+  var v=VENDORS.find(function(x){return o.vendorIds.indexOf(x.id)>=0&&x.hoursOfOp&&x.hoursOfOp.length;});
+  if(v){
+    o.hoursOfOp=v.hoursOfOp.map(function(h){return Array.isArray(h)?h.slice():JSON.parse(JSON.stringify(h));});
+    if(!o.hoursText)o.hoursText=v.hoursText||'';
+    o.hoursBackfilled=true;
+  }
+});
 
 var currentUser={name:'Sarah Lin',initials:'SL',role:'manager'};
 var selectedOC=new Set();
@@ -819,7 +916,6 @@ function backToList(){
 function closeProfile(){backToList();}
 function switchDetailTab(key){
   if(!profileContext)return;
-  if(profileContext.mode!=='view'){showToast('Finish editing first','Save or cancel the inline edit to switch tabs');return;}
   profileContext.tab=key; renderProfile();
 }
 
@@ -839,7 +935,7 @@ function renderProfile(){
        +sweeperBadge(rec)
        +(rec.qrDropoff?'<span class="badge badge-teal">◉ QR dropoff</span>':'');
     actions=(currentUser.role==='manager'&&ctx.mode==='view')
-      ? '<button class="btn btn-secondary btn-sm" onclick="startEditSweeper()">✎ Edit Sweeper</button>'
+      ? '<button class="btn btn-secondary btn-sm" onclick="openEditSweeper()">✎ Edit Sweeper</button>'
       : '';
     if(oc){
       actions+='<button class="btn btn-secondary btn-sm" onclick="jumpToOC(\''+oc.ocId+'\')">View OC Location →</button>';
@@ -854,7 +950,7 @@ function renderProfile(){
        +(vendorInactive?'<span class="badge badge-orange">vendor inactive</span>':'')
        +(rec.qrDropoff?'<span class="badge badge-teal">◉ QR dropoff</span>':'');
     actions=(currentUser.role==='manager'&&ctx.mode==='view')
-      ? '<button class="btn btn-secondary btn-sm" onclick="startEditStore()">✎ Edit Store Details</button>'
+      ? '<button class="btn btn-secondary btn-sm" onclick="openEditStore()">✎ Edit Store Details</button>'
       : '';
     actions+='<button class="btn btn-secondary btn-sm" onclick="jumpToVendor(\''+rec.vendorIds[0]+'\')">View Vendor Location →</button>';
   }
@@ -873,12 +969,15 @@ function renderProfile(){
   document.getElementById('pd-panels').innerHTML=isV?vendorPanels(ctx,rec):ocPanels(ctx,rec);
 }
 
-function dpSec(title, inner, extraClass){
-  return '<div class="dp-sec'+(extraClass?' '+extraClass:'')+'"><div class="dp-sec-title">'+title+'</div>'
-    +'<div class="dp-kv-grid">'+inner+'</div></div>';
+function dpSec(title, inner, action){
+  return '<div class="dp-sec"><div class="dp-sec-title">'+title
+    +(action?'<span class="dp-sec-act">'+action+'</span>':'')
+    +'</div><div class="dp-kv-grid">'+inner+'</div></div>';
 }
-function dpSecPlain(title, inner){
-  return '<div class="dp-sec"><div class="dp-sec-title">'+title+'</div>'+inner+'</div>';
+function dpSecPlain(title, inner, action){
+  return '<div class="dp-sec"><div class="dp-sec-title">'+title
+    +(action?'<span class="dp-sec-act">'+action+'</span>':'')
+    +'</div>'+inner+'</div>';
 }
 
 /* ---------- Vendor panels ---------- */
@@ -917,11 +1016,9 @@ function vendorPanels(ctx, v){
   }
   if(ctx.tab==='operations'){
     var isPUDO2=v.provider==='PUDO Inc';
-    var swEdit=(ctx.mode==='edit-sweeper')
-      ? sweeperEditHtml(v)
-      : (currentUser.role==='manager'
-          ? '<span class="v editable" onclick="startEditSweeper()">'+esc(v.sweeper)+' <span style="font-size:10px">✎</span></span>'
-          : '<span class="v">'+esc(v.sweeper)+'</span>');
+    var swEdit=(currentUser.role==='manager')
+      ? '<span class="v editable" onclick="openEditSweeper()">'+esc(v.sweeper)+' <span style="font-size:10px">✎</span></span>'
+      : '<span class="v">'+esc(v.sweeper)+'</span>';
     return dpSec('Operations',
         kv('Sweeper', swEdit)+
         (isPUDO2
@@ -935,7 +1032,8 @@ function vendorPanels(ctx, v){
       +'<div class="info-line" style="margin-top:0">Sweeper is the only vendor-layer field OC can edit (audit type <span class="mono">SWEEPER_CHANGE</span>). Everything else on this page is provider-owned and read-only.</div>';
   }
   if(ctx.tab==='hours'){
-    return dpSecPlain('Opening Hours', hoursBlock(v))
+    return dpSecPlain('Opening Hours', hoursBlock(v)
+        +'<div class="ef-note" style="margin-top:var(--space-3)">Provider-owned — edited on the OC side if the store reports incorrect hours.</div>')
       +(v.holidayClosures&&v.holidayClosures.length?dpSecPlain('Holiday Closures', holidayBlock(v.holidayClosures)):'');
   }
   if(ctx.tab==='linked'){
@@ -958,11 +1056,10 @@ function ocPanels(ctx, o){
   var st=ocStatus(o);
   var vendorInactive=!linked.some(function(v){return v.status==='active';});
   if(ctx.tab==='overview'){
-    var storeEdit=(ctx.mode==='edit-store')? storeEditHtml(o) : '';
     return dpSec('Identity',
         kv('OC Location ID', '<span class="mono">'+esc(o.ocId)+'</span>')+
-        kv('Name', (currentUser.role==='manager'&&ctx.mode==='view')
-          ? '<span class="v editable" onclick="startEditStore()">'+esc(o.name)+' <span style="font-size:10px">✎</span></span>'
+        kv('Name', (currentUser.role==='manager')
+          ? '<span class="v editable" onclick="openEditStore(\'es-name\')">'+esc(o.name)+' <span style="font-size:10px">✎</span></span>'
           : esc(o.name))+
         kv('Provider', provBadge(o.provider))+
         kv('Type', esc(o.type))+
@@ -975,7 +1072,10 @@ function ocPanels(ctx, o){
         kv('State / Province', esc(o.state))+
         kv('Country', esc(o.country||'—'))+
         kv('Postal Code', '<span class="mono">'+esc(o.postal||'—')+'</span>')+
-        kv('Coordinates', '<span class="mono">'+esc(fmtCoord(o.lat))+' , '+esc(fmtCoord(o.lng))+'</span>')
+        kv('Coordinates', '<span class="mono">'+esc(fmtCoord(o.lat))+' , '+esc(fmtCoord(o.lng))+'</span>'),
+        (currentUser.role==='manager'
+          ? '<button class="btn btn-secondary btn-sm" onclick="openEditStore(\'es-addr1\')">✎ Edit address &amp; details</button>'
+          : '')
       )
       +dpSec('Contact',
         kv('Phone', o.phone?'<span class="mono">'+esc(o.phone)+'</span>':'—')+
@@ -984,8 +1084,7 @@ function ocPanels(ctx, o){
       +dpSec('Metadata',
         kv('Created', '<span class="mono">'+esc(o.created)+'</span>')+
         kv('Last Updated', '<span class="mono">'+esc(o.updated)+'</span>')
-      )
-      +(storeEdit?'<div class="dp-sec"><div class="dp-sec-title">Edit Store Details <span class="p-override">OC-level override</span></div>'+storeEdit+'</div>':'');
+      );
   }
   if(ctx.tab==='operations'){
     var isPUDO=o.provider==='PUDO Inc';
@@ -1005,7 +1104,10 @@ function ocPanels(ctx, o){
       +(vendorInactive?'<div class="warn-line" style="margin-top:0">⚠ The linked vendor location is <b>inactive</b>. This OC location is auto-disabled and blocked from downstream sync until the vendor location returns to <b>active</b>.</div>':'');
   }
   if(ctx.tab==='hours'){
-    return dpSecPlain('Opening Hours', hoursBlock(o))
+    return dpSecPlain('Opening Hours', hoursBlock(o),
+        (currentUser.role==='manager'
+          ? '<button class="btn btn-secondary btn-sm" onclick="openEditHours()">✎ Edit opening hours</button>'
+          : ''))
       +(o.holidayClosures&&o.holidayClosures.length?dpSecPlain('Holiday Closures', holidayBlock(o.holidayClosures)):'');
   }
   if(ctx.tab==='linked'){
@@ -1143,74 +1245,193 @@ function toggleOCEnableFromProfile(){
   renderProfile(); renderOC();
   showToast(o.enable?'Enabled':'Disabled',o.name+' · is_enable: '+old+' → '+o.enable+' · audit entry written');
 }
-/* Sweeper inline edit (Vendor detail → Operations tab) */
-function startEditSweeper(){
-  if(!profileContext)return;
-  profileContext.mode='edit-sweeper';
-  if(profileContext.tab!=='operations')profileContext.tab='operations';
-  renderProfile();
+/* ================= Edit modals (v2.5.0) =================
+   Editing is grouped by field type instead of one inline form:
+     · short fields  (name / address / city / state / postal / phone) -> one grouped modal
+     · opening hours (7 days x N ranges)                              -> structured table modal
+     · sweeper       (single value)                                   -> small modal
+   Rationale: a modal keeps the detail page intact and puts the whole
+   editable group in view; a long inline form pushed the page around and
+   forced the operator to scroll after clicking the ✎ affordance. */
+var editTargetId=null;
+var hoursDraft=null; // {MONDAY:[['09:00','12:00'],...], ...}
+
+function setVal(id,v){var el=document.getElementById(id);if(el)el.value=(v==null?'':v);}
+
+/* ---------- Store details (OC) ---------- */
+function openEditStore(focusId){
+  if(!profileContext||profileContext.layer!=='OC')return;
+  var o=findOC(profileContext.id); if(!o)return;
+  editTargetId=o.ocId;
+  setVal('es-name',o.name);
+  setVal('es-addr1',o.addr1);
+  setVal('es-addr2',o.addr2);
+  setVal('es-city',o.city);
+  setVal('es-state',o.state);
+  setVal('es-postal',o.postal);
+  setVal('es-phone',o.phone);
+  openModal('modal-edit-store');
+  if(focusId){
+    var el=document.getElementById(focusId);
+    if(el)setTimeout(function(){try{el.focus();el.select();}catch(e){}},60);
+  }
 }
-function sweeperEditHtml(v){
-  return '<div class="p-edit-inline">'
-    +'<div class="f-label">Sweeper — who physically performs the pickup</div>'
-    +'<select id="pf-sweeper"><option '+(v.sweeper==='PUDO Inc'?'selected':'')+'>PUDO Inc</option><option '+(v.sweeper==='LMS'?'selected':'')+'>LMS</option></select>'
-    +(v.sweeper!==v.provider?'<div class="info-line" style="margin-top:8px">⚠ Current sweeper differs from the owner provider ('+esc(v.provider)+').</div>':'')
-    +'<div class="row"><button class="btn btn-secondary btn-sm" onclick="cancelInlineEdit()">Cancel</button><button class="btn btn-primary btn-sm" onclick="saveSweeperInline()">Save</button></div>'
-    +'</div>';
+/* Legacy alias kept for older onclick handlers. */
+function startEditStore(focusId){openEditStore(focusId);}
+
+function saveEditStore(){
+  var o=findOC(editTargetId); if(!o)return;
+  // [objKey, inputId, dbField]
+  var fields=[
+    ['name','es-name','name'],
+    ['addr1','es-addr1','address_line1'],
+    ['addr2','es-addr2','address_line2'],
+    ['city','es-city','city'],
+    ['state','es-state','state'],
+    ['postal','es-postal','postal_code'],
+    ['phone','es-phone','phone']
+  ];
+  var changes=[];
+  fields.forEach(function(f){
+    var el=document.getElementById(f[1]); if(!el)return;
+    var nv=el.value.trim(), ov=(o[f[0]]||'')+'';
+    if(nv!==ov){changes.push([f[2],ov,nv]);o[f[0]]=nv;}
+  });
+  closeModal('modal-edit-store');
+  if(!changes.length){showToast('No changes','Nothing to save','info');return;}
+  o.updated=nowStr();
+  changes.forEach(function(c){
+    CHANGELOG.unshift({time:nowStr(),layer:'OC',operator:currentUser.name,type:'STORE_DETAIL_EDIT',locId:o.ocId,field:c[0],old:c[1],new:c[2],remark:'OC-level override'});
+  });
+  renderProfile(); renderOC();
+  showToast('Store details saved',changes.length+' field(s) updated · STORE_DETAIL_EDIT written');
 }
-function saveSweeperInline(){
-  var ctx=profileContext; if(!ctx||ctx.layer!=='VENDOR')return;
-  var v=findVendor(ctx.id), el=document.getElementById('pf-sweeper');
-  if(!v||!el)return;
-  var nv=el.value, old=v.sweeper;
-  if(old===nv){ctx.mode='view';renderProfile();return;}
+
+/* ---------- Opening hours (OC, multi-range per day) ---------- */
+function openEditHours(){
+  if(!profileContext||profileContext.layer!=='OC')return;
+  var o=findOC(profileContext.id); if(!o)return;
+  editTargetId=o.ocId;
+  var map=normalizeHours(o.hoursOfOp||[]);
+  hoursDraft={};
+  DAY_ORDER.forEach(function(d){
+    hoursDraft[d]=(map[d]||[]).map(function(r){return [r[0],r[1]];});
+  });
+  document.getElementById('eh-title').innerHTML='Edit Opening Hours <span style="font-weight:400;font-size:12px;color:var(--text-tertiary);margin-left:8px">'+esc(o.ocId)+' · '+esc(o.name)+'</span><span class="close" onclick="closeModal(\'modal-edit-hours\')">✕</span>';
+  document.getElementById('eh-note').innerHTML='One day can hold several ranges — e.g. a lunch break: <span class="mono">09:00–12:00</span> + <span class="mono">13:00–18:00</span>. Leave a day empty to mark it closed.'
+    +(o.hoursBackfilled?'<br><span style="color:var(--text-tertiary)">Pre-filled from the linked vendor location ('+esc((o.vendorIds||[]).join(', '))+').</span>':'');
+  renderHoursEditor();
+  openModal('modal-edit-hours');
+}
+function renderHoursEditor(){
+  document.getElementById('eh-rows').innerHTML=DAY_ORDER.map(function(d){
+    var ranges=hoursDraft[d]||[];
+    var inner=ranges.length
+      ? ranges.map(function(r,i){
+          var bad=!(r[0]&&r[1])||r[0]>=r[1];
+          return '<div class="eh-range'+(bad?' err':'')+'">'
+            +'<input type="time" value="'+esc(r[0]||'')+'" oninput="setHoursVal(\''+d+'\','+i+',0,this.value)">'
+            +'<span class="eh-sep">–</span>'
+            +'<input type="time" value="'+esc(r[1]||'')+'" oninput="setHoursVal(\''+d+'\','+i+',1,this.value)">'
+            +(bad?'<span style="font-size:11px;color:var(--color-danger)">end must be after start</span>':'')
+            +'<button class="eh-del" title="Remove this range" onclick="removeHoursRange(\''+d+'\','+i+')">✕</button>'
+            +'</div>';
+        }).join('')
+      : '<div class="eh-closed">Closed — no range</div>';
+    return '<div class="eh-row"><div class="eh-day">'+DAY_SHORT[d]+'</div>'
+      +'<div class="eh-ranges">'+inner
+      +'<button class="eh-add" onclick="addHoursRange(\''+d+'\')">+ Add range</button>'
+      +'</div></div>';
+  }).join('');
+}
+function setHoursVal(day,i,idx,v){
+  if(!hoursDraft[day]||!hoursDraft[day][i])return;
+  hoursDraft[day][i][idx]=v;
+}
+function addHoursRange(day){
+  if(!hoursDraft[day])hoursDraft[day]=[];
+  var arr=hoursDraft[day], last=arr[arr.length-1];
+  arr.push(last?[last[1]||'18:00','18:00']:['09:00','18:00']);
+  renderHoursEditor();
+}
+function removeHoursRange(day,i){
+  if(!hoursDraft[day])return;
+  hoursDraft[day].splice(i,1);
+  renderHoursEditor();
+}
+function copyMondayToWeekdays(){
+  var src=hoursDraft['MONDAY']||[];
+  ['TUESDAY','WEDNESDAY','THURSDAY','FRIDAY'].forEach(function(d){
+    hoursDraft[d]=src.map(function(r){return [r[0],r[1]];});
+  });
+  renderHoursEditor();
+}
+function copyMondayToAll(){
+  var src=hoursDraft['MONDAY']||[];
+  DAY_ORDER.forEach(function(d){hoursDraft[d]=src.map(function(r){return [r[0],r[1]];});});
+  renderHoursEditor();
+}
+function clearAllHours(){
+  DAY_ORDER.forEach(function(d){hoursDraft[d]=[];});
+  renderHoursEditor();
+}
+function saveEditHours(){
+  var o=findOC(editTargetId); if(!o)return;
+  var oldText=fmtHoursMap(normalizeHours(o.hoursOfOp||[]));
+  var nested=[];
+  DAY_ORDER.forEach(function(d){
+    var rs=(hoursDraft[d]||[]).filter(function(r){return r[0]&&r[1];});
+    if(!rs.length)return;
+    nested.push({day:d,timeRanges:rs.map(function(r){return {startTime:r[0],endTime:r[1]};})});
+  });
+  var newText=fmtHoursMap(normalizeHours(nested));
+  closeModal('modal-edit-hours');
+  if(oldText===newText){showToast('No changes','Opening hours unchanged','info');return;}
+  o.hoursOfOp=nested;
+  o.hoursText=newText;
+  o.updated=nowStr();
+  CHANGELOG.unshift({time:nowStr(),layer:'OC',operator:currentUser.name,type:'STORE_DETAIL_EDIT',locId:o.ocId,field:'opening_hours',old:oldText,new:newText,remark:'OC-level override'});
+  renderProfile(); renderOC();
+  showToast('Opening hours saved','opening_hours updated · STORE_DETAIL_EDIT written');
+}
+/* Compact human string, mirroring the table grouping (Mon – Fri …, Daily …). */
+function fmtHoursMap(map){
+  var days=DAY_ORDER.filter(function(d){return map[d]&&map[d].length;});
+  if(!days.length)return 'Closed all week';
+  var groups=[];
+  days.forEach(function(d){
+    var key=fmtRanges(map[d]), last=groups[groups.length-1];
+    if(last&&last.key===key&&DAY_ORDER.indexOf(d)===last.nextIdx){last.end=d;last.nextIdx=DAY_ORDER.indexOf(d)+1;}
+    else groups.push({key:key,start:d,end:d,nextIdx:DAY_ORDER.indexOf(d)+1});
+  });
+  if(groups.length===1&&groups[0].start==='MONDAY'&&groups[0].end==='SUNDAY')return 'Daily '+groups[0].key;
+  return groups.map(function(g){
+    var lbl=(g.start===g.end)?DAY_SHORT[g.start]:DAY_SHORT[g.start]+'–'+DAY_SHORT[g.end];
+    return lbl+' '+g.key;
+  }).join('; ');
+}
+
+/* ---------- Sweeper (Vendor) ---------- */
+function openEditSweeper(){
+  if(!profileContext||profileContext.layer!=='VENDOR')return;
+  var v=findVendor(profileContext.id); if(!v)return;
+  editTargetId=v.id;
+  document.getElementById('ew-sweeper').value=v.sweeper;
+  document.getElementById('ew-note').style.display=(v.sweeper!==v.provider)?'block':'none';
+  openModal('modal-edit-sweeper');
+}
+function startEditSweeper(){openEditSweeper();}
+function saveEditSweeper(){
+  var v=findVendor(editTargetId); if(!v)return;
+  var nv=document.getElementById('ew-sweeper').value, old=v.sweeper;
+  closeModal('modal-edit-sweeper');
+  if(old===nv){showToast('No changes','Sweeper unchanged','info');return;}
   v.sweeper=nv;v.updated=nowStr();
   var oc=OC_LOCATIONS.find(function(o){return o.vendorIds.indexOf(v.id)>=0;});
   if(oc)oc.sweeper=nv;
   CHANGELOG.unshift({time:nowStr(),layer:'VENDOR',operator:currentUser.name,type:'SWEEPER_CHANGE',locId:v.id,field:'sweeper',old:old,new:nv,remark:''});
-  ctx.mode='view';
   renderProfile(); renderVendor(); renderOC();
-  showToast('Sweeper updated',v.name+' · sweeper: '+old+' → '+nv+' · audit entry written');
-}
-/* Store-detail inline edit (OC detail → Basic Info tab) */
-function startEditStore(){
-  if(!profileContext)return;
-  profileContext.mode='edit-store';
-  profileContext.tab='overview';
-  renderProfile();
-}
-function storeEditHtml(o){
-  return '<div class="p-edit-inline" style="margin-top:0">'
-    +'<div class="f-label">Name</div><input id="pf-name" value="'+esc(o.name)+'">'
-    +'<div class="f-label" style="margin-top:10px">Address Line 1</div><input id="pf-addr" value="'+esc(o.addr1)+'">'
-    +'<div class="f-label" style="margin-top:10px">City</div><input id="pf-city" value="'+esc(o.city)+'">'
-    +'<div class="f-label" style="margin-top:10px">Opening Hours</div><input id="pf-hours" value="'+esc(o.hoursText||'')+'" placeholder="e.g. MON–FRI 08:00–20:00">'
-    +'<div class="info-line" style="margin-top:10px">Only edit fields flagged as incorrect. Edits are recorded as STORE_DETAIL_EDIT; the underlying vendor record is untouched.</div>'
-    +'<div class="row"><button class="btn btn-secondary btn-sm" onclick="cancelInlineEdit()">Cancel</button><button class="btn btn-primary btn-sm" onclick="saveStoreInline()">Save Changes</button></div>'
-    +'</div>';
-}
-function saveStoreInline(){
-  var ctx=profileContext; if(!ctx||ctx.layer!=='OC')return;
-  var o=findOC(ctx.id);
-  var eN=document.getElementById('pf-name'),eA=document.getElementById('pf-addr'),eC=document.getElementById('pf-city'),eH=document.getElementById('pf-hours');
-  if(!o||!eN)return;
-  var nn=eN.value.trim(), na=eA.value.trim(), nc=eC.value.trim(), nh=eH.value.trim();
-  var changes=[];
-  if(nn!==o.name){changes.push(['name',o.name,nn]);o.name=nn;}
-  if(na!==o.addr1){changes.push(['address_line1',o.addr1,na]);o.addr1=na;}
-  if(nc!==o.city){changes.push(['city',o.city,nc]);o.city=nc;}
-  if(nh!==(o.hoursText||'')){changes.push(['opening_hours',o.hoursText||'',nh]);o.hoursText=nh;}
-  if(changes.length===0){ctx.mode='view';renderProfile();return;}
-  o.updated=nowStr();
-  changes.forEach(function(c){CHANGELOG.unshift({time:nowStr(),layer:'OC',operator:currentUser.name,type:'STORE_DETAIL_EDIT',locId:o.ocId,field:c[0],old:c[1],new:c[2],remark:'OC-level override'});});
-  ctx.mode='view';
-  renderProfile(); renderOC();
-  showToast('Store details saved',changes.length+' field(s) updated · STORE_DETAIL_EDIT audit written');
-}
-function cancelInlineEdit(){
-  if(!profileContext)return;
-  profileContext.mode='view';
-  renderProfile();
+  showToast('Sweeper updated',old+' → '+nv+' · SWEEPER_CHANGE written');
 }
 
 /* ================= Change log ================= */
