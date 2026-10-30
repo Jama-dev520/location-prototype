@@ -287,6 +287,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
         <div class="card">
           <div class="filter-grid">
             <div><label class="f-label">Location ID</label><input id="v-f-id" placeholder="e.g. LOC-10024" oninput="applyVendorFilters()"></div>
+            <div><label class="f-label">OC Location ID</label><input id="v-f-ocid" placeholder="e.g. OC-00001" oninput="applyVendorFilters()"></div>
             <div><label class="f-label">Name</label><input id="v-f-name" placeholder="keyword"></div>
             <div><label class="f-label">Provider</label><select id="v-f-provider" onchange="onProviderChange('v')"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
             <div><label class="f-label">Sweeper</label><select id="v-f-sweeper"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
@@ -326,6 +327,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
         <div class="card">
           <div class="filter-grid">
             <div><label class="f-label">OC Location ID</label><input id="o-f-id" placeholder="e.g. OC-00001" oninput="applyOCFilters()"></div>
+            <div><label class="f-label">Vendor Location ID</label><input id="o-f-vendorid" placeholder="e.g. LOC-10024" oninput="applyOCFilters()"></div>
             <div><label class="f-label">Name</label><input id="o-f-name" placeholder="keyword"></div>
             <div><label class="f-label">Provider</label><select id="o-f-provider"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
             <div><label class="f-label">Status</label><select id="o-f-status"><option value="">All</option><option>active</option><option>inactive</option><option>removed</option></select></div>
@@ -539,12 +541,17 @@ function setRole(role){
 
 /* ================= Vendor list ================= */
 function applyVendorFilters(){renderVendor();}
-function resetVendorFilters(){['v-f-id','v-f-name','v-f-sweeper','v-f-status','v-f-city','v-f-state'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('v-f-provider').value='';document.getElementById('v-f-type').value='';renderVendor();}
+function resetVendorFilters(){['v-f-id','v-f-ocid','v-f-name','v-f-sweeper','v-f-status','v-f-city','v-f-state'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('v-f-provider').value='';document.getElementById('v-f-type').value='';renderVendor();}
 function onProviderChange(){/* type options are static; no-op in simplified prototype */}
 function vendorFilters(){
-  var f={id:val('v-f-id').toLowerCase(),name:val('v-f-name').toLowerCase(),provider:val('v-f-provider'),sweeper:val('v-f-sweeper'),status:val('v-f-status'),type:val('v-f-type'),city:val('v-f-city').toLowerCase(),state:val('v-f-state').toLowerCase()};
+  var f={id:val('v-f-id').toLowerCase(),ocId:val('v-f-ocid').toLowerCase(),name:val('v-f-name').toLowerCase(),provider:val('v-f-provider'),sweeper:val('v-f-sweeper'),status:val('v-f-status'),type:val('v-f-type'),city:val('v-f-city').toLowerCase(),state:val('v-f-state').toLowerCase()};
   return VENDORS.filter(function(v){
     if(f.id&&v.id.toLowerCase().indexOf(f.id)<0)return false;
+    if(f.ocId){
+      // cross-layer: find the OC location(s) linked to this vendor by OC Location ID
+      var linkedOc=OC_LOCATIONS.filter(function(o){return o.ocId.toLowerCase().indexOf(f.ocId)>=0 && o.vendorIds.indexOf(v.id)>=0;});
+      if(!linkedOc.length)return false;
+    }
     if(f.name&&v.name.toLowerCase().indexOf(f.name)<0)return false;
     if(f.provider&&v.provider!==f.provider)return false;
     if(f.sweeper&&v.sweeper!==f.sweeper)return false;
@@ -589,11 +596,16 @@ function clearChip(){/* simplified: chips are informational */}
 
 /* ================= OC list ================= */
 function applyOCFilters(){renderOC();}
-function resetOCFilters(){['o-f-id','o-f-name','o-f-city','o-f-state'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('o-f-provider').value='';document.getElementById('o-f-status').value='';document.getElementById('o-f-enable').value='';document.getElementById('o-f-type').value='';renderOC();}
+function resetOCFilters(){['o-f-id','o-f-vendorid','o-f-name','o-f-city','o-f-state'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('o-f-provider').value='';document.getElementById('o-f-status').value='';document.getElementById('o-f-enable').value='';document.getElementById('o-f-type').value='';renderOC();}
 function ocFilters(){
-  var f={id:val('o-f-id').toLowerCase(),name:val('o-f-name').toLowerCase(),provider:val('o-f-provider'),status:val('o-f-status'),enable:val('o-f-enable'),type:val('o-f-type'),city:val('o-f-city').toLowerCase(),state:val('o-f-state').toLowerCase()};
+  var f={id:val('o-f-id').toLowerCase(),vendorId:val('o-f-vendorid').toLowerCase(),name:val('o-f-name').toLowerCase(),provider:val('o-f-provider'),status:val('o-f-status'),enable:val('o-f-enable'),type:val('o-f-type'),city:val('o-f-city').toLowerCase(),state:val('o-f-state').toLowerCase()};
   return OC_LOCATIONS.filter(function(o){
     if(f.id&&o.ocId.toLowerCase().indexOf(f.id)<0)return false;
+    if(f.vendorId){
+      // cross-layer: match any linked vendor location ID
+      var hit=o.vendorIds.some(function(vid){return vid.toLowerCase().indexOf(f.vendorId)>=0;});
+      if(!hit)return false;
+    }
     if(f.name&&o.name.toLowerCase().indexOf(f.name)<0)return false;
     if(f.provider&&o.provider!==f.provider)return false;
     if(f.status&&ocStatus(o)!==f.status)return false;
