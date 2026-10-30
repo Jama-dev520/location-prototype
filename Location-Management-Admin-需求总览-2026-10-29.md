@@ -37,6 +37,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 | `timezone` | varchar | sync | yes | timezone |
 | `status` | enum(active/inactive/removed) | sync | yes | provider business status |
 | `services[]`/`restrictions[]` | array | sync | yes | services/restrictions |
+| `qr_dropoff` | bool | sync | yes | **QR-code dropoff capability（LMS 独有）**：顾客出示 QR code 而非打印面单即可投递；PUDO 不提供该能力 → N/A |
 | `hours_of_operation{}` | json | sync | yes | weekly hours |
 | `cutoff_time` | time | sync | yes | cutoff (LMS) |
 | `holiday_closures[]` | array | sync | yes | holiday closures |
@@ -54,6 +55,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 | `latitude`/`longitude` | decimal | backfill → OC-editable | no | coordinates |
 | `phone` | varchar | backfill → OC-editable | no | phone |
 | `opening_hours{}` | json | backfill → OC-editable | no | opening hours (OC can override) |
+| `qr_dropoff` | bool | backfill (derived) | yes | QR-code dropoff：任一关联 vendor location 支持即为 `true` |
 | `status` | enum(active/inactive/removed) | derived | yes | derived from linked vendor location(s) |
 | `is_enable` | bool | OC | no | **OC switch**; new OC location defaults `false`; F08/F09 writable |
 | `created_at`/`updated_at` | timestamp | system | yes | created/updated |
@@ -125,6 +127,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 | F15 | Change History | Global log | P1 | cross-location search |
 | F16 | Data Sync | Sync status | P1 | per-provider run + failure alerts |
 | F17 | Overview | Dashboard | P2 | KPIs |
+| F18 | QR Dropoff | QR-code dropoff marker | P0 | LMS-only flag; shown on both lists + detail, filterable, exported |
 
 ### 2.3 Key business decisions
 
@@ -140,6 +143,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 | 8 | Duplicate | Fuzzy match ≥75%; no OC until resolved |
 | 9 | Visibility | OC visible iff `status=active AND is_enable=true` |
 | 10 | Roles | Viewer (view/export) vs Location Manager (+sweeper/edit/enable/duplicate) |
+| 11 | QR dropoff | LMS-only capability flag (`qr_dropoff`); shown as marker on both lists + detail; OC backfilled from linked vendor; read-only |
 
 ---
 

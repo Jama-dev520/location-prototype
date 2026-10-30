@@ -30,12 +30,14 @@ oc_location (OC-owned, downstream-facing)
 | UI Filter | API Param | Table | Field | Type | Match | Notes |
 |---|---|---|---|---|---|---|
 | Location ID | `location_id` | `vendor_location` | `vendor_location_id` | varchar(32) | exact/prefix | alphanumeric, ≤32 |
+| OC Location ID (reverse lookup) | `oc_location_id` | `vendor_oc_mapping` → `oc_location` | `oc_location_id` | varchar(32) | exact/prefix | cross-layer: find vendors mapped to a given OC location |
 | Name | `name` | `vendor_location` | `name` | varchar | LIKE %…% | hits index |
 | Address keyword | `address_keyword` | `vendor_location` | `address_line1`/`address_line2` | varchar | LIKE %…% | joint search |
 | Provider | `provider` | `vendor_location` | `source_provider` | enum(PUDO,LMS) | exact | cascades Type |
 | Sweeper | `sweeper` | `vendor_location` | `sweeper` | enum(PUDO,LMS) | exact | OC-editable |
 | Status | `status` | `vendor_location` | `status` | enum(active,inactive,removed) | exact | provider-sourced, read-only |
 | Type | `location_type` | `vendor_location` | `location_type` | enum(PUDOpoint,Locker,packagehub) | exact | provider-exclusive |
+| QR Dropoff | `qr_dropoff` | `vendor_location` | `qr_dropoff` | bool | exact | LMS-only store capability; PUDO = N/A |
 | City | `city` | `vendor_location` | `city` | varchar | exact | — |
 | State | `state` | `vendor_location` | `state` | varchar | exact | — |
 | Created from/to | `created_from`/`created_to` | `vendor_location` | `created_at` | timestamp | BETWEEN | ≤1yr span |
@@ -46,6 +48,7 @@ oc_location (OC-owned, downstream-facing)
 | UI Filter | API Param | Table | Field | Type | Match | Notes |
 |---|---|---|---|---|---|---|
 | OC Location ID | `oc_location_id` | `oc_location` | `oc_location_id` | varchar(32) | exact/prefix | — |
+| Vendor Location ID (forward lookup) | `vendor_location_id` | `vendor_oc_mapping` → `vendor_location` | `vendor_location_id` | varchar(32) | exact/prefix | cross-layer: find OC locations fed by a given vendor |
 | Name | `name` | `oc_location` | `name` | varchar | LIKE %…% | OC-editable |
 | Address keyword | `address_keyword` | `oc_location` | `address_line1`/`address_line2` | varchar | LIKE %…% | OC-editable |
 | Provider | `provider` | `vendor_location` (via mapping) | `source_provider` | enum | exact | join through mapping |
@@ -53,6 +56,7 @@ oc_location (OC-owned, downstream-facing)
 | Status | `status` | `oc_location` | `status` | enum(active,inactive,removed) | exact | derived from linked vendor |
 | Enable | `is_enable` | `oc_location` | `is_enable` | bool | exact | OC switch |
 | Type | `location_type` | `vendor_location` (via mapping) | `location_type` | enum | exact | join through mapping |
+| QR Dropoff | `qr_dropoff` | `oc_location` | `qr_dropoff` | bool | exact | backfilled from linked vendor location |
 | City | `city` | `oc_location` | `city` | varchar | exact | OC-editable |
 | State | `state` | `oc_location` | `state` | varchar | exact | OC-editable |
 | Created from/to | `created_from`/`created_to` | `oc_location` | `created_at` | timestamp | BETWEEN | ≤1yr span |
@@ -91,6 +95,7 @@ oc_location (OC-owned, downstream-facing)
 | `status` | enum(active,inactive,removed) | sync | yes | provider business status |
 | `services[]` | array | sync | yes | services list |
 | `restrictions[]` | array | sync | yes | restrictions |
+| `qr_dropoff` | bool | sync | yes | **QR-code dropoff capability** (LMS only): customer presents a QR code instead of a printed label. PUDO does not expose it → `NULL`/`false` |
 | `hours_of_operation{}` | json | sync | yes | weekly hours |
 | `cutoff_time` | time | sync | yes | cutoff (LMS) |
 | `holiday_closures[]` | array | sync | yes | holiday closures |
@@ -118,6 +123,7 @@ oc_location (OC-owned, downstream-facing)
 | `longitude` | decimal | backfill → OC-editable | no | longitude |
 | `phone` | varchar | backfill → OC-editable | no | phone |
 | `opening_hours{}` | json | backfill → OC-editable | no | opening hours (OC can override) |
+| `qr_dropoff` | bool | backfill (derived) | yes | QR-code dropoff; `true` if **any** linked vendor location supports it |
 | `status` | enum(active,inactive,removed) | derived | yes | derived from linked vendor location(s) |
 | `is_enable` | bool | OC | no | OC switch; only F08/F09 writable |
 | `created_at` | timestamp | system | yes | created time |
@@ -200,6 +206,7 @@ oc_location (OC-owned, downstream-facing)
 | Field Category | Owner | Writable Path | Read-only? |
 |---|---|---|---|
 | Vendor `status` + business attributes (address/hours/services) | Provider | daily sync | yes |
+| Vendor `qr_dropoff` | Provider (LMS) | daily sync | yes |
 | Vendor `sweeper` | OC (Location Manager) | F10 vendor list/detail | no |
 | OC `is_enable` | OC (Location Manager) | F08 single / F09 batch | no |
 | OC store details (address, opening hours, etc.) | OC (Location Manager) | F11 OC list/detail | no |

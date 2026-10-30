@@ -282,7 +282,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
       <!-- ===== P01 Vendor Location List ===== -->
       <div class="page active" id="page-p01">
         <h2 class="page-title">Vendor Location List</h2>
-        <p class="page-desc">Raw provider locations synced from PUDO Inc &amp; LMS. Read-only except <b>Sweeper</b> (who physically picks up packages). Each vendor location generates one OC location ID (unless it is a suspected duplicate).</p>
+        <p class="page-desc">Raw provider locations synced from PUDO Inc &amp; LMS. Read-only except <b>Sweeper</b> (who physically picks up packages). Each vendor location generates one OC location ID (unless it is a suspected duplicate). <b>QR dropoff</b> marks LMS stores that accept QR-code drop-off (customer presents a QR code instead of a printed label).</p>
 
         <div class="card">
           <div class="filter-grid">
@@ -293,6 +293,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
             <div><label class="f-label">Sweeper</label><select id="v-f-sweeper"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
             <div><label class="f-label">Status</label><select id="v-f-status"><option value="">All</option><option>active</option><option>inactive</option><option>removed</option></select></div>
             <div><label class="f-label">Type</label><select id="v-f-type"><option value="">All</option><option>PUDOpoint</option><option>Locker</option><option>packagehub</option></select></div>
+            <div><label class="f-label">QR Dropoff</label><select id="v-f-qr"><option value="">All</option><option value="yes">Supported</option><option value="no">Not supported</option></select></div>
             <div><label class="f-label">City</label><input id="v-f-city" placeholder="city"></div>
             <div><label class="f-label">State</label><input id="v-f-state" placeholder="state"></div>
           </div>
@@ -311,7 +312,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
           <div class="table-wrap">
             <table class="data">
               <thead><tr>
-                <th>Location ID</th><th>Name</th><th>Address</th><th>City / State</th><th>Provider</th><th>Sweeper</th><th>Type</th><th>Status</th><th>Created</th><th>Updated</th>
+                <th>Location ID</th><th>Name</th><th>Address</th><th>City / State</th><th>Provider</th><th>Sweeper</th><th>Type</th><th>QR Dropoff</th><th>Status</th><th>Created</th><th>Updated</th>
               </tr></thead>
               <tbody id="v-tbody"></tbody>
             </table>
@@ -322,7 +323,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
       <!-- ===== P02 OC Location List ===== -->
       <div class="page" id="page-p02">
         <h2 class="page-title">OC Location List</h2>
-        <p class="page-desc">OC-owned, downstream-facing locations, backfilled from vendor records. The <b>enable</b> switch lives here. When a vendor location goes <b>inactive</b>, its linked OC location is auto-disabled and blocked from downstream sync.</p>
+        <p class="page-desc">OC-owned, downstream-facing locations, backfilled from vendor records. The <b>enable</b> switch lives here. When a vendor location goes <b>inactive</b>, its linked OC location is auto-disabled and blocked from downstream sync. <b>QR dropoff</b> is backfilled from the linked vendor location.</p>
 
         <div class="card">
           <div class="filter-grid">
@@ -333,6 +334,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
             <div><label class="f-label">Status</label><select id="o-f-status"><option value="">All</option><option>active</option><option>inactive</option><option>removed</option></select></div>
             <div><label class="f-label">Enable</label><select id="o-f-enable"><option value="">All</option><option value="enabled">Enabled</option><option value="disabled">Disabled</option></select></div>
             <div><label class="f-label">Type</label><select id="o-f-type"><option value="">All</option><option>PUDOpoint</option><option>Locker</option><option>packagehub</option></select></div>
+            <div><label class="f-label">QR Dropoff</label><select id="o-f-qr"><option value="">All</option><option value="yes">Supported</option><option value="no">Not supported</option></select></div>
             <div><label class="f-label">City</label><input id="o-f-city" placeholder="city"></div>
             <div><label class="f-label">State</label><input id="o-f-state" placeholder="state"></div>
           </div>
@@ -359,7 +361,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
             <table class="data">
               <thead><tr>
                 <th><input type="checkbox" onclick="toggleAllOC(this)"></th>
-                <th>OC Location ID</th><th>Name</th><th>Address</th><th>Provider</th><th>Type</th><th>Sweeper</th><th>Status</th><th>Enable</th><th>Linked Vendor</th><th>Actions</th>
+                <th>OC Location ID</th><th>Name</th><th>Address</th><th>Provider</th><th>Type</th><th>Sweeper</th><th>QR Dropoff</th><th>Status</th><th>Enable</th><th>Linked Vendor</th><th>Actions</th>
               </tr></thead>
               <tbody id="o-tbody"></tbody>
             </table>
@@ -484,6 +486,22 @@ var OC_LOCATIONS=[
 ];
 /* NOTE: LOC-00185 (removed) and LOC-00186 (suspected duplicate) intentionally have NO OC location yet. */
 
+/* ===== QR-code dropoff capability (LMS only) =====
+   Some LMS stores accept a package drop-off where the customer presents a QR code
+   instead of a printed label (staff scan the QR to bind the parcel).
+   Source field: LMS location payload -> qr_dropoff (boolean). PUDO does not expose it.
+   The OC layer backfills the flag from its linked vendor location. */
+var QR_DROPOFF_VENDOR_IDS=['LOC-00176','LOC-00177','LOC-00181','LOC-00183','LOC-00184','LOC-00186'];
+VENDORS.forEach(function(v){
+  v.qrDropoff = (v.provider==='LMS') && QR_DROPOFF_VENDOR_IDS.indexOf(v.id)>=0;
+});
+OC_LOCATIONS.forEach(function(o){
+  o.qrDropoff = o.vendorIds.some(function(vid){
+    var v=VENDORS.filter(function(x){return x.id===vid;})[0];
+    return !!(v&&v.qrDropoff);
+  });
+});
+
 var CHANGELOG=[
  {time:'2026-10-29 02:03:12',layer:'VENDOR',operator:'System · PUDO Sync',type:'PROVIDER_STATUS_CHANGE',locId:'LOC-10023',field:'status',old:'active',new:'inactive',remark:'OC location OC-00002 auto-disabled'},
  {time:'2026-10-29 02:03:09',layer:'VENDOR',operator:'System · PUDO Sync',type:'PROVIDER_FIELD_UPDATE',locId:'LOC-10024',field:'updated',old:'2026-04-30',new:'2026-05-14',remark:''},
@@ -541,10 +559,10 @@ function setRole(role){
 
 /* ================= Vendor list ================= */
 function applyVendorFilters(){renderVendor();}
-function resetVendorFilters(){['v-f-id','v-f-ocid','v-f-name','v-f-sweeper','v-f-status','v-f-city','v-f-state'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('v-f-provider').value='';document.getElementById('v-f-type').value='';renderVendor();}
+function resetVendorFilters(){['v-f-id','v-f-ocid','v-f-name','v-f-sweeper','v-f-status','v-f-city','v-f-state'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('v-f-provider').value='';document.getElementById('v-f-type').value='';document.getElementById('v-f-qr').value='';renderVendor();}
 function onProviderChange(){/* type options are static; no-op in simplified prototype */}
 function vendorFilters(){
-  var f={id:val('v-f-id').toLowerCase(),ocId:val('v-f-ocid').toLowerCase(),name:val('v-f-name').toLowerCase(),provider:val('v-f-provider'),sweeper:val('v-f-sweeper'),status:val('v-f-status'),type:val('v-f-type'),city:val('v-f-city').toLowerCase(),state:val('v-f-state').toLowerCase()};
+  var f={id:val('v-f-id').toLowerCase(),ocId:val('v-f-ocid').toLowerCase(),name:val('v-f-name').toLowerCase(),provider:val('v-f-provider'),sweeper:val('v-f-sweeper'),status:val('v-f-status'),type:val('v-f-type'),qr:val('v-f-qr'),city:val('v-f-city').toLowerCase(),state:val('v-f-state').toLowerCase()};
   return VENDORS.filter(function(v){
     if(f.id&&v.id.toLowerCase().indexOf(f.id)<0)return false;
     if(f.ocId){
@@ -557,6 +575,8 @@ function vendorFilters(){
     if(f.sweeper&&v.sweeper!==f.sweeper)return false;
     if(f.status&&v.status!==f.status)return false;
     if(f.type&&v.type!==f.type)return false;
+    if(f.qr==='yes'&&!v.qrDropoff)return false;
+    if(f.qr==='no'&&v.qrDropoff)return false;
     if(f.city&&v.city.toLowerCase().indexOf(f.city)<0)return false;
     if(f.state&&v.state.toLowerCase().indexOf(f.state)<0)return false;
     return true;
@@ -578,13 +598,14 @@ function renderVendor(){
       +'<td>'+provBadge(v.provider)+'</td>'
       +'<td>'+sw+'</td>'
       +'<td>'+esc(v.type)+'</td>'
+      +'<td>'+qrBadge(v.qrDropoff)+'</td>'
       +'<td>'+statusBadge(v.status)+'</td>'
       +'<td class="mono">'+esc(v.created)+'</td>'
       +'<td class="mono">'+esc(v.updated)+'</td>'
       +'</tr>';
   }).join('');
   document.getElementById('v-result-meta').textContent=rows.length+' vendor location(s)';
-  renderChips('v',[['v-f-provider','Provider'],['v-f-sweeper','Sweeper'],['v-f-status','Status'],['v-f-type','Type']]);
+  renderChips('v',[['v-f-provider','Provider'],['v-f-sweeper','Sweeper'],['v-f-status','Status'],['v-f-type','Type'],['v-f-qr','QR Dropoff']]);
 }
 function renderChips(prefix,pairs){
   var chips=[];
@@ -596,9 +617,9 @@ function clearChip(){/* simplified: chips are informational */}
 
 /* ================= OC list ================= */
 function applyOCFilters(){renderOC();}
-function resetOCFilters(){['o-f-id','o-f-vendorid','o-f-name','o-f-city','o-f-state'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('o-f-provider').value='';document.getElementById('o-f-status').value='';document.getElementById('o-f-enable').value='';document.getElementById('o-f-type').value='';renderOC();}
+function resetOCFilters(){['o-f-id','o-f-vendorid','o-f-name','o-f-city','o-f-state'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('o-f-provider').value='';document.getElementById('o-f-status').value='';document.getElementById('o-f-enable').value='';document.getElementById('o-f-type').value='';document.getElementById('o-f-qr').value='';renderOC();}
 function ocFilters(){
-  var f={id:val('o-f-id').toLowerCase(),vendorId:val('o-f-vendorid').toLowerCase(),name:val('o-f-name').toLowerCase(),provider:val('o-f-provider'),status:val('o-f-status'),enable:val('o-f-enable'),type:val('o-f-type'),city:val('o-f-city').toLowerCase(),state:val('o-f-state').toLowerCase()};
+  var f={id:val('o-f-id').toLowerCase(),vendorId:val('o-f-vendorid').toLowerCase(),name:val('o-f-name').toLowerCase(),provider:val('o-f-provider'),status:val('o-f-status'),enable:val('o-f-enable'),type:val('o-f-type'),qr:val('o-f-qr'),city:val('o-f-city').toLowerCase(),state:val('o-f-state').toLowerCase()};
   return OC_LOCATIONS.filter(function(o){
     if(f.id&&o.ocId.toLowerCase().indexOf(f.id)<0)return false;
     if(f.vendorId){
@@ -612,6 +633,8 @@ function ocFilters(){
     if(f.enable==='enabled'&&!o.enable)return false;
     if(f.enable==='disabled'&&o.enable)return false;
     if(f.type&&o.type!==f.type)return false;
+    if(f.qr==='yes'&&!o.qrDropoff)return false;
+    if(f.qr==='no'&&o.qrDropoff)return false;
     if(f.city&&o.city.toLowerCase().indexOf(f.city)<0)return false;
     if(f.state&&o.state.toLowerCase().indexOf(f.state)<0)return false;
     return true;
@@ -638,6 +661,7 @@ function renderOC(){
       +'<td>'+provBadge(o.provider)+'</td>'
       +'<td>'+esc(o.type)+'</td>'
       +'<td>'+esc(o.sweeper)+'</td>'
+      +'<td>'+qrBadge(o.qrDropoff)+'</td>'
       +'<td>'+statusBadge(st)+(vendorInactive?' <span class="badge badge-orange" title="linked vendor inactive">vendor inactive</span>':'')+'</td>'
       +'<td>'+sw+'</td>'
       +'<td>'+linked+'</td>'
@@ -645,7 +669,7 @@ function renderOC(){
       +'</tr>';
   }).join('');
   document.getElementById('o-result-meta').textContent=rows.length+' OC location(s)';
-  renderChips('o',[['o-f-provider','Provider'],['o-f-status','Status'],['o-f-enable','Enable'],['o-f-type','Type']]);
+  renderChips('o',[['o-f-provider','Provider'],['o-f-status','Status'],['o-f-enable','Enable'],['o-f-type','Type'],['o-f-qr','QR Dropoff']]);
   updateOCSelection();
 }
 
@@ -769,7 +793,8 @@ function renderProfile(){
         (isPUDO?kv('Open 24h', v.open24?'<span class="badge badge-green">Yes</span>':'<span class="badge badge-gray">No</span>'):kv('Cutoff Time', '<span class="mono">'+esc(v.cutoffTime||'—')+'</span>'+(v.cutoffTimezone?' <span style="font-size:11px;color:var(--text-tertiary)">('+esc(v.cutoffTimezone)+')</span>':'')))+
         (isPUDO&&v.supports.length?kv('Dealer Supports', chipList(v.supports,'badge-teal')):'')+
         (!isPUDO&&v.services&&v.services.length?kv('Services', chipList(v.services,'badge-blue')):'')+
-        (!isPUDO&&v.restrictions&&v.restrictions.length?kv('Restrictions', chipList(v.restrictions,'badge-orange')):'')
+        (!isPUDO&&v.restrictions&&v.restrictions.length?kv('Restrictions', chipList(v.restrictions,'badge-orange')):'')+
+        kv('QR Code Dropoff', qrProfileValue(v.qrDropoff, v.provider))
       )+
       section('Opening Hours', hoursBlock(v))+
       (v.holidayClosures&&v.holidayClosures.length?section('Holiday Closures', holidayBlock(v.holidayClosures)):'')+
@@ -820,6 +845,7 @@ function renderProfile(){
         (isPUDO?'':kv('Cutoff Time', '<span class="mono">'+esc(o.cutoffTime||'—')+'</span>'+(o.cutoffTimezone?' <span style="font-size:11px;color:var(--text-tertiary)">('+esc(o.cutoffTimezone)+')</span>':'')))+
         (o.services&&o.services.length?kv('Services', chipList(o.services,'badge-blue')):'')+
         (o.restrictions&&o.restrictions.length?kv('Restrictions', chipList(o.restrictions,'badge-orange')):'')+
+        kv('QR Code Dropoff', qrProfileValue(o.qrDropoff, o.provider))+
         kv('Enable', enableControl(o, vendorInactive))
       )+
       section('Opening Hours', hoursBlock(o))+
@@ -845,6 +871,17 @@ function section(title,inner){return '<div class="p-sec"><div class="p-sec-title
 function kv(k,v){return '<div class="p-kv"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>';}
 function fmtCoord(x){return (x==null||x==='')?'—':String(x);}
 function chipList(arr,cls){return '<span class="chip-list">'+arr.map(function(s){return '<span class="badge '+(cls||'badge-gray')+'">'+esc(s)+'</span>';}).join(' ')+'</span>';}
+/* QR-code dropoff marker: supported -> teal badge, otherwise a muted dash. */
+function qrBadge(on){
+  return on
+    ? '<span class="badge badge-teal" title="Supports QR-code dropoff">◉ QR dropoff</span>'
+    : '<span style="color:var(--text-tertiary);font-size:11px">—</span>';
+}
+/* Explicit value used inside the Profile drawer (distinguishes N/A vs not supported). */
+function qrProfileValue(on, provider){
+  if(on)return '<span class="badge badge-teal" title="Customer presents a QR code instead of a printed label">◉ Supported</span>';
+  return '<span style="color:var(--text-tertiary);font-size:11.5px">'+(provider==='LMS'?'Not supported':'Not applicable ('+esc(provider)+')')+'</span>';
+}
 var DAY_ORDER=['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'];
 var DAY_SHORT={MONDAY:'Mon',TUESDAY:'Tue',WEDNESDAY:'Wed',THURSDAY:'Thu',FRIDAY:'Fri',SATURDAY:'Sat',SUNDAY:'Sun'};
 // Normalize any hours input into a canonical map: day -> ordered list of [start,end] ranges.
@@ -1049,14 +1086,14 @@ function downloadCSV(name,head,rows){
 }
 function exportVendorCSV(){
   var rows=vendorFilters();
-  var head='Location ID,Name,Address 1,Address 2,City,State,Country,Postal,Provider,Sweeper,Type,Status,Phone,Latitude,Longitude,Time Zone,Created,Updated';
-  var body=rows.map(function(v){return [v.id,v.name,v.addr1,v.addr2||'',v.city,v.state,v.country||'',v.postal||'',v.provider,v.sweeper,v.type,v.status,v.phone||'',v.lat??'',v.lng??'',v.timezone||'',v.created,v.updated].map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');});
+  var head='Location ID,Name,Address 1,Address 2,City,State,Country,Postal,Provider,Sweeper,Type,QR Dropoff,Status,Phone,Latitude,Longitude,Time Zone,Created,Updated';
+  var body=rows.map(function(v){return [v.id,v.name,v.addr1,v.addr2||'',v.city,v.state,v.country||'',v.postal||'',v.provider,v.sweeper,v.type,v.qrDropoff?'supported':'no',v.status,v.phone||'',v.lat??'',v.lng??'',v.timezone||'',v.created,v.updated].map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');});
   downloadCSV('vendor_locations_'+nowStr().replace(/[-: ]/g,'')+'.csv',head,body);
 }
 function exportOCCSV(){
   var rows=ocFilters();
-  var head='OC Location ID,Name,Address 1,Address 2,City,State,Country,Postal,Provider,Type,Sweeper,Status,Enable,Phone,Latitude,Longitude,Time Zone,Linked Vendor';
-  var body=rows.map(function(o){return [o.ocId,o.name,o.addr1,o.addr2||'',o.city,o.state,o.country||'',o.postal||'',o.provider,o.type,o.sweeper,ocStatus(o),o.enable?'enabled':'disabled',o.phone||'',o.lat??'',o.lng??'',o.timezone||'',o.vendorIds.join(';')].map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');});
+  var head='OC Location ID,Name,Address 1,Address 2,City,State,Country,Postal,Provider,Type,Sweeper,QR Dropoff,Status,Enable,Phone,Latitude,Longitude,Time Zone,Linked Vendor';
+  var body=rows.map(function(o){return [o.ocId,o.name,o.addr1,o.addr2||'',o.city,o.state,o.country||'',o.postal||'',o.provider,o.type,o.sweeper,o.qrDropoff?'supported':'no',ocStatus(o),o.enable?'enabled':'disabled',o.phone||'',o.lat??'',o.lng??'',o.timezone||'',o.vendorIds.join(';')].map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');});
   downloadCSV('oc_locations_'+nowStr().replace(/[-: ]/g,'')+'.csv',head,body);
 }
 
