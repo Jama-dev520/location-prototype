@@ -1,102 +1,98 @@
-# Location Management Admin Console — 需求总览（字段解释 · 需求总结 · 流程图）
+# Location Management Admin Console — Requirement Overview (v2.0)
 
-> **在线原型（公开可访问）**：https://jama-dev520.github.io/location-prototype/
-> 配套文档：`Location-Management-Admin-PRD-2026-10-29`（正文 PRD，v1.1）
-> 本文目的：一份速览文档，回答三个问题——①每个字段是什么意思；②这个需求到底做了什么、优先级如何；③核心流程长什么样。
+> **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
+> Companion: `Location-Management-Admin-PRD-2026-10-29` (v2.0)
+> Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
 
 ---
 
 ## 一、字段解释（数据字典）
 
-### 1.1 Location 门店统一模型（`location` 表）
+### 1.1 Two-Layer Model (v2.0)
 
-> 数据来源：PUDO Inc + LMS 每日同步；`location_type` 供应商独占、`is_enable`/`pickup_provider`/`oc_location_id` 归 OC。
+The console is split into **two layers**:
 
-| 字段 | 类型 | 来源/归属 | 只读 | 解释 |
+| Layer | Table | Meaning | Who owns it |
+|---|---|---|---|
+| **Vendor Location** | `vendor_location` | Raw provider data (PUDO Inc / LMS) | Provider (read-only except `sweeper`) |
+| **OC Location** | `oc_location` | OC-owned, downstream-facing store entity | OC (enable switch + editable store details) |
+
+A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one vendor location → one OC location); a confirmed cross-provider duplicate links **2:1**.
+
+### 1.2 `vendor_location`（供应商门店层）
+
+| Field | Type | Source | Read-only | Meaning |
 |---|---|---|---|---|
-| `location_id` | varchar(32) PK | 系统内部 | 是 | 内部唯一 ID，永久稳定，不随供应商数据变化 |
-| `oc_location_id` | varchar | OC | 是 | OC 自有的位置标识，用于把「同一实体门店」的多个供应商记录关联到一起；**没有它的位置永不上游同步** |
-| `source_provider` | enum(PUDO/LMS) | 同步 | 是 | 来源供应商：PUDO Inc 或 LMS |
-| `provider_ref` | varchar | 同步 | 是 | 供应商侧编号：dealerNo（PUDO）/ loc_id（LMS） |
-| `store_code` | varchar | 同步 | 是 | 门店编码 |
-| `name` | varchar | 同步 | 是 | 门店名称 |
-| `location_type` | enum(PUDOpoint/Locker/packagehub) | 同步 | 是 | 门店类型，**与供应商互斥**：PUDO Inc → PUDOpoint/Locker；LMS → packagehub |
-| `pickup_provider` | enum(PUDO/LMS) | OC（可编辑） | 否 | **揽收方（Sweeper）**——谁实际做上门揽收；默认 = `source_provider`，但可跨供应商（如 PUDO 店铺由 LMS 揽收） |
-| `address_line1` / `address_line2` | varchar | 同步 | 是 | 地址行 1 / 行 2（行 2 可空） |
-| `city` / `state` / `postal_code` / `country` | varchar | 同步 | 是 | 城市 / 州省 / 邮编 / 国家 |
-| `latitude` / `longitude` | decimal | 同步 | 是 | 经纬度 |
-| `phone` | varchar | 同步 | 是 | 电话（可空） |
-| `timezone` | varchar | 同步 | 是 | 时区 |
-| `status` | enum(active/inactive/removed) | 同步 | 是 | **供应商业务状态**：active 营业 / inactive 临时闭店 / removed 永久下架 |
-| `is_enable` | bool | OC | 否 | **OC 内部开关**；仅 F06/F07 可写；新位置默认 `false` |
-| `services[]` | array | 同步 | 是 | 服务列表：FX/CP/TB（PUDO）、returns/platform_dropoff/retail（LMS） |
-| `restrictions[]` | array | 同步 | 是 | 限制列表（如 hazmat、overweight 等） |
-| `hours_of_operation{}` | json | 同步 | 是 | 营业时间（7 天） |
-| `cutoff_time` | time | 同步 | 是 | 截单时间（LMS，当日最晚投递时间） |
-| `holiday_closures[]` | array | 同步 | 是 | 节假日停业 |
-| `created_at` / `updated_at` | timestamp | 同步 | 是 | 创建 / 更新时间（**秒级精度**） |
-| `activated_at` / `deactivated_at` | timestamp | 同步 | 是 | 激活 / 停用时间 |
-| `last_synced_at` | timestamp | 系统 | 是 | 上次同步成功时间 |
+| `vendor_location_id` | varchar(32) PK | system | yes | permanent internal ID |
+| `source_provider` | enum(PUDO/LMS) | sync | yes | source provider |
+| `provider_ref` | varchar | sync | yes | dealerNo (PUDO) / loc_id (LMS) |
+| `store_code` | varchar | sync | yes | store code |
+| `name` | varchar | sync | yes | store name |
+| `location_type` | enum | sync | yes | provider-exclusive: PUDO → PUDOpoint/Locker; LMS → packagehub |
+| `sweeper` | enum(PUDO/LMS) | OC (editable) | no | **Sweeper** — who physically picks up packages (renamed from "Pickup"); default = source_provider; cross-provider allowed |
+| `address_line1`/`address_line2` | varchar | sync | yes | address |
+| `city`/`state`/`postal_code`/`country` | varchar | sync | yes | city/state/postal/country |
+| `latitude`/`longitude` | decimal | sync | yes | coordinates |
+| `phone` | varchar | sync | yes | phone (nullable) |
+| `timezone` | varchar | sync | yes | timezone |
+| `status` | enum(active/inactive/removed) | sync | yes | provider business status |
+| `services[]`/`restrictions[]` | array | sync | yes | services/restrictions |
+| `hours_of_operation{}` | json | sync | yes | weekly hours |
+| `cutoff_time` | time | sync | yes | cutoff (LMS) |
+| `holiday_closures[]` | array | sync | yes | holiday closures |
+| `created_at`/`updated_at` | timestamp | sync | yes | created/updated (**second-level precision**) |
+| `last_synced_at` | timestamp | system | yes | last successful sync |
 
-### 1.2 变更日志（`change_log` 表）
+### 1.3 `oc_location`（OC 门店层）
 
-> Append-only，不可变、不可删除。
+| Field | Type | Source | Read-only | Meaning |
+|---|---|---|---|---|
+| `oc_location_id` | varchar(32) PK | system | yes | OC-owned ID; gates downstream sync |
+| `name` | varchar | backfill → OC-editable | no | store name (OC can override) |
+| `address_line1`/`address_line2` | varchar | backfill → OC-editable | no | address (OC can override) |
+| `city`/`state`/`postal_code`/`country` | varchar | backfill → OC-editable | no | city/state/postal/country |
+| `latitude`/`longitude` | decimal | backfill → OC-editable | no | coordinates |
+| `phone` | varchar | backfill → OC-editable | no | phone |
+| `opening_hours{}` | json | backfill → OC-editable | no | opening hours (OC can override) |
+| `status` | enum(active/inactive/removed) | derived | yes | derived from linked vendor location(s) |
+| `is_enable` | bool | OC | no | **OC switch**; new OC location defaults `false`; F08/F09 writable |
+| `created_at`/`updated_at` | timestamp | system | yes | created/updated |
 
-| 字段 | 类型 | 解释 |
+### 1.4 Mapping / Change Log / Duplicate / Sync / User
+
+| Table | Key fields | Meaning |
 |---|---|---|
-| `log_id` | bigint PK | 日志主键 |
-| `location_id` | varchar FK | 关联门店 |
-| `occurred_at` | timestamp | 变更发生时间 |
-| `operator` | varchar | 操作人，或 `System · PUDO Sync` / `System · LMS Sync` |
-| `operation_type` | enum | 见下表「审计日志类型」 |
-| `field_name` | varchar | 变更的字段名 |
-| `old_value` / `new_value` | text | 旧值 → 新值 |
-| `source` | enum(MANUAL/SYNC) | 来源：人工 / 同步 |
-| `remark` | text | 备注 |
+| `vendor_oc_mapping` | `mapping_id` / `vendor_location_id` / `oc_location_id` / `created_at` | links vendor ↔ OC (principle 1:1; duplicate 2:1) |
+| `change_log` | `log_id` / `location_id` / `location_layer` / `occurred_at` / `operator` / `operation_type` / `field_name` / `old_value` / `new_value` / `source` / `remark` | append-only audit trail |
+| `duplicate_pair` | `pair_id` / `vendor_location_a` / `vendor_location_b` / `matched_on` / `match_score` / `diff` / `status` / `detected_at` / `resolved_by` / `resolved_at` | cross-provider fuzzy duplicate pairs |
+| `sync_run` | `run_id` / `provider` / `started_at` / `finished_at` / `result` / counts / `error_message` | one record per provider per day |
+| `user` | `user_id` / `name` / `email` / `has_enable_permission` | SSO user; `has_enable_permission` gates enable/edit |
 
-### 1.3 重复判定对（`duplicate_pair` 表）
+### 1.5 Audit operation types (`operation_type`)
 
-| 字段 | 类型 | 解释 |
-|---|---|---|
-| `pair_id` | varchar PK | 重复对 ID |
-| `location_a` / `location_b` | varchar FK | 两个跨供应商的位置 |
-| `matched_on` | text | 匹配维度：address_line1 + city + state + postal_code |
-| `match_score` | int | **模糊相似度打分 0–100%**（权重：address_line1 50% + postal 25% + city 15% + state 10%） |
-| `diff` | json | 逐字段差异（A 值 vs B 值） |
-| `status` | enum(pending/confirmed/rejected) | 待确认 / 已确认同店 / 已拒绝不同店 |
-| `detected_at` / `resolved_by` / `resolved_at` | — | 检出时间 / 处理人 / 处理时间 |
-
-### 1.4 同步运行（`sync_run` 表）与用户（`user` 表）
-
-| 表 | 字段 | 解释 |
-|---|---|---|
-| `sync_run` | `run_id`/`provider`/`started_at`/`finished_at`/`result`/`records_pulled`/`created_count`/`updated_count`/`deactivated_count`/`error_message` | 每个供应商每天一条同步记录 |
-| `user` | `user_id`/`name`/`email`/`has_enable_permission` | 企业 SSO 用户；`has_enable_permission` 决定是否可启用/停用 |
-
-### 1.5 审计日志类型（`operation_type` 枚举）
-
-| 类型 | 含义 |
+| Type | Meaning |
 |---|---|
-| `ENABLE` / `DISABLE` | 单条启用 / 停用（OC 操作） |
-| `BATCH_ENABLE` / `BATCH_DISABLE` | 批量启用 / 停用（OC 操作） |
-| `SWEEPER_CHANGE` | 揽收方（pickup_provider）变更 |
-| `OC_LINK_CONFIRMED` / `OC_LINK_REJECTED` | 重复判定：确认同店 / 确认不同店 |
-| `PROVIDER_STATUS_CHANGE` | 供应商状态变化（同步产生） |
-| `PROVIDER_FIELD_UPDATE` | 供应商字段更新（同步产生） |
-| `PROVIDER_CREATED` / `PROVIDER_REMOVED` | 供应商新增 / 下架（同步产生） |
+| `ENABLE` / `DISABLE` | single enable/disable (OC layer) |
+| `BATCH_ENABLE` / `BATCH_DISABLE` | batch enable/disable (OC layer) |
+| `SWEEPER_CHANGE` | sweeper (pickup provider) change |
+| `STORE_DETAIL_EDIT` | OC store detail edit (address/hours/etc.) |
+| `OC_GENERATED` | OC location auto-generated from vendor |
+| `OC_LINK_CONFIRMED` / `OC_LINK_REJECTED` | duplicate resolution: same-store / not-same |
+| `PROVIDER_STATUS_CHANGE` | vendor status change (sync) |
+| `PROVIDER_FIELD_UPDATE` | vendor field update (sync) |
+| `PROVIDER_CREATED` / `PROVIDER_REMOVED` | vendor created/removed (sync) |
 
-### 1.6 核心字段语义区分（易混淆点）
+### 1.6 Key semantic distinctions
 
-| 概念 | 含义 | 关键区别 |
+| Concept | Meaning | Key difference |
 |---|---|---|
-| `status`（供应商） | 供应商来源的业务状态 | 供应商拥有，只读 |
-| `is_enable`（OC） | OC 内部启用开关 | OC 拥有，可写 |
-| `removed` vs `inactive` | removed = 永久下架（终止合作）；inactive = 临时闭店 | **两种不同语义，不能混** |
-| `source_provider` vs `pickup_provider` | 前者=数据来源；后者=实际揽收方 | 可跨供应商（cross-provider sweep） |
-| `location_id` vs `oc_location_id` | 前者=内部主键；后者=OC 跨供应商关联标识 | OC ID 门控上游同步 |
+| `vendor_location` vs `oc_location` | provider raw record vs OC-owned entity | two layers; OC layer is downstream-facing |
+| `sweeper` | who physically picks up packages | renamed from "Pickup"/`pickup_provider`; OC-editable |
+| `status` vs `is_enable` | provider business status vs OC switch | independent; `is_enable` lives on OC layer |
+| `removed` vs `inactive` | permanent delisting vs temporary closure | distinct semantics |
+| `vendor_location_id` vs `oc_location_id` | internal vendor ID vs OC-owned ID | OC ID gates downstream sync |
 
-**可见性规则（核心）**：一个位置对上游客户可见，**当且仅当** 同时满足：
-`有 oc_location_id` **AND** `status = active` **AND** `is_enable = true`。
+**Visibility rule (core)**: an OC location is visible downstream **iff `status = active` AND `is_enable = true`**. When the linked vendor location is `inactive`, the OC location is auto-disabled and blocked.
 
 ---
 
@@ -104,76 +100,87 @@
 
 ### 2.1 一句话概括
 
-> 做一个内部后台，把 PUDO Inc 和 LMS 两个供应商的门店数据每日同步并合并成统一目录，让运营能**筛选、查看、导出**，并**精准控制哪些门店对上游客户可见**，全程留痕可审计。
+> Build an internal console with **two layers**: a **Vendor Location List** (raw provider data, read-only except sweeper) and an **OC Location List** (OC-owned, downstream-facing — enable switch + editable store details). OC locations are auto-generated from vendor records; when a vendor goes inactive, its OC location is auto-disabled.
 
-### 2.2 优先级总表
+### 2.2 Priority table
 
-> 优先级：**P0 = 必须做（MVP）**，**P1 = 重要**，**P2 = 可延后**。
+> P0 = must-have (MVP) / P1 = important / P2 = deferrable
 
-| ID | 模块 | 功能 | 优先级 | 一句话说明 |
+| ID | Module | Feature | Priority | One-liner |
 |---|---|---|---|---|
-| F01 | 门店列表 | 分页列表 | **P0** | 展示两供应商合并的门店，含全部关键列 |
-| F02 | 门店列表 | 筛选与搜索 | **P0** | 多条件 AND 组合：Location ID / OC ID / 名称 / 地址 / 城市 / 州 / Provider / Pickup / Status / Enable / Type / 时间范围 |
-| F03 | 门店列表 | 导出 CSV | **P0** | 按当前筛选结果导出，最多 1 万行 |
-| F04 | 门店详情 | 详情页（三 Tab） | **P0** | 基本信息 / 营业时间与服务 / 变更历史 |
-| F05 | 变更历史 | 单店变更日志 | **P0** | 一条门店的完整变更时间线 |
-| F06 | 启用控制 | 单条启用/停用 | **P0** | 需高级权限，写审计 |
-| F07 | 启用控制 | 批量启用/停用 | **P0** | 两种方式：勾选批量 / Excel 上传 |
-| F08 | 变更历史 | 全局变更日志 | P1 | 跨门店检索所有变更 |
-| F09 | 数据同步 | 每日同步状态 | P1 | 每次同步的结果与失败告警 |
-| F10 | 概览 | 仪表盘 KPI | P2 | 总数 / 可见 / 停用等指标卡 |
-| F11 | 揽收控制 | 编辑揽收方（Sweeper） | **P0** | 后台可改 pickup_provider，写 SWEEPER_CHANGE 日志 |
-| F12 | 重复检测 | 跨供应商模糊去重 | **P0** | 模糊匹配打分 ≥75% 标记疑似重复，运营确认同店/不同店 |
+| F01 | Vendor List | Paginated vendor list | P0 | raw provider locations, read-only except sweeper |
+| F02 | Vendor List | Filter & search | P0 | multi-condition AND |
+| F03 | OC List | Paginated OC list | P0 | OC-owned locations with enable + linked vendor |
+| F04 | OC List | Filter & search | P0 | multi-condition AND |
+| F05 | Export | Export current view | P0 | both lists, ≤10k rows |
+| F06 | Detail | Detail (vendor/OC) | P0 | tabs; OC detail shows editable fields |
+| F07 | Change History | Per-location log | P0 | full timeline |
+| F08 | Enable | Single enable/disable | P0 | OC layer; blocked if vendor inactive |
+| F09 | Enable | Batch enable/disable | P0 | Mode A inline + Mode B Excel |
+| F10 | Sweeper | Edit sweeper | P0 | vendor layer; writes SWEEPER_CHANGE |
+| F11 | OC Edit | Edit OC store details | P0 | address/hours/etc.; writes STORE_DETAIL_EDIT |
+| F12 | OC Generation | Auto-generate OC | P0 | new vendor (non-duplicate) → one OC (disabled) |
+| F13 | Status Propagation | Vendor inactive → OC disable | P0 | auto-disable + block downstream |
+| F14 | Duplicate | Fuzzy duplicate review | P0 | ≥75% flagged; no OC until resolved |
+| F15 | Change History | Global log | P1 | cross-location search |
+| F16 | Data Sync | Sync status | P1 | per-provider run + failure alerts |
+| F17 | Overview | Dashboard | P2 | KPIs |
 
-### 2.3 关键业务决策清单
+### 2.3 Key business decisions
 
-| # | 决策 | 结论 |
+| # | Decision | Conclusion |
 |---|---|---|
-| 1 | 数据同步方式 | 每日增量同步（PUDO 02:00 / LMS 02:30），失败保留上次成功快照 |
-| 2 | 可见性门控 | 三重门控：有 OC ID + status=active + is_enable=true |
-| 3 | `status` vs `is_enable` | 独立两个字段；status 供应商来源，is_enable OC 开关 |
-| 4 | 新位置默认 | `is_enable = false`，需 Manager 显式启用 |
-| 5 | Type ↔ Provider | 互斥：PUDO→PUDOpoint/Locker，LMS→packagehub |
-| 6 | 揽收方 pickup_provider | 默认=source_provider，可跨供应商，OC 可编辑 |
-| 7 | 删除 vs 停用 | removed（永久下架）与 inactive（临时闭店）分开 |
-| 8 | 地址去重 | **模糊匹配**（相似度打分 ≥75%），非精确匹配 |
-| 9 | OC location ID | 关联同一实体门店的跨供应商记录，门控上游同步 |
-| 10 | 角色权限 | Viewer（查看/导出）与 Location Manager（+启用/停用/揽收编辑/去重确认） |
+| 1 | Architecture | Two-layer: Vendor Location (provider) + OC Location (OC-owned) |
+| 2 | Menu | Two menus: "Vendor Location List" + "OC Location List" |
+| 3 | OC generation | New vendor (non-duplicate) → auto-generate one OC location, `is_enable=false` |
+| 4 | Mapping | Principle 1:1; confirmed duplicate 2:1 |
+| 5 | Sweeper | Renamed from "Pickup"; OC-editable; cross-provider |
+| 6 | OC store edit | OC can edit address, opening hours, and flagged fields |
+| 7 | Status propagation | Vendor inactive → OC auto-disable + block; force-enable errors |
+| 8 | Duplicate | Fuzzy match ≥75%; no OC until resolved |
+| 9 | Visibility | OC visible iff `status=active AND is_enable=true` |
+| 10 | Roles | Viewer (view/export) vs Location Manager (+sweeper/edit/enable/duplicate) |
 
 ---
 
 ## 三、流程图
 
-### 3.1 核心路径 — 批量停用门店
+### 3.1 Vendor Sync & OC Generation
 
-![核心路径 — 批量停用门店](https://jama-dev520.github.io/location-prototype/diagrams/flow1-batch-disable.png)
+![Vendor Sync & OC Generation](https://jama-dev520.github.io/location-prototype/diagrams/flow2-daily-sync.png)
 
-### 3.2 每日同步路径 — 供应商状态变化
+### 3.2 Status Propagation — Vendor Inactive → OC Auto-Disable
 
-![每日同步路径 — 供应商状态变化](https://jama-dev520.github.io/location-prototype/diagrams/flow2-daily-sync.png)
+![Status Propagation](https://jama-dev520.github.io/location-prototype/diagrams/flow6-status-propagation.png)
 
-### 3.3 揽收方（Sweeper）编辑路径
+### 3.3 Operator Batch Disable (OC Layer)
 
-![揽收方（Sweeper）编辑路径](https://jama-dev520.github.io/location-prototype/diagrams/flow3-sweeper.png)
+![Operator Batch Disable](https://jama-dev520.github.io/location-prototype/diagrams/flow1-batch-disable.png)
 
-### 3.4 重复审核路径（模糊匹配）
+### 3.4 Sweeper Edit
 
-![重复审核路径（模糊匹配）](https://jama-dev520.github.io/location-prototype/diagrams/flow4-duplicate.png)
+![Sweeper Edit](https://jama-dev520.github.io/location-prototype/diagrams/flow3-sweeper.png)
 
-### 3.5 异常路径
+### 3.5 Duplicate Review (fuzzy)
 
-![异常路径](https://jama-dev520.github.io/location-prototype/diagrams/flow5-exception.png)
+![Duplicate Review](https://jama-dev520.github.io/location-prototype/diagrams/flow4-duplicate.png)
+
+### 3.6 Exception
+
+![Exception](https://jama-dev520.github.io/location-prototype/diagrams/flow5-exception.png)
 
 ---
 
 ## 附：一页速览（30 秒看懂）
 
-| 维度 | 内容 |
+| Dimension | Content |
 |---|---|
-| **做什么** | 内部后台，合并管理 PUDO Inc + LMS 两个供应商的门店目录 |
-| **给谁用** | Viewer（查看/导出）、Location Manager（+启用/停用/揽收/去重） |
-| **数据怎么来** | 每日增量同步，失败保留上次成功快照 |
-| **核心控制** | is_enable 开关 + OC location ID 门控，决定上游可见性 |
-| **去重逻辑** | 跨供应商地址模糊匹配打分 ≥75% 即疑似重复，人工确认 |
-| **审计** | 每一次可见性/字段/揽收/去重变化都留痕 |
-| **交付页面** | P01 列表 / P02 详情 / P03 全局日志 / P04 同步状态 / P05 仪表盘 / P06 重复审核 |
+| **做什么** | 两层模型内部后台：供应商层 + OC 层 |
+| **两个菜单** | Vendor Location List（供应商数据）+ OC Location List（OC 自有门店） |
+| **给谁用** | Viewer（查看/导出）、Location Manager（+sweeper/编辑/启用/去重） |
+| **数据怎么来** | 每日增量同步；新供应商门店非重复则自动生成 OC 门店（默认 disabled） |
+| **核心控制** | OC 层 `is_enable` 开关，决定下游可见性 |
+| **状态联动** | 供应商 inactive → OC 自动 disable + 阻断下游；强制启用报错 |
+| **去重** | 跨供应商地址模糊匹配 ≥75% 疑似重复；未确认不生成 OC |
+| **审计** | 每次 sweeper/编辑/启用/去重/状态变化都留痕 |
+| **交付页面** | P01 Vendor List / P02 OC List / P03 详情 / P04 重复审核 / P05 全局日志 / P06 同步状态 / P07 仪表盘 |

@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Location Management Admin Console — Interactive Prototype</title>
+<title>Location Management Admin Console — Interactive Prototype (v2.0)</title>
 <!-- ============================================================
-  Location Management Admin Console · Demo-grade Hi-fi Prototype
-  Date: 2026-10-29 · Language: English · Canvas: Admin (1440px)
-  Data seeded from PUDO Inc DealerList & LMS location samples
+  Location Management Admin Console · Hi-fi Prototype · v2.0
+  Two-layer model: Vendor Location List (provider view) + OC Location List (OC view)
+  Date: 2026-10-30 · Language: English · Canvas: Admin (1440px)
 ============================================================ -->
 <style>
 :root{
@@ -29,7 +29,7 @@ body{font-family:var(--font-family);background:var(--bg-page);color:var(--text-p
 
 /* ===== Admin canvas ===== */
 .device-admin{width:100%;min-height:100vh;background:var(--bg-page);display:flex}
-.admin-sidebar{width:216px;background:var(--bg-card);border-right:1px solid var(--bg-section);box-shadow:var(--shadow-xs);padding:var(--space-6) var(--space-3);flex-shrink:0}
+.admin-sidebar{width:230px;background:var(--bg-card);border-right:1px solid var(--bg-section);box-shadow:var(--shadow-xs);padding:var(--space-6) var(--space-3);flex-shrink:0}
 .brand{display:flex;align-items:center;gap:var(--space-2);padding:0 var(--space-3) var(--space-6)}
 .brand-logo{width:32px;height:32px;border-radius:var(--radius-sm);background:var(--color-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
 .brand-name{font-weight:600;font-size:14px;line-height:1.2}
@@ -58,27 +58,23 @@ body{font-family:var(--font-family);background:var(--bg-page);color:var(--text-p
 
 /* ===== Common components ===== */
 .card{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:var(--space-6);transition:var(--transition)}
-.card.hoverable:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
 .page-title{font-size:18px;font-weight:600;margin-bottom:var(--space-2)}
 .page-desc{font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-6)}
 .btn{border:none;border-radius:var(--radius-sm);padding:8px 16px;font-size:13px;cursor:pointer;transition:var(--transition);font-family:inherit;display:inline-flex;align-items:center;gap:6px}
 .btn:active{transform:scale(.97)}
 .btn-primary{background:var(--color-primary);color:#fff;box-shadow:var(--shadow-sm)}
-.btn-primary:hover{background:var(--color-primary-hover);box-shadow:var(--shadow-md);transform:translateY(-1px)}
-.btn-primary:disabled{background:#B6C6E8;cursor:not-allowed;box-shadow:none;transform:none}
+.btn-primary:hover{background:var(--color-primary-hover);box-shadow:var(--shadow-md)}
+.btn-primary:disabled{background:#B6C6E8;cursor:not-allowed;box-shadow:none}
 .btn-secondary{background:var(--bg-card);color:var(--color-primary);border:1px solid var(--color-primary)}
 .btn-secondary:hover{background:var(--color-primary-light)}
-.btn-secondary:disabled{color:#B6C6E8;border-color:#B6C6E8;background:var(--bg-card);cursor:not-allowed}
 .btn-danger{background:var(--color-danger);color:#fff}
 .btn-danger:hover{background:#DC2626;box-shadow:var(--shadow-md)}
-.btn-danger:disabled{background:#F3B0B0;cursor:not-allowed}
 .btn-sm{padding:5px 10px;font-size:12px}
 .btn-ghost{background:transparent;color:var(--text-secondary)}
 .btn-ghost:hover{background:var(--bg-hover);color:var(--text-primary)}
 .badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:11.5px;font-weight:500}
 .badge-blue{background:var(--color-primary-light);color:var(--color-primary)}
 .badge-green{background:#ECFDF5;color:var(--color-success)}
-.badte-gray{background:var(--bg-section);color:var(--text-tertiary)}
 .badge-gray{background:var(--bg-section);color:var(--text-tertiary)}
 .badge-red{background:#FEF2F2;color:var(--color-danger)}
 .badge-orange{background:#FFFBEB;color:var(--color-warning)}
@@ -87,7 +83,7 @@ input,select{font-family:inherit;font-size:13px;padding:7px 10px;border:1px soli
 input:focus,select:focus{border-color:var(--color-primary);box-shadow:0 0 0 3px rgba(37,99,235,.15)}
 label.f-label{display:block;font-size:12px;color:var(--text-secondary);margin-bottom:var(--space-1);font-weight:500}
 
-/* ===== Filter panel (P01) ===== */
+/* ===== Filter panel ===== */
 .filter-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--space-3) var(--space-4);margin-bottom:var(--space-4)}
 .filter-actions{display:flex;gap:var(--space-2);align-items:center;justify-content:flex-end;margin-bottom:var(--space-4)}
 .filter-chips{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-bottom:var(--space-4)}
@@ -105,7 +101,7 @@ table.data tbody tr.selected{background:var(--color-primary-light)}
 .link{color:var(--color-primary);cursor:pointer;font-weight:500}
 .link:hover{text-decoration:underline}
 .mono{font-family:var(--font-mono);font-size:12.5px}
-.switch{width:38px;height:20px;border-radius:999px;background:#CBD5E1;position:relative;cursor:pointer;transition:var(--transition);flex-shrink:0}
+.switch{width:38px;height:20px;border-radius:999px;background:#CBD5E1;position:relative;cursor:pointer;transition:var(--transition);flex-shrink:0;display:inline-block}
 .switch::after{content:"";position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:2px;left:2px;transition:var(--transition);box-shadow:var(--shadow-xs)}
 .switch.on{background:var(--color-success)}
 .switch.on::after{left:20px}
@@ -121,13 +117,7 @@ table.data tbody tr.selected{background:var(--color-primary-light)}
 .pager button:disabled{opacity:.4;cursor:not-allowed}
 .pager .cur{background:var(--color-primary);color:#fff;border:none;border-radius:var(--radius-sm);padding:4px 10px}
 
-/* ===== State containers / skeleton / empty / error ===== */
-.state-switcher{display:inline-flex;align-items:center;gap:var(--space-1);background:var(--bg-card);border:1px dashed #CBD5E1;border-radius:999px;padding:3px;margin-bottom:var(--space-4);font-size:12px}
-.state-switcher .lab{color:var(--text-tertiary);padding:0 6px 0 10px}
-.state-btn{border:none;background:transparent;padding:4px 12px;border-radius:999px;cursor:pointer;color:var(--text-secondary);font-size:12px;transition:var(--transition)}
-.state-btn.active{background:var(--color-primary);color:#fff}
-.skeleton-row{height:38px;border-radius:var(--radius-sm);background:linear-gradient(90deg,#EEF2F7 25%,#E2E8F0 50%,#EEF2F7 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;margin-bottom:10px}
-@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+/* ===== State containers ===== */
 .state-box{text-align:center;padding:var(--space-8);color:var(--text-secondary)}
 .state-box .icon{font-size:40px;margin-bottom:var(--space-3)}
 .state-box h4{font-size:15px;color:var(--text-primary);margin-bottom:var(--space-1)}
@@ -141,46 +131,29 @@ table.data tbody tr.selected{background:var(--color-primary-light)}
 @keyframes popIn{from{opacity:0;transform:scale(.92) translateY(10px)}to{opacity:1;transform:none}}
 .modal-header{padding:var(--space-4) var(--space-6);border-bottom:1px solid var(--bg-section);display:flex;align-items:center;font-size:15px;font-weight:600}
 .modal-header .close{margin-left:auto;cursor:pointer;color:var(--text-tertiary);font-size:16px;padding:4px}
-.modal-header .close:hover{color:var(--text-primary)}
 .modal-body{padding:var(--space-6)}
 .modal-footer{padding:var(--space-4) var(--space-6);border-top:1px solid var(--bg-section);display:flex;justify-content:flex-end;gap:var(--space-2)}
 .warn-line{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;border-radius:var(--radius-sm);padding:10px var(--space-4);font-size:12.5px;margin-top:var(--space-3)}
 .info-line{background:var(--color-primary-light);border:1px solid #DBEAFE;color:#1E40AF;border-radius:var(--radius-sm);padding:10px var(--space-4);font-size:12.5px;margin-top:var(--space-3)}
-.info-list{margin:0;padding-left:var(--space-5);font-size:13px;color:var(--text-secondary);line-height:1.8}
-.info-list li{margin-bottom:var(--space-2)}
-.info-list code{font-family:var(--font-mono);font-size:12px;background:var(--bg-section);padding:1px 6px;border-radius:4px}
 .sample-ids{background:var(--bg-section);border-radius:var(--radius-sm);padding:10px var(--space-4);font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);margin-top:var(--space-3);line-height:1.7}
 
-/* ===== Upload dialog ===== */
-.dropzone{border:2px dashed #CBD5E1;border-radius:var(--radius);padding:var(--space-8);text-align:center;color:var(--text-secondary);cursor:pointer;transition:var(--transition);margin:var(--space-4) 0;background:var(--bg-page)}
-.dropzone:hover{border-color:var(--color-primary);background:var(--color-primary-light)}
-.dropzone .big{font-size:30px;margin-bottom:var(--space-2)}
-.preview-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:var(--space-3)}
-.preview-table th{background:var(--bg-section);text-align:left;padding:7px 10px;font-size:11.5px}
-.preview-table td{padding:7px 10px;border-bottom:1px solid var(--bg-section);font-family:var(--font-mono)}
-.preview-table tr.err td{background:#FEF2F2;color:var(--color-danger)}
-.preview-table tr.ok td{background:#ECFDF5}
-.up-actions{display:flex;gap:var(--space-2);margin-top:var(--space-4);flex-wrap:wrap}
-
-/* ===== Detail page (P02) ===== */
+/* ===== Detail page ===== */
 .detail-head{display:flex;align-items:flex-start;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-6)}
 .detail-head .main{flex:1;min-width:280px}
 .detail-head h2{font-size:20px;font-weight:600;margin-bottom:var(--space-2)}
 .detail-sub{display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center;font-size:13px;color:var(--text-secondary)}
 .tabs{display:flex;gap:var(--space-1);border-bottom:2px solid var(--bg-section);margin-bottom:var(--space-6)}
-.tab{padding:10px var(--space-4);font-size:13.5px;color:var(--text-secondary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:var(--transition);border-radius:var(--radius-sm) var(--radius-sm) 0 0}
+.tab{padding:10px var(--space-4);font-size:13.5px;color:var(--text-secondary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:var(--transition)}
 .tab:hover{background:var(--bg-hover);color:var(--text-primary)}
 .tab.active{color:var(--color-primary);font-weight:600;border-bottom-color:var(--color-primary);background:var(--color-primary-light)}
 .kv-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-4) var(--space-6)}
 .kv{display:flex;font-size:13px;border-bottom:1px dashed var(--bg-section);padding-bottom:var(--space-2)}
-.kv .k{width:170px;color:var(--text-tertiary);flex-shrink:0}
+.kv .k{width:180px;color:var(--text-tertiary);flex-shrink:0}
 .kv .v{color:var(--text-primary)}
 .sec-title{font-size:14px;font-weight:600;margin:var(--space-6) 0 var(--space-3);color:var(--text-primary)}
-.hours-row{display:grid;grid-template-columns:110px 1fr;gap:var(--space-3);padding:7px 0;border-bottom:1px dashed var(--bg-section);font-size:13px}
-.hours-row .d{color:var(--text-tertiary)}
 .chip-list{display:flex;gap:var(--space-2);flex-wrap:wrap}
 
-/* ===== Timeline (change history) ===== */
+/* ===== Timeline ===== */
 .timeline{position:relative;padding-left:26px}
 .timeline::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--bg-section)}
 .tl-item{position:relative;padding-bottom:var(--space-6)}
@@ -191,16 +164,6 @@ table.data tbody tr.selected{background:var(--color-primary-light)}
 .val-old{color:var(--color-danger);text-decoration:line-through;font-family:var(--font-mono);font-size:12px}
 .val-new{color:var(--color-success);font-family:var(--font-mono);font-size:12px;font-weight:600}
 
-/* ===== P04 sync cards / P05 KPI ===== */
-.sync-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);margin-bottom:var(--space-6)}
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4);margin-bottom:var(--space-6)}
-.kpi .num{font-size:26px;font-weight:700;margin-bottom:2px}
-.kpi .lab{font-size:12.5px;color:var(--text-secondary)}
-.kpi .trend{font-size:11.5px;margin-top:var(--space-1)}
-.bar-row{display:grid;grid-template-columns:150px 1fr 60px;gap:var(--space-3);align-items:center;margin-bottom:var(--space-3);font-size:13px}
-.bar-track{background:var(--bg-section);border-radius:999px;height:10px;overflow:hidden}
-.bar-fill{height:100%;border-radius:999px;background:var(--color-primary);transition:width .6s ease}
-
 /* ===== Toast ===== */
 #toast-wrap{position:fixed;top:70px;right:26px;z-index:2000;display:flex;flex-direction:column;gap:10px}
 .toast{background:var(--bg-card);box-shadow:var(--shadow-lg);border-radius:var(--radius);padding:12px var(--space-4);display:flex;gap:10px;align-items:flex-start;min-width:280px;max-width:380px;animation:toastIn .3s cubic-bezier(.34,1.56,.64,1);border-left:4px solid var(--color-success)}
@@ -210,71 +173,43 @@ table.data tbody tr.selected{background:var(--color-primary-light)}
 .toast .t-title{font-weight:600;font-size:13px}
 .toast .t-msg{font-size:12.5px;color:var(--text-secondary)}
 
-/* ===== Walkthrough panel ===== */
-.walkthrough-btn{position:fixed;top:14px;right:18px;z-index:9999;background:var(--color-primary);color:#fff;border:none;border-radius:999px;padding:9px 18px;font-size:13px;cursor:pointer;box-shadow:var(--shadow-md);transition:var(--transition)}
-.walkthrough-btn:hover{background:var(--color-primary-hover);transform:translateY(-1px)}
+/* ===== Walkthrough ===== */
+.walkthrough-btn{position:fixed;top:14px;right:18px;z-index:9999;background:var(--color-primary);color:#fff;border:none;border-radius:999px;padding:9px 18px;font-size:13px;cursor:pointer;box-shadow:var(--shadow-md)}
 .walkthrough-panel{position:fixed;top:0;left:0;right:0;background:var(--bg-card);box-shadow:var(--shadow-lg);z-index:9998;max-height:78vh;overflow:auto;display:none;border-bottom:3px solid var(--color-primary)}
-.walkthrough-panel.open{display:block;animation:slideDown .3s ease}
-@keyframes slideDown{from{transform:translateY(-100%)}to{transform:none}}
+.walkthrough-panel.open{display:block}
 .wt-inner{max-width:1100px;margin:0 auto;padding:var(--space-6)}
 .wt-header{display:flex;align-items:center;margin-bottom:var(--space-3)}
 .wt-header h3{font-size:16px}
 .wt-header .close{margin-left:auto;cursor:pointer;font-size:18px;color:var(--text-tertiary)}
-.wt-meta{font-size:12.5px;color:var(--text-secondary);margin-bottom:var(--space-4)}
 table.wt{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:var(--space-6)}
 table.wt th{background:var(--bg-section);text-align:left;padding:8px 10px;font-size:12px}
 table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-align:top}
-.alignment-report h4{font-size:14px;margin-bottom:var(--space-2)}
-.alignment-report li{font-size:12.5px;margin-bottom:4px;color:var(--text-secondary)}
-
-@media (max-width:1100px){.filter-grid{grid-template-columns:repeat(3,1fr)}.kpi-grid{grid-template-columns:repeat(2,1fr)}.kv-grid{grid-template-columns:1fr}}
+@media (max-width:1100px){.filter-grid{grid-template-columns:repeat(3,1fr)}.kv-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<!-- Walkthrough floating button + panel -->
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">🎬 Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3>🎬 Prototype Walkthrough Script — Location Management Admin Console</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
-    <p class="wt-meta">Demo duration: ~5 min · Covers: core batch-disable flow (Mode A + Mode B), audit trail, sync review · Permission demo included</p>
-    <table class="wt">
-      <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th><th>Verifies</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td>P01 Locations</td><td>Set Provider = PUDO Inc, Status = Active, click "Apply Filters"</td><td>Table filters to PUDO Inc active rows; filter chips appear</td><td>F01/F02</td></tr>
-        <tr><td>2</td><td>P01 Locations</td><td>Click "Reset Filters"</td><td>Full list restored (14 locations, 2 providers)</td><td>F02</td></tr>
-        <tr><td>3</td><td>P01 Locations</td><td>Tick 2–3 row checkboxes</td><td>Batch bar appears with selected count; Batch Enable/Disable become active</td><td>F07</td></tr>
-        <tr><td>4</td><td>P01 Locations</td><td>Click "Batch Disable"</td><td>Confirmation modal: count + sample IDs + warning</td><td>F07</td></tr>
-        <tr><td>5</td><td>Modal</td><td>Click "Confirm Disable"</td><td>Success toast, rows flip to Disabled, audit entries written</td><td>F07</td></tr>
-        <tr><td>6</td><td>P01 Locations</td><td>Click "Batch Upload (Excel)"</td><td>Upload dialog opens with template download + dropzone</td><td>F07 Mode B</td></tr>
-        <tr><td>7</td><td>Upload dialog</td><td>Click "Load demo file"</td><td>Parsed preview: valid rows green, unknown-ID / invalid-T rows red with reasons</td><td>F07 Mode B</td></tr>
-        <tr><td>8</td><td>Upload dialog</td><td>Click "Skip invalid &amp; process 4 rows"</td><td>Result toast (applied / skipped / errors), list updates, audit entries</td><td>F07 Mode B</td></tr>
-        <tr><td>9</td><td>P01 Locations</td><td>Click "Export CSV"</td><td>CSV file downloads matching current filters</td><td>F03</td></tr>
-        <tr><td>10</td><td>P01 Locations</td><td>Click a Location ID (e.g. LOC-10023)</td><td>Navigates to P02 detail</td><td>F04</td></tr>
-        <tr><td>11</td><td>P02 Detail</td><td>Switch tabs Basic Info / Hours &amp; Services / Change History</td><td>Full profile renders; history timeline shows sync + manual entries</td><td>F04/F05</td></tr>
-        <tr><td>12</td><td>P02 Detail</td><td>Click "Disable Location" in header</td><td>Confirm popover → enable flips, visibility pill changes, audit entry added</td><td>F06</td></tr>
-        <tr><td>13</td><td>Sidebar</td><td>Open "Change Log"</td><td>P03 global log lists all changes with operator/time/type/old→new</td><td>F08 (P1)</td></tr>
-        <tr><td>14</td><td>Sidebar</td><td>Open "Sync Status"</td><td>P04 shows both providers' last run, counts, history</td><td>F09 (P1)</td></tr>
-        <tr><td>15</td><td>Sidebar</td><td>Open "Overview"</td><td>P05 KPI cards + provider split bars</td><td>F10 (P2)</td></tr>
-      </tbody>
-    </table>
+    <div class="wt-header"><h3>🎬 Prototype Walkthrough — Location Management Admin Console (v2.0)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <p style="font-size:12.5px;color:var(--text-secondary);margin-bottom:16px">Demo duration: ~6 min · Covers the two-layer model: Vendor Location List (sweeper edit) + OC Location List (enable / store edit / status propagation)</p>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
-        <tr><td>A1</td><td>Header</td><td>Switch demo role to "Viewer"</td><td>All enable toggles &amp; batch buttons become disabled with permission tooltip</td></tr>
-        <tr><td>A2</td><td>P01</td><td>Switch state to "Empty" / "Loading" / "Error"</td><td>Skeleton, empty-state with "Clear filters", error banner with retry</td></tr>
-        <tr><td>A3</td><td>Upload dialog</td><td>Upload a wrong-header CSV (e.g. "id,enabled")</td><td>File-level error: "Template header must be locationID,is_enable"</td></tr>
+        <tr><td>1</td><td>Vendor List</td><td>Review the vendor table — note the <b>Sweeper</b> column (renamed from "Pickup")</td><td>Provider data read-only except Sweeper</td></tr>
+        <tr><td>2</td><td>Vendor List</td><td>Click the Sweeper value on a PUDO row (e.g. LOC-10024)</td><td>Sweeper edit modal opens (Manager only)</td></tr>
+        <tr><td>3</td><td>Vendor List</td><td>Switch demo role to "Viewer", retry</td><td>Sweeper control becomes read-only</td></tr>
+        <tr><td>4</td><td>OC List</td><td>Open "OC Location List" — note <b>Enable</b> column and linked vendor column</td><td>OC-owned locations backfilled from vendors</td></tr>
+        <tr><td>5</td><td>OC List</td><td>Find OC-00002 (linked to vendor LOC-10023 which is <b>inactive</b>) — try to enable it</td><td>Toggle blocked: "vendor location is inactive"</td></tr>
+        <tr><td>6</td><td>OC List</td><td>Click "Edit" on an OC row (e.g. OC-00001)</td><td>Store-detail edit modal (address / opening hours)</td></tr>
+        <tr><td>7</td><td>OC List</td><td>Tick 2–3 rows → "Batch Disable" → confirm</td><td>Rows flip to disabled + audit entries</td></tr>
+        <tr><td>8</td><td>Duplicate Review</td><td>Open sidebar → confirm/reject the pending pair</td><td>No OC ID generated until resolved</td></tr>
+        <tr><td>9</td><td>Change Log / Sync</td><td>Review global log + sync status</td><td>All changes traced; status propagation logged</td></tr>
       </tbody>
     </table>
-    <div class="alignment-report">
-      <h4>📋 PRD Alignment Report</h4>
-      <ul>
-        <li>Page Map coverage: <b>5/5</b> (P01 Locations ✅ · P02 Detail ✅ · P03 Change Log ✅ · P04 Sync Status ✅ · P05 Overview ✅)</li>
-        <li>P0 feature coverage: <b>7/7</b> (F01 list ✅ · F02 filter ✅ · F03 export ✅ · F04 detail ✅ · F05 per-location log ✅ · F06 single toggle ✅ · F07 batch A+B ✅)</li>
-        <li>Permission gating demo: Viewer vs Location Manager switch in header ✅</li>
-        <li>States: default / loading (skeleton) / empty / error on P01 ✅</li>
-        <li>Non-goals respected: no provider-field editing, no location create/delete, no role-management UI</li>
-      </ul>
+    <div style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:12px 16px;font-size:12.5px">
+      <b>v2.0 changes:</b> two-layer model (Vendor + OC) · "Pickup" → "Sweeper" · enable logic on OC layer · OC store-detail edit · vendor inactive → OC auto-disable (force-enable errors).
     </div>
   </div>
 </div>
@@ -284,32 +219,28 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div>
-        <div class="brand-name">Location Admin</div>
-        <div class="brand-sub">OC Internal Console</div>
-      </div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v2.0</div></div>
     </div>
-    <div class="nav-group-label">Operations</div>
-    <div class="nav-item" data-nav="p05" onclick="switchPage('p05')">📊 Overview <span class="tag">P2</span></div>
-    <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">📍 Locations</div>
+    <div class="nav-group-label">Locations</div>
+    <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">🏢 Vendor Location List</div>
+    <div class="nav-item" data-nav="p02" onclick="switchPage('p02')">📍 OC Location List</div>
     <div class="nav-item" data-nav="p06" onclick="switchPage('p06')">🔗 Duplicate Review <span class="tag" id="dup-count-tag">1</span></div>
-    <div class="nav-item" data-nav="p03" onclick="switchPage('p03')">🕘 Change Log <span class="tag">P1</span></div>
     <div class="nav-group-label">System</div>
-    <div class="nav-item" data-nav="p04" onclick="switchPage('p04')">🔄 Sync Status <span class="tag">P1</span></div>
+    <div class="nav-item" data-nav="p03" onclick="switchPage('p03')">🕘 Change Log</div>
+    <div class="nav-item" data-nav="p04" onclick="switchPage('p04')">🔄 Sync Status</div>
     <div style="padding:var(--space-4) var(--space-3);font-size:11px;color:var(--text-tertiary);line-height:1.6">
       Data synced daily:<br>PUDO Inc 02:00 · LMS 02:30
     </div>
   </aside>
 
   <div class="admin-main">
-    <!-- ===== Header ===== -->
     <div class="admin-header">
-      <div class="breadcrumb" id="breadcrumb"><b>Locations</b> — merged catalog from PUDO Inc &amp; LMS</div>
+      <div class="breadcrumb" id="breadcrumb"><b>Vendor Location List</b> — raw provider locations</div>
       <div class="header-right">
         <span style="font-size:11px;color:var(--text-tertiary)">Demo role:</span>
         <div class="role-switch">
-          <button class="role-btn active" id="role-manager" onclick="setRole('manager')" title="Can toggle is_enable">Location Manager</button>
-          <button class="role-btn" id="role-viewer" onclick="setRole('viewer')" title="View &amp; export only">Viewer</button>
+          <button class="role-btn active" id="role-manager" onclick="setRole('manager')">Location Manager</button>
+          <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip">
           <div class="avatar" id="u-avatar">SL</div>
@@ -320,967 +251,595 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 
     <div class="admin-content">
 
-      <!-- ================= P01 Location List ================= -->
-      <!-- Page: P01 Location List -->
+      <!-- ===== P01 Vendor Location List ===== -->
       <div class="page active" id="page-p01">
-        <div class="page-title">Locations</div>
-        <div class="page-desc">A location is synced to upstream customers only when it has an <b>OC location ID</b>, <b>status = Active</b> AND <b>Enable = On</b>.</div>
+        <h2 class="page-title">Vendor Location List</h2>
+        <p class="page-desc">Raw provider locations synced from PUDO Inc &amp; LMS. Read-only except <b>Sweeper</b> (who physically picks up packages). Each vendor location generates one OC location ID (unless it is a suspected duplicate).</p>
 
-        <!-- state switcher (demo only) -->
-        <div class="state-switcher"><span class="lab">🎭 State preview:</span>
-          <button class="state-btn active" onclick="switchState('default',this)">Default</button>
-          <button class="state-btn" onclick="switchState('loading',this)">Loading</button>
-          <button class="state-btn" onclick="switchState('empty',this)">Empty</button>
-          <button class="state-btn" onclick="switchState('error',this)">Error</button>
-        </div>
-
-        <!-- F02: Filter & search -->
-        <div class="card" style="margin-bottom:var(--space-4)">
+        <div class="card">
           <div class="filter-grid">
-            <div><label class="f-label">Location ID</label><input id="f-id" placeholder="e.g. LOC-10024"></div>
-            <div><label class="f-label">OC location ID</label><input id="f-ocid" placeholder="e.g. OC-00001"></div>
-            <div><label class="f-label">Name</label><input id="f-name" placeholder="e.g. Postal"></div>
-            <div><label class="f-label">Address keyword</label><input id="f-addr" placeholder="e.g. 42nd St"></div>
-            <div><label class="f-label">City</label><input id="f-city" placeholder="e.g. Brooklyn"></div>
-            <div><label class="f-label">State / Province</label><input id="f-state" placeholder="e.g. NY"></div>
-            <div><label class="f-label">Provider</label><select id="f-provider" onchange="onProviderChange(this)"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
-            <div><label class="f-label">Pickup (sweeper)</label><select id="f-pickup"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
-            <div><label class="f-label">Status (from provider)</label><select id="f-status"><option value="">All</option><option>active</option><option>inactive</option><option>removed</option></select></div>
-            <div><label class="f-label">Enable (OC control)</label><select id="f-enable"><option value="">All</option><option>enabled</option><option>disabled</option></select></div>
-            <div><label class="f-label">Type</label><select id="f-type"><option value="">All</option><option>PUDOpoint</option><option>Locker</option><option>packagehub</option></select></div>
-            <div><label class="f-label">Created from</label><input id="f-c1" type="datetime-local"></div>
-            <div><label class="f-label">Created to</label><input id="f-c2" type="datetime-local"></div>
-            <div><label class="f-label">Updated from</label><input id="f-u1" type="datetime-local"></div>
-            <div><label class="f-label">Updated to</label><input id="f-u2" type="datetime-local"></div>
+            <div><label class="f-label">Location ID</label><input id="v-f-id" placeholder="e.g. LOC-10024"></div>
+            <div><label class="f-label">Name</label><input id="v-f-name" placeholder="keyword"></div>
+            <div><label class="f-label">Provider</label><select id="v-f-provider" onchange="onProviderChange('v')"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
+            <div><label class="f-label">Sweeper</label><select id="v-f-sweeper"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
+            <div><label class="f-label">Status</label><select id="v-f-status"><option value="">All</option><option>active</option><option>inactive</option><option>removed</option></select></div>
+            <div><label class="f-label">Type</label><select id="v-f-type"><option value="">All</option><option>PUDOpoint</option><option>Locker</option><option>packagehub</option></select></div>
+            <div><label class="f-label">City</label><input id="v-f-city" placeholder="city"></div>
+            <div><label class="f-label">State</label><input id="v-f-state" placeholder="state"></div>
           </div>
           <div class="filter-actions">
-            <button class="btn btn-secondary" onclick="resetFilters()">Reset</button>
-            <button class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
+            <button class="btn btn-secondary" onclick="resetVendorFilters()">Reset</button>
+            <button class="btn btn-primary" onclick="applyVendorFilters()">Apply Filters</button>
           </div>
-        </div>
+          <div class="filter-chips" id="v-chips"></div>
 
-        <div class="filter-chips" id="f-chips"></div>
-
-        <div class="toolbar">
-          <span style="font-size:13px;color:var(--text-secondary)">Catalog: <b id="t-total">14</b> locations</span>
-          <div class="spacer"></div>
-          <!-- F07 Mode B: Batch upload (Excel) -->
-          <button class="btn btn-secondary" onclick="openUpload()">⬆ Batch Upload (Excel)</button>
-          <!-- F03: Export CSV -->
-          <button class="btn btn-secondary" onclick="exportCSV()">⬇ Export CSV</button>
-        </div>
-
-        <!-- F07 Mode A: batch bar -->
-        <div class="batch-bar" id="batch-bar" style="display:none">
-          <span class="sel-count" id="sel-count">0 selected</span>
-          <button class="btn btn-sm btn-primary" id="btn-batch-enable" onclick="openBatchModal('enable')">✔ Batch Enable</button>
-          <button class="btn btn-sm btn-danger" id="btn-batch-disable" onclick="openBatchModal('disable')">✖ Batch Disable</button>
-          <button class="btn btn-sm btn-ghost" onclick="clearSelection()">Clear selection</button>
-          <span style="font-size:11.5px;color:var(--text-tertiary)">Max 200 per batch · requires Location Manager permission</span>
-        </div>
-
-        <!-- default state -->
-        <div class="state-container" data-state="default" style="display:block">
-          <div class="card" style="padding:var(--space-4)">
-            <div class="table-wrap">
-              <!-- F01: paginated location list -->
-              <table class="data">
-                <thead><tr>
-                  <th style="width:34px"><input type="checkbox" id="cb-all" onclick="selectAll(this)"></th>
-                  <th>Location ID</th><th>OC ID</th><th>Name</th><th>Address</th><th>City / State</th><th>Provider</th><th>Pickup</th><th>Type</th>
-                  <th>Status</th><th>Enable</th><th>Created</th><th>Updated</th><th>Actions</th>
-                </tr></thead>
-                <tbody id="loc-tbody"></tbody>
-              </table>
-            </div>
-            <div class="result-meta" id="result-meta"></div>
-            <div class="pager">
-              <button onclick="gotoPage(-1)" id="pg-prev">‹ Prev</button>
-              <button class="cur" id="pg-cur">1</button>
-              <button onclick="gotoPage(1)" id="pg-next">Next ›</button>
-              <span style="margin-left:8px">20 / page</span>
-            </div>
+          <div class="toolbar">
+            <button class="btn btn-secondary btn-sm" onclick="exportVendorCSV()">⬇ Export CSV</button>
+            <span class="spacer"></span>
+            <span class="result-meta" id="v-result-meta"></span>
           </div>
-        </div>
 
-        <!-- loading state -->
-        <div class="state-container" data-state="loading" style="display:none">
-          <div class="card"><div class="skeleton-row" style="width:60%"></div><div class="skeleton-row"></div><div class="skeleton-row"></div><div class="skeleton-row"></div><div class="skeleton-row"></div><div class="skeleton-row"></div><div class="skeleton-row" style="width:80%"></div></div>
-        </div>
-        <!-- empty state -->
-        <div class="state-container" data-state="empty" style="display:none">
-          <div class="card state-box"><div class="icon">🗂️</div><h4>No locations match your filters</h4><p>Try broadening the search, or clear all filters to see the full catalog.</p><button class="btn btn-primary" onclick="resetFilters()">Clear Filters</button></div>
-        </div>
-        <!-- error state -->
-        <div class="state-container" data-state="error" style="display:none">
-          <div class="card state-box"><div class="icon">⚠️</div><h4>Failed to load locations</h4><p>Network timeout while querying the location service (simulated).</p><button class="btn btn-primary" onclick="switchState('default',document.querySelector('#page-p01 .state-btn'))">Retry</button></div>
-        </div>
-      </div>
-
-      <!-- ================= P02 Location Detail ================= -->
-      <!-- Page: P02 Location Detail -->
-      <div class="page" id="page-p02">
-        <div class="link" onclick="switchPage('p01')" style="margin-bottom:var(--space-4);display:inline-block">← Back to Locations</div>
-        <div class="detail-head">
-          <div class="main">
-            <h2 id="d-name"></h2>
-            <div class="detail-sub">
-              <span class="mono" id="d-id"></span>
-              <span class="badge badge-blue" id="d-provider"></span>
-              <span class="badge badge-gray" id="d-pickup"></span>
-              <span class="badge badge-gray" id="d-type"></span>
-              <span class="badge" id="d-visible"></span>
-            </div>
-          </div>
-          <!-- F06: single enable/disable toggle -->
-          <button class="btn btn-danger" id="d-toggle-btn" onclick="openToggleModal()">Disable Location</button>
-        </div>
-        <div class="tabs">
-          <div class="tab active" onclick="switchTab('basic',this)">Basic Info</div>
-          <div class="tab" onclick="switchTab('hours',this)">Hours &amp; Services</div>
-          <div class="tab" onclick="switchTab('history',this)">Change History</div>
-        </div>
-
-        <!-- F04: basic info tab -->
-        <div class="tab-panel" id="tab-basic">
-          <div class="card"><div class="sec-title" style="margin-top:0">Identity</div>
-            <div class="kv-grid" id="d-basic"></div>
-          </div>
-        </div>
-
-        <div class="tab-panel" id="tab-hours" style="display:none">
-          <div class="card">
-            <div class="sec-title" style="margin-top:0">Hours of Operation</div>
-            <div id="d-hours"></div>
-            <div class="sec-title">Services</div>
-            <div class="chip-list" id="d-services"></div>
-            <div class="sec-title">Restrictions</div>
-            <div class="chip-list" id="d-restrictions"></div>
-            <div class="sec-title">Cutoff &amp; Holiday Closures</div>
-            <div class="kv-grid" id="d-cutoff"></div>
-          </div>
-        </div>
-
-        <!-- F05: per-location change history -->
-        <div class="tab-panel" id="tab-history" style="display:none">
-          <div class="card">
-            <div style="display:flex;align-items:center;margin-bottom:var(--space-4)">
-              <span style="font-size:13px;color:var(--text-secondary)">Every change for this location — operator, time, field, old → new</span>
-              <div style="margin-left:auto"><button class="btn btn-sm btn-secondary" onclick="switchPage('p03')">View all changes (P03)</button></div>
-            </div>
-            <div class="timeline" id="d-timeline"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ================= P03 Change Log (global) ================= -->
-      <!-- Page: P03 Change Log (P1) -->
-      <div class="page" id="page-p03">
-        <div class="page-title">Change Log</div>
-        <div class="page-desc">All changes across locations — internal enable operations and provider sync updates. Append-only and immutable.</div>
-        <div class="card" style="margin-bottom:var(--space-4)">
-          <div class="filter-grid" style="grid-template-columns:repeat(4,1fr)">
-            <div><label class="f-label">Operator</label><select id="cl-operator" onchange="renderChangeLog()"><option value="">All</option><option>Sarah Lin</option><option>Alex Chen</option><option>System · PUDO Sync</option><option>System · LMS Sync</option></select></div>
-            <div><label class="f-label">Provider</label><select id="cl-provider" onchange="renderChangeLog()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
-            <div><label class="f-label">Operation type</label><select id="cl-type" onchange="renderChangeLog()"><option value="">All</option><option>ENABLE</option><option>DISABLE</option><option>BATCH_ENABLE</option><option>BATCH_DISABLE</option><option>SWEEPER_CHANGE</option><option>OC_LINK_CONFIRMED</option><option>OC_LINK_REJECTED</option><option>PROVIDER_STATUS_CHANGE</option><option>PROVIDER_FIELD_UPDATE</option><option>PROVIDER_CREATED</option><option>PROVIDER_REMOVED</option></select></div>
-            <div><label class="f-label">Location ID</label><input id="cl-loc" placeholder="e.g. LOC-12193" onchange="renderChangeLog()"></div>
-          </div>
-        </div>
-        <div class="card" style="padding:var(--space-4)">
-          <div class="table-wrap">
-            <table class="data">
-              <thead><tr><th>Time (UTC)</th><th>Operator</th><th>Type</th><th>Location</th><th>Field</th><th>Change</th><th>Source</th></tr></thead>
-              <tbody id="cl-tbody"></tbody>
-            </table>
-          </div>
-          <div class="result-meta" id="cl-meta"></div>
-        </div>
-      </div>
-
-      <!-- ================= P04 Sync Status ================= -->
-      <!-- Page: P04 Sync Status (P1) -->
-      <div class="page" id="page-p04">
-        <div class="page-title">Sync Status</div>
-        <div class="page-desc">Daily full pull from both providers. Provider sync never overwrites <code>is_enable</code> — it only updates provider-owned fields.</div>
-        <div class="sync-grid">
-          <div class="card hoverable">
-            <div style="display:flex;align-items:center;margin-bottom:var(--space-3)"><b style="font-size:15px">PUDO Inc · Dealer API</b><span class="badge badge-green" style="margin-left:auto">✓ Success</span></div>
-            <div class="kv" style="margin-bottom:6px"><span class="k">Last run</span><span class="v">2026-10-29 02:00 → 02:03 UTC</span></div>
-            <div class="kv" style="margin-bottom:6px"><span class="k">Records pulled</span><span class="v">6,842</span></div>
-            <div class="kv" style="margin-bottom:6px"><span class="k">Created / Updated / Deactivated</span><span class="v">3 / 41 / 2</span></div>
-            <div class="kv"><span class="k">Next run</span><span class="v">2026-10-30 02:00 UTC</span></div>
-          </div>
-          <div class="card hoverable">
-            <div style="display:flex;align-items:center;margin-bottom:var(--space-3)"><b style="font-size:15px">LMS · Location API</b><span class="badge badge-green" style="margin-left:auto">✓ Success</span></div>
-            <div class="kv" style="margin-bottom:6px"><span class="k">Last run</span><span class="v">2026-10-29 02:30 → 02:31 UTC</span></div>
-            <div class="kv" style="margin-bottom:6px"><span class="k">Records pulled</span><span class="v">8,127 (14 pages, has_more iterated)</span></div>
-            <div class="kv" style="margin-bottom:6px"><span class="k">Created / Updated / Deactivated</span><span class="v">12 / 96 / 0</span></div>
-            <div class="kv"><span class="k">Next run</span><span class="v">2026-10-30 02:30 UTC</span></div>
-          </div>
-        </div>
-        <div class="card" style="padding:var(--space-4)">
-          <b style="font-size:14px">Sync history (last 5 runs)</b>
-          <div class="table-wrap"><table class="data" style="margin-top:var(--space-3)">
-            <thead><tr><th>Run</th><th>Provider</th><th>Started</th><th>Result</th><th>Pulled</th><th>Created</th><th>Updated</th><th>Deactivated</th></tr></thead>
-            <tbody>
-              <tr><td>#4821</td><td>PUDO Inc</td><td class="mono">2026-10-29 02:00</td><td><span class="badge badge-green">SUCCESS</span></td><td>6,842</td><td>3</td><td>41</td><td>2</td></tr>
-              <tr><td>#4822</td><td>LMS</td><td class="mono">2026-10-29 02:30</td><td><span class="badge badge-green">SUCCESS</span></td><td>8,127</td><td>12</td><td>96</td><td>0</td></tr>
-              <tr><td>#4819</td><td>PUDO Inc</td><td class="mono">2026-10-28 02:00</td><td><span class="badge badge-green">SUCCESS</span></td><td>6,839</td><td>1</td><td>17</td><td>0</td></tr>
-              <tr><td>#4820</td><td>LMS</td><td class="mono">2026-10-28 02:30</td><td><span class="badge badge-red">FAILED</span></td><td>0</td><td>—</td><td>—</td><td>—</td></tr>
-              <tr><td colspan="8" style="color:var(--text-tertiary);font-size:12px">⚠ #4820 failure cause: LMS API 503 Service Unavailable (timeout after 30s). Alert sent to #ops-locations. No data changed — catalog served from last successful run.</td></tr>
-            </tbody>
-          </table></div>
-        </div>
-      </div>
-
-      <!-- ================= P05 Overview ================= -->
-      <!-- Page: P05 Overview Dashboard (P2) -->
-      <div class="page" id="page-p05">
-        <div class="page-title">Overview</div>
-        <div class="page-desc">Live catalog health at a glance (computed from the current dataset).</div>
-        <div class="kpi-grid">
-          <div class="card kpi"><div class="num" id="k-total">14</div><div class="lab">Total Locations</div><div class="trend" style="color:var(--color-success)">↑ 3 new this week</div></div>
-          <div class="card kpi"><div class="num" id="k-visible" style="color:var(--color-success)">11</div><div class="lab">Visible to Customers</div><div class="trend" style="color:var(--text-tertiary)">has OC ID × active × enabled</div></div>
-          <div class="card kpi"><div class="num" id="k-disabled" style="color:var(--color-warning)">2</div><div class="lab">Disabled by OC</div><div class="trend" style="color:var(--text-tertiary)">is_enable = false</div></div>
-          <div class="card kpi"><div class="num" id="k-inactive" style="color:var(--color-danger)">1</div><div class="lab">Deactivated by Provider</div><div class="trend" style="color:var(--text-tertiary)">status = inactive</div></div>
-        </div>
-        <div class="card">
-          <b style="font-size:14px">Provider split</b>
-          <div style="margin-top:var(--space-4)">
-            <div class="bar-row"><span>PUDO Inc</span><div class="bar-track"><div class="bar-fill" id="bar-pudo" style="width:36%"></div></div><span id="bar-pudo-n">5</span></div>
-            <div class="bar-row"><span>LMS</span><div class="bar-track"><div class="bar-fill" id="bar-lms" style="width:64%;background:var(--color-accent)"></div></div><span id="bar-lms-n">9</span></div>
-          </div>
-          <div class="info-line">Visibility rule reminder — customers see a location only when it has an <b>OC location ID</b> AND <b>status = active</b> AND <b>is_enable = true</b>.</div>
-        </div>
-      </div>
-
-      <!-- ================= P06 Duplicate Review ================= -->
-      <!-- Page: P06 Duplicate Review (F12) -->
-      <div class="page" id="page-p06">
-        <div class="page-title">Duplicate Review</div>
-        <div class="page-desc">Cross-provider locations whose addresses are <b>fuzzy-matched</b> (address line 1 + city + state + postal code). Because provider addresses never match exactly, pairs are scored by similarity and flagged when the score reaches the threshold — you confirm whether they are the same physical store. Only confirmed locations receive an <b>OC location ID</b> and sync upstream.</div>
-
-        <div class="card" style="padding:var(--space-4)">
-          <div class="sec-title" style="margin-top:0">Pending review (<span id="dup-pending-n">1</span>) · threshold ≥ <span id="dup-threshold">75</span>%</div>
           <div class="table-wrap">
             <table class="data">
               <thead><tr>
-                <th>Pair</th><th>Location A</th><th>Location B</th><th>Match score</th><th>Address diff</th><th>Detected</th><th>Status</th><th>Action</th>
+                <th>Location ID</th><th>Name</th><th>Address</th><th>City / State</th><th>Provider</th><th>Sweeper</th><th>Type</th><th>Status</th><th>Created</th><th>Updated</th>
               </tr></thead>
-              <tbody id="dup-tbody"></tbody>
+              <tbody id="v-tbody"></tbody>
             </table>
           </div>
-          <div class="result-meta" id="dup-meta"></div>
-        </div>
-
-        <div class="card" style="padding:var(--space-4)">
-          <div class="sec-title">How it works</div>
-          <ul class="info-list">
-            <li><b>Fuzzy auto-detect</b> — each sync compares every new/changed location against the other provider's catalog. Addresses are <b>normalized</b> (lowercase, punctuation/whitespace-insensitive, unit/suite suffix stripped) and compared by <b>token similarity</b>.</li>
-            <li><b>Match score</b> — a weighted 0–100% score across <code>address_line1</code> (50%), <code>postal_code</code> (25%), <code>city</code> (15%), <code>state</code> (10%). Pairs scoring <b>≥ <span class="mono">75%</span></b> are flagged as <b>potential duplicates</b> for review; the differing tokens are highlighted in the "Address diff" column.</li>
-            <li><b>OC location ID</b> — a unique OC-owned identifier. Locations without an OC ID are <b>never synced upstream</b>. A location with no duplicate match gets its OC ID assigned automatically at creation.</li>
-            <li><b>Confirm = same store</b> — both locations are linked to one OC location ID and become eligible for upstream sync (if active + enabled).</li>
-            <li><b>Reject = different store</b> — each location keeps its own independent OC location ID; the pair is dismissed as a false positive.</li>
-            <li>Both actions are written to the audit log (<code>OC_LINK_CONFIRMED</code> / <code>OC_LINK_REJECTED</code>).</li>
-          </ul>
         </div>
       </div>
 
-    </div><!-- /admin-content -->
-  </div><!-- /admin-main -->
-</div><!-- /device-admin -->
+      <!-- ===== P02 OC Location List ===== -->
+      <div class="page" id="page-p02">
+        <h2 class="page-title">OC Location List</h2>
+        <p class="page-desc">OC-owned, downstream-facing locations, backfilled from vendor records. The <b>enable</b> switch lives here. When a vendor location goes <b>inactive</b>, its linked OC location is auto-disabled and blocked from downstream sync.</p>
 
-<!-- ===== Batch confirm modal (Mode A) ===== -->
-<div class="modal-mask" id="modal-batch">
-  <div class="modal">
-    <div class="modal-header">Confirm batch <span id="bm-action">disable</span><span class="close" onclick="closeModal('modal-batch')">✕</span></div>
-    <div class="modal-body">
-      <p id="bm-count" style="font-size:15px"></p>
-      <div class="sample-ids" id="bm-ids"></div>
-      <div class="warn-line" id="bm-warn"></div>
-      <p style="font-size:12.5px;color:var(--text-tertiary);margin-top:var(--space-3)">One audit entry will be written per location (operator / time / old → new). Rows already in the target state are skipped.</p>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('modal-batch')">Cancel</button>
-      <button class="btn btn-primary" id="bm-confirm" onclick="confirmBatch()">Confirm</button>
+        <div class="card">
+          <div class="filter-grid">
+            <div><label class="f-label">OC Location ID</label><input id="o-f-id" placeholder="e.g. OC-00001"></div>
+            <div><label class="f-label">Name</label><input id="o-f-name" placeholder="keyword"></div>
+            <div><label class="f-label">Provider</label><select id="o-f-provider"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
+            <div><label class="f-label">Status</label><select id="o-f-status"><option value="">All</option><option>active</option><option>inactive</option><option>removed</option></select></div>
+            <div><label class="f-label">Enable</label><select id="o-f-enable"><option value="">All</option><option value="enabled">Enabled</option><option value="disabled">Disabled</option></select></div>
+            <div><label class="f-label">Type</label><select id="o-f-type"><option value="">All</option><option>PUDOpoint</option><option>Locker</option><option>packagehub</option></select></div>
+            <div><label class="f-label">City</label><input id="o-f-city" placeholder="city"></div>
+            <div><label class="f-label">State</label><input id="o-f-state" placeholder="state"></div>
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-secondary" onclick="resetOCFilters()">Reset</button>
+            <button class="btn btn-primary" onclick="applyOCFilters()">Apply Filters</button>
+          </div>
+          <div class="filter-chips" id="o-chips"></div>
+
+          <div class="batch-bar" id="o-batch-bar" style="display:none">
+            <span class="sel-count" id="o-sel-count">0 selected</span>
+            <button class="btn btn-primary btn-sm" onclick="openBatchModal('enable')">Batch Enable</button>
+            <button class="btn btn-danger btn-sm" onclick="openBatchModal('disable')">Batch Disable</button>
+            <button class="btn btn-secondary btn-sm" onclick="clearOCSelection()">Clear selection</button>
+          </div>
+
+          <div class="toolbar">
+            <button class="btn btn-secondary btn-sm" onclick="exportOCCSV()">⬇ Export CSV</button>
+            <span class="spacer"></span>
+            <span class="result-meta" id="o-result-meta"></span>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data">
+              <thead><tr>
+                <th><input type="checkbox" onclick="toggleAllOC(this)"></th>
+                <th>OC Location ID</th><th>Name</th><th>Address</th><th>Provider</th><th>Type</th><th>Sweeper</th><th>Status</th><th>Enable</th><th>Linked Vendor</th><th>Actions</th>
+              </tr></thead>
+              <tbody id="o-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== P03 Change Log ===== -->
+      <div class="page" id="page-p03">
+        <h2 class="page-title">Change Log</h2>
+        <p class="page-desc">Global audit trail across both layers — every change is traceable to an operator or sync event.</p>
+        <div class="card">
+          <div class="table-wrap">
+            <table class="data">
+              <thead><tr><th>Time</th><th>Layer</th><th>Operator</th><th>Type</th><th>Location</th><th>Field</th><th>Old → New</th></tr></thead>
+              <tbody id="cl-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== P04 Sync Status ===== -->
+      <div class="page" id="page-p04">
+        <h2 class="page-title">Sync Status</h2>
+        <p class="page-desc">Daily incremental sync from each provider. New vendor locations auto-generate OC locations (default disabled).</p>
+        <div class="card" id="sync-cards"></div>
+      </div>
+
+      <!-- ===== P06 Duplicate Review ===== -->
+      <div class="page" id="page-p06">
+        <h2 class="page-title">Duplicate Review</h2>
+        <p class="page-desc">Cross-provider address duplicates (fuzzy match ≥ 75%). A suspected duplicate does <b>not</b> generate an OC location until resolved.</p>
+        <div class="card" id="dup-cards"></div>
+      </div>
+
     </div>
   </div>
 </div>
 
-<!-- ===== Single toggle confirm modal (F06) ===== -->
-<div class="modal-mask" id="modal-toggle">
-  <div class="modal" style="width:440px">
-    <div class="modal-header">Confirm change<span class="close" onclick="closeModal('modal-toggle')">✕</span></div>
-    <div class="modal-body">
-      <p id="tm-text" style="font-size:14px"></p>
-      <div class="warn-line" id="tm-warn"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('modal-toggle')">Cancel</button>
-      <button class="btn btn-primary" onclick="confirmToggle()">Confirm</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===== Sweeper edit modal (F11) ===== -->
+<!-- ===== Modals ===== -->
 <div class="modal-mask" id="modal-sweeper">
-  <div class="modal" style="width:440px">
-    <div class="modal-header">Edit Pickup Provider (Sweeper)<span class="close" onclick="closeModal('modal-sweeper')">✕</span></div>
+  <div class="modal">
+    <div class="modal-header">Edit Sweeper<span class="close" onclick="closeModal('modal-sweeper')">✕</span></div>
     <div class="modal-body">
       <p style="font-size:13px;color:var(--text-secondary)">Location <b class="mono" id="sw-loc"></b> — current sweeper <b id="sw-cur"></b>. Select the provider that performs the physical pickup:</p>
-      <div style="margin-top:var(--space-3)">
-        <select id="sw-select" style="width:100%;padding:10px 12px;border-radius:var(--radius);border:1px solid var(--border)">
-          <option value="PUDO Inc">PUDO Inc</option>
-          <option value="LMS">LMS</option>
-        </select>
-      </div>
-      <div class="warn-line" style="margin-top:var(--space-3)" id="sw-warn"></div>
+      <div style="margin:16px 0"><select id="sw-select" style="width:100%"><option>PUDO Inc</option><option>LMS</option></select></div>
+      <div class="warn-line" id="sw-warn"></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-sweeper')">Cancel</button>
-      <button class="btn btn-primary" onclick="confirmSweeperEdit()">Save &amp; Log</button>
+      <button class="btn btn-primary" onclick="saveSweeper()">Save</button>
     </div>
   </div>
 </div>
 
-
-<!-- ===== Batch Upload dialog (Mode B) ===== -->
-<div class="modal-mask" id="modal-upload">
-  <div class="modal" style="width:680px">
-    <div class="modal-header">Batch Upload — Enable/Disable via Excel<span class="close" onclick="closeModal('modal-upload')">✕</span></div>
+<div class="modal-mask" id="modal-edit">
+  <div class="modal">
+    <div class="modal-header">Edit Store Details<span class="close" onclick="closeModal('modal-edit')">✕</span></div>
     <div class="modal-body">
-      <p style="font-size:13px;color:var(--text-secondary)">Step 1 — download the template, fill two columns (<span class="mono">locationID</span>, <span class="mono">is_enable</span>: T or F), then upload. Max 5,000 rows, file ≤ 5MB.</p>
-      <div class="up-actions">
-        <button class="btn btn-secondary btn-sm" onclick="downloadTemplate()">⬇ Download Template (.csv)</button>
-        <button class="btn btn-ghost btn-sm" onclick="loadDemoFile()">📎 Load demo file (contains errors)</button>
-      </div>
-      <div class="dropzone" onclick="document.getElementById('file-input').click()">
-        <div class="big">📄</div>
-        <b>Drop .csv file here or click to browse</b>
-        <p style="font-size:12px;margin-top:4px">Header must be exactly <span class="mono">locationID,is_enable</span></p>
-        <input type="file" id="file-input" accept=".csv,.xlsx" style="display:none" onchange="handleFile(this)">
-      </div>
-      <div id="up-preview" style="display:none">
-        <p style="font-size:13px;font-weight:600;margin-bottom:6px">Step 2 — parsed preview</p>
-        <p id="up-summary" style="font-size:12.5px;margin-bottom:6px"></p>
-        <div class="table-wrap" style="max-height:220px;overflow:auto">
-          <table class="preview-table" id="up-table"></table>
-        </div>
-        <div class="up-actions">
-          <button class="btn btn-primary btn-sm" id="up-process" onclick="processUpload()">Process valid rows</button>
-          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-upload')">Cancel</button>
-        </div>
-      </div>
-      <div id="up-error" class="warn-line" style="display:none"></div>
+      <p style="font-size:13px;color:var(--text-secondary)">OC location <b class="mono" id="ed-ocid"></b>. These are OC-level overrides — the underlying vendor record is not touched.</p>
+      <div style="margin:14px 0"><label class="f-label">Name</label><input id="ed-name" style="width:100%"></div>
+      <div style="margin:14px 0"><label class="f-label">Address Line 1</label><input id="ed-addr" style="width:100%"></div>
+      <div style="margin:14px 0"><label class="f-label">City</label><input id="ed-city" style="width:100%"></div>
+      <div style="margin:14px 0"><label class="f-label">Opening Hours</label><input id="ed-hours" style="width:100%" placeholder="e.g. MON–FRI 08:00–20:00"></div>
+      <div class="info-line">Only fields ops flag as incorrect need editing. Edits are recorded as STORE_DETAIL_EDIT.</div>
     </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-edit')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-mask" id="modal-batch">
+  <div class="modal">
+    <div class="modal-header" id="batch-title">Batch Disable<span class="close" onclick="closeModal('modal-batch')">✕</span></div>
+    <div class="modal-body">
+      <p id="batch-body" style="font-size:13px;color:var(--text-secondary)"></p>
+      <div class="sample-ids" id="batch-ids"></div>
+      <div class="warn-line">⚠ This changes downstream visibility for each location. An audit entry is written per location.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-batch')">Cancel</button>
+      <button class="btn btn-danger" id="batch-confirm" onclick="confirmBatch()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-mask" id="modal-enable-block">
+  <div class="modal">
+    <div class="modal-header">Cannot Enable<span class="close" onclick="closeModal('modal-enable-block')">✕</span></div>
+    <div class="modal-body">
+      <div class="warn-line" style="margin:0">⚠ This OC location's linked vendor location is <b>inactive</b>. It is auto-disabled and blocked from downstream sync. It can be enabled again once the vendor location returns to <b>active</b>.</div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-primary" onclick="closeModal('modal-enable-block')">OK</button></div>
   </div>
 </div>
 
 <div id="toast-wrap"></div>
 
 <script>
-/* ================= Data (seeded from PUDO Inc & LMS samples) ================= */
-var LOCATIONS=[
- {id:'LOC-10024',name:'Time Square News',provider:'PUDO Inc',pickup:'LMS',type:'PUDOpoint',ref:'dealerNo 10024',store:'PD-10024',addr1:'360 W 42nd St',addr2:'',city:'New York',state:'NY',postal:'10036',country:'United States',lat:40.7580804,lng:-73.9923783,phone:'8443008533',tz:'America/New_York',ocId:'OC-00001',status:'active',enable:true,services:['FX','CP','TB'],restrictions:[],hours:[['MON','06:00–23:59'],['TUE','06:00–23:59'],['WED','06:00–23:59'],['THU','06:00–23:59'],['FRI','06:00–23:59'],['SAT','06:00–23:59'],['SUN','06:00–23:59']],open24:false,cutoff:'',created:'2016-06-16 12:22:42',updated:'2026-05-14 12:33:08',activated:'2016-07-18',deactivated:'',lastSync:'2026-10-29 02:03',holidays:[]},
- {id:'LOC-12194',name:'Postal Annex 20018',provider:'PUDO Inc',pickup:'PUDO Inc',type:'PUDOpoint',ref:'dealerNo 12194',store:'PD-12194',addr1:'2918 Avenue I',addr2:'',city:'Brooklyn',state:'NY',postal:'11210',country:'United States',lat:40.628878,lng:-73.947678,phone:'8443008533',tz:'America/New_York',ocId:'OC-00088',status:'active',enable:true,services:[],restrictions:[],hours:[['MON–SUN','00:00–23:59 (24h)']],open24:true,cutoff:'',created:'2025-09-19 15:25:03',updated:'2025-09-19 15:26:01',activated:'2025-09-19',deactivated:'',lastSync:'2026-10-29 02:03',holidays:[]},
- {id:'LOC-10023',name:'Reach Fast Shipping',provider:'PUDO Inc',pickup:'PUDO Inc',type:'PUDOpoint',ref:'dealerNo 10023',store:'PD-10023',addr1:'35 W 31st St',addr2:'Unit #1',city:'New York',state:'NY',postal:'10001',country:'United States',lat:40.7474262,lng:-73.9875328,phone:'8443008533',tz:'America/New_York',ocId:'OC-00002',status:'inactive',enable:true,services:['FX','CP'],restrictions:[],hours:[['MON–FRI','07:30–20:00'],['SAT','09:00–19:30'],['SUN','09:30–18:30']],open24:false,cutoff:'',created:'2016-06-15 13:08:40',updated:'2026-10-28 08:15:22',activated:'2019-11-04',deactivated:'2026-10-28',lastSync:'2026-10-29 02:03',holidays:[]},
- {id:'LOC-12193',name:'Ideal Food Basket - Lafayette Ave',provider:'PUDO Inc',pickup:'PUDO Inc',type:'Locker',ref:'dealerNo 12193',store:'PD-12193',addr1:'830 Lafayette Ave',addr2:'',city:'Brooklyn',state:'NY',postal:'11221',country:'United States',lat:40.6910629,lng:-73.9393812,phone:'8443008533',tz:'America/New_York',ocId:'OC-00089',status:'active',enable:false,services:[],restrictions:[],hours:[['MON–SUN','00:00–23:59 (24h)']],open24:true,cutoff:'',created:'2025-08-22 13:25:38',updated:'2026-10-27 16:41:09',activated:'2025-08-22',deactivated:'',lastSync:'2026-10-29 02:03',holidays:[]},
- {id:'LOC-12191',name:'Ideal Food Basket - Brooklyn Ave',provider:'PUDO Inc',pickup:'PUDO Inc',type:'Locker',ref:'dealerNo 12191',store:'PD-12191',addr1:'1086 Brooklyn Ave',addr2:'',city:'Brooklyn',state:'NY',postal:'11203',country:'United States',lat:40.6473186,lng:-73.9437891,phone:'8443008533',tz:'America/New_York',ocId:'OC-00090',status:'active',enable:true,services:[],restrictions:[],hours:[['MON–SUN','00:00–23:59 (24h)']],open24:true,cutoff:'',created:'2025-08-22 13:22:59',updated:'2026-10-05 14:22:08',activated:'2025-08-22',deactivated:'',lastSync:'2026-10-29 02:03',holidays:[]},
- {id:'LOC-00176',name:'Pdq Mail Plus',provider:'LMS',pickup:'LMS',type:'packagehub',ref:'loc_176',store:'AA0010',addr1:'2005 Palmer Ave',addr2:'',city:'Larchmont',state:'NY',postal:'10538',country:'US',lat:40.930514,lng:-73.762192,phone:'',tz:'America/Chicago',ocId:'OC-00101',status:'active',enable:true,services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],hours:[['MON–SUN','Store hours per retail site']],open24:false,cutoff:'17:00 (America/Chicago)',created:'2024-03-02 08:11:44',updated:'2026-10-05 09:40:17',activated:'2024-03-02',deactivated:'',lastSync:'2026-10-29 02:31',holidays:['2026-11-26 Thanksgiving Day','2026-12-25 Christmas Day','2027-01-01 New Year\u2019s Day']},
- {id:'LOC-00177',name:'Super Postal Center',provider:'LMS',pickup:'LMS',type:'packagehub',ref:'loc_177',store:'AA0013',addr1:'160 W Camino Real',addr2:'',city:'Boca Raton',state:'FL',postal:'33432',country:'US',lat:26.340229,lng:-80.090332,phone:'',tz:'America/Chicago',ocId:'OC-00102',status:'active',enable:true,services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],hours:[['MON–SUN','Store hours per retail site']],open24:false,cutoff:'17:00 (America/Chicago)',created:'2024-03-02 08:12:03',updated:'2026-08-19 10:02:51',activated:'2024-03-02',deactivated:'',lastSync:'2026-10-29 02:31',holidays:['2026-11-26 Thanksgiving Day','2026-12-25 Christmas Day']},
- {id:'LOC-00178',name:'Pack & Ship North',provider:'LMS',pickup:'LMS',type:'packagehub',ref:'loc_178',store:'AA0014',addr1:'9477 W 104th Ave',addr2:'',city:'Westminster',state:'CO',postal:'80021',country:'US',lat:39.886107,lng:-105.103101,phone:'',tz:'America/Chicago',ocId:'OC-00103',status:'active',enable:true,services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],hours:[['MON–SUN','Store hours per retail site']],open24:false,cutoff:'17:00 (America/Chicago)',created:'2024-03-02 08:12:21',updated:'2026-07-11 11:14:36',activated:'2024-03-02',deactivated:'',lastSync:'2026-10-29 02:31',holidays:['2026-11-26 Thanksgiving Day','2026-12-25 Christmas Day']},
- {id:'LOC-00179',name:'The Box',provider:'LMS',pickup:'LMS',type:'packagehub',ref:'loc_179',store:'AA0016',addr1:'3023 S. University Drive',addr2:'',city:'Fort Worth',state:'TX',postal:'76109',country:'US',lat:32.707053,lng:-97.360128,phone:'',tz:'America/Chicago',ocId:'OC-00104',status:'active',enable:true,services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],hours:[['MON–SUN','Store hours per retail site']],open24:false,cutoff:'17:00 (America/Chicago)',created:'2024-03-02 08:12:39',updated:'2026-06-30 12:22:08',activated:'2024-03-02',deactivated:'',lastSync:'2026-10-29 02:31',holidays:['2026-11-26 Thanksgiving Day']},
- {id:'LOC-00180',name:'Postal Options',provider:'LMS',pickup:'LMS',type:'packagehub',ref:'loc_180',store:'AA0020',addr1:'2448 Lamar Ave',addr2:'',city:'Paris',state:'TX',postal:'75460',country:'US',lat:33.660832,lng:-95.530295,phone:'',tz:'America/Chicago',ocId:'OC-00105',status:'active',enable:false,services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],hours:[['MON–SUN','Store hours per retail site']],open24:false,cutoff:'17:00 (America/Chicago)',created:'2024-03-02 08:12:57',updated:'2026-10-21 14:30:45',activated:'2024-03-02',deactivated:'',lastSync:'2026-10-29 02:31',holidays:['2026-11-26 Thanksgiving Day']},
- {id:'LOC-00181',name:'Private Postal Systems',provider:'LMS',pickup:'LMS',type:'packagehub',ref:'loc_181',store:'AA0021',addr1:'12555 Biscayne Blvd',addr2:'',city:'North Miami',state:'FL',postal:'33181',country:'US',lat:25.891822,lng:-80.162421,phone:'',tz:'America/Chicago',ocId:'OC-00106',status:'active',enable:true,services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],hours:[['MON–SUN','Store hours per retail site']],open24:false,cutoff:'17:00 (America/Chicago)',created:'2024-03-02 08:13:15',updated:'2026-05-02 09:55:19',activated:'2024-03-02',deactivated:'',lastSync:'2026-10-29 02:31',holidays:['2026-12-25 Christmas Day']},
- {id:'LOC-00182',name:'Eagle Postal Center #11',provider:'LMS',pickup:'LMS',type:'packagehub',ref:'loc_182',store:'AA0029',addr1:'4101 W Green Oaks Blvd Ste 305',addr2:'',city:'Arlington',state:'TX',postal:'76016',country:'US',lat:32.682112,lng:-97.195009,phone:'',tz:'America/Chicago',ocId:'OC-00107',status:'active',enable:true,services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],hours:[['MON–SUN','Store hours per retail site']],open24:false,cutoff:'17:00 (America/Chicago)',created:'2024-03-02 08:13:33',updated:'2026-04-18 10:41:27',activated:'2024-03-02',deactivated:'',lastSync:'2026-10-29 02:31',holidays:['2026-11-26 Thanksgiving Day']},
- {id:'LOC-00183',name:'Upost Shipping Center',provider:'LMS',pickup:'LMS',type:'packagehub',ref:'loc_183',store:'AA0030',addr1:'3784 Mission Ave Ste 148',addr2:'',city:'Oceanside',state:'CA',postal:'92058',country:'US',lat:33.227719,lng:-117.33188,phone:'',tz:'America/Chicago',ocId:'OC-00108',status:'active',enable:true,services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],hours:[['MON–SUN','Store hours per retail site']],open24:false,cutoff:'17:00 (America/Chicago)',created:'2024-03-02 08:13:51',updated:'2026-03-27 11:08:53',activated:'2024-03-02',deactivated:'',lastSync:'2026-10-29 02:31',holidays:['2026-11-26 Thanksgiving Day']},
- {id:'LOC-00184',name:'Postal Dispatch Business Center',provider:'LMS',pickup:'LMS',type:'packagehub',ref:'loc_184',store:'AA0034',addr1:'5123 W 98th St',addr2:'',city:'Bloomington',state:'MN',postal:'55437',country:'US',lat:44.824115,lng:-93.347352,phone:'',tz:'America/Chicago',ocId:'OC-00109',status:'active',enable:true,services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],hours:[['MON–SUN','Store hours per retail site']],open24:false,cutoff:'17:00 (America/Chicago)',created:'2024-03-02 08:14:09',updated:'2026-02-14 12:36:40',activated:'2024-03-02',deactivated:'',lastSync:'2026-10-29 02:31',holidays:['2026-11-26 Thanksgiving Day','2026-12-25 Christmas Day']},
- {id:'LOC-00185',name:'Intown Business Center',provider:'LMS',pickup:'LMS',type:'packagehub',ref:'loc_185',store:'AA0035',addr1:'245 N Highland Ave NE Ste 230',addr2:'',city:'Atlanta',state:'GA',postal:'30307',country:'US',lat:33.761663,lng:-84.359729,phone:'',tz:'America/Chicago',status:'removed',enable:false,services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],hours:[['MON–SUN','Store hours per retail site']],open24:false,cutoff:'17:00 (America/Chicago)',created:'2024-03-02 08:14:27',updated:'2026-10-27 02:31:18',activated:'2024-03-02',deactivated:'',lastSync:'2026-10-28 02:31',holidays:[]},
- {id:'LOC-00186',name:'Postal Annex Plus',provider:'LMS',pickup:'LMS',type:'packagehub',ref:'loc_186',store:'AA0091',addr1:'2918 Avenue I Ste 2',addr2:'',city:'Brooklyn',state:'NY',postal:'11210-2214',country:'US',lat:40.628900,lng:-73.947650,phone:'',tz:'America/New_York',status:'active',enable:true,services:['returns','platform_dropoff'],restrictions:['hazmat','prohibited_item'],hours:[['MON–SUN','Store hours per retail site']],open24:false,cutoff:'16:30 (America/New_York)',created:'2026-10-28 09:12:41',updated:'2026-10-28 09:12:41',activated:'2026-10-28',deactivated:'',lastSync:'2026-10-29 02:31',holidays:[]}
+/* ================= Data ================= */
+/* Vendor layer (provider data, read-only except sweeper) */
+var VENDORS=[
+ {id:'LOC-10024',name:'Time Square News',provider:'PUDO Inc',sweeper:'LMS',type:'PUDOpoint',ref:'dealerNo 10024',addr1:'360 W 42nd St',city:'New York',state:'NY',postal:'10036',status:'active',hours:'06:00–23:59',created:'2016-06-16 12:22:42',updated:'2026-05-14 12:33:08'},
+ {id:'LOC-12194',name:'Postal Annex 20018',provider:'PUDO Inc',sweeper:'PUDO Inc',type:'PUDOpoint',ref:'dealerNo 12194',addr1:'2918 Avenue I',city:'Brooklyn',state:'NY',postal:'11210',status:'active',hours:'24h',created:'2025-09-19 15:25:03',updated:'2025-09-19 15:26:01'},
+ {id:'LOC-10023',name:'Reach Fast Shipping',provider:'PUDO Inc',sweeper:'PUDO Inc',type:'PUDOpoint',ref:'dealerNo 10023',addr1:'35 W 31st St',city:'New York',state:'NY',postal:'10001',status:'inactive',hours:'07:30–20:00',created:'2016-06-15 13:08:40',updated:'2026-10-28 08:15:22'},
+ {id:'LOC-12193',name:'Ideal Food Basket - Lafayette Ave',provider:'PUDO Inc',sweeper:'PUDO Inc',type:'Locker',ref:'dealerNo 12193',addr1:'830 Lafayette Ave',city:'Brooklyn',state:'NY',postal:'11221',status:'active',hours:'24h',created:'2025-08-22 13:25:38',updated:'2026-10-27 16:41:09'},
+ {id:'LOC-12191',name:'Ideal Food Basket - Brooklyn Ave',provider:'PUDO Inc',sweeper:'PUDO Inc',type:'Locker',ref:'dealerNo 12191',addr1:'1086 Brooklyn Ave',city:'Brooklyn',state:'NY',postal:'11203',status:'active',hours:'24h',created:'2025-08-22 13:22:59',updated:'2026-10-05 14:22:08'},
+ {id:'LOC-00176',name:'Pdq Mail Plus',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_176',addr1:'2005 Palmer Ave',city:'Larchmont',state:'NY',postal:'10538',status:'active',hours:'Store hours',created:'2024-03-02 08:11:44',updated:'2026-10-05 09:40:17'},
+ {id:'LOC-00177',name:'Super Postal Center',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_177',addr1:'160 W Camino Real',city:'Boca Raton',state:'FL',postal:'33432',status:'active',hours:'Store hours',created:'2024-03-02 08:12:03',updated:'2026-08-19 10:02:51'},
+ {id:'LOC-00178',name:'Pack & Ship North',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_178',addr1:'9477 W 104th Ave',city:'Westminster',state:'CO',postal:'80021',status:'active',hours:'Store hours',created:'2024-03-02 08:12:21',updated:'2026-07-11 11:14:36'},
+ {id:'LOC-00179',name:'The Box',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_179',addr1:'3023 S. University Drive',city:'Fort Worth',state:'TX',postal:'76109',status:'active',hours:'Store hours',created:'2024-03-02 08:12:39',updated:'2026-06-30 12:22:08'},
+ {id:'LOC-00180',name:'Postal Options',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_180',addr1:'2448 Lamar Ave',city:'Paris',state:'TX',postal:'75460',status:'active',hours:'Store hours',created:'2024-03-02 08:12:57',updated:'2026-10-21 14:30:45'},
+ {id:'LOC-00181',name:'Private Postal Systems',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_181',addr1:'12555 Biscayne Blvd',city:'North Miami',state:'FL',postal:'33181',status:'active',hours:'Store hours',created:'2024-03-02 08:13:15',updated:'2026-05-02 09:55:19'},
+ {id:'LOC-00182',name:'Eagle Postal Center #11',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_182',addr1:'4101 W Green Oaks Blvd Ste 305',city:'Arlington',state:'TX',postal:'76016',status:'active',hours:'Store hours',created:'2024-03-02 08:13:33',updated:'2026-04-18 10:41:27'},
+ {id:'LOC-00183',name:'Upost Shipping Center',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_183',addr1:'3784 Mission Ave Ste 148',city:'Oceanside',state:'CA',postal:'92058',status:'active',hours:'Store hours',created:'2024-03-02 08:13:51',updated:'2026-03-27 11:08:53'},
+ {id:'LOC-00184',name:'Postal Dispatch Business Center',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_184',addr1:'5123 W 98th St',city:'Bloomington',state:'MN',postal:'55437',status:'active',hours:'Store hours',created:'2024-03-02 08:14:09',updated:'2026-02-14 12:36:40'},
+ {id:'LOC-00185',name:'Intown Business Center',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_185',addr1:'245 N Highland Ave NE Ste 230',city:'Atlanta',state:'GA',postal:'30307',status:'removed',hours:'Store hours',created:'2024-03-02 08:14:27',updated:'2026-10-27 02:31:18'},
+ {id:'LOC-00186',name:'Postal Annex Plus',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_186',addr1:'2918 Avenue I Ste 2',city:'Brooklyn',state:'NY',postal:'11210-2214',status:'active',hours:'Store hours',created:'2026-10-28 09:12:41',updated:'2026-10-28 09:12:41'}
 ];
+
+/* OC layer (OC-owned, downstream-facing). ocId generated from vendor (1:1).
+   enable lives here; status derived from linked vendor. */
+var OC_LOCATIONS=[
+ {ocId:'OC-00001',name:'Time Square News',addr1:'360 W 42nd St',city:'New York',state:'NY',provider:'PUDO Inc',type:'PUDOpoint',sweeper:'LMS',hours:'06:00–23:59',enable:true,vendorIds:['LOC-10024'],created:'2016-06-16 12:22:42',updated:'2026-05-14 12:33:08'},
+ {ocId:'OC-00088',name:'Postal Annex 20018',addr1:'2918 Avenue I',city:'Brooklyn',state:'NY',provider:'PUDO Inc',type:'PUDOpoint',sweeper:'PUDO Inc',hours:'24h',enable:true,vendorIds:['LOC-12194'],created:'2025-09-19 15:25:03',updated:'2025-09-19 15:26:01'},
+ {ocId:'OC-00002',name:'Reach Fast Shipping',addr1:'35 W 31st St',city:'New York',state:'NY',provider:'PUDO Inc',type:'PUDOpoint',sweeper:'PUDO Inc',hours:'07:30–20:00',enable:false,vendorIds:['LOC-10023'],created:'2016-06-15 13:08:40',updated:'2026-10-28 08:15:22'},
+ {ocId:'OC-00089',name:'Ideal Food Basket - Lafayette Ave',addr1:'830 Lafayette Ave',city:'Brooklyn',state:'NY',provider:'PUDO Inc',type:'Locker',sweeper:'PUDO Inc',hours:'24h',enable:false,vendorIds:['LOC-12193'],created:'2025-08-22 13:25:38',updated:'2026-10-27 16:41:09'},
+ {ocId:'OC-00090',name:'Ideal Food Basket - Brooklyn Ave',addr1:'1086 Brooklyn Ave',city:'Brooklyn',state:'NY',provider:'PUDO Inc',type:'Locker',sweeper:'PUDO Inc',hours:'24h',enable:true,vendorIds:['LOC-12191'],created:'2025-08-22 13:22:59',updated:'2026-10-05 14:22:08'},
+ {ocId:'OC-00101',name:'Pdq Mail Plus',addr1:'2005 Palmer Ave',city:'Larchmont',state:'NY',provider:'LMS',type:'packagehub',sweeper:'LMS',hours:'Store hours',enable:true,vendorIds:['LOC-00176'],created:'2024-03-02 08:11:44',updated:'2026-10-05 09:40:17'},
+ {ocId:'OC-00102',name:'Super Postal Center',addr1:'160 W Camino Real',city:'Boca Raton',state:'FL',provider:'LMS',type:'packagehub',sweeper:'LMS',hours:'Store hours',enable:true,vendorIds:['LOC-00177'],created:'2024-03-02 08:12:03',updated:'2026-08-19 10:02:51'},
+ {ocId:'OC-00103',name:'Pack & Ship North',addr1:'9477 W 104th Ave',city:'Westminster',state:'CO',provider:'LMS',type:'packagehub',sweeper:'LMS',hours:'Store hours',enable:true,vendorIds:['LOC-00178'],created:'2024-03-02 08:12:21',updated:'2026-07-11 11:14:36'},
+ {ocId:'OC-00104',name:'The Box',addr1:'3023 S. University Drive',city:'Fort Worth',state:'TX',provider:'LMS',type:'packagehub',sweeper:'LMS',hours:'Store hours',enable:true,vendorIds:['LOC-00179'],created:'2024-03-02 08:12:39',updated:'2026-06-30 12:22:08'},
+ {ocId:'OC-00105',name:'Postal Options',addr1:'2448 Lamar Ave',city:'Paris',state:'TX',provider:'LMS',type:'packagehub',sweeper:'LMS',hours:'Store hours',enable:false,vendorIds:['LOC-00180'],created:'2024-03-02 08:12:57',updated:'2026-10-21 14:30:45'},
+ {ocId:'OC-00106',name:'Private Postal Systems',addr1:'12555 Biscayne Blvd',city:'North Miami',state:'FL',provider:'LMS',type:'packagehub',sweeper:'LMS',hours:'Store hours',enable:true,vendorIds:['LOC-00181'],created:'2024-03-02 08:13:15',updated:'2026-05-02 09:55:19'},
+ {ocId:'OC-00107',name:'Eagle Postal Center #11',addr1:'4101 W Green Oaks Blvd Ste 305',city:'Arlington',state:'TX',provider:'LMS',type:'packagehub',sweeper:'LMS',hours:'Store hours',enable:true,vendorIds:['LOC-00182'],created:'2024-03-02 08:13:33',updated:'2026-04-18 10:41:27'},
+ {ocId:'OC-00108',name:'Upost Shipping Center',addr1:'3784 Mission Ave Ste 148',city:'Oceanside',state:'CA',provider:'LMS',type:'packagehub',sweeper:'LMS',hours:'Store hours',enable:true,vendorIds:['LOC-00183'],created:'2024-03-02 08:13:51',updated:'2026-03-27 11:08:53'},
+ {ocId:'OC-00109',name:'Postal Dispatch Business Center',addr1:'5123 W 98th St',city:'Bloomington',state:'MN',provider:'LMS',type:'packagehub',sweeper:'LMS',hours:'Store hours',enable:true,vendorIds:['LOC-00184'],created:'2024-03-02 08:14:09',updated:'2026-02-14 12:36:40'}
+];
+/* NOTE: LOC-00185 (removed) and LOC-00186 (suspected duplicate) intentionally have NO OC location yet. */
 
 var CHANGELOG=[
- {time:'2026-10-29 02:03:12',operator:'System · PUDO Sync',type:'PROVIDER_STATUS_CHANGE',locId:'LOC-10023',field:'status',old:'active',new:'inactive',source:'SYNC'},
- {time:'2026-10-29 02:03:09',operator:'System · PUDO Sync',type:'PROVIDER_FIELD_UPDATE',locId:'LOC-10024',field:'LastUpdatedDate',old:'2026-04-30',new:'2026-05-14',source:'SYNC'},
- {time:'2026-10-29 02:31:40',operator:'System · LMS Sync',type:'PROVIDER_FIELD_UPDATE',locId:'LOC-00176',field:'cutoff_time',old:'16:30',new:'17:00',source:'SYNC'},
- {time:'2026-10-27 16:41:09',operator:'Sarah Lin',type:'DISABLE',locId:'LOC-12193',field:'is_enable',old:'true',new:'false',source:'MANUAL'},
- {time:'2026-10-28 02:31:18',operator:'System · LMS Sync',type:'PROVIDER_REMOVED',locId:'LOC-00185',field:'status',old:'active',new:'removed',source:'SYNC',remark:'location delisted by provider (stop cooperation)'},
- {time:'2026-10-26 10:05:51',operator:'Alex Chen',type:'BATCH_DISABLE',locId:'LOC-00180',field:'is_enable',old:'true',new:'false',source:'MANUAL'},
- {time:'2026-10-21 09:30:17',operator:'System · LMS Sync',type:'PROVIDER_FIELD_UPDATE',locId:'LOC-00180',field:'hoursOfOperation',old:'Sat 10:00–18:00',new:'Store hours per retail site',source:'SYNC'},
- {time:'2026-10-05 14:22:08',operator:'Sarah Lin',type:'ENABLE',locId:'LOC-12191',field:'is_enable',old:'false',new:'true',source:'MANUAL'},
- {time:'2025-09-19 15:26:01',operator:'System · PUDO Sync',type:'PROVIDER_CREATED',locId:'LOC-12194',field:'location',old:'—',new:'created (is_enable defaulted to true)',source:'SYNC'},
- {time:'2025-08-22 13:32:02',operator:'System · PUDO Sync',type:'PROVIDER_CREATED',locId:'LOC-12193',field:'location',old:'—',new:'created (is_enable defaulted to true)',source:'SYNC'},
- {time:'2024-03-02 08:11:44',operator:'System · LMS Sync',type:'PROVIDER_CREATED',locId:'LOC-00176',field:'location',old:'—',new:'created (is_enable defaulted to true)',source:'SYNC'},
- {time:'2026-10-28 09:12:41',operator:'System · LMS Sync',type:'PROVIDER_CREATED',locId:'LOC-00186',field:'location',old:'—',new:'created — fuzzy address match 75% vs PUDO location LOC-12194 (pending duplicate review)',source:'SYNC'}
+ {time:'2026-10-29 02:03:12',layer:'VENDOR',operator:'System · PUDO Sync',type:'PROVIDER_STATUS_CHANGE',locId:'LOC-10023',field:'status',old:'active',new:'inactive',remark:'OC location OC-00002 auto-disabled'},
+ {time:'2026-10-29 02:03:09',layer:'VENDOR',operator:'System · PUDO Sync',type:'PROVIDER_FIELD_UPDATE',locId:'LOC-10024',field:'updated',old:'2026-04-30',new:'2026-05-14',remark:''},
+ {time:'2026-10-29 02:31:40',layer:'VENDOR',operator:'System · LMS Sync',type:'PROVIDER_FIELD_UPDATE',locId:'LOC-00176',field:'cutoff_time',old:'16:30',new:'17:00',remark:''},
+ {time:'2026-10-28 02:31:18',layer:'VENDOR',operator:'System · LMS Sync',type:'PROVIDER_REMOVED',locId:'LOC-00185',field:'status',old:'active',new:'removed',remark:'location delisted by provider'},
+ {time:'2026-10-28 09:12:41',layer:'VENDOR',operator:'System · LMS Sync',type:'PROVIDER_CREATED',locId:'LOC-00186',field:'location',old:'—',new:'created — fuzzy match 75% vs LOC-12194 (pending duplicate, no OC ID)',remark:''},
+ {time:'2026-10-27 16:41:09',layer:'OC',operator:'Sarah Lin',type:'DISABLE',locId:'OC-00089',field:'is_enable',old:'true',new:'false',remark:''},
+ {time:'2026-10-26 10:05:51',layer:'OC',operator:'Alex Chen',type:'BATCH_DISABLE',locId:'OC-00105',field:'is_enable',old:'true',new:'false',remark:''},
+ {time:'2026-10-05 14:22:08',layer:'OC',operator:'Sarah Lin',type:'ENABLE',locId:'OC-00090',field:'is_enable',old:'false',new:'true',remark:''},
+ {time:'2026-10-05 09:30:00',layer:'OC',operator:'Sarah Lin',type:'STORE_DETAIL_EDIT',locId:'OC-00001',field:'opening_hours',old:'07:00–23:00',new:'06:00–23:59',remark:'ops corrected hours'}
 ];
 
-/* ================= Duplicate detection (F12) ================= */
-/* Cross-provider POTENTIAL duplicates (fuzzy match, not exact).
-   Addresses never match exactly across providers, so detection is scored:
-   each field (address_line1, city, state, postal_code) is normalized (lowercase,
-   punctuation/whitespace-insensitive, unit/suite suffix stripped) and compared as
-   token Jaccard similarity; the weighted aggregate is the "match score" (0–100%).
-   Pairs whose score ≥ DUP_THRESHOLD are flagged for review; the differing tokens
-   are highlighted so ops can judge "same store" vs "not same".
-   status: pending (awaiting ops confirmation) | confirmed (OC ID assigned) | rejected */
-var DUP_THRESHOLD=75;      /* % — score at/above this is a potential duplicate */
+var DUP_THRESHOLD=75;
 var DUPLICATES=[
- {pairId:'DUP-001',locA:'LOC-12194',locB:'LOC-00186',status:'pending',detectedAt:'2026-10-28 09:12:41'}
+ {pairId:'DUP-001',locA:'LOC-12194',locB:'LOC-00186',status:'pending',score:75,diff:{addr1:['2918 avenue i','2918 avenue i ste 2'],postal:['11210','11210-2214']},detectedAt:'2026-10-28 09:12:41'}
 ];
 
-/* ---- fuzzy address matching (normalization + token similarity) ---- */
-function normalizeAddr(s){
-  return String(s==null?'':s).toLowerCase()
-    .replace(/[.,#\-–—]/g,' ')            /* punctuation -> space */
-    .replace(/\b(ste|suite|unit|apt|#|rm|room|floor|fl)\b\.?/g,' ')  /* unit/suite suffix stripped */
-    .replace(/\s+/g,' ')
-    .trim();
-}
-function tokenize(s){return normalizeAddr(s).split(' ').filter(Boolean);}
-function jaccard(a,b){
-  if(!a.length&&!b.length)return 1;
-  var sa={},sb={},both=0,uniq=0;
-  a.forEach(function(t){sa[t]=(sa[t]||0)+1;});
-  b.forEach(function(t){sb[t]=(sb[t]||0)+1;});
-  var keys={};
-  a.forEach(function(t){keys[t]=1;}); b.forEach(function(t){keys[t]=1;});
-  Object.keys(keys).forEach(function(t){
-    both+=Math.min(sa[t]||0,sb[t]||0);
-    uniq+=Math.max(sa[t]||0,sb[t]||0);
-  });
-  return uniq?both/uniq:0;
-}
-/* weighted field similarity: address_line1 0.5, postal 0.25, city 0.15, state 0.10 */
-function matchScore(a,b){
-  var s1=jaccard(tokenize(a.addr1),tokenize(b.addr1));
-  var sp=jaccard(tokenize(a.postal),tokenize(b.postal));
-  var sc=jaccard(tokenize(a.city),tokenize(b.city));
-  var ss=jaccard(tokenize(a.state),tokenize(b.state));
-  return Math.round((s1*0.5+sp*0.25+sc*0.15+ss*0.10)*100);
-}
-/* ================= State ================= */
 var currentUser={name:'Sarah Lin',initials:'SL',role:'manager'};
-var filtered=LOCATIONS.slice();
-var selected=new Set();
-var uploadRows=[]; // parsed upload preview rows
-var pendingToggleId=null;
+var selectedOC=new Set();
 var pendingSweeperId=null;
-var currentPage=1;
+var pendingEditOcId=null;
+var pendingBatchAction=null;
 
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');}
-function statusBadge(st){
-  if(st==='active')return '<span class="badge badge-green">active</span>';
-  if(st==='removed')return '<span class="badge badge-gray">removed</span>';
-  return '<span class="badge badge-red">inactive</span>';
-}
-function findLoc(id){return LOCATIONS.find(function(l){return l.id===id;});}
+function statusBadge(st){if(st==='active')return '<span class="badge badge-green">active</span>';if(st==='removed')return '<span class="badge badge-gray">removed</span>';return '<span class="badge badge-red">inactive</span>';}
+function provBadge(p){return '<span class="badge '+(p==='PUDO Inc'?'badge-teal':'badge-blue')+'">'+esc(p)+'</span>';}
+function sweeperBadge(v){var cross=v.sweeper!==v.provider;return '<span class="badge '+(v.sweeper==='PUDO Inc'?'badge-teal':'badge-blue')+'">'+esc(v.sweeper)+'</span>'+(cross?' <span class="badge badge-orange" title="sweeper differs from owner provider">cross</span>':'');}
 function nowStr(){var d=new Date();var p=function(n){return (n<10?'0':'')+n;};return d.getUTCFullYear()+'-'+p(d.getUTCMonth()+1)+'-'+p(d.getUTCDate())+' '+p(d.getUTCHours())+':'+p(d.getUTCMinutes())+':'+p(d.getUTCSeconds());}
+function findVendor(id){return VENDORS.find(function(v){return v.id===id;});}
+function findOC(id){return OC_LOCATIONS.find(function(o){return o.ocId===id;});}
+function ocStatus(oc){return oc.vendorIds.map(findVendor).filter(Boolean).some(function(v){return v.status==='active';})?'active':'inactive';}
 
 /* ================= Navigation ================= */
-var CRUMBS={p01:['Locations','merged catalog from PUDO Inc &amp; LMS'],p02:['Location Detail','full profile &amp; change history'],p03:['Change Log','all changes across locations'],p04:['Sync Status','daily provider sync runs'],p05:['Overview','catalog KPIs'],p06:['Duplicate Review','cross-provider address duplicates &amp; OC location ID assignment']};
+var CRUMBS={p01:['Vendor Location List','raw provider locations · read-only except Sweeper'],p02:['OC Location List','OC-owned, downstream-facing · enable switch lives here'],p03:['Change Log','all changes across both layers'],p04:['Sync Status','daily provider sync runs'],p06:['Duplicate Review','cross-provider fuzzy duplicates · OC ID assignment']};
 function switchPage(pid){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.getElementById('page-'+pid).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.toggle('active',n.getAttribute('data-nav')===pid);});
   document.getElementById('breadcrumb').innerHTML='<b>'+CRUMBS[pid][0]+'</b> — '+CRUMBS[pid][1];
-  if(pid==='p05')renderKPI();
   if(pid==='p03')renderChangeLog();
-  if(pid==='p06')renderDuplicateReview();
+  if(pid==='p04')renderSync();
+  if(pid==='p06')renderDup();
   window.scrollTo(0,0);
 }
 
-/* ================= Role switching (permission demo) ================= */
+/* ================= Role ================= */
 function setRole(role){
-  currentUser.role=role;
-  if(role==='manager'){currentUser={name:'Sarah Lin',initials:'SL',role:'manager'};}
-  else{currentUser={name:'Alex Chen',initials:'AC',role:'viewer'};}
+  currentUser=role==='manager'?{name:'Sarah Lin',initials:'SL',role:'manager'}:{name:'Alex Chen',initials:'AC',role:'viewer'};
   document.getElementById('role-manager').classList.toggle('active',role==='manager');
   document.getElementById('role-viewer').classList.toggle('active',role!=='manager');
   document.getElementById('u-name').textContent=currentUser.name;
   document.getElementById('u-avatar').textContent=currentUser.initials;
   document.getElementById('u-role').textContent=role==='manager'?'Location Manager':'Viewer';
-  renderTable();
-  updateBatchBar();
-  var dt=document.getElementById('d-toggle-btn');
-  if(dt){dt.disabled=(role!=='manager');dt.title=role==='manager'?'':'Requires Location Manager permission';}
-  showToast(role==='manager'?'Demo role switched to Location Manager':'Demo role switched to Viewer — enable controls are now disabled','info');
+  renderVendor();renderOC();
 }
 
-/* ================= Filters (F02) ================= */
-/* Type options are provider-scoped (mutually exclusive):
-   PUDO Inc -> PUDOpoint / Locker ; LMS -> packagehub */
-var TYPE_BY_PROVIDER={'PUDO Inc':['PUDOpoint','Locker'],'LMS':['packagehub']};
-function onProviderChange(sel){
-  var prov=sel.value;
-  var typeSel=document.getElementById('f-type');
-  var cur=typeSel.value;
-  var opts='<option value="">All</option>';
-  if(prov){
-    TYPE_BY_PROVIDER[prov].forEach(function(t){opts+='<option>'+t+'</option>';});
-    /* reset current type if it no longer belongs to this provider */
-    if(cur && TYPE_BY_PROVIDER[prov].indexOf(cur)<0){cur='';}
-  }else{
-    opts+='<option>PUDOpoint</option><option>Locker</option><option>packagehub</option>';
-  }
-  typeSel.innerHTML=opts;
-  typeSel.value=cur;
-}
-function applyFilters(){
-  var fid=document.getElementById('f-id').value.trim().toLowerCase();
-  var focid=document.getElementById('f-ocid').value.trim().toLowerCase();
-  var fname=document.getElementById('f-name').value.trim().toLowerCase();
-  var faddr=document.getElementById('f-addr').value.trim().toLowerCase();
-  var fcity=document.getElementById('f-city').value.trim().toLowerCase();
-  var fstate=document.getElementById('f-state').value.trim().toLowerCase();
-  var fprov=document.getElementById('f-provider').value;
-  var fpick=document.getElementById('f-pickup').value;
-  var fstat=document.getElementById('f-status').value;
-  var fen=document.getElementById('f-enable').value;
-  var ftype=document.getElementById('f-type').value;
-  var fc1=toTs(document.getElementById('f-c1').value);
-  var fc2=toTs(document.getElementById('f-c2').value);
-  var fu1=toTs(document.getElementById('f-u1').value);
-  var fu2=toTs(document.getElementById('f-u2').value);
-  filtered=LOCATIONS.filter(function(l){
-    if(fid&&l.id.toLowerCase().indexOf(fid)<0)return false;
-    if(focid&&(!l.ocId||l.ocId.toLowerCase().indexOf(focid)<0))return false;
-    if(fname&&l.name.toLowerCase().indexOf(fname)<0)return false;
-    if(faddr&&((l.addr1+' '+l.addr2).toLowerCase().indexOf(faddr)<0))return false;
-    if(fcity&&l.city.toLowerCase().indexOf(fcity)<0)return false;
-    if(fstate&&l.state.toLowerCase().indexOf(fstate)<0)return false;
-    if(fprov&&l.provider!==fprov)return false;
-    if(fpick&&l.pickup!==fpick)return false;
-    if(fstat&&l.status!==fstat)return false;
-    if(fen&&(fen==='enabled')!==l.enable)return false;
-    if(ftype&&l.type!==ftype)return false;
-    if(fc1!=null&&toTs(l.created)<fc1)return false;
-    if(fc2!=null&&toTs(l.created)>fc2)return false;
-    if(fu1!=null&&toTs(l.updated)<fu1)return false;
-    if(fu2!=null&&toTs(l.updated)>fu2)return false;
+/* ================= Vendor list ================= */
+function applyVendorFilters(){renderVendor();}
+function resetVendorFilters(){['v-f-id','v-f-name','v-f-sweeper','v-f-status','v-f-city','v-f-state'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('v-f-provider').value='';document.getElementById('v-f-type').value='';renderVendor();}
+function onProviderChange(){/* type options are static; no-op in simplified prototype */}
+function vendorFilters(){
+  var f={id:val('v-f-id'),name:val('v-f-name').toLowerCase(),provider:val('v-f-provider'),sweeper:val('v-f-sweeper'),status:val('v-f-status'),type:val('v-f-type'),city:val('v-f-city').toLowerCase(),state:val('v-f-state').toLowerCase()};
+  return VENDORS.filter(function(v){
+    if(f.id&&v.id.toLowerCase().indexOf(f.id)<0)return false;
+    if(f.name&&v.name.toLowerCase().indexOf(f.name)<0)return false;
+    if(f.provider&&v.provider!==f.provider)return false;
+    if(f.sweeper&&v.sweeper!==f.sweeper)return false;
+    if(f.status&&v.status!==f.status)return false;
+    if(f.type&&v.type!==f.type)return false;
+    if(f.city&&v.city.toLowerCase().indexOf(f.city)<0)return false;
+    if(f.state&&v.state.toLowerCase().indexOf(f.state)<0)return false;
     return true;
   });
-  selected.clear();currentPage=1;
-  renderTable();updateBatchBar();renderChips();
-  var scs=document.querySelector('#page-p01 .state-container[data-state="default"]');scs.style.display='block';
-  ['loading','empty','error'].forEach(function(s){document.querySelector('#page-p01 .state-container[data-state="'+s+'"]').style.display='none';});
 }
-/* 统一解析时间：支持 'YYYY-MM-DD HH:MM:SS'（字段值）与 'YYYY-MM-DDTHH:MM[:SS]'（datetime-local 输入），返回毫秒时间戳，空/非法返回 null */
-function toTs(v){
-  if(!v)return null;
-  var s=String(v).trim();
-  s=s.replace('T',' ');
-  s=s.replace(/-/g,'/');
-  var t=Date.parse(s);
-  return isNaN(t)?null:t;
-}
-function resetFilters(){
-  ['f-id','f-ocid','f-name','f-addr','f-city','f-state','f-c1','f-c2','f-u1','f-u2'].forEach(function(i){document.getElementById(i).value='';});
-  ['f-provider','f-pickup','f-status','f-enable','f-type'].forEach(function(i){document.getElementById(i).value='';});
-  applyFilters();
-  showToast('Filters cleared — showing full catalog','info');
-}
-function renderChips(){
-  var chips=[];var map={'f-id':'Location ID','f-ocid':'OC location ID','f-name':'Name','f-addr':'Address','f-city':'City','f-state':'State'};
-  Object.keys(map).forEach(function(k){var v=document.getElementById(k).value.trim();if(v)chips.push(map[k]+': '+esc(v));});
-  [['f-provider','Provider'],['f-pickup','Pickup'],['f-status','Status'],['f-enable','Enable'],['f-type','Type']].forEach(function(p){var v=document.getElementById(p[0]).value;if(v)chips.push(p[1]+': '+esc(v));});
-  [['f-c1','Created from'],['f-c2','Created to'],['f-u1','Updated from'],['f-u2','Updated to']].forEach(function(p){var v=document.getElementById(p[0]).value;if(v)chips.push(p[1]+': '+esc(v));});
-  document.getElementById('f-chips').innerHTML=chips.map(function(c){return '<span class="chip">🏷️ '+c+'</span>';}).join('');
-}
-
-/* ================= Table rendering (F01) ================= */
-var PAGE_SIZE=20;
-function renderTable(){
-  var tb=document.getElementById('loc-tbody');var html='';
-  var totalPages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
-  if(currentPage>totalPages)currentPage=totalPages;
-  var start=(currentPage-1)*PAGE_SIZE;
-  var pageItems=filtered.slice(start,start+PAGE_SIZE);
-  pageItems.forEach(function(l){
-    var canToggle=currentUser.role==='manager';
-    var swCls='switch'+(l.enable?' on':'')+(canToggle?'':' disabled');
-    var swTitle=canToggle?('Click to '+(l.enable?'disable':'enable')+' this location'):'Requires Location Manager permission';
-    html+='<tr class="'+(selected.has(l.id)?'selected':'')+'">'
-      +'<td><input type="checkbox" '+(selected.has(l.id)?'checked':'')+' onclick="toggleSelect(\''+l.id+'\',this)"></td>'
-      +'<td class="mono link" onclick="openDetail(\''+l.id+'\')">'+esc(l.id)+'</td>'
-      +'<td class="mono" style="font-size:12px">'+(l.ocId?esc(l.ocId):'<span class="badge badge-orange" title="No OC location ID yet — not synced upstream">pending</span>')+'</td>'
-      +'<td><b>'+esc(l.name)+'</b></td>'
-      +'<td style="max-width:220px;color:var(--text-secondary)">'+esc(l.addr1)+(l.addr2?', '+esc(l.addr2):'')+'</td>'
-      +'<td>'+esc(l.city)+', '+esc(l.state)+'</td>'
-      +'<td><span class="badge '+(l.provider==='PUDO Inc'?'badge-teal':'badge-blue')+'">'+esc(l.provider)+'</span></td>'
-      +'<td>'+(l.pickup===l.provider?('<span class="badge '+(l.pickup==='PUDO Inc'?'badge-teal':'badge-blue')+'">'+esc(l.pickup)+'</span>'):('<span class="badge '+(l.pickup==='PUDO Inc'?'badge-teal':'badge-blue')+'">'+esc(l.pickup)+'</span> <span class="badge badge-orange" title="Pickup handled by a different provider than the location owner">cross</span>'))+'</td>'
-      +'<td>'+esc(l.type)+'</td>'
-      +'<td>'+statusBadge(l.status)+'</td>'
-      +'<td><div class="'+swCls+'" title="'+swTitle+'" onclick="toggleEnableClick(\''+l.id+'\')"></div></td>'
-      +'<td class="mono" style="font-size:12px;white-space:nowrap">'+esc(l.created)+'</td>'
-      +'<td class="mono" style="font-size:12px;white-space:nowrap">'+esc(l.updated)+'</td>'
-      +'<td><span class="link" onclick="openDetail(\''+l.id+'\')">View</span></td>'
+function val(id){return document.getElementById(id).value.trim();}
+function renderVendor(){
+  var rows=vendorFilters();
+  var tb=document.getElementById('v-tbody');
+  tb.innerHTML=rows.map(function(v){
+    var sw=currentUser.role==='manager'
+      ?'<span class="link" onclick="openSweeperEdit(\''+v.id+'\')">'+esc(v.sweeper)+'</span>'
+      :esc(v.sweeper);
+    return '<tr>'
+      +'<td class="mono link" onclick="openVendorDetail(\''+v.id+'\')">'+esc(v.id)+'</td>'
+      +'<td>'+esc(v.name)+'</td>'
+      +'<td>'+esc(v.addr1)+'</td>'
+      +'<td>'+esc(v.city)+' / '+esc(v.state)+'</td>'
+      +'<td>'+provBadge(v.provider)+'</td>'
+      +'<td>'+sw+'</td>'
+      +'<td>'+esc(v.type)+'</td>'
+      +'<td>'+statusBadge(v.status)+'</td>'
+      +'<td class="mono">'+esc(v.created)+'</td>'
+      +'<td class="mono">'+esc(v.updated)+'</td>'
       +'</tr>';
+  }).join('');
+  document.getElementById('v-result-meta').textContent=rows.length+' vendor location(s)';
+  renderChips('v',[['v-f-provider','Provider'],['v-f-sweeper','Sweeper'],['v-f-status','Status'],['v-f-type','Type']]);
+}
+function renderChips(prefix,pairs){
+  var chips=[];
+  pairs.forEach(function(p){var v=val(p[0]);if(v)chips.push(p[1]+': '+esc(v));});
+  var el=document.getElementById(prefix==='v'?'v-chips':'o-chips');
+  el.innerHTML=chips.map(function(c){return '<span class="chip">'+c+' <span class="x" onclick="clearChip(this)">✕</span></span>';}).join('');
+}
+function clearChip(){/* simplified: chips are informational */}
+
+/* ================= OC list ================= */
+function applyOCFilters(){renderOC();}
+function resetOCFilters(){['o-f-id','o-f-name','o-f-city','o-f-state'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('o-f-provider').value='';document.getElementById('o-f-status').value='';document.getElementById('o-f-enable').value='';document.getElementById('o-f-type').value='';renderOC();}
+function ocFilters(){
+  var f={id:val('o-f-id'),name:val('o-f-name').toLowerCase(),provider:val('o-f-provider'),status:val('o-f-status'),enable:val('o-f-enable'),type:val('o-f-type'),city:val('o-f-city').toLowerCase(),state:val('o-f-state').toLowerCase()};
+  return OC_LOCATIONS.filter(function(o){
+    if(f.id&&o.ocId.toLowerCase().indexOf(f.id)<0)return false;
+    if(f.name&&o.name.toLowerCase().indexOf(f.name)<0)return false;
+    if(f.provider&&o.provider!==f.provider)return false;
+    if(f.status&&ocStatus(o)!==f.status)return false;
+    if(f.enable==='enabled'&&!o.enable)return false;
+    if(f.enable==='disabled'&&o.enable)return false;
+    if(f.type&&o.type!==f.type)return false;
+    if(f.city&&o.city.toLowerCase().indexOf(f.city)<0)return false;
+    if(f.state&&o.state.toLowerCase().indexOf(f.state)<0)return false;
+    return true;
   });
-  if(!pageItems.length)html='<tr><td colspan="14" style="text-align:center;padding:32px;color:var(--text-tertiary)">No locations match the current filters.</td></tr>';
-  tb.innerHTML=html;
-  document.getElementById('t-total').textContent=LOCATIONS.length;
-  document.getElementById('result-meta').textContent='Showing '+(filtered.length?start+1:0)+'–'+Math.min(start+PAGE_SIZE,filtered.length)+' of '+filtered.length+' locations · page '+currentPage+' of '+totalPages;
-  document.getElementById('pg-cur').textContent=currentPage;
-  document.getElementById('pg-prev').disabled=currentPage<=1;
-  document.getElementById('pg-next').disabled=currentPage>=totalPages;
+}
+function renderOC(){
+  var rows=ocFilters();
+  var tb=document.getElementById('o-tbody');
+  tb.innerHTML=rows.map(function(o){
+    var st=ocStatus(o);
+    var vendorInactive=!o.vendorIds.map(findVendor).filter(Boolean).some(function(v){return v.status==='active';});
+    var disabledByVendor=o.enable&&vendorInactive;
+    var sw=(function(){
+      if(disabledByVendor)return '<span class="switch disabled" title="vendor location is inactive"></span>';
+      if(currentUser.role!=='manager')return '<span class="switch '+(o.enable?'on':'')+' disabled" title="Requires Location Manager"></span>';
+      return '<span class="switch '+(o.enable?'on':'')+'" onclick="toggleOCEnable(\''+o.ocId+'\',this)"></span>';
+    })();
+    var linked=o.vendorIds.map(function(id){return '<span class="mono">'+esc(id)+'</span>';}).join(', ');
+    return '<tr>'
+      +'<td><input type="checkbox" class="o-chk" data-ocid="'+esc(o.ocId)+'" onclick="updateOCSelection()"></td>'
+      +'<td class="mono link" onclick="openOCDetail(\''+o.ocId+'\')">'+esc(o.ocId)+'</td>'
+      +'<td>'+esc(o.name)+'</td>'
+      +'<td>'+esc(o.addr1)+'</td>'
+      +'<td>'+provBadge(o.provider)+'</td>'
+      +'<td>'+esc(o.type)+'</td>'
+      +'<td>'+esc(o.sweeper)+'</td>'
+      +'<td>'+statusBadge(st)+(vendorInactive?' <span class="badge badge-orange" title="linked vendor inactive">vendor inactive</span>':'')+'</td>'
+      +'<td>'+sw+'</td>'
+      +'<td>'+linked+'</td>'
+      +'<td>'+(currentUser.role==='manager'?'<span class="link" onclick="openEdit(\''+o.ocId+'\')">Edit</span>':'<span style="color:var(--text-tertiary);font-size:11px">Manager only</span>')+'</td>'
+      +'</tr>';
+  }).join('');
+  document.getElementById('o-result-meta').textContent=rows.length+' OC location(s)';
+  renderChips('o',[['o-f-provider','Provider'],['o-f-status','Status'],['o-f-enable','Enable'],['o-f-type','Type']]);
+  updateOCSelection();
 }
 
-/* ================= Selection & batch (F07 Mode A) ================= */
-function toggleSelect(id,cb){
-  if(cb.checked)selected.add(id);else selected.delete(id);
-  updateBatchBar();renderTable();
+function toggleOCEnable(ocId,el){
+  if(currentUser.role!=='manager'){showToast('Permission required','Enable/disable requires the Location Manager advanced permission.','err');return;}
+  var o=findOC(ocId);
+  var vendorInactive=!o.vendorIds.map(findVendor).filter(Boolean).some(function(v){return v.status==='active';});
+  if(vendorInactive){openModal('modal-enable-block');return;}
+  var old=o.enable;
+  o.enable=!o.enable;o.updated=nowStr();
+  CHANGELOG.unshift({time:nowStr(),layer:'OC',operator:currentUser.name,type:o.enable?'ENABLE':'DISABLE',locId:o.ocId,field:'is_enable',old:String(old),new:String(o.enable),remark:''});
+  renderOC();
+  showToast(o.enable?'Enabled':'Disabled',o.name+' · is_enable: '+old+' → '+o.enable+' · audit entry written');
 }
-function selectAll(cb){
-  var start=(currentPage-1)*PAGE_SIZE;
-  var pageItems=filtered.slice(start,start+PAGE_SIZE);
-  if(cb.checked)pageItems.forEach(function(l){selected.add(l.id);});else pageItems.forEach(function(l){selected.delete(l.id);});
-  updateBatchBar();renderTable();
+
+function updateOCSelection(){
+  var boxes=document.querySelectorAll('.o-chk');
+  selectedOC=new Set();
+  boxes.forEach(function(b){if(b.checked)selectedOC.add(b.getAttribute('data-ocid'));});
+  var bar=document.getElementById('o-batch-bar');
+  var n=selectedOC.size;
+  if(n>0){bar.style.display='flex';document.getElementById('o-sel-count').textContent=n+' selected';}
+  else bar.style.display='none';
 }
-function clearSelection(){selected.clear();document.getElementById('cb-all').checked=false;updateBatchBar();renderTable();}
-function updateBatchBar(){
-  var bar=document.getElementById('batch-bar');
-  bar.style.display=selected.size>0?'flex':'none';
-  document.getElementById('sel-count').textContent=selected.size+' selected';
-  var can=currentUser.role==='manager'&&selected.size>0&&selected.size<=200;
-  document.getElementById('btn-batch-enable').disabled=!can;
-  document.getElementById('btn-batch-disable').disabled=!can;
+function toggleAllOC(master){
+  document.querySelectorAll('.o-chk').forEach(function(b){b.checked=master.checked;});
+  updateOCSelection();
 }
-var batchAction='disable';
+function clearOCSelection(){document.querySelectorAll('.o-chk').forEach(function(b){b.checked=false;});updateOCSelection();}
+
+/* ================= Batch ================= */
 function openBatchModal(action){
-  batchAction=action;
-  document.getElementById('bm-action').textContent=action;
-  document.getElementById('bm-count').innerHTML='You are about to <b>'+(action==='enable'?'ENABLE':'DISABLE')+'</b> <b>'+selected.size+'</b> location'+(selected.size>1?'s':'')+'.';
-  var ids=Array.from(selected).slice(0,5);
-  document.getElementById('bm-ids').innerHTML=ids.join('<br>')+(selected.size>5?'<br>… and '+(selected.size-5)+' more':'');
-  document.getElementById('bm-warn').innerHTML=action==='disable'?'⚠️ Disabled locations become <b>invisible to upstream customers</b> immediately on their next API query.':'ℹ️ Enabled locations become visible to upstream customers only if their provider status is also active.';
-  document.getElementById('bm-confirm').className='btn '+(action==='enable'?'btn-primary':'btn-danger');
-  document.getElementById('bm-confirm').textContent=action==='enable'?'Confirm Enable':'Confirm Disable';
+  if(currentUser.role!=='manager'){showToast('Permission required','Batch enable/disable requires the Location Manager advanced permission.','err');return;}
+  if(selectedOC.size===0){showToast('Nothing selected','Select at least one OC location first.','info');return;}
+  pendingBatchAction=action;
+  document.getElementById('batch-title').textContent=action==='enable'?'Batch Enable':'Batch Disable';
+  var ids=Array.from(selectedOC);
+  document.getElementById('batch-body').innerHTML='You are about to <b>'+(action==='enable'?'enable':'disable')+'</b> <b>'+ids.length+'</b> OC location(s). This changes their downstream visibility.';
+  document.getElementById('batch-ids').textContent=ids.slice(0,5).join('\n')+(ids.length>5?'\n… and '+(ids.length-5)+' more':'');
+  var c=document.getElementById('batch-confirm');
+  c.className=action==='disable'?'btn btn-danger':'btn btn-primary';
+  c.textContent=action==='enable'?'Confirm Enable':'Confirm Disable';
   openModal('modal-batch');
 }
 function confirmBatch(){
-  var type=batchAction==='enable'?'BATCH_ENABLE':'BATCH_DISABLE';
-  var applied=0,skipped=0;
-  selected.forEach(function(id){
-    var l=findLoc(id);if(!l)return;
-    var target=batchAction==='enable';
-    if(l.enable===target){skipped++;return;}
-    l.enable=target;applied++;
-    CHANGELOG.unshift({time:nowStr(),operator:currentUser.name,type:type,locId:id,field:'is_enable',old:String(!target),new:String(target),source:'MANUAL'});
-    l.updated=nowStr();
+  var ids=Array.from(selectedOC);
+  ids.forEach(function(id){
+    var o=findOC(id);
+    var old=o.enable;
+    var target=pendingBatchAction==='enable';
+    if(o.enable===target)return; // no-op
+    o.enable=target;o.updated=nowStr();
+    CHANGELOG.unshift({time:nowStr(),layer:'OC',operator:currentUser.name,type:target?'BATCH_ENABLE':'BATCH_DISABLE',locId:o.ocId,field:'is_enable',old:String(old),new:String(target),remark:''});
   });
-  closeModal('modal-batch');selected.clear();renderTable();updateBatchBar();
-  showToast('Batch '+(batchAction==='enable'?'enable':'disable')+' complete','<b>'+applied+'</b> location(s) updated · <b>'+skipped+'</b> already in target state (skipped, no audit entry) · '+applied+' audit entries written');
+  closeModal('modal-batch');
+  clearOCSelection();
+  renderOC();
+  showToast('Batch complete',ids.length+' OC location(s) processed · audit entries written');
 }
 
-/* ================= Single toggle (F06) ================= */
-function toggleEnableClick(id){
-  if(currentUser.role!=='manager'){showToast('Permission required','Toggling is_enable requires the Location Manager advanced permission. Current demo role: Viewer.','err');return;}
-  pendingToggleId=id;
-  var l=findLoc(id);
-  document.getElementById('tm-text').innerHTML=(l.enable?'<b>Disable</b>':'<b>Enable</b>')+' <b>'+esc(l.name)+'</b> ('+esc(l.id)+')?';
-  document.getElementById('tm-warn').innerHTML=l.enable?'⚠️ This location will become <b>invisible to upstream customers</b> (unless provider status is also inactive).':'ℹ️ Customers will see this location on next query if provider status is active.';
-  openModal('modal-toggle');
-}
-function confirmToggle(){
-  var l=findLoc(pendingToggleId);if(!l){closeModal('modal-toggle');return;}
-  var old=l.enable;l.enable=!l.enable;l.updated=nowStr();
-  CHANGELOG.unshift({time:nowStr(),operator:currentUser.name,type:l.enable?'ENABLE':'DISABLE',locId:l.id,field:'is_enable',old:String(old),new:String(l.enable),source:'MANUAL'});
-  closeModal('modal-toggle');
-  if(document.getElementById('page-p02').classList.contains('active'))renderDetail(l.id);else renderTable();
-  showToast(l.enable?'Location enabled':'Location disabled',esc(l.name)+' · is_enable: '+old+' → '+l.enable+' · audit entry written');
-}
-
-/* ================= Sweeper edit (F11) ================= */
+/* ================= Sweeper edit ================= */
 function openSweeperEdit(id){
-  if(currentUser.role!=='manager'){showToast('Permission required','Editing the pickup provider (sweeper) requires the Location Manager advanced permission. Current demo role: Viewer.','err');return;}
+  if(currentUser.role!=='manager'){showToast('Permission required','Editing the sweeper requires the Location Manager advanced permission.','err');return;}
+  var v=findVendor(id);
   pendingSweeperId=id;
-  var l=findLoc(id);
-  var cur=l.pickup||l.provider;
-  document.getElementById('sw-loc').textContent=l.id;
-  document.getElementById('sw-cur').textContent=cur;
-  document.getElementById('sw-select').value=cur;
-  document.getElementById('sw-warn').innerHTML=(cur!==l.provider)?'<span style="color:var(--color-warning)">⚠ Current sweeper differs from the location owner provider.</span>':'ℹ️ Pickup currently handled by the location owner provider.';
+  document.getElementById('sw-loc').textContent=v.id;
+  document.getElementById('sw-cur').textContent=v.sweeper;
+  document.getElementById('sw-select').value=v.sweeper;
+  document.getElementById('sw-warn').innerHTML=(v.sweeper!==v.provider)?'<span style="color:var(--color-warning)">⚠ Current sweeper differs from the location owner provider.</span>':'ℹ️ Sweeper currently handled by the location owner provider.';
   openModal('modal-sweeper');
 }
-function confirmSweeperEdit(){
-  var l=findLoc(pendingSweeperId);if(!l){closeModal('modal-sweeper');return;}
+function saveSweeper(){
+  var v=findVendor(pendingSweeperId);
   var nv=document.getElementById('sw-select').value;
-  var old=l.pickup||l.provider;
-  if(nv===old){closeModal('modal-sweeper');showToast('No change','Sweeper unchanged ('+esc(nv)+'). No audit entry written.','info');return;}
-  l.pickup=nv;l.updated=nowStr();
-  CHANGELOG.unshift({time:nowStr(),operator:currentUser.name,type:'SWEEPER_CHANGE',locId:l.id,field:'pickup_provider',old:old,new:nv,source:'MANUAL'});
+  var old=v.sweeper;
+  if(old===nv){closeModal('modal-sweeper');showToast('No change','Sweeper is already '+nv+'.','info');return;}
+  v.sweeper=nv;v.updated=nowStr();
+  var oc=OC_LOCATIONS.find(function(o){return o.vendorIds.indexOf(v.id)>=0;});
+  if(oc)oc.sweeper=nv;
+  CHANGELOG.unshift({time:nowStr(),layer:'VENDOR',operator:currentUser.name,type:'SWEEPER_CHANGE',locId:v.id,field:'sweeper',old:old,new:nv,remark:''});
   closeModal('modal-sweeper');
-  if(document.getElementById('page-p02').classList.contains('active'))renderDetail(l.id);else renderTable();
-  showToast('Sweeper updated',esc(l.name)+' · pickup_provider: '+old+' → '+nv+' · audit entry written');
+  renderVendor();renderOC();
+  showToast('Sweeper updated',v.name+' · sweeper: '+old+' → '+nv+' · audit entry written');
 }
 
-/* ================= Export (F03) ================= */
-function exportCSV(){
-  var head='Location ID,OC ID,Name,Address,City,State,Postal,Country,Provider,Pickup Provider,Type,Status,Enable,Created,Updated';
-  var rows=filtered.map(function(l){
-    return [l.id,(l.ocId||''),l.name,(l.addr1+(l.addr2?', '+l.addr2:'')),l.city,l.state,l.postal,l.country,l.provider,(l.pickup||l.provider),l.type,l.status,(l.enable?'enabled':'disabled'),l.created,l.updated].map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');
+/* ================= OC store edit ================= */
+function openEdit(ocId){
+  if(currentUser.role!=='manager'){showToast('Permission required','Editing store details requires the Location Manager advanced permission.','err');return;}
+  var o=findOC(ocId);
+  pendingEditOcId=ocId;
+  document.getElementById('ed-ocid').textContent=ocId;
+  document.getElementById('ed-name').value=o.name;
+  document.getElementById('ed-addr').value=o.addr1;
+  document.getElementById('ed-city').value=o.city;
+  document.getElementById('ed-hours').value=o.hours;
+  openModal('modal-edit');
+}
+function saveEdit(){
+  var o=findOC(pendingEditOcId);
+  var oldName=o.name,oldAddr=o.addr1,oldCity=o.city,oldHours=o.hours;
+  var changes=[];
+  var nn=document.getElementById('ed-name').value.trim();
+  var na=document.getElementById('ed-addr').value.trim();
+  var nc=document.getElementById('ed-city').value.trim();
+  var nh=document.getElementById('ed-hours').value.trim();
+  if(nn!==oldName){changes.push(['name',oldName,nn]);o.name=nn;}
+  if(na!==oldAddr){changes.push(['address_line1',oldAddr,na]);o.addr1=na;}
+  if(nc!==oldCity){changes.push(['city',oldCity,nc]);o.city=nc;}
+  if(nh!==oldHours){changes.push(['opening_hours',oldHours,nh]);o.hours=nh;}
+  if(changes.length===0){closeModal('modal-edit');showToast('No change','No fields were modified.','info');return;}
+  o.updated=nowStr();
+  changes.forEach(function(c){
+    CHANGELOG.unshift({time:nowStr(),layer:'OC',operator:currentUser.name,type:'STORE_DETAIL_EDIT',locId:o.ocId,field:c[0],old:c[1],new:c[2],remark:'OC-level override'});
   });
-  var blob=new Blob([head+'\r\n'+rows.join('\r\n')],{type:'text/csv'});
-  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  var d=new Date();var p2=function(n){return (n<10?'0':'')+n;};
-  var stamp=d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+'_'+p2(d.getHours())+p2(d.getMinutes())+p2(d.getSeconds());
-  var fname='locations_'+stamp+'.csv';
-  a.download=fname;a.click();URL.revokeObjectURL(a.href);
-  showToast('Export complete',rows.length+' row(s) exported (follows active filters) · '+fname);
+  closeModal('modal-edit');
+  renderOC();
+  showToast('Store details saved',changes.length+' field(s) updated · STORE_DETAIL_EDIT audit written');
 }
 
-/* ================= Batch upload (F07 Mode B) ================= */
-function openUpload(){uploadRows=[];document.getElementById('up-preview').style.display='none';document.getElementById('up-error').style.display='none';document.getElementById('file-input').value='';openModal('modal-upload');}
-function downloadTemplate(){
-  var csv='locationID,is_enable\r\nLOC-10024,T\r\nLOC-00176,F';
-  var blob=new Blob([csv],{type:'text/csv'});
-  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='batch_enable_template.csv';a.click();URL.revokeObjectURL(a.href);
-  showToast('Template downloaded','batch_enable_template.csv — 2 columns: locationID, is_enable (T / F)','info');
-}
-function loadDemoFile(){parseCSV('locationID,is_enable\nLOC-10024,F\nLOC-00176,F\nLOC-99999,T\nLOC-00180,X\nLOC-10023,T\nLOC-00176,T');}
-function handleFile(input){
-  var file=input.files[0];if(!file)return;
-  if(/\.xlsx$/i.test(file.name)){showUploadError('XLSX detected — the prototype parses .csv only. In production, .xlsx is parsed server-side with the same validation. Please use "Load demo file" or a .csv.');return;}
-  if(file.size>5*1024*1024){showUploadError('File exceeds the 5MB limit.');return;}
-  var reader=new FileReader();
-  reader.onload=function(e){parseCSV(String(e.target.result));};
-  reader.readAsText(file);
-}
-function showUploadError(msg){var el=document.getElementById('up-error');el.style.display='block';el.innerHTML='⚠️ '+esc(msg);document.getElementById('up-preview').style.display='none';}
-function parseCSV(text){
-  document.getElementById('up-error').style.display='none';
-  var lines=text.split(/\r?\n/).filter(function(l){return l.trim()!=='';});
-  if(!lines.length){showUploadError('File is empty.');return;}
-  if(lines.length>5001){showUploadError('File exceeds 5,000 data rows.');return;}
-  var header=lines[0].split(',').map(function(s){return s.trim().toLowerCase();});
-  if(header[0]!=='locationid'||header[1]!=='is_enable'){showUploadError('Template header must be locationID,is_enable (found: '+esc(lines[0])+').');return;}
-  uploadRows=[];var seen={};
-  for(var i=1;i<lines.length;i++){
-    var parts=lines[i].split(',');var id=(parts[0]||'').trim();var val=(parts[1]||'').trim().toUpperCase();
-    var reason='';
-    if(!findLoc(id))reason='Unknown location ID — rejected, never silently created';
-    else if(val!=='T'&&val!=='F')reason='Invalid is_enable value — accepts T or F only';
-    else if(seen[id])reason='Duplicate locationID — last occurrence wins, this row skipped';
-    if(!reason)seen[id]=true;
-    uploadRows.push({line:i+1,id:id,val:val,reason:reason});
-  }
-  var valid=uploadRows.filter(function(r){return !r.reason;});
-  var toEnable=valid.filter(function(r){return r.val==='T';}).length;
-  var toDisable=valid.filter(function(r){return r.val==='F';}).length;
-  var errs=uploadRows.length-valid.length;
-  document.getElementById('up-preview').style.display='block';
-  document.getElementById('up-summary').innerHTML='<b>'+valid.length+'</b> valid rows (<span style="color:var(--color-success)">'+toEnable+' to enable</span> · <span style="color:var(--color-danger)">'+toDisable+' to disable</span>) · <span style="color:var(--color-danger)"><b>'+errs+'</b> problem rows</span>';
-  var html='<thead><tr><th>Row</th><th>locationID</th><th>is_enable</th><th>Status</th></tr></thead><tbody>';
-  uploadRows.forEach(function(r){
-    html+='<tr class="'+(r.reason?'err':'ok')+'"><td>'+r.line+'</td><td>'+esc(r.id)+'</td><td>'+esc(r.val||'—')+'</td><td>'+(r.reason?'✖ '+esc(r.reason):'✔ will apply ('+(r.val==='T'?'enable':'disable')+')')+'</td></tr>';
-  });
-  html+='</tbody>';
-  document.getElementById('up-table').innerHTML=html;
-  document.getElementById('up-process').innerHTML=errs>0?('Skip invalid &amp; process '+valid.length+' valid rows'):('Process '+valid.length+' rows');
-  document.getElementById('up-process').disabled=valid.length===0;
-}
-function processUpload(){
-  var valid=uploadRows.filter(function(r){return !r.reason;});
-  var applied=0,skipped=0;
-  valid.forEach(function(r){
-    var l=findLoc(r.id);if(!l)return;
-    var target=r.val==='T';
-    if(l.enable===target){skipped++;return;}
-    l.enable=target;applied++;l.updated=nowStr();
-    CHANGELOG.unshift({time:nowStr(),operator:currentUser.name,type:target?'BATCH_ENABLE':'BATCH_DISABLE',locId:l.id,field:'is_enable',old:String(!target),new:String(target),source:'MANUAL',remark:'Excel bulk upload'});
-  });
-  closeModal('modal-upload');selected.clear();renderTable();updateBatchBar();
-  var errs=uploadRows.length-valid.length;
-  showToast('Bulk upload processed','<b>'+applied+'</b> applied · <b>'+skipped+'</b> no-change skipped · <b>'+errs+'</b> error rows rejected · '+applied+' audit entries written');
-}
+/* ================= Detail (simplified: navigate = toaster) ================= */
+function openVendorDetail(id){showToast('Detail',findVendor(id).name+' (vendor) — full profile would open here.','info');}
+function openOCDetail(id){showToast('Detail',findOC(id).name+' (OC) — full profile would open here.','info');}
 
-/* ================= Detail (P02 / F04 / F05) ================= */
-function openDetail(id){renderDetail(id);switchPage('p02');}
-function renderDetail(id){
-  var l=findLoc(id);if(!l)return;
-  document.getElementById('d-name').textContent=l.name;
-  document.getElementById('d-id').textContent=l.id;
-  document.getElementById('d-provider').textContent=l.provider;
-  var pk=document.getElementById('d-pickup');
-  pk.textContent='Pickup: '+(l.pickup||l.provider);
-  pk.className='badge '+(l.pickup&&l.pickup!==l.provider?'badge-orange':'badge-gray');
-  pk.title=(l.pickup&&l.pickup!==l.provider)?'Pickup handled by a different provider than the location owner':'Pickup handled by the same provider';
-  document.getElementById('d-type').textContent=l.type;
-  var vis=l.status==='active'&&l.enable&&!!l.ocId;
-  var vp=document.getElementById('d-visible');
-  vp.className='badge '+(vis?'badge-green':'badge-gray');
-  vp.textContent=vis?'👁 Visible to customers':'🚫 Hidden from customers';
-  var btn=document.getElementById('d-toggle-btn');
-  btn.textContent=l.enable?'Disable Location':'Enable Location';
-  btn.className='btn '+(l.enable?'btn-danger':'btn-primary');
-  btn.disabled=currentUser.role!=='manager';
-  btn.title=currentUser.role==='manager'?'':'Requires Location Manager permission';
-  var kv=function(k,v){return '<div class="kv"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>';};
-  document.getElementById('d-basic').innerHTML=
-    kv('Provider ref',esc(l.ref))+kv('Store code',esc(l.store))+
-    kv('OC location ID',(l.ocId?('<span class="mono">'+esc(l.ocId)+'</span>'):('<span style="color:var(--text-tertiary)">not assigned <span class="badge badge-orange">pending</span></span>')))+
-    kv('Pickup provider',((l.pickup||l.provider)===l.provider?esc(l.pickup||l.provider):('<b style="color:var(--color-warning)">'+esc(l.pickup)+'</b> <span style="font-size:11.5px;color:var(--text-tertiary)">differs from provider — cross-provider sweep</span>'))+(currentUser.role==='manager'?' <span class="link" onclick="openSweeperEdit(\''+l.id+'\')">Edit</span>':' <span style="font-size:11px;color:var(--text-tertiary)">(Manager only)</span>'))+
-    kv('Address',esc(l.addr1)+(l.addr2?', '+esc(l.addr2):''))+kv('City / State / Postal',esc(l.city)+', '+esc(l.state)+' '+esc(l.postal))+
-    kv('Country',esc(l.country))+kv('Coordinates',l.lat.toFixed(6)+', '+l.lng.toFixed(6))+
-    kv('Phone',esc(l.phone)||'—')+kv('Timezone',esc(l.tz))+
-    kv('Status (provider)','<span class="badge '+(l.status==='active'?'badge-green':(l.status==='removed'?'badge-gray':'badge-red'))+'">'+l.status+'</span> <span style="font-size:11.5px;color:var(--text-tertiary)">read-only, from sync</span>')+
-    kv('Enable (OC control)','<b style="color:'+(l.enable?'var(--color-success)':'var(--color-danger)')+'">'+(l.enable?'true':'false')+'</b> <span style="font-size:11.5px;color:var(--text-tertiary)">'+(currentUser.role==='manager'?'':'(Location Manager only)')+'</span>')+
-    kv('Created',esc(l.created))+kv('Activated',esc(l.activated))+
-    kv('Deactivated',esc(l.deactivated)||'—')+kv('Last updated',esc(l.updated))+
-    kv('Last synced',esc(l.lastSync)+' UTC');
-  document.getElementById('d-hours').innerHTML=l.hours.map(function(h){return '<div class="hours-row"><span class="d">'+esc(h[0])+'</span><span>'+esc(h[1])+'</span></div>';}).join('')+(l.open24?'<div class="info-line">This location is flagged open 24 hours (dealerOpen24S = true).</div>':'');
-  document.getElementById('d-services').innerHTML=l.services.length?l.services.map(function(s){return '<span class="badge badge-blue">'+esc(s)+'</span>';}).join(''):'<span style="color:var(--text-tertiary);font-size:12.5px">No services declared by provider</span>';
-  document.getElementById('d-restrictions').innerHTML=l.restrictions.length?l.restrictions.map(function(s){return '<span class="badge badge-orange">'+esc(s)+'</span>';}).join(''):'<span style="color:var(--text-tertiary);font-size:12.5px">No restrictions declared by provider</span>';
-  document.getElementById('d-cutoff').innerHTML=kv('Cutoff time',esc(l.cutoff)||'—')+kv('Holiday closures',l.holidays.length?l.holidays.map(function(h){return esc(h);}).join('<br>'):'—');
-  var entries=CHANGELOG.filter(function(c){return c.locId===l.id;});
-  var tl=document.getElementById('d-timeline');
-  tl.innerHTML=entries.length?entries.map(function(c){
-    var isSync=c.source==='SYNC';
-    return '<div class="tl-item'+(isSync?' sync':'')+'">'
-      +'<div class="tl-head"><span class="mono">'+esc(c.time)+' UTC</span><span>·</span><b>'+esc(c.operator)+'</b><span class="badge '+(isSync?'badge-teal':'badge-blue')+'">'+esc(c.type)+'</span><span>· source: '+esc(c.source)+'</span></div>'
-      +'<div class="tl-body"><b>'+esc(c.field)+'</b> : <span class="val-old">'+esc(c.old)+'</span> → <span class="val-new">'+esc(c.new)+'</span>'+(c.remark?'<br><span style="font-size:12px;color:var(--text-tertiary)">'+esc(c.remark)+'</span>':'')+'</div></div>';
-  }).join(''):'<p style="color:var(--text-tertiary);font-size:13px">No changes recorded yet.</p>';
-}
-function switchTab(tab,el){
-  ['basic','hours','history'].forEach(function(t){document.getElementById('tab-'+t).style.display=t===tab?'block':'none';});
-  document.querySelectorAll('#page-p02 .tab').forEach(function(t){t.classList.remove('active');});
-  el.classList.add('active');
-}
-
-/* ================= P03 global change log (F08) ================= */
+/* ================= Change log ================= */
 function renderChangeLog(){
-  var op=document.getElementById('cl-operator').value;
-  var prov=document.getElementById('cl-provider').value;
-  var type=document.getElementById('cl-type').value;
-  var loc=document.getElementById('cl-loc').value.trim().toUpperCase();
-  var entries=CHANGELOG.filter(function(c){
-    var l=findLoc(c.locId)||{};
-    if(op&&c.operator!==op)return false;
-    if(prov&&l.provider!==prov)return false;
-    if(type&&c.type!==type)return false;
-    if(loc&&c.locId.indexOf(loc)<0)return false;
-    return true;
-  });
-  document.getElementById('cl-tbody').innerHTML=entries.map(function(c){
-    var l=findLoc(c.locId)||{};
-    return '<tr><td class="mono" style="font-size:12px">'+esc(c.time)+'</td>'
-      +'<td><b>'+esc(c.operator)+'</b></td>'
-      +'<td><span class="badge '+(c.source==='SYNC'?'badge-teal':'badge-blue')+'">'+esc(c.type)+'</span></td>'
-      +'<td><span class="mono link" onclick="openDetail(\''+esc(c.locId)+'\')">'+esc(c.locId)+'</span><br><span style="font-size:12px;color:var(--text-tertiary)">'+esc(l.name||'')+'</span></td>'
-      +'<td>'+esc(c.field)+'</td>'
-      +'<td><span class="val-old">'+esc(c.old)+'</span> → <span class="val-new">'+esc(c.new)+'</span></td>'
-      +'<td>'+esc(c.source)+'</td></tr>';
-  }).join('')||'<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-tertiary)">No changes match the filters.</td></tr>';
-  document.getElementById('cl-meta').textContent='Showing '+entries.length+' of '+CHANGELOG.length+' entries · server-side pagination in production';
-}
-
-/* ================= P05 KPI (F10) ================= */
-function renderKPI(){
-  var total=LOCATIONS.length;
-  var visible=LOCATIONS.filter(function(l){return l.status==='active'&&l.enable&&!!l.ocId;}).length;
-  var disabled=LOCATIONS.filter(function(l){return !l.enable;}).length;
-  var inactive=LOCATIONS.filter(function(l){return l.status!=='active';}).length;
-  document.getElementById('k-total').textContent=total;
-  document.getElementById('k-visible').textContent=visible;
-  document.getElementById('k-disabled').textContent=disabled;
-  document.getElementById('k-inactive').textContent=inactive;
-  var p=LOCATIONS.filter(function(l){return l.provider==='PUDO Inc';}).length;
-  var m=total-p;
-  document.getElementById('bar-pudo').style.width=Math.round(p/total*100)+'%';
-  document.getElementById('bar-lms').style.width=Math.round(m/total*100)+'%';
-  document.getElementById('bar-pudo-n').textContent=p;
-  document.getElementById('bar-lms-n').textContent=m;
-}
-
-/* ================= P06 Duplicate Review (F12) ================= */
-function renderDuplicateReview(){
-  var pending=DUPLICATES.filter(function(d){return d.status==='pending';});
-  document.getElementById('dup-pending-n').textContent=pending.length;
-  document.getElementById('dup-threshold').textContent=DUP_THRESHOLD;
-  document.getElementById('dup-count-tag').textContent=pending.length;
-  document.getElementById('dup-count-tag').style.display=pending.length?'':'none';
-  var tb=document.getElementById('dup-tbody');
-  if(!pending.length){
-    tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-tertiary)">No pending duplicates. All cross-provider address matches have been reviewed.</td></tr>';
-    document.getElementById('dup-meta').textContent='';
-    return;
-  }
-  tb.innerHTML=pending.map(function(d){
-    var a=findLoc(d.locA),b=findLoc(d.locB);
-    if(!a||!b)return '';
-    /* recompute score live for display robustness */
-    var score=(typeof d.score==='number')?d.score:matchScore(a,b);
-    var scoreColor=score>=95?'var(--color-success)':(score>=DUP_THRESHOLD?'var(--color-warning)':'var(--color-danger)');
-    /* show per-field comparison: A value vs B value, differing fields highlighted */
-    var fields=[['addr1','Address line 1'],['postal','Postal'],['city','City'],['state','State']];
-    var diffHtml=fields.map(function(p){
-      var va=String(a[p[0]]||''),vb=String(b[p[0]]||'');
-      var same=normalizeAddr(va)===normalizeAddr(vb);
-      return '<div style="margin-bottom:5px"><div style="color:var(--text-tertiary);font-size:11px">'+p[1]+'</div>'
-        +'<div style="font-size:12px;'+(same?'':'color:var(--color-danger);font-weight:600')+'">A: '+esc(va||'(empty)')+(same?'':' ✕')+'</div>'
-        +'<div style="font-size:12px;'+(same?'':'color:var(--color-success);font-weight:600')+'">B: '+esc(vb||'(empty)')+(same?'':' ✓')+'</div></div>';
-    }).join('');
+  document.getElementById('cl-tbody').innerHTML=CHANGELOG.map(function(e){
     return '<tr>'
-      +'<td class="mono">'+esc(d.pairId)+'</td>'
-      +'<td><span class="mono link" onclick="openDetail(\''+esc(a.id)+'\')">'+esc(a.id)+'</span><br><span style="font-size:12px;color:var(--text-tertiary)">'+esc(a.name)+' · '+esc(a.provider)+'</span><br>'+(a.ocId?'<span class="badge badge-gray">'+esc(a.ocId)+'</span>':'<span class="badge badge-orange">no OC ID</span>')+'</td>'
-      +'<td><span class="mono link" onclick="openDetail(\''+esc(b.id)+'\')">'+esc(b.id)+'</span><br><span style="font-size:12px;color:var(--text-tertiary)">'+esc(b.name)+' · '+esc(b.provider)+'</span><br>'+(b.ocId?'<span class="badge badge-gray">'+esc(b.ocId)+'</span>':'<span class="badge badge-orange">no OC ID</span>')+'</td>'
-      +'<td style="text-align:center"><span style="font-weight:700;color:'+scoreColor+'">'+score+'%</span><br><span style="font-size:11px;color:var(--text-tertiary)">'+(score>=DUP_THRESHOLD?'potential':'below')+'</span></td>'
-      +'<td style="font-size:12px;max-width:220px">'+diffHtml+'</td>'
-      +'<td class="mono" style="font-size:12px">'+esc(d.detectedAt)+'</td>'
-      +'<td><span class="badge badge-orange">pending</span></td>'
-      +'<td>'+(currentUser.role==='manager'
-          ?'<button class="btn btn-sm btn-primary" onclick="resolveDuplicate(\''+esc(d.pairId)+'\',true)">✓ Same store</button> <button class="btn btn-sm btn-ghost" onclick="resolveDuplicate(\''+esc(d.pairId)+'\',false)">✕ Not same</button>'
-          :'<span style="font-size:11px;color:var(--text-tertiary)">Manager only</span>')+'</td>'
+      +'<td class="mono">'+esc(e.time)+'</td>'
+      +'<td><span class="badge '+(e.layer==='OC'?'badge-blue':'badge-gray')+'">'+e.layer+'</span></td>'
+      +'<td>'+esc(e.operator)+'</td>'
+      +'<td><span class="badge badge-teal">'+esc(e.type)+'</span></td>'
+      +'<td class="mono">'+esc(e.locId)+'</td>'
+      +'<td class="mono">'+esc(e.field)+'</td>'
+      +'<td><span class="val-old">'+esc(e.old)+'</span> → <span class="val-new">'+esc(e.new)+'</span>'+(e.remark?' <span style="font-size:11px;color:var(--text-tertiary)">('+esc(e.remark)+')</span>':'')+'</td>'
       +'</tr>';
   }).join('');
-  document.getElementById('dup-meta').textContent=pending.length+' pending pair(s) · cross-provider (LMS ↔ PUDO Inc) · fuzzy score ≥ '+DUP_THRESHOLD+'%';
-}
-function resolveDuplicate(pairId,isSame){
-  if(currentUser.role!=='manager'){showToast('Permission required','Confirming duplicates requires the Location Manager advanced permission.','err');return;}
-  var d=DUPLICATES.find(function(x){return x.pairId===pairId;});if(!d)return;
-  var a=findLoc(d.locA),b=findLoc(d.locB);
-  if(isSame){
-    /* both locations share one OC location ID — reuse A's if present, else mint one */
-    var oc=a.ocId||b.ocId||('OC-'+(1000+Math.floor(Math.random()*9000)));
-    if(!a.ocId)a.ocId=oc;
-    if(!b.ocId)b.ocId=oc;
-    d.status='confirmed';
-    CHANGELOG.unshift({time:nowStr(),operator:currentUser.name,type:'OC_LINK_CONFIRMED',locId:d.locA+' + '+d.locB,field:'oc_location_id',old:'unlinked',new:oc,source:'MANUAL',remark:'confirmed same physical store; both linked to '+oc});
-    showToast('Duplicate confirmed',d.locA+' and '+d.locB+' linked to '+oc+' · both eligible for upstream sync if active + enabled');
-  }else{
-    /* each keeps its own independent OC ID */
-    if(!a.ocId)a.ocId='OC-'+(1000+Math.floor(Math.random()*9000));
-    if(!b.ocId)b.ocId='OC-'+(1000+Math.floor(Math.random()*9000));
-    d.status='rejected';
-    CHANGELOG.unshift({time:nowStr(),operator:currentUser.name,type:'OC_LINK_REJECTED',locId:d.locA+' + '+d.locB,field:'oc_location_id',old:'unlinked',new:a.ocId+' / '+b.ocId,source:'MANUAL',remark:'confirmed NOT the same store; independent OC IDs assigned'});
-    showToast('Duplicate rejected',d.locA+' and '+d.locB+' kept as independent locations with separate OC IDs');
-  }
-  renderDuplicateReview();
-  renderTable();
 }
 
-/* ================= States / modals / toast ================= */
-function switchState(state,btn){
-  document.querySelectorAll('#page-p01 .state-container').forEach(function(c){c.style.display='none';});
-  var t=document.querySelector('#page-p01 .state-container[data-state="'+state+'"]');
-  if(t)t.style.display='block';
-  document.querySelectorAll('#page-p01 .state-btn').forEach(function(b){b.classList.remove('active');});
-  if(btn)btn.classList.add('active');
+/* ================= Sync status ================= */
+function renderSync(){
+  document.getElementById('sync-cards').innerHTML=[
+    {p:'PUDO Inc',t:'02:00',r:'Success',pulled:6,created:1,updated:2,deact:1},
+    {p:'LMS',t:'02:30',r:'Success',pulled:9,created:1,updated:1,deact:0}
+  ].map(function(s){
+    return '<div style="padding:14px 0;border-bottom:1px solid var(--bg-section)">'
+      +'<div style="display:flex;align-items:center;gap:8px"><b>'+s.p+'</b><span class="badge badge-green">'+s.r+'</span><span style="font-size:12px;color:var(--text-tertiary)">last run '+s.t+'</span></div>'
+      +'<div style="font-size:12.5px;color:var(--text-secondary);margin-top:6px">Pulled '+s.pulled+' · Created '+s.created+' · Updated '+s.updated+' · Deactivated '+s.deact+'</div>'
+      +'<div class="info-line" style="margin-top:8px">New vendor locations auto-generate OC locations (default <b>disabled</b>); suspected duplicates are held for review.</div>'
+      +'</div>';
+  }).join('');
 }
+
+/* ================= Duplicate review ================= */
+function renderDup(){
+  document.getElementById('dup-cards').innerHTML=DUPLICATES.map(function(d){
+    var a=findVendor(d.locA),b=findVendor(d.locB);
+    return '<div style="padding:14px 0;border-bottom:1px solid var(--bg-section)">'
+      +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b class="mono">'+d.pairId+'</b><span class="badge badge-orange">'+d.score+'% match</span><span class="badge badge-gray">'+d.status+'</span></div>'
+      +'<div style="font-size:13px;margin-top:8px"><b>'+esc(a.name)+'</b> <span class="mono">('+a.id+', '+a.provider+')</span> ↔ <b>'+esc(b.name)+'</b> <span class="mono">('+b.id+', '+b.provider+')</span></div>'
+      +'<div style="font-size:12px;color:var(--text-tertiary);margin-top:4px">address_line1: <span class="mono">'+esc(d.diff.addr1[0])+'</span> vs <span class="mono">'+esc(d.diff.addr1[1])+'</span> · postal: <span class="mono">'+esc(d.diff.postal[0])+'</span> vs <span class="mono">'+esc(d.diff.postal[1])+'</span></div>'
+      +'<div class="info-line" style="margin-top:8px">No OC location generated yet. Resolve to link both to one OC ID (same store) or assign independent OC IDs (not same).</div>'
+      +'<div style="margin-top:10px;display:flex;gap:8px">'
+        +'<button class="btn btn-primary btn-sm" onclick="resolveDup(\''+d.pairId+'\',\'confirmed\')">Same store</button>'
+        +'<button class="btn btn-secondary btn-sm" onclick="resolveDup(\''+d.pairId+'\',\'rejected\')">Not same</button>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+function resolveDup(pairId,res){
+  var d=DUPLICATES.find(function(x){return x.pairId===pairId;});
+  d.status=res==='confirmed'?'confirmed':'rejected';
+  CHANGELOG.unshift({time:nowStr(),layer:'OC',operator:currentUser.name,type:res==='confirmed'?'OC_LINK_CONFIRMED':'OC_LINK_REJECTED',locId:pairId,field:'duplicate_pair',old:'pending',new:res,remark:''});
+  renderDup();
+  document.getElementById('dup-count-tag').textContent=DUPLICATES.filter(function(x){return x.status==='pending';}).length||'';
+  showToast(res==='confirmed'?'Confirmed same store':'Rejected',pairId+' · '+(res==='confirmed'?'both locations linked to one OC ID':'each location gets its own OC ID'));
+}
+
+/* ================= Export ================= */
+function downloadCSV(name,head,rows){
+  var csv=head+'\n'+rows.join('\n');
+  var blob=new Blob([csv],{type:'text/csv'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();
+}
+function exportVendorCSV(){
+  var rows=vendorFilters();
+  var head='Location ID,Name,Address,City,State,Provider,Sweeper,Type,Status,Created,Updated';
+  var body=rows.map(function(v){return [v.id,v.name,v.addr1,v.city,v.state,v.provider,v.sweeper,v.type,v.status,v.created,v.updated].map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');});
+  downloadCSV('vendor_locations_'+nowStr().replace(/[-: ]/g,'')+'.csv',head,body);
+}
+function exportOCCSV(){
+  var rows=ocFilters();
+  var head='OC Location ID,Name,Address,City,State,Provider,Type,Sweeper,Status,Enable,Linked Vendor';
+  var body=rows.map(function(o){return [o.ocId,o.name,o.addr1,o.city,o.state,o.provider,o.type,o.sweeper,ocStatus(o),o.enable?'enabled':'disabled',o.vendorIds.join(';')].map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(',');});
+  downloadCSV('oc_locations_'+nowStr().replace(/[-: ]/g,'')+'.csv',head,body);
+}
+
+/* ================= Modal / toast ================= */
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 function showToast(title,msg,type){
   var w=document.getElementById('toast-wrap');
-  var t=document.createElement('div');t.className='toast '+(type||'');
-  t.innerHTML='<div><div class="t-title">✔ '+esc(title)+'</div><div class="t-msg">'+msg+'</div></div>';
+  var t=document.createElement('div');
+  t.className='toast '+(type||'');
+  t.innerHTML='<div><div class="t-title">'+esc(title)+'</div><div class="t-msg">'+msg+'</div></div>';
   w.appendChild(t);
-  setTimeout(function(){t.style.transition='var(--transition)';t.style.opacity='0';t.style.transform='translateX(30px)';setTimeout(function(){t.remove();},300);},4200);
+  setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(function(){t.remove();},300);},3500);
 }
 function toggleWalkthrough(){document.getElementById('walkthrough').classList.toggle('open');}
-function gotoPage(d){var n=currentPage+d;if(n<1)return;currentPage=n;renderTable();updateBatchBar();}
 
-/* ================= Init ================= */
-renderTable();renderChips();renderKPI();
+/* init */
+renderVendor();
+renderOC();
+renderChangeLog();
+renderSync();
+renderDup();
 </script>
 </body>
 </html>
