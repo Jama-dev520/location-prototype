@@ -181,43 +181,43 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 
 ### 3.1 Vendor Sync & OC Generation
 
-![Vendor Sync & OC Generation](https://jama-dev520.github.io/location-prototype/diagrams/flow2-daily-sync.png)
+![Vendor Sync & OC Generation](https://workbuddy-space-static.codebuddy.work/image/tQa1reB86SbeW5E7dHCEvt.png)
 
 ### 3.2 Status Propagation — Vendor Inactive → OC Auto-Disable
 
-![Status Propagation](https://jama-dev520.github.io/location-prototype/diagrams/flow6-status-propagation.png)
+![Status Propagation](https://workbuddy-space-static.codebuddy.work/image/F1Z3SApwjlM6stfEn0tCnp.png)
 
 ### 3.3 Operator Batch Disable (OC Layer)
 
-![Operator Batch Disable](https://jama-dev520.github.io/location-prototype/diagrams/flow1-batch-disable.png)
+![Operator Batch Disable](https://workbuddy-space-static.codebuddy.work/image/bRWhlIpawHygvuqvunNgMg.png)
 
 ### 3.4 Sweeper Edit
 
-![Sweeper Edit](https://jama-dev520.github.io/location-prototype/diagrams/flow3-sweeper.png)
+![Sweeper Edit](https://workbuddy-space-static.codebuddy.work/image/jKmlOtst4dF3BjBCWQ3NBm.png)
 
 ### 3.5 Duplicate Review (fuzzy)
 
-![Duplicate Review](https://jama-dev520.github.io/location-prototype/diagrams/flow4-duplicate.png)
+![Duplicate Review](https://workbuddy-space-static.codebuddy.work/image/THq85hNgrIbu1LIbM5Pwrz.png)
 
 ### 3.6 Exception
 
-![Exception](https://jama-dev520.github.io/location-prototype/diagrams/flow5-exception.png)
+![Exception](https://workbuddy-space-static.codebuddy.work/image/NkJGL93Qos7exTRSPNYWNK.png)
 
 ### 3.7 上游变更审核（v2.6.0）— 挂起 → 接受 / 拒绝并锁定
 
-![Provider Change Review](https://jama-dev520.github.io/location-prototype/diagrams/flow7-sync-change-review.png)
+![Provider Change Review](https://workbuddy-space-static.codebuddy.work/image/JiFebJG3wYiHkyD3TtdGjh.png)
 
 > 已上线门店的字段被上游改动时，先记账不动手：值挂在 `sync_change_set`，OC 继续用基线值对外。接受才会写并刷新基线；拒绝则保持旧值并把字段锁死。没人处理 = 什么都不变。
 
 ### 3.8 启用签收（v2.6.0）— 上线前的核对清单
 
-![Enable Sign-off](https://jama-dev520.github.io/location-prototype/diagrams/flow8-enable-signoff.png)
+![Enable Sign-off](https://workbuddy-space-static.codebuddy.work/image/UggYn65vVXnsaDXfZaUvPM.png)
 
 > 启用是门店唯一变成「客户可见」的时刻，所以它是签收而不是开关：先过 4 项阻塞检查，再把地址/坐标/营业时间连同来源一起摆出来，勾选确认前按钮点不动。关闭则始终一键，因为下线是安全方向。
 
 ### 3.9 手改即裁决（v2.6.0）— 立即写入、锁字段、立即推下游
 
-![Operator Edit](https://jama-dev520.github.io/location-prototype/diagrams/flow9-operator-edit.png)
+![Operator Edit](https://workbuddy-space-static.codebuddy.work/image/TSwKon3o9fXffDrGi2Q3u4.png)
 
 > 运营手改被当作「决定」而不是「提案」：刷新基线、锁住改过的字段、把该字段上挂起的上游变更标记为 superseded，若门店已可见则立刻推下游。手改不进 review 队列——让人审批自己的修改只是多加一步。
 

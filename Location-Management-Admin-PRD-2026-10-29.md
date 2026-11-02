@@ -106,7 +106,7 @@ The v2.0 redesign splits these into two distinct layers and two menus, so that:
 
 ### 5.1 Vendor Sync & OC Generation Path
 
-![Vendor Sync & OC Generation Path](https://jama-dev520.github.io/location-prototype/diagrams/flow2-daily-sync.png)
+![Vendor Sync & OC Generation Path](https://workbuddy-space-static.codebuddy.work/image/tQa1reB86SbeW5E7dHCEvt.png)
 
 > **Business decisions (confirmed 2026-10-30)**:
 > - A newly synced vendor location that is not a suspected duplicate auto-generates **one** OC location (backfilled from the vendor record) with `is_enable = false` — it is NOT visible downstream until a Location Manager enables it.
@@ -115,39 +115,39 @@ The v2.0 redesign splits these into two distinct layers and two menus, so that:
 
 ### 5.2 Status Propagation — Vendor Inactive → OC Auto-Disable
 
-![Status Propagation Path](https://jama-dev520.github.io/location-prototype/diagrams/flow6-status-propagation.png)
+![Status Propagation Path](https://workbuddy-space-static.codebuddy.work/image/F1Z3SApwjlM6stfEn0tCnp.png)
 
 ### 5.3 Operator Batch Disable (OC Layer)
 
-![Operator Batch Disable](https://jama-dev520.github.io/location-prototype/diagrams/flow1-batch-disable.png)
+![Operator Batch Disable](https://workbuddy-space-static.codebuddy.work/image/bRWhlIpawHygvuqvunNgMg.png)
 
 ### 5.4 Sweeper Edit Path
 
-![Sweeper Edit Path](https://jama-dev520.github.io/location-prototype/diagrams/flow3-sweeper.png)
+![Sweeper Edit Path](https://workbuddy-space-static.codebuddy.work/image/jKmlOtst4dF3BjBCWQ3NBm.png)
 
 ### 5.5 Duplicate Review Path
 
-![Duplicate Review Path](https://jama-dev520.github.io/location-prototype/diagrams/flow4-duplicate.png)
+![Duplicate Review Path](https://workbuddy-space-static.codebuddy.work/image/THq85hNgrIbu1LIbM5Pwrz.png)
 
 ### 5.6 Exception Path
 
-![Exception Path](https://jama-dev520.github.io/location-prototype/diagrams/flow5-exception.png)
+![Exception Path](https://workbuddy-space-static.codebuddy.work/image/NkJGL93Qos7exTRSPNYWNK.png)
 
 ### 5.7 Provider Change Review — held, then accepted or rejected (v2.6.0)
 
-![Provider Change Review](https://jama-dev520.github.io/location-prototype/diagrams/flow7-sync-change-review.png)
+![Provider Change Review](https://workbuddy-space-static.codebuddy.work/image/JiFebJG3wYiHkyD3TtdGjh.png)
 
 > The sync job **never overwrites** a visible field behind the operator's back. A change to a `review`-tier or locked field is recorded on the vendor layer and held; the OC location keeps serving its signed-off baseline until someone decides. No decision is a valid outcome — the safe default is "nothing changes".
 
 ### 5.8 Enable Sign-off — the checklist before a location goes live (v2.6.0)
 
-![Enable Sign-off](https://jama-dev520.github.io/location-prototype/diagrams/flow8-enable-signoff.png)
+![Enable Sign-off](https://workbuddy-space-static.codebuddy.work/image/UggYn65vVXnsaDXfZaUvPM.png)
 
 > Turning `is_enable` on is the only moment a location becomes visible, so it is a sign-off rather than a switch: four blockers are checked first, the customer-facing data is shown with its source, and the confirm button stays disabled until the operator acknowledges. Turning it **off** needs none of this — going offline is always the safe direction.
 
 ### 5.9 Operator Edit — final, locked, pushed immediately (v2.6.0)
 
-![Operator Edit](https://jama-dev520.github.io/location-prototype/diagrams/flow9-operator-edit.png)
+![Operator Edit](https://workbuddy-space-static.codebuddy.work/image/TSwKon3o9fXffDrGi2Q3u4.png)
 
 > An operator edit is treated as a decision, not a proposal: it refreshes the baseline, locks the edited fields against provider changes, supersedes any pending provider change on those fields, and — if the location is already visible — is pushed downstream at once. It deliberately never enters the review queue: asking an operator to approve their own edit adds a step without adding a decision.
 
