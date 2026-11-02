@@ -30,7 +30,25 @@
 
 ## 2. Background & Goals
 
-### 2.1 Business Background
+### 2.1 Why this console exists — four operational jobs
+
+Every screen in this document exists to make one of four daily jobs take **seconds instead of a ticket**. They are stated first because the mechanics below (two layers, review center, baselines) are only justified by them.
+
+| # | The job | What "done" looks like | Where it lives |
+|---|---|---|---|
+| **J1** | **Find out which locations are enabled** | Ask "which stores are live right now?" and get an answer from the UI: filter to `status = active AND is_enable = true`, read the count, export exactly that set. No SQL, no engineering request, no exported-then-filtered spreadsheet | P02 · `Enable` / `Downstream` filters + CSV export |
+| **J2** | **Correct who picks up (sweeper)** | Change the sweeper on a location in two clicks — including when the new sweeper belongs to the *other* provider — and have it recorded as `SWEEPER_CHANGE`. This is the only vendor-layer field OC is allowed to touch | P03 → Operations → **Edit Sweeper** (vendor layer) |
+| **J3** | **Correct the address** | Fix the address, city, postal code or coordinates a customer is sent to, in one grouped form, and have it take effect immediately — because a wrong address means a customer driving to the wrong place | P03 → **Edit Store Details** (OC layer) |
+| **J4** | **See what changed, before → after** | For any location, any field: who changed it, when, and old value → new value. Per location for the incident at hand, across locations when reconciling with a provider | P03 · **Change History** / P05 · **Change Log** |
+
+> **Why these four force the architecture.** They act on *the same store* but belong to *different owners*: J2 is a fact about the provider's record, J3 is a decision OC owns, J1 is a question about the downstream catalog (which is neither — it is `status AND is_enable`), and J4 has to cover all three. That is why the console has two lists instead of one, why the enable switch sits only on the OC layer, and why the change trail is part of the workflow rather than a separate report someone remembers to pull.
+
+Two consequences worth stating up front, because they shape most of the rules that follow:
+
+- **J1 is the highest-frequency job and the cheapest to get wrong.** "Which stores are live?" gets asked before every campaign, every incident, and every provider review. If answering it means exporting 10k rows, the answer is always slightly out of date — so the flag, the filter, the count and the export have to agree with each other at all times.
+- **J3 and J4 are a pair.** Being able to fix an address in seconds is only safe if the old value stays visible afterwards. A fast edit with no trail is how the same location gets "fixed" three times in a week.
+
+### 2.2 Business Background
 
 OC's location network is aggregated from two upstream providers:
 
@@ -47,10 +65,10 @@ The v2.0 redesign splits these into two distinct layers and two menus, so that:
 - Provider data stays clean and read-only (except the sweeper assignment), and
 - OC's downstream-visible catalog is a separate, OC-owned layer that OC can edit and switch on/off independently.
 
-### 2.2 Goals
+### 2.3 Goals
 
-- **Business Goal**: Establish full, auditable control over the downstream-visible location catalog (visible = `status = active AND is_enable = true` on the OC layer), with 100% of visibility changes traceable to an operator or sync event.
-- **User Goal**: Operations staff can (a) inspect raw provider locations and set their sweeper, and (b) manage the OC-owned catalog — edit store details and enable/disable — within seconds using rich filters.
+- **Business Goal**: Establish full, auditable control over the downstream-visible location catalog (visible = `status = active AND is_enable = true` on the OC layer), so that "is this store live?" has one answer that the list, the export and the change log all agree on, and 100% of visibility changes are traceable to an operator or sync event.
+- **User Goal**: Operations staff can complete the four jobs in §2.1 without leaving the console: (J1) see which locations are enabled and export that exact set, (J2) set the sweeper on a provider location, (J3) correct a store address, and (J4) read the before → after of any change — each in seconds, with rich filters, not through an engineering request.
 - **Product Goal**: Deliver a two-layer location management console: a **Vendor Location List** (provider data) and an **OC Location List** (OC-owned, downstream-facing), with a complete change history per layer.
 
 ## 3. Target Users & Scenarios

@@ -123,11 +123,29 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 
 ## 二、需求总结 + 优先级
 
-### 2.1 一句话概括
+### 2.1 背景与目的：运营每天要做的四件事
+
+这套后台不是为了「管理数据」，是为了让运营**在几秒内**做完四件具体的活。后面的两层模型、Review Center、签收基线，全部是从这四件事推出来的。
+
+| # | 运营要做什么 | 做完是什么样 | 在哪儿做 |
+|---|---|---|---|
+| **J1** | **查哪些门店是 enabled / 在线的** | 问「现在有哪些店在客户那儿可见」，界面上直接得到答案：按 `status = active 且 is_enable = true` 筛一下，看到条数，把这一批导出来。不用提 SQL、不用找研发、不用导全量再自己筛 | P02 · `Enable` / `Downstream` 筛选 + 导出 CSV |
+| **J2** | **改谁去揽收（Sweeper）** | 两次点击改掉，哪怕新的揽收方是另一家供应商也照改，记 `SWEEPER_CHANGE`。这是 OC 唯一被允许动的供应商层字段 | P03 → Operations → **Edit Sweeper**（供应商层） |
+| **J3** | **改门店地址** | 客户会被导航到的那个地址、城市、邮编、坐标，用一个合并弹框改完，**保存即生效**——地址错了客户是真会跑错地方的 | P03 → **Edit Store Details**（OC 层） |
+| **J4** | **及时查前后变化** | 任意门店、任意字段：谁改的、什么时候、旧值 → 新值。查一家店看它自己的时间线；和供应商对账时看全站日志 | P03 · **Change History** / P05 · **Change Log** |
+
+> **为什么这四件事决定了架构。** 它们作用在**同一条门店**上，但归属不同：J2 是供应商那条记录的事实，J3 是 OC 自己的判断，J1 问的是「下游目录里有没有这家」（既不是供应商的也不是 OC 记录本身的，而是 `status AND is_enable` 的组合），J4 要把这三种都覆盖。所以才有两个列表而不是一个，「启用开关」只放在 OC 层，「变更记录」也从报表变成了流程的一部分。
+
+两条推论也先说在前面，它们解释了后面很多规则的由来：
+
+- **J1 是频率最高、也最容易答错的一件。** 每次投放、每次故障、每次和供应商复盘，第一个问题都是「哪些店在线」。如果答案要靠导出全量再自己筛，那答案永远慢半拍——所以开关、筛选、条数、导出这四样必须永远互相对得上。
+- **J3 和 J4 是一对。** 能在几秒内改掉地址是好事，前提是改完之后**旧值还看得见**。改得快又没有痕迹，就是同一家店一周被「修」三次的由来。
+
+### 2.2 一句话概括（架构层面）
 
 > Build an internal console with **two layers**: a **Vendor Location List** (raw provider data, read-only except sweeper) and an **OC Location List** (OC-owned, downstream-facing — enable switch + editable store details). OC locations are auto-generated from vendor records; when a vendor goes inactive, its OC location is auto-disabled.
 
-### 2.2 Priority table
+### 2.3 Priority table
 
 > P0 = must-have (MVP) / P1 = important / P2 = deferrable
 
@@ -158,7 +176,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 | F23 | Field lock | Unlock a locked field | P0 | 手改锁死的字段可解锁：手动解锁（必须写理由）或"接受并解锁"一步到位；都写 `FIELD_UNLOCKED` |
 | F24 | Change History | Field-level revert | P0 | 手改错了可逐字段回退上一版：`FIELD_REVERTED` + 刷基线 + 可见则立即推下游，锁保留 |
 
-### 2.3 Key business decisions
+### 2.4 Key business decisions
 
 | # | Decision | Conclusion |
 |---|---|---|
