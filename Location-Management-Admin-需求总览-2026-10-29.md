@@ -1,11 +1,12 @@
-# Location Management Admin Console — Requirement Overview (v2.6.1)
+# Location Management Admin Console — Requirement Overview (v2.7.0)
 
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
 > **Demo video (2.5 min)**: https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
-> Companion: `Location-Management-Admin-PRD-2026-10-29` (v2.6.1)
+> Companion: `Location-Management-Admin-PRD-2026-10-29` (v2.7.0)
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
 > Detail view (v2.4.0): clicking a location ID opens a **full page** with tabs — Basic Info / Operations / Hours & Services / Linked Records / Change History.
 > Sync protection (v2.6.0): provider data is a **proposal** — an enabled location keeps a signed-off baseline, changes are held until someone decides, and enabling is a sign-off checklist.
+> Decision comes back (v2.7.0): a field lock can be **released**, a hand edit can be **reverted field by field**, and the sign-off queue lives on the **OC list** (`⏳ Not live yet`), not in the Review Center.
 
 ---
 
@@ -94,6 +95,8 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 | `PROVIDER_FIELD_UPDATE` | vendor field update (sync) |
 | `PROVIDER_CREATED` / `PROVIDER_REMOVED` | vendor created/removed (sync) |
 | `ENABLE_SIGNED_OFF` (v2.6.0) | 启用签收：完成核对并记录基线 |
+| `FIELD_UNLOCKED` (v2.7.0) | 解锁字段：手理解锁或"接受并解锁"，必带理由 |
+| `FIELD_REVERTED` (v2.7.0) | 字段回退：恢复到该字段上一版的值 |
 | `DOWNSTREAM_PROPAGATED` (v2.6.0) | 人工编辑后立即推送下游（缓存失效） |
 | `SYNC_CHANGE_ACCEPTED` / `SYNC_CHANGE_REJECTED` (v2.6.0) | 接受上游变更 / 拒绝并锁定字段 |
 | `SYNC_ROLLBACK` (v2.6.0) | 按同步批次或单字段回退 |
@@ -152,6 +155,8 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 | F20 | Review Center | Field-level provider change review | P0 | 已上线门店被上游改动 → 挂起，保持签收值；逐字段接受/拒绝并锁定 |
 | F21 | Enable | Enable sign-off (replaces one-click) | P0 | 启用前核对地址/坐标/营业时间 + 5 项检查 + 必须勾选，同时记基线 |
 | F22 | Data Sync | Breaker & rollback | P1 | 单次 run 变更过多 → 降级干跑；按 run 一键回滚（7 天） |
+| F23 | Field lock | Unlock a locked field | P0 | 手改锁死的字段可解锁：手动解锁（必须写理由）或"接受并解锁"一步到位；都写 `FIELD_UNLOCKED` |
+| F24 | Change History | Field-level revert | P0 | 手改错了可逐字段回退上一版：`FIELD_REVERTED` + 刷基线 + 可见则立即推下游，锁保留 |
 
 ### 2.3 Key business decisions
 
@@ -170,10 +175,13 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 | 11 | QR dropoff | LMS-only capability flag (`qr_dropoff`); shown as marker on both lists + detail; OC backfilled from linked vendor; read-only |
 | 12 | Provider data (v2.6.0) | **提案，不是事实**：未上线门店直接写入；已上线门店按字段档位判定，非低风险字段一律挂起，OC 保持签收基线值 |
 | 13 | Baseline (v2.6.0) | 「好数据」的参照物是**人工核实过的那一版**，不是"上次同步写进去的值"。签收/接受变更/人工编辑三处产生 |
-| 14 | Review Center (v2.6.0) | 一个菜单四个 tab：Duplicates（一对记录）· Data Quality（整条记录）· Sync Changes（单个字段）· Enable Sign-off（能否上线）。决策粒度不同，状态机独立 |
+| 14 | Review Center (v2.6.0，v2.7.0 收口) | **三个 tab**：Duplicates（一对记录）· Data Quality（整条记录）· Sync Changes（单个字段）。决策粒度不同，状态机独立。签收不是"对数据的决定"，v2.7.0 起移回 OC 列表 |
 | 15 | Enable (v2.6.0) | 启用 = 签收（核对 + 勾选 + 记基线），关闭 = 一键生效。批量启用逐条过检查并回报跳过项 |
 | 16 | Operator edit (v2.6.0) | 人工编辑是**最终裁决**，不进 review：立即推下游 + 刷新基线 + 锁定字段 + 作废同字段的待审上游变更 |
 | 17 | Fail-safe (v2.6.0) | 队列无人处理的结果永远是"不生成 / 不启用 / 保持旧值"，系统绝不替人决定接受上游值 |
+| 18 | Field lock (v2.7.0) | 锁的语义是**"问我"**，不是**"以后永远不许"**。两个出口：手动解锁（必须填理由）+「接受并解锁」。没有出口的话，"永远要人看"的字段只增不减，几年后自动档形同虚设 |
+| 19 | Sign-off entry (v2.7.0) | 签收是**对一条门店的动作**，不是对一堆数据的裁决 → 入口搬到 OC 列表的 `⏳ Not live yet` 预设筛选。侧边栏 Review Center 徽章只数"等决策的事"，OC 菜单徽章数"待上线门店"，两个数字从此不混 |
+| 20 | Revert (v2.7.0) | 手改是唯一"没经过第二个人看就到达客户"的变更，所以只有它需要后悔键。回退做成**字段级、且只对每个字段最新一次手改开放**——回退更早的一条会覆盖掉之后的修改 |
 
 ---
 
@@ -223,6 +231,18 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 
 ---
 
+### 3.10 字段锁的生命周期（v2.7.0）— 问我，不是永远不许
+
+![Field lock lifecycle](https://workbuddy-space-static.codebuddy.work/image/w2Hfn8dVMoqUggQcS4sFh9.png)
+
+> 锁回答的是「上游能不能直接覆盖这个字段」，答案是「先问我」。它必须有两个出口：接受这次上游值并顺手解锁，或者等上游把源数据修好后手动解锁（必须写理由）。否则"永远要人看"的集合只增不减，被运营改得最多的门店反而最不自动。
+
+### 3.11 字段级回退（v2.7.0）— 撤销一次已经推到客户的修改
+
+![Field revert](https://workbuddy-space-static.codebuddy.work/image/1FaraNobi2h9ImcewxE4rv.png)
+
+> 手改是唯一不经第二个人复核就到达客户的变更，所以也只有它需要后悔键。回退刻意做成字段级、且只对每个字段**最新的一次**手改开放：回退更早的那条，会把之后别人的修改一起冲掉。回退后锁保留——这个值仍然是人工更正过的。
+
 ## 附：一页速览（30 秒看懂）
 
 | Dimension | Content |
@@ -236,9 +256,10 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 | **去重** | 跨供应商地址模糊匹配 ≥75% 疑似重复；未确认不生成 OC |
 | **审计** | 每次 sweeper/编辑/启用/去重/状态变化都留痕 |
 | **上游数据是提案**（v2.6.0） | 已上线门店被上游改动 → 按字段档位判定，敏感字段挂起，客户继续看签收值 |
-| **一个审查入口**（v2.6.0） | Review Center = Duplicates + Data Quality + Sync Changes + Enable Sign-off |
+| **一个审查入口**（v2.6.0，v2.7.0 收口） | Review Center = Duplicates + Data Quality + Sync Changes（三个待决策队列）；签收移到 OC 列表的 `⏳ Not live yet` |
 | **启用即签收**（v2.6.0） | 核对地址/坐标/营业时间 + 5 项检查 + 必须勾选，同时记录基线 |
+| **锁可解、改可退**（v2.7.0） | 字段锁两个出口（手理解锁 / 接受并解锁）；手改错误可在 Change History 逐字段回退 |
 | **人工编辑即生效**（v2.6.0） | 不进 review，立即推下游 + 刷基线 + 锁字段 + 作废同字段待审变更 |
 | **兜底原则**（v2.6.0） | 没人处理 → 不生成 / 不启用 / 保持旧值，绝不自动接受上游错值 |
 | **验收** | 见 `Location-Management-Admin-验收标准-2026-10-29.md`（通俗版，8 条快检 + 6 个故事） |
-| **交付页面** | P01 Vendor List / P02 OC List / P03 详情 / **P04 Review Center（4 tab）** / P05 全局日志 / P06 同步状态 / P07 仪表盘 |
+| **交付页面** | P01 Vendor List / P02 OC List（含 `⏳ Not live yet` 签收队列）/ P03 详情 / **P04 Review Center（3 tab）** / P05 全局日志 / P06 同步状态 / P07 仪表盘 |

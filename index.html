@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Location Management Admin Console — Interactive Prototype (v2.6.1)</title>
+<title>Location Management Admin Console — Interactive Prototype (v2.7.0)</title>
 <!-- ============================================================
-  Location Management Admin Console · Hi-fi Prototype · v2.6.1
+  Location Management Admin Console · Hi-fi Prototype · v2.7.0
   Two-layer model: Vendor Location List (provider view) + OC Location List (OC view)
   Detail view: full page with tabs (v2.4.0 — reverted from the side drawer)
   Date: 2026-10-30 · Language: English · Canvas: Admin (1440px)
@@ -293,7 +293,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">🎬 Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3>🎬 Prototype Walkthrough — Location Management Admin Console (v2.6.1)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3>🎬 Prototype Walkthrough — Location Management Admin Console (v2.7.0)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <p style="font-size:12.5px;color:var(--text-secondary);margin-bottom:16px">Demo duration: ~6 min · Covers the two-layer model: Vendor Location List + OC Location List. Clicking a location ID opens a <b>full detail page</b> (Basic Info · Operations · Hours &amp; Services · Linked Records · Change History) where Sweeper and store-detail edits happen in place.</p>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
@@ -308,16 +308,22 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
         <tr><td>8</td><td>OC Detail</td><td><b>Hours &amp; Services</b> → <b>Edit opening hours</b> → add a range or copy Monday to Tue–Fri → Save</td><td>Structured 7-day editor (multi-range) · opening_hours audit with old → new summary</td></tr>
         <tr><td>9</td><td>OC Detail</td><td>Open the <b>Change History</b> tab</td><td>Per-location timeline: every change to this ID only</td></tr>
         <tr><td>10</td><td>OC List</td><td>Tick 2–3 rows → "Batch Disable" → confirm</td><td>Rows flip to disabled + audit entries</td></tr>
-        <tr><td>11</td><td>Review Center · Duplicates</td><td>Open sidebar → confirm/reject the pending pair</td><td>No OC location ID generated until resolved</td></tr><tr><td>12</td><td>Review Center · Sync Changes</td><td>Open OC-00102 — the provider moved its coordinates 297 km; accept or reject each field</td><td>Only the accepted field changes · rejected fields get locked</td></tr><tr><td>13</td><td>Review Center · Enable Sign-off</td><td>Click "Review &amp; enable" on OC-00105 → tick the verification box → confirm</td><td>Enabled only after the checklist is acknowledged · baseline captured</td></tr><tr><td>14</td><td>Review Center · Data Quality</td><td>Open the tab — LOC-00187 / LOC-00188 failed intake</td><td>No OC location ID exists, so nothing can go live by mistake</td></tr>
+        <tr><td>11</td><td>Review Center · Duplicates</td><td>Open sidebar → confirm/reject the pending pair</td><td>No OC location ID generated until resolved</td></tr><tr><td>12</td><td>Review Center · Sync Changes</td><td>Open OC-00102 — the provider moved its coordinates 297 km; accept or reject each field</td><td>Only the accepted field changes · rejected fields get locked</td></tr><tr><td>13</td><td>OC List · Not live yet</td><td>Click <b>⏳ Not live yet (n)</b> above the table → "Review &amp; enable" on OC-00105 → tick the verification box → confirm</td><td>The sign-off queue is a filter on the OC list, not a Review Center tab · enabled only after the checklist is acknowledged · baseline captured</td></tr><tr><td>14</td><td>Review Center · Data Quality</td><td>Open the tab — LOC-00187 / LOC-00188 failed intake</td><td>No OC location ID exists, so nothing can go live by mistake</td></tr>
         <tr><td>15</td><td>OC Detail · edit</td><td>On OC-00102 open <b>Edit Store Details</b>, change the city, save</td><td>Applied immediately · <b>pushed downstream now</b> (cache invalidated) · baseline refreshed · field locked · any pending provider change on that field becomes superseded</td></tr>
         <tr><td>16</td><td>Change Log / Sync</td><td>Review global log + sync status</td><td>All changes traced; status propagation logged; <code>DOWNSTREAM_PROPAGATED</code> visible for operator edits</td></tr>
+        <tr><td>17</td><td>OC Detail · lock</td><td>On OC-00102 (Basic Info) find <b>Locked fields</b> → "unlock" next to <b>city</b> → write a reason → confirm</td><td>A reason is mandatory · <code>FIELD_UNLOCKED</code> written · the field returns to its normal sync tier</td></tr>
+        <tr><td>18</td><td>Review Center · Sync Changes</td><td>On a change whose field is locked, use "Accept &amp; unlock" instead of "Accept"</td><td>Value accepted, baseline refreshed, lock released in one move</td></tr>
+        <tr><td>19</td><td>OC Detail · Change History</td><td>Find a manual edit → "↩ Revert this field"</td><td>Previous value restored · <code>FIELD_REVERTED</code> + <code>DOWNSTREAM_PROPAGATED</code> · the lock stays</td></tr>
       </tbody>
     </table>
+    <div style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:12px 16px;font-size:12.5px;margin-bottom:12px">
+      <b>v2.7.0 changes — giving the decision back:</b> a field lock is now <b>releasable</b> (with a mandatory reason, or in one move via <b>Accept &amp; unlock</b>), because “locked” should mean <i>ask me first</i> and not <i>never again</i> · a manual edit can be <b>reverted one field at a time</b> from Change History — the only case where a mistake has already reached a customer, so it needs an undo · <b>Enable Sign-off left the Review Center</b>: enabling is an action on one location, so it now lives on the OC list as <b>⏳ Not live yet</b>, and the Review Center badge counts decisions only.
+    </div>
     <div style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:12px 16px;font-size:12.5px;margin-bottom:12px">
       <b>v2.6.1 changes — consistency pass:</b> the store-edit modal no longer promises "visible after the next sync" (it contradicted the v2.6.0 rule that an operator edit is immediate and final) · the OC list description now states the asymmetry plainly — <b>enabling is a sign-off, disabling is one click</b>.
     </div>
     <div style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:12px 16px;font-size:12.5px;margin-bottom:12px">
-      <b>v2.6.0 changes — provider data is a proposal, not a fact:</b> one <b>Review Center</b> with four decision types (duplicates · data quality · sync changes · sign-off) · a live location keeps its <b>signed-off baseline</b> when the provider changes something · enabling is a <b>checklist sign-off</b> instead of a switch · an operator edit is <b>final</b>: pushed downstream immediately, baseline refreshed, field locked, any pending provider change on it superseded · if nobody acts, nothing changes.
+      <b>v2.6.0 changes — provider data is a proposal, not a fact:</b> one <b>Review Center</b> (three decision types since v2.7.0; sign-off moved to the OC list) · a live location keeps its <b>signed-off baseline</b> when the provider changes something · enabling is a <b>checklist sign-off</b> instead of a switch · an operator edit is <b>final</b>: pushed downstream immediately, baseline refreshed, field locked, any pending provider change on it superseded · if nobody acts, nothing changes.
     </div>
     <div style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:12px 16px;font-size:12.5px;margin-bottom:12px">
       <b>v2.5.0 changes:</b> all editing now happens in <b>modals</b> — store details in one grouped form, opening hours in a structured 7-day editor (multi-range, add/remove, copy to weekdays), sweeper in a small dialog. No more inline form expanding at the bottom of the page.
@@ -336,11 +342,11 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v2.6.1</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v2.7.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">🏢 Vendor Location List</div>
-    <div class="nav-item" data-nav="p02" onclick="switchPage('p02')">📍 OC Location List</div>
+    <div class="nav-item" data-nav="p02" onclick="switchPage('p02')">📍 OC Location List <span class="tag" id="signoff-count-tag">2</span></div>
     <div class="nav-item" data-nav="p06" onclick="switchPage('p06')">🔍 Review Center <span class="tag" id="dup-count-tag">4</span></div>
     <div class="nav-group-label">System</div>
     <div class="nav-item" data-nav="p03" onclick="switchPage('p03')">🕘 Change Log</div>
@@ -354,7 +360,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
     <div class="admin-header">
       <div class="breadcrumb" id="breadcrumb"><b>Vendor Location List</b> — raw provider locations</div>
       <div class="header-right">
-        <div class="ver-chip" onclick="openVersionModal()" title="Click to view the full version history"><span class="dot"></span>v2.6.1</div>
+        <div class="ver-chip" onclick="openVersionModal()" title="Click to view the full version history"><span class="dot"></span>v2.7.0</div>
         <span style="font-size:11px;color:var(--text-tertiary)">Demo role:</span>
         <div class="role-switch">
           <button class="role-btn active" id="role-manager" onclick="setRole('manager')">Location Manager</button>
@@ -413,7 +419,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
       <!-- ===== P02 OC Location List ===== -->
       <div class="page" id="page-p02">
         <h2 class="page-title">OC Location List</h2>
-        <p class="page-desc">OC-owned, downstream-facing locations, backfilled from vendor records. The <b>enable</b> control lives here: turning it <b>on</b> is a sign-off with a verification checklist, turning it <b>off</b> is still one click. A row with <b>⚠ N held</b> has provider changes waiting for review — the location keeps its signed-off value until someone decides. When a vendor location goes <b>inactive</b>, its linked OC location is auto-disabled and blocked from downstream sync. <b>QR dropoff</b> is backfilled from the linked vendor location.</p>
+        <p class="page-desc">OC-owned, downstream-facing locations, backfilled from vendor records. The <b>enable</b> control lives here: turning it <b>on</b> is a sign-off with a verification checklist, turning it <b>off</b> is still one click. A row with <b>⚠ N held</b> has provider changes waiting for review — the location keeps its signed-off value until someone decides. When a vendor location goes <b>inactive</b>, its linked OC location is auto-disabled and blocked from downstream sync. <b>QR dropoff</b> is backfilled from the linked vendor location. Locations that are <b>not live yet</b> are waiting for a sign-off — use the <b>Not live yet</b> button above the table, which is the onboarding queue (it used to be a tab in the Review Center).</p>
 
         <div class="card">
           <div class="filter-grid">
@@ -423,6 +429,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
             <div><label class="f-label">Provider</label><select id="o-f-provider"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
             <div><label class="f-label">Status</label><select id="o-f-status"><option value="">All</option><option>active</option><option>inactive</option><option>removed</option></select></div>
             <div><label class="f-label">Enable</label><select id="o-f-enable"><option value="">All</option><option value="enabled">Enabled</option><option value="disabled">Disabled</option></select></div>
+            <div><label class="f-label">Downstream</label><select id="o-f-live" onchange="applyOCFilters()"><option value="">All</option><option value="no">Not live yet (needs sign-off)</option><option value="yes">Live</option></select></div>
             <div><label class="f-label">Type</label><select id="o-f-type"><option value="">All</option><option>PUDOpoint</option><option>Locker</option><option>packagehub</option></select></div>
             <div><label class="f-label">QR Dropoff</label><select id="o-f-qr"><option value="">All</option><option value="yes">Supported</option><option value="no">Not supported</option></select></div>
             <div><label class="f-label">City</label><input id="o-f-city" placeholder="city"></div>
@@ -443,6 +450,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 
           <div class="toolbar">
             <button class="btn btn-secondary btn-sm" onclick="exportOCCSV()">⬇ Export CSV</button>
+            <button class="btn btn-secondary btn-sm" id="o-notlive-btn" onclick="filterNotLive()">⏳ Not live yet (<span id="o-notlive-count">0</span>)</button>
             <span class="spacer"></span>
             <span class="result-meta" id="o-result-meta"></span>
           </div>
@@ -480,10 +488,10 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
         <div class="card" id="sync-cards"></div>
       </div>
 
-      <!-- ===== P06 Review Center (v2.6.0: one entry point, four decision types) ===== -->
+      <!-- ===== P06 Review Center (v2.7.0: one entry point, three decision types; sign-off is on the OC list) ===== -->
       <div class="page" id="page-p06">
         <h2 class="page-title">Review Center</h2>
-        <p class="page-desc">Everything that needs a human decision before it can reach downstream customers. Four decision types share one queue but have separate rules — because they block at different points: <b>Duplicates</b> block OC ID creation, <b>Data Quality</b> blocks enablement, <b>Sync Changes</b> block field writes, <b>Enable Sign-off</b> is the final gate before visibility. Nothing here can make data <i>more</i> visible by waiting: an unresolved item always keeps the last known good state.</p>
+        <p class="page-desc">Everything that needs a human decision before it can reach downstream customers. Three decision types share one queue because they all block the same thing — a value reaching a customer — but with different decision units: <b>Duplicates</b> block OC ID creation, <b>Data Quality</b> blocks enablement, <b>Sync Changes</b> block field writes. Enabling is not a decision about data, it is an action on one location, so the sign-off lives on the <b>OC list</b> under <b>Not live yet</b> (v2.7.0). Nothing here can make data <i>more</i> visible by waiting: an unresolved item always keeps the last known good state.</p>
         <div class="rc-tabs" id="rc-tabs"></div>
         <div id="rc-body"></div>
       </div>
@@ -612,14 +620,31 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
   </div>
 </div>
 
+<div class="modal-mask" id="modal-unlock">
+  <div class="modal" style="width:470px">
+    <div class="modal-header">Unlock a field<span class="close" onclick="closeModal('modal-unlock')">✕</span></div>
+    <div class="modal-body">
+      <div class="info-line" style="margin:0 0 12px">Once <b id="unlock-field">this field</b> is unlocked it returns to its normal sync tier — the provider may change it again without a review.</div>
+      <label class="f-label">Why is it safe now?</label>
+      <textarea id="unlock-reason" rows="3" style="width:100%;resize:vertical" placeholder="e.g. provider corrected the master record and it has been stable for three runs"></textarea>
+      <div class="warn-line" style="margin-top:10px">⚠ The lock exists because an operator corrected this field by hand. Release it when the provider has fixed the source — not when the queue feels long.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-unlock')">Cancel</button>
+      <button class="btn btn-primary" id="unlock-confirm" onclick="confirmUnlock()">Unlock field</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast-wrap"></div>
 
 <script>
 /* ================= Version registry ================= */
 /* Bump on every delivery: MAJOR = architecture/data-model change,
    MINOR = new capability or screen, PATCH = fix or copy/visual tweak. */
-var APP_VERSION='2.6.1';
+var APP_VERSION='2.7.0';
 var VERSIONS=[
+ {v:'2.7.0',type:'minor',date:'2026-11-02',desc:'<b>Giving the decision back.</b> Three gaps left by v2.6.0, all closed in the same direction: a field lock can now be <b>released</b> (with a reason, or in one move by accepting a provider change), a manual edit can be <b>reverted field by field</b> from Change History, and <b>Enable Sign-off left the Review Center</b> — it is a per-location action, so it now lives where the location is: a <b>Not live yet</b> filter on the OC list.'},
  {v:'2.6.1',type:'patch',date:'2026-10-30',desc:'<b>Consistency pass.</b> Fixed one contradiction in the store-edit modal (it still promised "visible after the next sync" while v2.6.0 made operator edits immediate and final) and clarified the OC list description: enabling is a sign-off, disabling is still one click. Documentation set aligned to the same wording; flowcharts re-rendered at 2x for readability in Feishu.'},
  {v:'2.6.0',type:'minor',date:'2026-10-30',desc:'<b>Review Center + provider data protection.</b> Four decision types in one queue with separate rules: Duplicates (blocks OC ID) · Data Quality (blocks enablement) · Sync Changes (blocks a field write, field-level diff, accept/reject, field lock) · Enable Sign-off (records the baseline). Enabling is no longer a one-click switch — it opens a verification checklist. Provider changes to an already-live OC location are held against the signed-off baseline instead of overwriting it; batch enable cannot bypass the checks. <b>Operator edits are treated as final, not as proposals</b>: an edit refreshes the baseline, locks the edited fields, supersedes any pending provider change on those fields, and — if the location is visible — pushes downstream immediately with no review step (DOWNSTREAM_PROPAGATED).'},
  {v:'2.5.0',type:'minor',date:'2026-10-30',desc:'<b>Editing moved into purpose-built modals.</b> Store details (name · address · city · state · postal · phone) edit in one grouped modal with a field-level diff; opening hours get a structured 7-day editor — multiple ranges per day, add/remove range, copy Monday to Tue–Fri or all days, end-before-start validation; sweeper edits in a small modal. OC opening hours are now backfilled from the linked vendor location, so the editor never opens empty.'},
@@ -825,7 +850,7 @@ function findOC(id){return OC_LOCATIONS.find(function(o){return o.ocId===id;});}
 function ocStatus(oc){return oc.vendorIds.map(findVendor).filter(Boolean).some(function(v){return v.status==='active';})?'active':'inactive';}
 
 /* ================= Navigation ================= */
-var CRUMBS={p01:['Vendor Location List','raw provider locations · read-only except Sweeper'],p02:['OC Location List','OC-owned, downstream-facing · enable switch lives here'],p03:['Change Log','all changes across both layers'],p04:['Sync Status','daily provider sync runs'],p06:['Review Center','four decision types · duplicates · data quality · sync changes · sign-off'],pd:['Location Detail','vendor and OC share the same field structure']};
+var CRUMBS={p01:['Vendor Location List','raw provider locations · read-only except Sweeper'],p02:['OC Location List','OC-owned, downstream-facing · enable switch and the sign-off queue live here'],p03:['Change Log','all changes across both layers'],p04:['Sync Status','daily provider sync runs'],p06:['Review Center','three decision types · duplicates · data quality · sync changes (sign-off moved to the OC list)'],pd:['Location Detail','vendor and OC share the same field structure']};
 function switchPage(pid){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.getElementById('page-'+pid).classList.add('active');
@@ -910,9 +935,9 @@ function clearChip(){/* simplified: chips are informational */}
 
 /* ================= OC list ================= */
 function applyOCFilters(){renderOC();}
-function resetOCFilters(){['o-f-id','o-f-vendorid','o-f-name','o-f-city','o-f-state'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('o-f-provider').value='';document.getElementById('o-f-status').value='';document.getElementById('o-f-enable').value='';document.getElementById('o-f-type').value='';document.getElementById('o-f-qr').value='';renderOC();}
+function resetOCFilters(){['o-f-id','o-f-vendorid','o-f-name','o-f-city','o-f-state'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('o-f-provider').value='';document.getElementById('o-f-status').value='';document.getElementById('o-f-enable').value='';document.getElementById('o-f-type').value='';document.getElementById('o-f-qr').value='';document.getElementById('o-f-live').value='';renderOC();}
 function ocFilters(){
-  var f={id:val('o-f-id').toLowerCase(),vendorId:val('o-f-vendorid').toLowerCase(),name:val('o-f-name').toLowerCase(),provider:val('o-f-provider'),status:val('o-f-status'),enable:val('o-f-enable'),type:val('o-f-type'),qr:val('o-f-qr'),city:val('o-f-city').toLowerCase(),state:val('o-f-state').toLowerCase()};
+  var f={id:val('o-f-id').toLowerCase(),vendorId:val('o-f-vendorid').toLowerCase(),name:val('o-f-name').toLowerCase(),provider:val('o-f-provider'),status:val('o-f-status'),enable:val('o-f-enable'),live:val('o-f-live'),type:val('o-f-type'),qr:val('o-f-qr'),city:val('o-f-city').toLowerCase(),state:val('o-f-state').toLowerCase()};
   return OC_LOCATIONS.filter(function(o){
     if(f.id&&o.ocId.toLowerCase().indexOf(f.id)<0)return false;
     if(f.vendorId){
@@ -925,6 +950,8 @@ function ocFilters(){
     if(f.status&&ocStatus(o)!==f.status)return false;
     if(f.enable==='enabled'&&!o.enable)return false;
     if(f.enable==='disabled'&&o.enable)return false;
+    if(f.live==='no'&&o.enable)return false;
+    if(f.live==='yes'&&!o.enable)return false;
     if(f.type&&o.type!==f.type)return false;
     if(f.qr==='yes'&&!o.qrDropoff)return false;
     if(f.qr==='no'&&o.qrDropoff)return false;
@@ -965,15 +992,28 @@ function renderOC(){
       +'</tr>';
   }).join('');
   document.getElementById('o-result-meta').textContent=rows.length+' OC location(s)';
-  renderChips('o',[['o-f-provider','Provider'],['o-f-status','Status'],['o-f-enable','Enable'],['o-f-type','Type'],['o-f-qr','QR Dropoff']]);
+  var notLive=OC_LOCATIONS.filter(function(x){return !x.enable;}).length;
+  var nlc=document.getElementById('o-notlive-count'); if(nlc)nlc.textContent=notLive;
+  var sct=document.getElementById('signoff-count-tag'); if(sct)sct.textContent=notLive;
+  renderChips('o',[['o-f-provider','Provider'],['o-f-status','Status'],['o-f-enable','Enable'],['o-f-live','Downstream'],['o-f-type','Type'],['o-f-qr','QR Dropoff']]);
   updateOCSelection();
 }
 
+/* v2.7.0 — the sign-off queue is this filter, not a Review Center tab: enabling
+   is an action on one location, so it stays next to that location. */
+function filterNotLive(){
+  document.getElementById('o-f-live').value='no';
+  renderOC();
+  var n=OC_LOCATIONS.filter(function(o){return !o.enable;}).length;
+  showToast('Waiting for sign-off',n+' OC location(s) not live yet · opening one runs the sign-off checklist');
+}
 function toggleOCEnable(ocId,el){
   if(currentUser.role!=='manager'){showToast('Permission required','Enable/disable requires the Location Manager advanced permission.','err');return;}
   var o=findOC(ocId);
   var vendorInactive=!o.vendorIds.map(findVendor).filter(Boolean).some(function(v){return v.status==='active';});
-  if(vendorInactive){openModal('modal-enable-block');return;}
+  /* v2.7.0 — a blocked location opens the sign-off dialog too: it lists every
+     blocker, which a one-line "cannot enable" alert could not. */
+  if(vendorInactive){openEnableSignoff(ocId);return;}
   /* v2.6.0 — turning ON is a sign-off (records the baseline); turning OFF stays
      one click, because hiding a location is always the safe direction. */
   if(!o.enable){openEnableSignoff(ocId);return;}
@@ -1260,7 +1300,7 @@ function ocPanels(ctx, o){
           : '<span style="font-size:11.5px;color:var(--text-tertiary)">— never pushed</span>')+
         kv('Operator edits', '<span style="font-size:11.5px;color:var(--text-tertiary)">applied immediately · never queued for review</span>')+
         (o.lockFields&&o.lockFields.length
-          ? kv('Locked fields', chipList(o.lockFields,'badge-gray'))
+          ? kv('Locked fields', lockChips(o))
           : '')
       )
       +(vendorInactive?'<div class="warn-line" style="margin-top:0">⚠ The linked vendor location is <b>inactive</b>. This OC location is auto-disabled and blocked from downstream sync until the vendor location returns to <b>active</b>.</div>':'');
@@ -1288,13 +1328,82 @@ function ocPanels(ctx, o){
 function historyBlock(locId, layer){
   var rows=CHANGELOG.filter(function(e){return e.locId===locId;});
   if(!rows.length)return dpSecPlain('Change History','<div style="font-size:13px;color:var(--text-tertiary);padding:4px 0">No changes recorded for this location yet. Provider sync updates and manual operations will appear here.</div>');
+  var EDIT_TYPES=['STORE_DETAIL_EDIT','FIELD_REVERTED'];
   return dpSecPlain('Change History',
-    '<div class="timeline">'+rows.map(function(e){
+    '<div class="timeline">'+rows.map(function(e,i){
+      /* v2.7.0 — a manual edit can be undone, one field at a time. Only the newest
+         edit of a field offers Revert; reverting an older one would silently
+         overwrite whatever happened to that field afterwards. */
+      var canRevert=e.layer==='OC'&&e.type==='STORE_DETAIL_EDIT'&&e.field!=='is_enable'
+        &&!rows.slice(0,i).some(function(x){return x.field===e.field&&EDIT_TYPES.indexOf(x.type)>=0;});
       return '<div class="tl-item'+(e.layer==='VENDOR'?' sync':'')+'">'
         +'<div class="tl-head"><span class="mono">'+esc(e.time)+'</span><span class="badge badge-teal">'+esc(e.type)+'</span><span>'+esc(e.operator)+'</span>'+(e.remark?'<span>· '+esc(e.remark)+'</span>':'')+'</div>'
-        +'<div class="tl-body"><span class="mono" style="font-size:11.5px;color:var(--text-tertiary)">'+esc(e.field)+'</span> &nbsp;<span class="val-old">'+esc(e.old)+'</span> → <span class="val-new">'+esc(e.new)+'</span></div>'
+        +'<div class="tl-body"><span class="mono" style="font-size:11.5px;color:var(--text-tertiary)">'+esc(e.field)+'</span> &nbsp;<span class="val-old">'+esc(e.old)+'</span> → <span class="val-new">'+esc(e.new)+'</span>'
+        +(canRevert?'<span class="link" style="font-size:11.5px;margin-left:12px" onclick="revertFieldAt('+CHANGELOG.indexOf(e)+')">↩ Revert this field</span>':'')
+        +'</div>'
         +'</div>';
     }).join('')+'</div>');
+}
+
+/* ================= v2.7.0 — field lock release ================= */
+function lockChips(o){
+  return '<span class="chip-list">'+o.lockFields.map(function(f){
+    return '<span class="badge badge-gray" style="display:inline-flex;align-items:center;gap:7px">'+esc(f)
+      +(currentUser.role==='manager'
+        ? '<span class="link" style="font-size:10.5px;text-decoration:underline" onclick="openUnlockField(\''+esc(f)+'\')">unlock</span>'
+        : '')
+      +'</span>';
+  }).join(' ')+'</span>'
+  +'<div style="font-size:11.5px;color:var(--text-tertiary);margin-top:6px">A lock means <b>ask me first</b>, not <b>never again</b> — provider changes to these fields are held until someone decides.</div>';
+}
+var unlockFieldName=null;
+function openUnlockField(f){
+  if(currentUser.role!=='manager'){showToast('Permission required','Releasing a field lock requires the Location Manager permission.','err');return;}
+  unlockFieldName=f;
+  document.getElementById('unlock-field').textContent=f;
+  document.getElementById('unlock-reason').value='';
+  openModal('modal-unlock');
+}
+function confirmUnlock(){
+  var f=unlockFieldName; if(!f)return;
+  var reason=(document.getElementById('unlock-reason').value||'').trim();
+  if(!reason){
+    showToast('Reason required','A lock protects this field from provider overwrites — write down why it is safe to release','error');
+    return;
+  }
+  var o=findOC(profileContext.id); if(!o)return;
+  o.lockFields=(o.lockFields||[]).filter(function(x){return x!==f;});
+  o.updated=nowStr();
+  CHANGELOG.unshift({time:nowStr(),layer:'OC',operator:currentUser.name,type:'FIELD_UNLOCKED',locId:o.ocId,field:f,old:'locked',new:'unlocked',remark:reason});
+  closeModal('modal-unlock');
+  document.getElementById('unlock-reason').value='';
+  unlockFieldName=null;
+  renderProfile();renderOC();renderReviewCenter();
+  showToast('Field unlocked',f+' returns to its normal sync tier · provider changes now follow that tier again');
+}
+
+/* ================= v2.7.0 — field-level revert ================= */
+function revertFieldAt(idx){
+  var e=CHANGELOG[idx]; if(!e)return;
+  var o=findOC(e.locId); if(!o)return;
+  var prop=FIELD_TARGET[e.field]; if(!prop)return;
+  var ts=nowStr();
+  var cur=(e.field==='opening_hours')?o.hoursText:o[prop];
+  if(e.field==='opening_hours'){
+    if(e.prev)o.hoursOfOp=JSON.parse(e.prev);
+    o.hoursText=e.old;
+  }else{
+    o[prop]=e.old;
+  }
+  o.updated=ts;o.baselineAt=ts;
+  CHANGELOG.unshift({time:ts,layer:'OC',operator:currentUser.name,type:'FIELD_REVERTED',locId:o.ocId,field:e.field,old:cur,new:e.old,remark:'reverted the edit of '+e.time+' · baseline refreshed'});
+  var pushed=!!(o.enable&&ocStatus(o)==='active');
+  if(pushed){
+    o.propagatedAt=ts;
+    CHANGELOG.unshift({time:ts,layer:'OC',operator:currentUser.name,type:'DOWNSTREAM_PROPAGATED',locId:o.ocId,field:e.field,old:'—',new:'pushed',remark:'revert · downstream cache invalidated'});
+  }
+  renderProfile();renderOC();renderReviewCenter();
+  showToast('Reverted',e.field+' restored to “'+e.old+'” · audit entry written'+(pushed?' · pushed downstream now':''));
 }
 
 function section(title,inner){return '<div class="p-sec"><div class="p-sec-title">'+title+'</div>'+inner+'</div>';}
@@ -1608,12 +1717,13 @@ function saveEditHours(){
   }
   closeModal('modal-edit-hours');
   if(oldText===newText){showToast('No changes','Opening hours unchanged','info');return;}
+  var prevSnap=JSON.stringify(o.hoursOfOp||[]);
   o.hoursOfOp=nested;
   o.hoursText=newText;
   var ts=nowStr();
   o.updated=ts;
   var superseded=resolveFieldChanges(o,['opening_hours']);
-  CHANGELOG.unshift({time:ts,layer:'OC',operator:currentUser.name,type:'STORE_DETAIL_EDIT',locId:o.ocId,field:'opening_hours',old:oldText,new:newText,remark:'OC-level override · baseline refreshed'});
+  CHANGELOG.unshift({time:ts,layer:'OC',operator:currentUser.name,type:'STORE_DETAIL_EDIT',locId:o.ocId,field:'opening_hours',old:oldText,new:newText,remark:'OC-level override · baseline refreshed',prev:prevSnap});
   var pushed=commitOperatorEdit(o,['opening_hours'],ts);
   renderProfile(); renderOC(); renderReviewCenter();
   showToast('Opening hours saved',
@@ -1692,7 +1802,7 @@ function renderSync(){
 }
 
 /* ================= Review Center (v2.6.0) =================
-   One entry point, four decision types — deliberately NOT merged into one list,
+   One entry point, three decision types — deliberately NOT merged into one list,
    because each one blocks a different step and decides a different object:
      Duplicates   -> blocks OC location ID creation    (object: a record pair)
      Data Quality -> blocks enablement                 (object: a record)
@@ -1712,16 +1822,19 @@ function rcCounts(){
 function updateReviewTag(){
   var c=rcCounts();
   var el=document.getElementById('dup-count-tag');
+  /* the Review Center badge counts decisions waiting — sign-off is not one of them */
   if(el)el.textContent=(c.duplicates+c.quality+c.sync)||'';
+  var so=document.getElementById('signoff-count-tag');
+  if(so)so.textContent=OC_LOCATIONS.filter(function(o){return !o.enable;}).length;
 }
-function switchRcTab(k){rcTab=k;renderReviewCenter();}
+function switchRcTab(k){if(k==='signoff')k='sync';rcTab=k;renderReviewCenter();}
 function goSync(){rcTab='sync';switchPage('p06');renderReviewCenter();}
-function goSignoff(){rcTab='signoff';switchPage('p06');renderReviewCenter();}
+function goSignoff(){switchPage('p02');document.getElementById('o-f-live').value='no';renderOC();}
 
 function renderReviewCenter(){
   var c=rcCounts();
   var tabs=[['duplicates','Duplicates',c.duplicates],['quality','Data Quality',c.quality],
-            ['sync','Sync Changes',c.sync],['signoff','Enable Sign-off',c.signoff]];
+            ['sync','Sync Changes',c.sync]];
   var tEl=document.getElementById('rc-tabs');
   if(tEl){
     tEl.innerHTML=tabs.map(function(t){
@@ -1733,8 +1846,7 @@ function renderReviewCenter(){
   if(!body)return;
   if(rcTab==='duplicates')body.innerHTML=rcDuplicates();
   else if(rcTab==='quality')body.innerHTML=rcQuality();
-  else if(rcTab==='sync')body.innerHTML=rcSync();
-  else body.innerHTML=rcSignoff();
+  else body.innerHTML=rcSync();
   updateReviewTag();
 }
 function rcEmpty(title,txt){
@@ -1844,11 +1956,14 @@ function rcSync(){
         +'<span class="rc-meta" style="margin:0">source <span class="mono">'+esc(o.vendorIds.join(', '))+'</span></span></div>'
       +'<div class="rc-meta">Baseline signed off '+(o.baselineAt?esc(o.baselineAt):'—')+(o.enable?' · <b>currently visible downstream</b>':' · not visible')+'</div>'
       +list.map(function(c){
-          return '<div class="diff-line"><div class="diff-field">'+esc(c.field)+'</div><div>'
+          var isLocked=o.lockFields.indexOf(c.field)>=0;
+          return '<div class="diff-line"><div class="diff-field">'+esc(c.field)
+            +(isLocked?' <span class="badge badge-gray" style="font-size:9.5px" title="locked by an operator edit">locked</span>':'')+'</div><div>'
             +'<span class="diff-old">'+esc(c.oldV)+'</span><span class="diff-new">'+esc(c.newV)+'</span>'
             +'<div class="rc-meta">'+esc(c.reason)+'</div>'
             +'<div style="margin-top:6px;display:flex;gap:12px">'
               +'<span class="link" style="font-size:12px" onclick="decideChange(\''+c.changeId+'\',\'accepted\')">Accept provider value</span>'
+              +(isLocked?'<span class="link" style="font-size:12px" onclick="decideChange(\''+c.changeId+'\',\'accepted_unlock\')" title="accept this value and let future changes flow without review">Accept &amp; unlock</span>':'')
               +'<span class="link" style="font-size:12px;color:var(--color-danger)" onclick="decideChange(\''+c.changeId+'\',\'rejected\')">Reject &amp; lock</span>'
             +'</div></div></div>';
         }).join('')
@@ -1871,11 +1986,17 @@ function decideChange(changeId,decision){
   var c=SYNC_CHANGES.find(function(x){return x.changeId===changeId;});
   if(!c||c.decision!=='pending')return;
   var o=findOC(c.ocId);
-  c.decision=decision;
-  if(decision==='accepted'){
+  var unlock=decision==='accepted_unlock';
+  if(!unlock)c.decision=decision;
+  if(decision==='accepted'||unlock){
+    if(unlock)c.decision='accepted';
     o[FIELD_TARGET[c.field]]=c.newV;
     o.updated=nowStr();o.baselineAt=nowStr();
     CHANGELOG.unshift({time:nowStr(),layer:'OC',operator:currentUser.name,type:'SYNC_CHANGE_ACCEPTED',locId:c.ocId,field:c.field,old:c.oldV,new:c.newV,remark:c.changeId+' · '+c.reason});
+    if(unlock){
+      o.lockFields=o.lockFields.filter(function(x){return x!==c.field;});
+      CHANGELOG.unshift({time:nowStr(),layer:'OC',operator:currentUser.name,type:'FIELD_UNLOCKED',locId:c.ocId,field:c.field,old:'locked',new:'unlocked',remark:'accepted & unlocked · future provider changes follow the base tier'});
+    }
   }else{
     if(o.lockFields.indexOf(c.field)<0)o.lockFields.push(c.field);
     CHANGELOG.unshift({time:nowStr(),layer:'OC',operator:currentUser.name,type:'SYNC_CHANGE_REJECTED',locId:c.ocId,field:c.field,old:c.newV,new:c.oldV,remark:c.changeId+' · field locked against provider changes'});
@@ -1883,8 +2004,9 @@ function decideChange(changeId,decision){
   o.pendingFields=o.pendingFields.filter(function(x){return x.changeId!==changeId;});
   renderReviewCenter();renderOC();
   if(profileContext&&profileContext.layer==='OC'&&profileContext.id===c.ocId)renderProfile();
-  showToast(decision==='accepted'?'Change accepted':'Change rejected',
-    c.ocId+' · '+c.field+' · '+(decision==='accepted'?'baseline updated to the provider value':'kept the signed-off value, field locked'));
+  showToast(unlock?'Change accepted · field unlocked':(decision==='accepted'?'Change accepted':'Change rejected'),
+    c.ocId+' · '+c.field+' · '+(unlock?'baseline updated · lock released, future changes flow again'
+      :(decision==='accepted'?'baseline updated to the provider value':'kept the signed-off value, field locked')));
 }
 function decideAll(ocId,decision){
   SYNC_CHANGES.filter(function(c){return c.ocId===ocId&&c.decision==='pending';}).forEach(function(c){decideChange(c.changeId,decision);});
@@ -1900,26 +2022,9 @@ function signoffBlockers(o){
   if(!o.hoursOfOp||!o.hoursOfOp.length)b.push('opening hours missing');
   return b;
 }
-function rcSignoff(){
-  var list=OC_LOCATIONS.filter(function(o){return !o.enable;});
-  if(!list.length)return rcEmpty('No location waiting','Every OC location is either live or has been reviewed.');
-  return '<div class="card">'
-    +'<div class="info-line" style="margin:0 0 14px">Enabling is the moment a location becomes visible downstream, so it is a <b>sign-off</b>, not a switch. The sign-off records the <b>baseline</b> used later to judge provider changes.</div>'
-    +list.map(function(o){
-      var v=findVendor(o.vendorIds[0]);
-      var bl=signoffBlockers(o);
-      return '<div class="rc-item">'
-        +'<div class="rc-item-head"><b>'+esc(o.name)+'</b><span class="mono" style="font-size:12px">'+esc(o.ocId)+'</span>'
-          +provBadge(o.provider)
-          +(bl.length?'<span class="risk risk-review">blocked</span>':'<span class="risk risk-auto">ready for sign-off</span>')+'</div>'
-        +'<div class="rc-meta">from <span class="mono">'+esc(o.vendorIds.join(', '))+'</span> · '+esc(o.addr1)+', '+esc(o.city)+' '+esc(o.state)+' '+esc(o.postal||'')+'</div>'
-        +(bl.length?'<div class="chk-list">'+bl.map(function(x){return '<div class="chk-item"><span class="no">✕</span><span>'+esc(x)+'</span></div>';}).join('')+'</div>':'')
-        +'<div class="rc-actions">'
-          +'<button class="btn '+(bl.length?'btn-secondary':'btn-primary')+' btn-sm" onclick="openEnableSignoff(\''+o.ocId+'\')">Review &amp; enable</button>'
-          +'<span class="rc-meta" style="margin:0">'+(bl.length?'Resolve the items above first.':(v?'provider '+esc(v.provider)+' · record updated '+esc(v.updated):''))+'</span>'
-        +'</div></div>';
-    }).join('')+'</div>';
-}
+/* v2.7.0 — rcSignoff() is gone: the queue is the OC list's "Not live yet" filter.
+   openEnableSignoff() below is still the single sign-off dialog, opened from the
+   list toggle, the filter, or the batch bar — one dialog, one place to reach it. */
 var soTargetId=null;
 function soHours(o){
   if(o.hoursText)return o.hoursText.replace(/\n/g,' · ');

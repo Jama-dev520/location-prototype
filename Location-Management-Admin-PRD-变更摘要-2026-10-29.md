@@ -1,7 +1,7 @@
-# Location Management Admin Console — PRD Change Summary (v2.6.1)
+# Location Management Admin Console — PRD Change Summary (v2.7.0)
 
-> Document version v2.6.1 ｜ Change date 2026-10-30 ｜ Status: Draft — pending review
-> 本轮（v2.6.1）为**一致性收口**：不改功能，只把文档、原型、流程图、验收口径对齐，并补一支 2.5 分钟演示视频。
+> Document version v2.7.0 ｜ Change date 2026-11-02 ｜ Status: Draft — pending review
+> 本轮（v2.7.0）是**把决定权还给运营**：v2.6.0 定了「手改是最终裁决」，但只写了裁决怎么生效，没写裁决错了怎么办、裁决权什么时候还回去。三条一起补。」
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
 > **验收标准（通俗版）**: `Location-Management-Admin-验收标准-2026-10-29.md`
 
@@ -195,6 +195,45 @@ https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 
 ---
 
+## 二之四、v2.7.0 把决定权还回去
+
+v2.6.0 建立了「上游数据是提案」的保护，但也留下三个反方向的坑。这一轮不是加功能，是**给已经很强的保护装上出口**。
+
+### 18. 字段锁：从「永远不许」改成「先问我」
+
+**问题**：v2.6.0 里，运营手改过哪个字段，那个字段就被永久写进 `field_lock`，此后上游再改它一律转人工——不管它本来是不是自动档。锁只增不减。一家店被改过 5 个字段，就等于这 5 个字段永远要人看；几年下来，被运营改得最多的门店反而最不自动，自动档形同虚设。
+
+**这次**：
+- 详情页 `Locked fields` 每个字段后加 **unlock**（仅 Location Manager），**必须填理由**，写 `FIELD_UNLOCKED`。
+- 同步审核里，已锁字段的决策从两个变三个：**Accept** / **Accept & unlock** / **Reject & lock**。`Accept & unlock` 一步完成「这次听你的 + 以后也听你的」，正好对应「当初锁它是因为不信上游，现在上游把源数据修好了」这个真实判断。
+- 数据库侧 `field_lock` 不删行，改为盖章：`released_at / released_by / release_reason / release_path`。所以「这个字段锁过吗、为什么放开」永远查得到。生效中的锁 = `released_at IS NULL`。
+
+### 19. 签收队列：从 Review Center 第四个 tab 改成 OC 列表的筛选
+
+**问题**：前三个 tab 是**积压的决策**（不做决定，数据就一直挂着），第四个是**待办的上线动作**（不做也不会错，那家店本来就还没开）。硬放一起有两个副作用：侧边栏徽章含义变糊（到底是"有多少事等我决策"还是"有多少店没上线"），入口还变成两个。
+
+**这次**：
+- Review Center 回到**三个 tab**：Duplicates / Data Quality / Sync Changes。
+- OC 列表工具栏加 **⏳ Not live yet (N)** 一键预设，筛选项加 `Downstream`（Not live yet / Live）。点行内开关照样拉起同一个签收弹窗——一个弹窗，一个入口。
+- 两个数字彻底分开：Review Center 徽章只数待决策（T1+T2+T3），OC 菜单徽章数待上线门店。
+- 判据没变弱：4 项阻塞检查、5 项核对、必须勾选、记基线，全都还在。
+
+### 20. 手改错误：加一个字段级的后悔键
+
+**问题**：手改是唯一不经第二个人复核就到达客户的变更。改错了，只能凭记忆再改一次，而这一次同样立刻推给客户。数据库里其实已经存了退路（`oc_field_baseline` 每字段保留最近 5 版），只是原型里没有入口——存了不用。
+
+**这次**：
+- Change History 里，每个字段**最新的一次**手改后面出现 **↩ Revert this field**；更早的不出现，因为回退更早的那条会把之后别人的修改一起冲掉。
+- 回退 = 恢复上一版 + 写 `FIELD_REVERTED` + 刷基线 + 若门店可见则立刻 `DOWNSTREAM_PROPAGATED`；**锁保留**，因为这个值仍然是人工更正过的。
+- 刻意不做整条记录回滚：会连带冲掉期间别人改的其他字段。
+
+### 21. 顺带修掉的两处
+
+- 面包屑与页面说明里「four decision types」的残留全部改掉（原型、PRD、需求总览）。
+- 流程图补两张：**flow10 字段锁生命周期**、**flow11 字段级回退**，与前面九张同样 2x、裁到内容边界，飞书里用绝对 URL 直接看。
+
+---
+
 ## 三、对比表（v1.2 vs v2.0）
 
 | 维度 | v1.2（旧） | v2.0（新） |
@@ -230,6 +269,7 @@ https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 
 | 版本 | 级别 | 日期 | 内容 |
 |---|---|---|---|
+| v2.7.0 | MINOR | 2026-11-02 | **把决定权还回去**：字段锁可解锁（手动必填理由 / Accept & unlock 一步到位，`field_lock` 加 4 个释放字段，不删行）· 签收队列从 Review Center 第四 tab 移到 OC 列表 `⏳ Not live yet` 预设，两个徽章各数各的 · 手改可逐字段回退（只对每字段最新一次手改开放，锁保留）· 新增 F23/F24、flow10/flow11 |
 | v2.6.1 | PATCH | 2026-10-30 | **一致性收口**：修正编辑弹框「下次同步生效」与「手改立即生效」的矛盾 · PRD §8 重排 / F06 五 tab / F08↔F21 关系 / Page Map 注记 · 英文文档去中文 · 补 3 张流程图并全部 2x 重渲染 · 新增 2.5 分钟演示视频 |
 | v2.6.0 | MINOR | 2026-10-30 | **上游数据降级为提案**：P04 改为 Review Center（4 tab）· 字段级同步档位 + 双跑确认 + 熔断 · 基线机制 · 启用改签收（替代一键开关）· 人工编辑立即推下游并锁字段 · Data Quality 准入 |
 | v2.5.0 | MINOR | 2026-10-30 | 编辑全部改弹框：店铺信息合并表单 + 营业时间 7 天结构化编辑器（多段/增删/跨天复制/校验）+ Sweeper 小弹框；OC 营业时间从供应商回填 |

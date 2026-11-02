@@ -1,6 +1,6 @@
-# Location Management Admin Console — Database Field Mapping (v2.6.1)
+# Location Management Admin Console — Database Field Mapping (v2.7.0)
 
-> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v2.6.1)
+> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v2.7.0)
 > Purpose: help engineering/data teams understand "front-end filter ↔ API param ↔ DB field" and the table schemas for the **two-layer model**.
 
 ---
@@ -44,6 +44,8 @@ oc_location (OC-owned, downstream-facing)
 | Updated from/to | `updated_from`/`updated_to` | `vendor_location` | `updated_at` | timestamp | BETWEEN | ≤1yr span |
 
 ### 1.2 OC Location List (`GET /api/oc-locations`)
+
+> v2.7.0 adds the **Downstream** filter and the `⏳ Not live yet (N)` preset, which maps to `is_enable = false` (N = `COUNT(*) WHERE is_enable = false`). This preset is the sign-off queue that used to be the fourth Review Center tab.
 
 | UI Filter | API Param | Table | Field | Type | Match | Notes |
 |---|---|---|---|---|---|---|
@@ -156,7 +158,7 @@ oc_location (OC-owned, downstream-facing)
 | `location_layer` | enum(VENDOR,OC) | which layer the change belongs to |
 | `occurred_at` | timestamp | occurred time |
 | `operator` | varchar | operator, or `System · PUDO Sync` / `System · LMS Sync` |
-| `operation_type` | enum | ENABLE / DISABLE / BATCH_ENABLE / BATCH_DISABLE / SWEEPER_CHANGE / STORE_DETAIL_EDIT / OC_LINK_CONFIRMED / OC_LINK_REJECTED / OC_GENERATED / PROVIDER_STATUS_CHANGE / PROVIDER_FIELD_UPDATE / PROVIDER_CREATED / PROVIDER_REMOVED |
+| `operation_type` | enum | ENABLE / DISABLE / BATCH_ENABLE / BATCH_DISABLE / SWEEPER_CHANGE / STORE_DETAIL_EDIT / OC_LINK_CONFIRMED / OC_LINK_REJECTED / OC_GENERATED / PROVIDER_STATUS_CHANGE / PROVIDER_FIELD_UPDATE / PROVIDER_CREATED / PROVIDER_REMOVED / ENABLE_SIGNED_OFF / SYNC_CHANGE_ACCEPTED / SYNC_CHANGE_REJECTED / FIELD_UNLOCKED (v2.7.0) / FIELD_REVERTED (v2.7.0) / DOWNSTREAM_PROPAGATED |
 | `field_name` | varchar | changed field |
 | `old_value` | text | old value |
 | `new_value` | text | new value |
@@ -206,7 +208,7 @@ oc_location (OC-owned, downstream-facing)
 
 ### Table 8 — `oc_field_baseline` (field baseline, added in v2.6.0)
 
-> **The reference point for "good data".** It records what a human verified, not what the last sync happened to write. Each field keeps its 5 most recent versions so a single field can be reverted.
+> **The reference point for "good data".** It records what a human verified, not what the last sync happened to write. Each field keeps its 5 most recent versions — this is what F24 (field revert) reads when an operator undoes a manual edit.
 
 | Field | Type | Notes |
 |---|---|---|
@@ -241,7 +243,7 @@ oc_location (OC-owned, downstream-facing)
 
 ### Table 10 — `field_lock` (field lock, added in v2.6.0)
 
-> A permanent "ask me". Once locked, a provider change to that field always goes to review, **even if its base tier is `auto`**.
+> An "ask me", not a "never again" (wording fixed in v2.7.0). While a row is active, a provider change to that field goes to review **even if its base tier is `auto`**. A row can be **released** (v2.7.0): manually with a reason, or in one move through «Accept & unlock» on a held change.
 
 | Field | Type | Notes |
 |---|---|---|
@@ -250,7 +252,13 @@ oc_location (OC-owned, downstream-facing)
 | `field_name` | varchar | which field |
 | `locked_at` | timestamp | when |
 | `locked_by` | varchar | operator |
-| `reason` | enum(OPERATOR_EDIT, REJECTED_CHANGE) | operator fixed it, or a change was rejected |
+| `reason` | enum(OPERATOR_EDIT, REJECTED_CHANGE) | why it was locked: an operator fixed the field, or a provider change was rejected |
+| `released_at` | timestamp NULL | v2.7.0 — null while the lock is active |
+| `released_by` | varchar NULL | v2.7.0 — operator who released it |
+| `release_reason` | text NULL | v2.7.0 — **mandatory** when the release is manual; auto-filled as `accepted & unlocked` when it comes from a review decision |
+| `release_path` | enum(MANUAL, ACCEPT_UNLOCK) NULL | v2.7.0 — which of the two exits was used |
+
+> Rows are **never deleted**: a release stamps the row, so "was this field ever locked, and why was it released?" stays answerable. An active lock is `released_at IS NULL`.
 
 ### Table 11 — `intake_issue` (intake check, added in v2.6.0)
 
@@ -291,7 +299,7 @@ oc_location (OC-owned, downstream-facing)
 | `conditional auto` | `opening_hours` | Auto if the structure is valid and no day moves more than 2 h; otherwise `review` |
 | `review` | `name`, `address_line1/2`, `city`, `state`, `postal_code`, `latitude`, `longitude` | Held (`sync_change_set.decision = pending`); the OC location keeps its baseline value |
 | `immediate (one-way)` | `status` | `active → inactive` applies at once; a batch of `inactive` trips the breaker |
-| **forced review** | **any field present in `field_lock`** | Held regardless of its base tier — a human must decide |
+| **forced review** | **any field with an active `field_lock` row** (`released_at IS NULL`) | Held regardless of its base tier — a human must decide. Releasing the lock (F23) returns the field to the tier in the row above |
 
 > Two extra gates: **two-run confirmation** (an `auto` field is applied only when two consecutive runs agree) and **magnitude thresholds** (coordinate drift > 1 km, any postal/city change, opening hours moving > 2 h on a day → forced review).
 
@@ -302,6 +310,7 @@ oc_location (OC-owned, downstream-facing)
 | Provider sync, `auto` tier | daily job | no | yes | unchanged |
 | Provider sync, `review` tier | daily job | **yes** (held) | **no** — keeps the old value | unchanged |
 | Operator edit | human saves | **no** — an operator edit is the final decision | yes if visible, logs `DOWNSTREAM_PROPAGATED` | **refreshed**, and the edited fields are written into `field_lock` |
+| Field revert (v2.7.0) | operator undoes one field | **no** | yes if visible, logs `DOWNSTREAM_PROPAGATED` after `FIELD_REVERTED` | **refreshed**; the field stays locked (it is still a hand correction) |
 
 ---
 
@@ -329,8 +338,10 @@ oc_location (OC-owned, downstream-facing)
 | **`/api/review/data-quality`** (v2.6.0) | GET | `intake_issue` + `vendor_location` | Data Quality list (failed intake, no OC record) |
 | **`/api/review/data-quality/{id}/override`** (v2.6.0) | POST | `oc_location` + `intake_issue` + `change_log` | force-create an OC record with `is_enable=false`, `intake_status=overridden` |
 | **`/api/review/sync-changes`** (v2.6.0) | GET | `sync_change_set` + `oc_field_baseline` | held changes grouped by OC location, with baseline value |
-| **`/api/review/sync-changes/{id}/decide`** (v2.6.0) | POST | `sync_change_set` + `oc_field_baseline` + `field_lock` + `oc_location` + `change_log` | accept → write + refresh baseline; reject → keep baseline + lock field |
+| **`/api/review/sync-changes/{id}/decide`** (v2.6.0; `decision=accepted_unlock` added in v2.7.0) | POST | `sync_change_set` + `oc_field_baseline` + `field_lock` + `oc_location` + `change_log` | accept → write + refresh baseline; **accepted_unlock → accept + release the lock (`FIELD_UNLOCKED`)**; reject → keep baseline + lock field |
 | **`/api/oc-locations/{id}/enable`** (v2.6.0, extended) | PATCH | `oc_location` + `oc_field_baseline` + `change_log` | enable now requires the sign-off payload (checklist acknowledged); writes `baseline_at`, `propagated_at`, `ENABLE_SIGNED_OFF` |
+| **`/api/oc-locations/{id}/fields/{field}/unlock`** (v2.7.0) | POST | `field_lock` + `change_log` + `oc_location` | release one lock; `reason` required (400 without it); stamps `released_at/by/reason/path = MANUAL` |
+| **`/api/oc-locations/{id}/fields/{field}/revert`** (v2.7.0) | POST | `oc_field_baseline` + `oc_location` + `change_log` | restore the previous version of one field, refresh the baseline, keep the lock, push downstream if visible; rejected when a newer edit exists on that field |
 | **`/api/oc-locations/{id}`** (v2.6.0, extended) | PATCH | `oc_location` + `oc_field_baseline` + `field_lock` + `sync_change_set` + `change_log` | operator edit: refresh baseline, lock fields, supersede pending changes, set `propagated_at` if visible |
 | **`/api/sync/runs/{id}/rollback`** (v2.6.0) | POST | `oc_location` + `change_log` | revert a run's OC rows to the stored before-image (7-day window) |
 | **`/api/sync/safe-mode`** (v2.6.0) | PATCH | `sync_run` (flag) | freeze / unfreeze all propagation |
