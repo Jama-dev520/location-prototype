@@ -484,8 +484,10 @@ The v2.0 redesign splits these into two distinct layers and two menus, so that:
 
 ### 13.3 Prototype Link
 
-- `Location-Management-Admin-Prototype-2026-10-29.html` — v2.6.0, hi-fi single-file prototype
+- `Location-Management-Admin-Prototype-2026-10-29.html` — v2.6.1, hi-fi single-file prototype
 - Public: https://jama-dev520.github.io/location-prototype/
+- **Demo video (2:34, no audio, 24 captions)**: https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4 — recorded by script against this prototype (real clicks, not an animation), so every caption can be replayed by hand in the same order
+- Flowcharts (2x PNG, safe to embed in Feishu by absolute URL): `https://jama-dev520.github.io/location-prototype/diagrams/flow{1..9}-*.png`
 - Demo seed data deliberately includes: a live location whose provider moved the coordinates 297 km (`OC-00102`) · a held postal-code change (`OC-00103`) · a held name change (`OC-00106`) · a held opening-hours change (`OC-00109`) · two intake failures with no OC record (`LOC-00187` / `LOC-00188`) · one blocked sign-off (`OC-00002`, vendor inactive) and two ready ones
 
 ### 13.4 Test Requirements

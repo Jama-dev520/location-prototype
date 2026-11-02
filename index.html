@@ -1956,10 +1956,11 @@ function openEnableSignoff(ocId){
     +(bl.length?'<div class="warn-line" style="margin-top:12px">⚠ Cannot enable: '+esc(bl.join('; '))+'.</div>':'')
     +'<label class="ack-line" for="so-ack"><input type="checkbox" id="so-ack" onchange="soAckChanged()"><span>I have verified the address, coordinates and opening hours against the provider record. I understand this value set becomes the signed-off baseline.</span></label>';
   var btn=document.getElementById('so-confirm');
-  btn.disabled=bl.length>0;
-  btn.style.opacity=bl.length?'0.5':'0.45';
+  /* v2.6.1 — the confirm button starts disabled in both cases: blocked rows can
+     never confirm, and ready rows need the acknowledgement first. */
+  btn.disabled=true;
+  btn.style.opacity='0.45';
   btn.textContent=bl.length?'Blocked':'Enable & sign off';
-  if(!bl.length)btn.style.opacity='0.45';
   openModal('modal-enable-signoff');
 }
 function soAckChanged(){
