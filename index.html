@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Location Management Admin Console — Interactive Prototype (v2.6.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v2.6.1)</title>
 <!-- ============================================================
-  Location Management Admin Console · Hi-fi Prototype · v2.6.0
+  Location Management Admin Console · Hi-fi Prototype · v2.6.1
   Two-layer model: Vendor Location List (provider view) + OC Location List (OC view)
   Detail view: full page with tabs (v2.4.0 — reverted from the side drawer)
   Date: 2026-10-30 · Language: English · Canvas: Admin (1440px)
@@ -293,7 +293,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">🎬 Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3>🎬 Prototype Walkthrough — Location Management Admin Console (v2.6.0)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3>🎬 Prototype Walkthrough — Location Management Admin Console (v2.6.1)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <p style="font-size:12.5px;color:var(--text-secondary);margin-bottom:16px">Demo duration: ~6 min · Covers the two-layer model: Vendor Location List + OC Location List. Clicking a location ID opens a <b>full detail page</b> (Basic Info · Operations · Hours &amp; Services · Linked Records · Change History) where Sweeper and store-detail edits happen in place.</p>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
@@ -314,6 +314,9 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
       </tbody>
     </table>
     <div style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:12px 16px;font-size:12.5px;margin-bottom:12px">
+      <b>v2.6.1 changes — consistency pass:</b> the store-edit modal no longer promises "visible after the next sync" (it contradicted the v2.6.0 rule that an operator edit is immediate and final) · the OC list description now states the asymmetry plainly — <b>enabling is a sign-off, disabling is one click</b>.
+    </div>
+    <div style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:12px 16px;font-size:12.5px;margin-bottom:12px">
       <b>v2.6.0 changes — provider data is a proposal, not a fact:</b> one <b>Review Center</b> with four decision types (duplicates · data quality · sync changes · sign-off) · a live location keeps its <b>signed-off baseline</b> when the provider changes something · enabling is a <b>checklist sign-off</b> instead of a switch · an operator edit is <b>final</b>: pushed downstream immediately, baseline refreshed, field locked, any pending provider change on it superseded · if nobody acts, nothing changes.
     </div>
     <div style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:12px 16px;font-size:12.5px;margin-bottom:12px">
@@ -333,7 +336,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v2.6.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v2.6.1</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">🏢 Vendor Location List</div>
@@ -351,7 +354,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
     <div class="admin-header">
       <div class="breadcrumb" id="breadcrumb"><b>Vendor Location List</b> — raw provider locations</div>
       <div class="header-right">
-        <div class="ver-chip" onclick="openVersionModal()" title="Click to view the full version history"><span class="dot"></span>v2.6.0</div>
+        <div class="ver-chip" onclick="openVersionModal()" title="Click to view the full version history"><span class="dot"></span>v2.6.1</div>
         <span style="font-size:11px;color:var(--text-tertiary)">Demo role:</span>
         <div class="role-switch">
           <button class="role-btn active" id="role-manager" onclick="setRole('manager')">Location Manager</button>
@@ -410,7 +413,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
       <!-- ===== P02 OC Location List ===== -->
       <div class="page" id="page-p02">
         <h2 class="page-title">OC Location List</h2>
-        <p class="page-desc">OC-owned, downstream-facing locations, backfilled from vendor records. The <b>enable</b> switch lives here. When a vendor location goes <b>inactive</b>, its linked OC location is auto-disabled and blocked from downstream sync. <b>QR dropoff</b> is backfilled from the linked vendor location.</p>
+        <p class="page-desc">OC-owned, downstream-facing locations, backfilled from vendor records. The <b>enable</b> control lives here: turning it <b>on</b> is a sign-off with a verification checklist, turning it <b>off</b> is still one click. A row with <b>⚠ N held</b> has provider changes waiting for review — the location keeps its signed-off value until someone decides. When a vendor location goes <b>inactive</b>, its linked OC location is auto-disabled and blocked from downstream sync. <b>QR dropoff</b> is backfilled from the linked vendor location.</p>
 
         <div class="card">
           <div class="filter-grid">
@@ -553,7 +556,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
         <div><label class="f-label">Postal Code</label><input id="es-postal"></div>
         <div><label class="f-label">Phone</label><input id="es-phone" placeholder="optional"></div>
       </div>
-      <div class="ef-note">Changes become visible downstream after the next sync (PUDO Inc 02:00 · LMS 02:30).</div>
+      <div class="ef-note">An operator edit is <b>final, not a proposal</b>: it is written immediately, refreshes the baseline, locks the edited fields against provider changes, and — if this location is already visible — is pushed downstream right away. It is never queued for review.</div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-edit-store')">Cancel</button>
@@ -615,8 +618,9 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 /* ================= Version registry ================= */
 /* Bump on every delivery: MAJOR = architecture/data-model change,
    MINOR = new capability or screen, PATCH = fix or copy/visual tweak. */
-var APP_VERSION='2.6.0';
+var APP_VERSION='2.6.1';
 var VERSIONS=[
+ {v:'2.6.1',type:'patch',date:'2026-10-30',desc:'<b>Consistency pass.</b> Fixed one contradiction in the store-edit modal (it still promised "visible after the next sync" while v2.6.0 made operator edits immediate and final) and clarified the OC list description: enabling is a sign-off, disabling is still one click. Documentation set aligned to the same wording; flowcharts re-rendered at 2x for readability in Feishu.'},
  {v:'2.6.0',type:'minor',date:'2026-10-30',desc:'<b>Review Center + provider data protection.</b> Four decision types in one queue with separate rules: Duplicates (blocks OC ID) · Data Quality (blocks enablement) · Sync Changes (blocks a field write, field-level diff, accept/reject, field lock) · Enable Sign-off (records the baseline). Enabling is no longer a one-click switch — it opens a verification checklist. Provider changes to an already-live OC location are held against the signed-off baseline instead of overwriting it; batch enable cannot bypass the checks. <b>Operator edits are treated as final, not as proposals</b>: an edit refreshes the baseline, locks the edited fields, supersedes any pending provider change on those fields, and — if the location is visible — pushes downstream immediately with no review step (DOWNSTREAM_PROPAGATED).'},
  {v:'2.5.0',type:'minor',date:'2026-10-30',desc:'<b>Editing moved into purpose-built modals.</b> Store details (name · address · city · state · postal · phone) edit in one grouped modal with a field-level diff; opening hours get a structured 7-day editor — multiple ranges per day, add/remove range, copy Monday to Tue–Fri or all days, end-before-start validation; sweeper edits in a small modal. OC opening hours are now backfilled from the linked vendor location, so the editor never opens empty.'},
  {v:'2.4.0',type:'minor',date:'2026-10-30',desc:'<b>Detail view restored to a full page.</b> Clicking a location ID opens a full-width detail page with tabs (Basic Info · Operations · Hours &amp; Services · Linked Records · Change History) instead of a 640px side drawer. Per-location change history brought back. Semantic versioning introduced across all deliverables.'},
@@ -1020,13 +1024,14 @@ function openBatchModal(action){
 }
 function confirmBatch(){
   var ids=Array.from(selectedOC);
-  var skipped=0;
+  var skipped=0,noop=0,done=0;
   ids.forEach(function(id){
     var o=findOC(id);
     var old=o.enable;
     var target=pendingBatchAction==='enable';
-    if(o.enable===target)return; // no-op
+    if(o.enable===target){noop++;return;} // already in the requested state
     if(target&&signoffBlockers(o).length){skipped++;return;} /* sign-off cannot be batched */
+    done++;
     o.enable=target;o.updated=nowStr();
     if(target)o.baselineAt=nowStr(); /* batch enable passes the same checks, so it captures a baseline too */
     if(target)o.propagatedAt=nowStr();
@@ -1035,7 +1040,7 @@ function confirmBatch(){
   closeModal('modal-batch');
   clearOCSelection();
   renderOC();
-  showToast('Batch complete',(ids.length-skipped)+' OC location(s) processed'+(skipped?' · '+skipped+' skipped (pending review / intake)':'')+' · audit entries written');
+  showToast('Batch complete',done+' OC location(s) processed'+(skipped?' · '+skipped+' skipped (pending review / intake)':'')+(noop?' · '+noop+' already in that state':'')+' · audit entries written');
 }
 
 /* ================= Location Detail (full page — v2.4.0) ================= */
@@ -1236,7 +1241,9 @@ function ocPanels(ctx, o){
   }
   if(ctx.tab==='operations'){
     var isPUDO=o.provider==='PUDO Inc';
-    return dpSec('Operations',
+    /* v2.6.1 — the held-change banner also shows on Operations, where the
+       downstream-visibility block lives; the acceptance checklist expects it there. */
+    return pendingBanner(o)+dpSec('Operations',
         kv('Sweeper', esc(o.sweeper))+
         (isPUDO?'':kv('Cutoff Time', '<span class="mono">'+esc(o.cutoffTime||'—')+'</span>'+(o.cutoffTimezone?' <span style="font-size:11px;color:var(--text-tertiary)">('+esc(o.cutoffTimezone)+')</span>':'')))+
         (o.services&&o.services.length?kv('Services', chipList(o.services,'badge-blue')):'')+

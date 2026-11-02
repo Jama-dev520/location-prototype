@@ -6,11 +6,11 @@
 
 | Field | Content |
 |------|------|
-| Document Version | v2.0 |
+| Document Version | v2.6.1 |
 | Author | Product Team (drafted via requirement clarification session) |
 | Created Date | 2026-10-29 |
 | Status | Draft — pending review |
-| Change Log | v1.0 Initial draft; v1.1 (2026-10-29) duplicate detection changed from exact address match to fuzzy match-score threshold (75%), added OC location ID filter; v1.2 (2026-10-29) published interactive prototype to public GitHub Pages + converted Mermaid flowcharts to rendered PNG images; **v2.0 (2026-10-30) restructured the console from a single merged location list into a two-layer model — Vendor Location List (provider view) + OC Location List (OC-owned view)** — see Change Summary |
+| Change Log | v1.0 Initial draft; v1.1 (2026-10-29) duplicate detection changed from exact address match to fuzzy match-score threshold (75%), added OC location ID filter; v1.2 (2026-10-29) published interactive prototype to public GitHub Pages + converted Mermaid flowcharts to rendered PNG images; **v2.0 (2026-10-30) restructured the console from a single merged location list into a two-layer model — Vendor Location List (provider view) + OC Location List (OC-owned view)**; v2.1.0 (2026-10-30) multi-range opening hours (one day may hold several time ranges, e.g. `Mon – Fri 09:00–12:00, 13:00–18:00`); v2.2.0 (2026-10-30) cross-layer search — vendor list filterable by OC location ID and vice versa; v2.3.0 (2026-10-30) QR-code dropoff flag (LMS only) on both lists, the detail page and CSV export; **v2.4.0 (2026-10-30) detail view returned to a full page with 5 tabs (Basic Info / Operations / Hours & Services / Linked Records / Change History) instead of a side drawer, per-location change history restored, and semantic versioning (MAJOR / MINOR / PATCH) adopted across all deliverables**; **v2.5.0 (2026-10-30) all editing moved into purpose-built modals** — one grouped form for store details (name/address/city/state/postal/phone), a structured 7-day opening-hours editor supporting multiple ranges per day with add/remove/copy, and a small sweeper dialog; OC opening hours are backfilled from the linked vendor location; **v2.6.0 (2026-10-30) provider data is treated as a proposal rather than a fact** — a new **Review Center** (4 tabs: Duplicates / Data Quality / Sync Changes / Enable Sign-off) replaces the single Duplicate Review page; enabled OC locations keep a signed-off baseline that provider sync cannot overwrite; enabling becomes a verification sign-off instead of a one-click switch; operator edits are final (refresh the baseline, lock the field, supersede any pending provider change, and push downstream immediately) — see Change Summary; **v2.6.1 (2026-10-30) consistency pass** — corrected one contradiction in the store-edit modal that still promised "visible after the next sync" (v2.6.0 made operator edits immediate and final), clarified on the OC list that enabling is a sign-off while disabling stays one click, reordered §8 so 8.4 follows 8.6, and re-rendered all flowcharts at 2x for inline reading |
 | Live Prototype | https://jama-dev520.github.io/location-prototype/ (publicly accessible, no login required) |
 
 ### 1.2 Requirement Source Traceability
@@ -84,9 +84,9 @@ The v2.0 redesign splits these into two distinct layers and two menus, so that:
 | F03 | OC Location List | Paginated OC location list | Display OC-owned locations with columns: OC Location ID, Name, Address, Provider, Type, Sweeper, Status, Enable, Created/Updated Time, Linked Vendor Location(s) | P0 | — | P02 | New: `GET /api/oc-locations` | Server-side pagination |
 | F04 | OC Location List | Filter & search | Filter by OC Location ID, Name, Address keyword, Provider, Sweeper, Status, Enable, Type, City, State, time range | P0 | F03 | P02 | New: `GET /api/oc-locations` (query params) | Filters combine with AND logic |
 | F05 | Export | Export current view | Export filtered results (either list) to CSV, columns identical to the list; export follows active filters | P0 | F02/F04 | P01/P02 | New: `GET /api/vendor-locations/export` + `GET /api/oc-locations/export` | Max 10,000 rows per export |
-| F06 | Detail | Location detail view | Full profile in tabs: Basic Info / Hours & Services / Change History. Vendor detail is read-only (except sweeper); OC detail additionally shows editable store fields and the linked vendor location(s) | P0 | — | P03 | New: `GET /api/vendor-locations/{id}` + `GET /api/oc-locations/{id}` | Provider-sourced fields read-only |
+| F06 | Detail | Location detail view | Full profile as a full-width page with five tabs: **Basic Info / Operations / Hours & Services / Linked Records / Change History**. Vendor detail is read-only except sweeper; OC detail additionally shows editable store details, the linked vendor location(s) and the downstream-visibility block | P0 | — | P03 | New: `GET /api/vendor-locations/{id}` + `GET /api/oc-locations/{id}` | Provider-sourced fields read-only |
 | F07 | Change History | Per-location change log | Timeline of every change for one location (vendor or OC): operator, time, type, field, old → new; covers provider sync changes, sweeper changes, OC store-detail edits, enable operations, OC link operations | P0 | F06 | P03 | New: `GET /api/locations/{id}/changes` | Chronological, latest first |
-| F08 | Enable Control | Single enable/disable toggle | Location Manager toggles `is_enable` on/off on an **OC location**; requires advanced permission; writes audit entry; blocked (with error) when the linked vendor location is `inactive` | P0 | F03 | P02/P03 | New: `PATCH /api/oc-locations/{id}/enable` | Viewers see the control disabled/hidden |
+| F08 | Enable Control | Single enable/disable toggle | Location Manager toggles `is_enable` on/off on an **OC location**; requires advanced permission; writes audit entry; blocked (with error) when the linked vendor location is `inactive`. Switching **on** runs the sign-off in F21; switching **off** stays one click | P0 | F03 | P02/P03 | New: `PATCH /api/oc-locations/{id}/enable` | Viewers see the control disabled/hidden |
 | F09 | Enable Control | Batch enable/disable (two modes) | **Mode A — Inline selection**: select OC rows → "Batch Enable/Disable" → confirmation → execute. **Mode B — Excel bulk upload**: download template (`ocLocationID`, `is_enable`), upload, validate, preview, confirm; each changed OC location gets its own audit entry | P0 | F04/F08 | P02 | New: `POST /api/oc-locations/batch-enable` + `POST /api/oc-locations/batch-enable/upload` + `GET /api/oc-locations/batch-enable/template` | Mode A max 200/batch; Mode B max 5,000 rows, ≤ 5MB; advanced permission required |
 | F10 | Sweeper Control | Edit sweeper on vendor location | Location Manager edits the **Sweeper** field from the Vendor Location List/detail; the field is uniformly named "Sweeper" (renamed from "Pickup"); every change writes `SWEEPER_CHANGE` | P0 | F01 | P01/P03 | New: `PATCH /api/vendor-locations/{id}/sweeper` | Advanced permission required |
 | F11 | OC Store Edit | Edit OC store details | Location Manager edits OC store details (address, opening hours, and any field ops flags as incorrect) from the OC Location List/detail; stored as OC-level override, not touching the vendor record; writes `STORE_DETAIL_EDIT` | P0 | F03 | P02/P03 | New: `PATCH /api/oc-locations/{id}` | Advanced permission required |
@@ -97,6 +97,10 @@ The v2.0 redesign splits these into two distinct layers and two menus, so that:
 | F16 | Data Sync | Daily sync status | Show last sync run per provider (time, result, records pulled/created/updated/deactivated/removed) and failure alerts | P1 | F01 | P06 | New: `GET /api/sync/status` | Sync daily 02:00 PUDO / 02:30 LMS; incremental pull |
 | F17 | Overview | Dashboard | KPI cards: total vendor locations, total OC locations, visible OC locations, disabled OC locations, provider-deactivated count | P2 | F01/F03 | P07 | New: `GET /api/stats/overview` | Nice-to-have for v1.1 |
 | F18 | QR Dropoff | QR-code dropoff capability flag | Display a **QR Dropoff** marker and field on both lists (and in the detail profile): LMS stores that accept a package drop-off where the customer presents a **QR code instead of a printed label** are flagged; PUDO records show N/A. The OC layer backfills the flag from its linked vendor location. Filterable in both lists and included in CSV export | P0 | F01/F03 | P01/P02/P03 | Sync-sourced field `qr_dropoff` on `vendor_location`; backfilled to `oc_location` | Read-only (provider-sourced); LMS only |
+| F19 | Intake Validation | Data-quality gate before an OC location is created | Every synced vendor location runs an intake check (required address fields, postal ↔ city ↔ state consistency, coordinate plausibility, opening-hours structure). `fail` → **no OC location is generated**, the record enters the **Data Quality** queue; `warn` → an OC location is created but **cannot be enabled** until the issue is cleared | P0 | F12 | P04 (Data Quality tab) | New: `GET /api/review/data-quality` + `POST /api/review/data-quality/{id}/override` | «Not generated» now has two reasons: suspected duplicate **or** failed intake |
+| F20 | Sync Change Review | Field-level review of provider changes to a live OC location | For an OC location that is enabled, a provider change is held instead of written: the current value is the **signed-off baseline**. Each held change shows field, old → new, why it was held, and per-field **Accept** / **Reject & lock**. Accept writes the value + refreshes the baseline; reject keeps the baseline value and locks the field, so the same field never asks again. Unresolved = nothing changes (fail-safe) | P0 | F03/F08 | P04 (Sync Changes tab) + P02 (Sync column) + P03 (banner) | New: `GET /api/review/sync-changes` + `POST /api/review/sync-changes/{id}/decide` | Field ownership tiers + two-run confirmation + drift thresholds decide what is held (§8.6) |
+| F21 | Enable Sign-off | Enabling becomes a verification step, not a toggle | Turning `is_enable` from false → true opens a sign-off dialog showing the customer-facing data (address, coordinates, hours, phone), its source (provider + vendor location ID + last sync), and 5 pass/fail checks. Confirm stays disabled until the operator ticks «I verified address, coordinates and opening hours». On confirm: `is_enable = true`, **baseline captured**, `ENABLE_SIGNED_OFF` logged. Disabling needs no sign-off (going offline is always safe) | P0 | F08 | P02/P03/P04 | Extends `PATCH /api/oc-locations/{id}/enable` | Blocked when: vendor inactive · N changes pending review · intake overridden · hours missing. Batch enable runs the same checks and reports skipped rows |
+| F22 | Sync Breaker & Rollback | Stop a bad provider run from spreading | A run is downgraded to dry-run (vendor layer written, nothing propagated) when changed records > 30%, address-type changes > 20, or batch `inactive` > 5. A global **SAFE MODE** switch freezes all propagation. Every run stores a before-image of the OC rows it would touch (7 days), so a run can be rolled back as a batch (`SYNC_ROLLBACK`) and a single field can be reverted to its previous version | P1 | F20 | P04/P06 | New: `POST /api/sync/runs/{id}/rollback` + `PATCH /api/sync/safe-mode` | Rollback is the fastest remedy after an upstream mistake — target MTTR one operation |
 
 ## 5. User Flows
 
@@ -129,17 +133,38 @@ The v2.0 redesign splits these into two distinct layers and two menus, so that:
 
 ![Exception Path](https://jama-dev520.github.io/location-prototype/diagrams/flow5-exception.png)
 
+### 5.7 Provider Change Review — held, then accepted or rejected (v2.6.0)
+
+![Provider Change Review](https://jama-dev520.github.io/location-prototype/diagrams/flow7-sync-change-review.png)
+
+> The sync job **never overwrites** a visible field behind the operator's back. A change to a `review`-tier or locked field is recorded on the vendor layer and held; the OC location keeps serving its signed-off baseline until someone decides. No decision is a valid outcome — the safe default is "nothing changes".
+
+### 5.8 Enable Sign-off — the checklist before a location goes live (v2.6.0)
+
+![Enable Sign-off](https://jama-dev520.github.io/location-prototype/diagrams/flow8-enable-signoff.png)
+
+> Turning `is_enable` on is the only moment a location becomes visible, so it is a sign-off rather than a switch: four blockers are checked first, the customer-facing data is shown with its source, and the confirm button stays disabled until the operator acknowledges. Turning it **off** needs none of this — going offline is always the safe direction.
+
+### 5.9 Operator Edit — final, locked, pushed immediately (v2.6.0)
+
+![Operator Edit](https://jama-dev520.github.io/location-prototype/diagrams/flow9-operator-edit.png)
+
+> An operator edit is treated as a decision, not a proposal: it refreshes the baseline, locks the edited fields against provider changes, supersedes any pending provider change on those fields, and — if the location is already visible — is pushed downstream at once. It deliberately never enters the review queue: asking an operator to approve their own edit adds a step without adding a decision.
+
 ## 6. Page Map
 
 | Page ID | Page Name | Module | Core Functions | Entry | Exit | Data Passed | Feature IDs | Priority |
 |---------|-----------|--------|----------------|-------|------|-------------|-------------|----------|
 | P01 | Vendor Location List | Vendor Location List | Filter, list, export, sweeper edit | Sidebar "Vendor Location List" | P03 | Vendor Location ID (to detail) | F01/F02/F05/F10 | P0 |
-| P02 | OC Location List | OC Location List | Filter, list, export, single/batch enable, store detail edit | Sidebar "OC Location List" (default landing) | P03 | OC Location ID (to detail) | F03/F04/F05/F08/F09/F11 | P0 |
-| P03 | Location Detail | Detail (vendor / OC) | Full profile tabs, per-location change history, contextual actions (sweeper edit for vendor; enable + store edit for OC) | P01/P02 row click | P01, P02, P05 | Location ID | F06/F07/F08/F10/F11 | P0 |
-| P04 | Duplicate Review | Duplicate Detection | Cross-provider duplicate queue, confirm/reject, OC location assignment | Sidebar "Duplicate Review" | P02/P03 | Pair ID → location IDs | F14 | P0 |
+| P02 | OC Location List | OC Location List | Filter, list, export, single/batch enable, store detail edit, **Sync column** (`⚠ N held`) | Sidebar "OC Location List" (default landing) | P03 / P04 | OC Location ID (to detail) | F03/F04/F05/F08/F09/F11/F20 | P0 |
+| P03 | Location Detail | Detail (vendor / OC) | Full profile tabs (Basic Info / Operations / Hours & Services / Linked Records / Change History), per-location change history, contextual actions (sweeper edit for vendor; enable + store edit for OC), **pending-change banner + downstream push status** | P01/P02 row click | P01, P02, P05 | Location ID | F06/F07/F08/F10/F11/F20/F21 | P0 |
+| P04 | **Review Center** | Review (4 tabs) | **T1 Duplicates** · **T2 Data Quality** · **T3 Sync Changes** · **T4 Enable Sign-off** — one entry point, shared list/diff components, four independent state machines; sidebar badge = pending count of T1–T3 | Sidebar "Review Center" | P02/P03 | Record / pair / change-set ID | F14/F19/F20/F21/F22 | P0 |
 | P05 | Change Log (global) | Change History | Cross-location change log with filters | Sidebar "Change Log" | P03 | Optional location ID prefill | F15 | P1 |
 | P06 | Sync Status | Data Sync | Last sync run per provider, results, failure alerts | Sidebar "Sync Status" | P05 | — | F16 | P1 |
 | P07 | Overview Dashboard | Overview | KPI cards and trends | Sidebar "Overview" | P01 | — | F17 | P2 |
+
+> **Prototype scope:** P01, P02, P03, P04, P05 and P06 are built in the clickable prototype. P07 (Overview Dashboard) is specified but **not built** — it is P2 and out of scope for this round.
+> **DOM ids are historical:** the prototype implements these pages as `page-p01`, `page-p02`, `page-p03`, `page-p04`, `page-p06` and `page-pd`. Those ids predate this page numbering and do not map to the P-numbers above — navigate by menu label, not by DOM id.
 
 ## 7. Interaction Specifications
 
@@ -150,12 +175,12 @@ The v2.0 redesign splits these into two distinct layers and two menus, so that:
 - **Filter fields**: Location ID, **OC Location ID (reverse lookup)**, Name, Address keyword, City, State/Province, Provider, Sweeper, Status, Type, **QR Dropoff (Supported / Not supported)**, Created from/to, Updated from/to. All AND-combined.
 - **Cross-layer search**: Filtering by **OC Location ID** on the vendor list resolves through `vendor_oc_mapping` and returns the vendor location(s) feeding that OC location.
 - **QR Dropoff marker**: LMS stores that accept QR-code drop-off (customer presents a QR code instead of a printed label) show a teal **◉ QR dropoff** badge in the QR Dropoff column; stores without the capability show `—`; PUDO records are not applicable and show `—`. The field is provider-sourced and read-only.
-- **Sweeper semantics**: The field formerly named "Pickup" is now uniformly named **Sweeper**. It identifies who performs the physical pickup for a location. It defaults to `source_provider` but is OC-editable (cross-provider sweep). On this list, an inline edit control (dropdown) is available to Location Managers; Viewers see it read-only.
+- **Sweeper semantics**: The field formerly named "Pickup" is now uniformly named **Sweeper**. It identifies who performs the physical pickup for a location. It defaults to `source_provider` but is OC-editable (cross-provider sweep). It is editable by Location Managers through a small edit dialog (single dropdown); Viewers see it read-only.
 - **Timestamp precision**: All `Created Time` / `Updated Time` values are displayed, filtered, and exported with **second-level precision** (`YYYY-MM-DD HH:MM:SS`).
 - **Interactions**:
   - Filter apply on "Apply"; "Reset" clears all; active filter chips shown above table.
   - Click Location ID or Name → navigate to P03 (vendor detail).
-  - Inline Sweeper dropdown (Manager only) → confirm → executes F10.
+  - Sweeper edit dialog (Manager only) → confirm → executes F10.
   - Export downloads `vendor_locations_YYYYMMDD_HHmmss.csv`.
 - **States**: Default / loading / empty / error.
 - **Data volume**: hundreds to low thousands; server-side pagination + filtering.
@@ -164,19 +189,21 @@ The v2.0 redesign splits these into two distinct layers and two menus, so that:
 ### 7.2 P02 — OC Location List
 
 - **Entry**: Sidebar "OC Location List"; default landing page after login.
-- **Elements**: Filter panel (collapsible), data table (columns: checkbox, OC Location ID, Name, Address, City/State, Provider, Type, Sweeper, **QR Dropoff**, Status, Enable, Linked Vendor Location(s), Created Time, Updated Time, Actions), pagination bar, "Export CSV", "Batch Enable" / "Batch Disable", "Batch Upload (Excel)", selected-count indicator.
-- **Filter fields**: OC Location ID, **Vendor Location ID (forward lookup)**, Name, Address keyword, City, State/Province, Provider, Sweeper, Status, Enable, Type, **QR Dropoff (Supported / Not supported)**, Created from/to, Updated from/to. All AND-combined.
+- **Elements**: Filter panel (collapsible), data table (columns: checkbox, OC Location ID, Name, Address, City/State, Provider, Type, Sweeper, **QR Dropoff**, Status, **Sync**, Enable, Linked Vendor Location(s), Created Time, Updated Time, Actions), pagination bar, "Export CSV", "Batch Enable" / "Batch Disable", "Batch Upload (Excel)", selected-count indicator.
+- **Sync column (v2.6.0)**: shows `⚠ N held` when provider changes on this location are waiting for a decision, `—` otherwise. Clicking it opens P04 · Sync Changes. It is a **status indicator**, not an error — the location stays visible with its signed-off values.
+- **Filter fields**: OC Location ID, **Vendor Location ID (forward lookup)**, Name, Address keyword, City, State/Province, Provider, Sweeper, Status, Enable, Type, **QR Dropoff (Supported / Not supported)**, **Sync state (changes held / none)** (v2.6.0), Created from/to, Updated from/to. All AND-combined.
 - **Cross-layer search**: Filtering by **Vendor Location ID** on the OC list returns the OC location(s) fed by that vendor location (supports the 1:N mapping after a duplicate pair is confirmed as the same store).
 - **QR Dropoff marker**: Backfilled from the linked vendor location — the OC location shows a teal **◉ QR dropoff** badge when **any** linked vendor location supports QR-code drop-off. Read-only on this layer.
-- **Enable control**: The `is_enable` switch lives **only** on the OC layer. Toggling is gated by the linked vendor location's status — if the vendor location is `inactive`, the switch is disabled with a tooltip ("vendor location is inactive") and force-enabling raises an error.
-- **Store detail edit**: Location Managers can edit store details (address, opening hours, and any field flagged as incorrect) directly from this list (inline) or from P03.
+- **Enable control (v2.6.0 — sign-off, not a switch)**: The `is_enable` switch lives **only** on the OC layer. **Disabling** takes effect immediately (going offline is always safe). **Enabling** opens the sign-off dialog (F21) — it does not flip directly. Toggling is also gated by the linked vendor location's status — if the vendor location is `inactive`, the dialog opens with the confirm button in a **Blocked** state and the reason shown, so a click never silently does nothing.
+- **Store detail edit**: Location Managers can edit store details (name, address, city, state, postal code, phone) from a single grouped modal on P03, and opening hours from a dedicated 7-day structured editor that supports multiple ranges per day (e.g. a lunch break) with add/remove/copy-to-weekdays.
+- **Operator edit semantics (v2.6.0)**: an edit is a decision, not a proposal — it takes effect immediately, never enters the review queue. Saving refreshes `baseline_at`, writes the edited fields into `field_lock`, marks any pending provider change on those fields `superseded`, and — when the location is visible — sets `propagated_at` and logs `DOWNSTREAM_PROPAGATED` (downstream cache invalidated). The toast states explicitly whether the change was pushed. Guardrail: clearing `address_line1`/`city`/`postal_code`, or clearing every opening-hours range, is rejected while the location is enabled; validation runs before the write, so a rejected save leaves the record untouched.
 - **Interactions**:
   - Filter apply/reset same as P01.
   - Click OC Location ID or Name → navigate to P03 (OC detail).
-  - Row toggle (switch) → confirm popover → executes F08; blocked if vendor inactive.
-  - Checkbox selection → batch action bar; "Batch Disable/Enable" → confirmation modal (count + sample IDs + warning) → executes F09 Mode A.
+  - Row toggle (switch) → enabling opens the sign-off dialog (F21); disabling applies immediately. Blocked when the vendor location is inactive or a check fails.
+  - Checkbox selection → batch action bar; "Batch Disable/Enable" → confirmation modal (count + sample IDs + **rows that will be skipped and why** + warning) → executes F09 Mode A. Batch enable runs the same sign-off checks per row and captures the baseline for every row it enables.
   - "Batch Upload (Excel)" → upload dialog (download template, drag/drop, preview, invalid-row report) → executes F09 Mode B.
-  - Inline store-detail edit (Manager only) → executes F11.
+  - Store-detail edit modal (Manager only) → executes F11.
   - Export downloads `oc_locations_YYYYMMDD_HHmmss.csv`.
 - **States**: Default / loading / empty / error.
 - **Validation rules**: Batch upload file `.xlsx`/`.csv`, ≤ 5MB, ≤ 5,000 rows; header exactly `ocLocationID,is_enable`; `is_enable` values `T`/`F`.
@@ -187,15 +214,28 @@ The v2.0 redesign splits these into two distinct layers and two menus, so that:
 - **Vendor detail** (from P01): header (name, Location ID, provider badge, status pill), tabs **Basic Info** / **Hours & Services** / **Change History**; all fields read-only except Sweeper (Manager only).
 - **OC detail** (from P02): header (name, OC Location ID, visibility pill "Visible to customers" / "Hidden"), action buttons (Enable/Disable for managers, "Edit"), tabs **Basic Info** / **Hours & Services** / **Change History**; Basic Info shows the linked vendor location(s) and editable store fields (address, opening hours, etc.) with OC-override badge; store edits write `STORE_DETAIL_EDIT`.
 - **Change History**: reverse-chronological timeline; each entry: time, operator, operation type badge, field, old → new, remark.
+- **Pending-change banner (v2.6.0)**: when provider changes are held for this location, the top of the page shows «⚠ N provider change(s) held for review — this location keeps its signed-off value (baseline <timestamp>)» with a link into P04 · Sync Changes. The banner is informational; the customer keeps seeing the baseline value.
+- **Downstream Visibility block (OC only, v2.6.0)**: `Enable (is_enable)` · `Visible downstream` (active AND enabled) · `Last pushed downstream` (timestamp + "cache invalidated") · `Operator edits` ("applied immediately · never queued for review") · `Locked fields` (chips, only when non-empty).
 - **States**: Loading / loaded / not-found.
-- **Validation rules**: None (read-only except contextual actions).
+- **Validation rules**: None (read-only except contextual actions); a blocked store-detail save (clearing a required address field, or clearing every opening-hours range while enabled) is rejected with an inline explanation and leaves the record untouched.
 
-### 7.4 P04 — Duplicate Review
+### 7.4 P04 — Review Center (v2.6.0, replaces "Duplicate Review")
 
-- **Entry**: Sidebar "Duplicate Review"; badge shows pending pair count.
-- **Elements**: Pending review table (columns: Pair, Location A, Location B, Match score, Address diff, Detected, Status, Action), "How it works" explainer, active match-score threshold.
-- **Interactions**: Color-coded match score (≥ 95% green, ≥ threshold amber, below red); per-field address diff. Manager clicks "Same store" (link both to one OC location) or "Not same" (each gets its own OC location); both write audit entries (`OC_LINK_CONFIRMED` / `OC_LINK_REJECTED`). Until resolved, no OC location is generated.
-- **States**: Pending / empty.
+> **One entry point, four decision types.** They share the list component, the field-diff view, batch actions and audit writing — but each has its own state machine, permission and blocking scope. Merging them into a single queue would blur «what am I approving?».
+
+| Tab | Subject of the decision | Blocks | Who handles it | Wrong decision costs |
+|---|---|---|---|---|
+| **T1 Duplicates** | a **pair** of vendor locations → one OC location (2:1) or two (1:1) | OC location creation | Store operations | Two stores merged into one → customer sent to the wrong address |
+| **T2 Data Quality** | a **whole record** that failed intake → fix / ask provider / override | Enablement (no OC record exists yet) | Operations + provider liaison | A poor-data store goes live |
+| **T3 Sync Changes** | a **single field** on a live location → accept / reject & lock | The OC field write | Technical operations (needs the diff) | Correct data already live gets overwritten |
+| **T4 Enable Sign-off** | a **record** about to go live → sign off | Nothing (it is the last gate) | Manager with enable permission | Publishing a store nobody verified |
+
+- **Entry**: Sidebar "Review Center"; the sidebar badge = pending count of T1–T3. Each tab also shows its own number: for T1–T3 that is the number of decisions waiting, while **T4 shows how many locations are not live yet** — a to-do list for onboarding, not a decision backlog. (T4 is not a queue: it opens the same sign-off dialog as the OC list toggle.)
+- **T1 Duplicates**: unchanged from v2.0 — pending table (Pair, Location A, Location B, Match score, Address diff, Detected, Status, Action), colour-coded score, per-field diff, «Same store» / «Not same», writes `OC_LINK_CONFIRMED` / `OC_LINK_REJECTED`. Until resolved, no OC location exists.
+- **T2 Data Quality**: list of vendor locations that failed intake, each with the failed checks (cross marks), detected time and status. Actions: «Request provider fix» (stays blocked) and «Override & create OC location» (creates the record with `is_enable = false` — it still cannot go live without sign-off). Writes `INTAKE_OVERRIDDEN`.
+- **T3 Sync Changes**: grouped by OC location. Header shows name, OC location ID, «N fields held», source vendor location. A run summary line shows run id, provider, breaker state, pulled / created / held / auto-applied. Each field shows `oldValue` struck through → `newValue` in amber, the reason it was held, and **Accept** / **Reject & lock**. Per-location «Accept all» / «Reject all & lock». Accept writes the value, refreshes the baseline and logs `SYNC_CHANGE_ACCEPTED`; reject keeps the baseline value, adds the field to `field_lock` and logs `SYNC_CHANGE_REJECTED`. A separate collapsed block lists fields auto-applied in the run (low-risk), for transparency.
+- **T4 Enable Sign-off**: list of not-yet-enabled OC locations with a blocker reason per row («blocked — linked vendor location is inactive» / «blocked — 3 changes pending review» / «blocked — opening hours missing» / «ready to sign off»). «Review & enable» opens the same sign-off dialog as the OC list toggle. Blocker rules: vendor inactive · N pending changes · intake overridden · hours missing.
+- **States**: pending / empty (per tab). Leaving an item unresolved is always safe — the system defaults to *not generating*, *not enabling*, or *keeping the old value*.
 
 ### 7.5 P05 — Change Log (Global) (P1)
 
@@ -221,9 +261,13 @@ The v2.0 redesign splits these into two distinct layers and two menus, so that:
 | Object | Key Fields | Source | Notes |
 |--------|-----------|--------|-------|
 | **Vendor Location** (provider layer) | vendor_location_id (internal), source_provider (PUDO/LMS), provider_ref (dealerNo or loc_id), store_code, name, location_type (PUDOpoint/Locker/packagehub), sweeper (PUDO/LMS — who performs the physical pickup), address_line1/2, city, state, postal_code, country, latitude, longitude, phone, timezone, status (active/inactive/removed), services[], restrictions[], **qr_dropoff (bool, LMS only)**, hours_of_operation{}, cutoff_time, holiday_closures[], created_at, updated_at, activated_at, deactivated_at, last_synced_at | PUDO Inc + LMS daily sync | Provider-sourced; read-only except `sweeper`; `location_type` provider-exclusive; `sweeper` defaults to `source_provider` and is OC-editable |
-| **OC Location** (OC layer) | oc_location_id (OC-owned, gates downstream sync), name, address_line1/2, city, state, postal_code, country, latitude, longitude, phone, opening_hours{}, store details (editable), **qr_dropoff (bool, backfilled)**, is_enable (bool), status (derived), created_at, updated_at, linked_vendor_location_ids[] | Backfilled from Vendor Location; OC-editable store details | The downstream-visible entity; enable switch lives here; store details backfilled from vendor then OC-overridable; 1:N mapping to vendor locations (principle 1:1) |
+| **OC Location** (OC layer) | oc_location_id (OC-owned, gates downstream sync), name, address_line1/2, city, state, postal_code, country, latitude, longitude, phone, opening_hours{}, store details (editable), **qr_dropoff (bool, backfilled)**, is_enable (bool), status (derived), **intake_status (pass/warn/fail/overridden)**, **baseline_at (timestamp of the last human-verified version)**, **propagated_at (timestamp of the last downstream push)**, created_at, updated_at, linked_vendor_location_ids[] | Backfilled from Vendor Location; OC-editable store details | The downstream-visible entity; enable switch lives here; store details backfilled from vendor then OC-overridable; 1:N mapping to vendor locations (principle 1:1) |
+| **OC Field Baseline** (v2.6.0) | baseline_id, oc_location_id, field_name, baseline_value, version_no (keep last 5), captured_at, captured_by, capture_reason (SIGNOFF / ACCEPTED_CHANGE / OPERATOR_EDIT) | This system | The **reference for good data** — «what a human verified», not «what the last sync wrote». Provider changes are compared against this |
+| **Sync Change Set** (v2.6.0) | change_id, run_id, oc_location_id, vendor_location_id, field_name, old_value, new_value, risk_tier (auto/review/block), decision (pending/accepted/rejected/superseded), reason, decided_by, decided_at | Sync job | One row per changed field per run. `pending` = held, nothing written to OC. Superseded when an operator edits the same field |
+| **Field Lock** (v2.6.0) | lock_id, oc_location_id, field_name, locked_at, locked_by, reason (OPERATOR_EDIT / REJECTED_CHANGE) | This system | Once locked, a provider change to that field **must** go through review even if the field's tier is `auto` |
+| **Intake Issue** (v2.6.0) | issue_id, vendor_location_id, check_code, severity (warn/fail), detected_at, status (open/overridden/resolved) | Intake check on sync | `fail` blocks OC location creation; `warn` allows creation but blocks enablement |
 | **Vendor ↔ OC Mapping** | mapping_id, vendor_location_id, oc_location_id, created_at | This system | Links vendor location(s) to the OC location; principle 1:1, but a confirmed duplicate pair links 2 vendor locations → 1 OC location |
-| **Change Log Entry** | log_id, location_id, location_layer (VENDOR/OC), occurred_at, operator, operation_type (ENABLE / DISABLE / BATCH_ENABLE / BATCH_DISABLE / SWEEPER_CHANGE / STORE_DETAIL_EDIT / OC_LINK_CONFIRMED / OC_LINK_REJECTED / OC_GENERATED / PROVIDER_STATUS_CHANGE / PROVIDER_FIELD_UPDATE / PROVIDER_CREATED / PROVIDER_REMOVED), field_name, old_value, new_value, source (MANUAL/SYNC), remark | This system | Append-only, immutable |
+| **Change Log Entry** | log_id, location_id, location_layer (VENDOR/OC), occurred_at, operator, operation_type (ENABLE / DISABLE / BATCH_ENABLE / BATCH_DISABLE / ENABLE_SIGNED_OFF / SWEEPER_CHANGE / STORE_DETAIL_EDIT / DOWNSTREAM_PROPAGATED / OC_LINK_CONFIRMED / OC_LINK_REJECTED / OC_GENERATED / INTAKE_OVERRIDDEN / PROVIDER_STATUS_CHANGE / PROVIDER_FIELD_UPDATE / PROVIDER_CREATED / PROVIDER_REMOVED / SYNC_CHANGE_ACCEPTED / SYNC_CHANGE_REJECTED / SYNC_ROLLBACK / SYNC_QUARANTINED), field_name, old_value, new_value, source (MANUAL/SYNC), remark | This system | Append-only, immutable |
 | **Duplicate Pair** | pair_id, vendor_location_a, vendor_location_b, matched_on, match_score, diff, status (pending/confirmed/rejected), detected_at, resolved_by, resolved_at | This system | Cross-provider (LMS ↔ PUDO Inc) only |
 | **Sync Run** | run_id, provider, started_at, finished_at, result, records_pulled, created_count, updated_count, deactivated_count, error_message | This system | One record per provider per day |
 | **User** | user_id, name, email, has_enable_permission (bool) | Corporate SSO | No self-service role management in v1 |
@@ -243,6 +287,16 @@ The v2.0 redesign splits these into two distinct layers and two menus, so that:
 - **QR-code dropoff (v2.1)**: Some LMS stores accept a drop-off where the customer presents a **QR code instead of a printed label** (staff scan the QR to bind the parcel). This capability is surfaced as a read-only `qr_dropoff` boolean: provider-sourced on the vendor layer, backfilled to the OC layer (`true` if **any** linked vendor location supports it). It is displayed as a marker/field on both lists and in the detail profile, is filterable, and is included in CSV export. PUDO does not expose the capability and is shown as N/A.
 - **Duplicate detection (fuzzy)**: Cross-provider duplicate = two vendor locations from different providers whose addresses fuzzy-match above a threshold (weighted match score: address_line1 50% + postal_code 25% + city 15% + state 10%, token Jaccard; threshold 75%).
 - **Sync does not reset OC fields**: Provider sync never overwrites OC-owned fields (`is_enable`, OC store details, `oc_location_id`). It only updates vendor-owned fields and propagates status.
+- **Provider data is a proposal, not a fact (v2.6.0)**: For an OC location that is **not yet visible** (`is_enable = false`), provider changes are written straight through — nobody can see it, so review adds cost without adding safety. For a **visible** OC location, each changed field is judged by §8.6: low-risk tiers are applied automatically, everything else is **held** and the OC keeps its signed-off baseline value. Leaving a held change unresolved is always safe.
+- **Baseline (v2.6.0)**: `baseline_at` marks the version a human verified. It is captured on enable sign-off, on accepting a provider change, and on every operator edit. The baseline — not «the value after the last sync» — is the reference for «good data»; this is what makes protection possible at all.
+- **Two-run confirmation (v2.6.0)**: a change is auto-applied only if the same field carries the same new value in **two consecutive successful runs**. Upstream mistakes are frequently batch scripts that correct themselves the next day; this costs nothing and filters most transient noise.
+- **Drift thresholds (v2.6.0)**: coordinates moving > 1 km, a postal/city change, a > 20-point drop in address similarity, or opening hours changing > 2 h on a single day (or becoming closed all week) force `review` regardless of tier.
+- **Field lock upgrades the tier (v2.6.0)**: once a field is in `field_lock` (because an operator edited it, or a change was rejected), any later provider change to that field goes to review even if the field's base tier is `auto`. The lock is not a one-time mute — it is a permanent "ask me".
+- **Operator edits are final (v2.6.0)**: a manual edit is a decision, not a proposal. Saving one (a) refreshes the baseline, (b) adds the edited fields to `field_lock`, (c) marks any pending change on those fields `superseded` with `SYNC_CHANGE_REJECTED`, and (d) if the location is visible, pushes the new value downstream immediately (`propagated_at`, `DOWNSTREAM_PROPAGATED`, downstream cache invalidated). Operator edits **never** enter the review queue — asking an operator to approve their own edit is a step without a decision. Visibility itself (`is_enable`) is unchanged by an edit, so no re-sign-off is needed.
+- **Edit guardrails while visible (v2.6.0)**: clearing `address_line1` / `city` / `postal_code`, or clearing every opening-hours range, is rejected while the location is enabled (message: disable it first if it is closing). Validation runs **before** the record is mutated, so a rejected save leaves the data untouched. A customer seeing an empty address is worse than seeing a wrong one.
+- **Enable is a sign-off, disable is a click (v2.6.0)**: `is_enable` false → true requires the sign-off dialog with 5 checks and a mandatory acknowledgement; true → false takes effect immediately, because going offline is always the safe direction. Batch enable runs the same checks per row, skips failures with a reason, and captures the baseline for every row it enables.
+- **Breaker & shadow mode (v2.6.0)**: a run where changed records > 30%, address-type changes > 20, or batch `inactive` > 5 is downgraded to dry-run (vendor layer written, nothing propagated) and alerts. A newly onboarded provider runs in shadow mode for its first N runs (recorded, not propagated). `status` is the one exception to batching: `active → inactive` takes effect immediately (better offline than wrong) — which is precisely why batch `inactive` trips the breaker.
+- **Rollback (v2.6.0)**: each run stores a before-image of the OC rows it would touch (7 days). A run can be rolled back as a batch (`SYNC_ROLLBACK`; fastest remedy after an upstream mistake) and a single field can be reverted to its previous version.
 - **Change log completeness**: Every write produces exactly one log entry. Batch operations produce one entry per changed location; no-op rows skipped.
 - **Batch upload rules**: Template has exactly 2 columns — `ocLocationID`, `is_enable`. `T` = enable, `F` = disable. Duplicate IDs: last wins. Unknown IDs rejected. Synchronous ≤ 5,000 rows with result summary.
 - **Audit immutability**: Change log entries never edited or deleted.
@@ -259,6 +313,19 @@ The v2.0 redesign splits these into two distinct layers and two menus, so that:
 | Customer-facing Location Query API (downstream) | Serves visible OC locations to downstream customers | Reads OC Location table with `status=active AND is_enable=true` filter | Sync (per request) | Existing | Enable/disable and status propagation take effect on next query |
 | Corporate SSO | Staff authentication | In: credentials → Out: user identity + email | Sync | Existing | Groups → advanced permission mapping TBD |
 
+### 8.4 Non-Functional Requirements
+
+| Dimension | Requirement | Target | Priority |
+|-----------|------------|--------|----------|
+| Performance | List query p95 latency | ≤ 2s with filters, ≤ 5s export (10k rows) | P0 |
+| Availability | Internal console SLA | 99.5% business hours; sync job must not block console | P0 |
+| Security | Access control | SSO login mandatory; enable/disable + store edit gated by advanced permission; audit log immutable | P0 |
+| Compatibility | Browser | Chrome / Edge latest two major versions, 1440px+ desktop | P0 |
+| Scalability | Data growth | Support 100k vendor locations, 100k OC locations, 1M change log entries | P1 |
+| Compliance | Data handling | Location data is business (non-PII); operator identity retained for audit | P1 |
+
+---
+
 ### 8.5 Sync Failure Fallback & Incremental Strategy
 
 **Incremental pull scope (confirmed 2026-10-29):**
@@ -274,16 +341,22 @@ The v2.0 redesign splits these into two distinct layers and two menus, so that:
 - One automatic retry; then wait for next cycle.
 - Incremental cursor advanced only on fully successful run.
 
-### 8.4 Non-Functional Requirements
+### 8.6 Field-Level Sync Policy Matrix (v2.6.0)
 
-| Dimension | Requirement | Target | Priority |
-|-----------|------------|--------|----------|
-| Performance | List query p95 latency | ≤ 2s with filters, ≤ 5s export (10k rows) | P0 |
-| Availability | Internal console SLA | 99.5% business hours; sync job must not block console | P0 |
-| Security | Access control | SSO login mandatory; enable/disable + store edit gated by advanced permission; audit log immutable | P0 |
-| Compatibility | Browser | Chrome / Edge latest two major versions, 1440px+ desktop | P0 |
-| Scalability | Data growth | Support 100k vendor locations, 100k OC locations, 1M change log entries | P1 |
-| Compliance | Data handling | Location data is business (non-PII); operator identity retained for audit | P1 |
+> Only applies to OC locations that are **visible** (`status = active AND is_enable = true`). Before visibility, everything is written straight through.
+
+| Field | Base tier | Rule | Why |
+|---|---|---|---|
+| `qr_dropoff`, `services`, `restrictions`, `cutoff_time` | **auto** | Apply, log `PROVIDER_FIELD_UPDATE` | Narrow blast radius — a wrong value does not send a customer to the wrong door |
+| `phone`, `timezone` | **auto** | Apply, but block if the format check fails | Format is machine-checkable |
+| `opening_hours` | **conditional auto** | Auto if the structure is valid **and** no day moves more than 2 h; otherwise `review` | Directly answers "can I go now?" — the top complaint source |
+| `name` | **review** | Hold | Customer-facing display and search |
+| `address_line1/2`, `city`, `state`, `postal_code` | **review** | Always hold | A wrong address sends a customer to the wrong store — the most expensive error |
+| `latitude`, `longitude` | **review + hard check** | Hold; quarantine if drift > 1 km, outside the country, or in water | Bad coordinates navigate a customer into a river |
+| `status` | **immediate (one-way)** | `active → inactive` applies at once; reactivation may also apply at once | Better offline than wrong — but batch `inactive` trips the breaker (§8.2) |
+| **any field already in `field_lock`** | **review (forced)** | Hold regardless of base tier | The lock is a permanent "ask me", not a one-time mute |
+
+**Hard checks (no judgement, straight to quarantine):** address becoming empty · postal code inconsistent with city/state · coordinate out of range · opening-hours structure invalid or `end < start`. A quarantined record writes nothing to the OC layer.
 
 ## 9. Non-Goals
 
@@ -316,12 +389,22 @@ The v2.0 redesign splits these into two distinct layers and two menus, so that:
 | F12 | OC generation | ①New vendor location (non-duplicate) → one OC location backfilled with `is_enable=false` + `OC_GENERATED` entry | Suspected duplicate → no OC location, enters review queue | — | Trigger test sync | P0 |
 | F13 | Status propagation | ①Vendor → `inactive` → OC auto-disabled + blocked; ②force-enable raises error; ③vendor → `active` → OC can enable again | — | Provider reactivation mid-cycle | Trigger test sync | P0 |
 | F14 | Duplicate review | ①Pair at ≥75% → shown with score + diff; ②"Same store" → link to one OC location; ③"Not same" → independent OC locations | Score below threshold not surfaced; identical address = 100% | Unit-suffix/postal-extension differences still match | Seeded pair + audit | P0 |
+| F19 | Intake validation | ①Vendor location with an empty `address_line1` → **no OC location generated**, appears in Data Quality with the failed check; ②override → OC created with `is_enable=false` and `INTAKE_OVERRIDDEN` logged | `warn`-level issues allow creation but the sign-off stays blocked | Coordinates (0,0) flagged as placeholder | Seeded bad records + audit | P0 |
+| F20 | Sync change review | ①Enabled OC location + provider changes `latitude` by 297 km → value **not** written, `⚠ N held` on the row, banner in detail, entry in Sync Changes; ②Accept → only that field changes, baseline refreshed, `SYNC_CHANGE_ACCEPTED`; ③Reject → baseline value kept, field locked, `SYNC_CHANGE_REJECTED` | Unresolved change → data unchanged after any number of days; accepting one field does not accept its neighbours | Auto-tier field (e.g. `phone`) applied without review; a locked field forced to review even though its tier is `auto` | Seeded run + audit + field-level assertion | P0 |
+| F21 | Enable sign-off | ①Toggle enable on a ready location → dialog lists address/coordinates/hours + source + 5 checks; confirm disabled until the box is ticked; ②confirm → visible downstream + baseline captured + `ENABLE_SIGNED_OFF`; ③disable → immediate, no dialog | Blocked rows: vendor inactive / N pending / intake overridden / hours missing — dialog opens but confirm is unavailable with the reason shown; batch enable skips them and reports the count | Enabling an already-enabled location = no-op toast | Seed 4 blocked + 2 ready locations | P0 |
+| F22 | Breaker & rollback | ①Run with > 30% changed records → dry-run, nothing propagated, alert shown; ②`SAFE MODE` on → all propagation frozen; ③rollback a run → affected OC rows return to the before-image | 7-day before-image window; rollback of an already-rolled-back run rejected | Provider `inactive` batch of 6 in one run trips the breaker | Simulated run + before/after comparison | P1 |
+| F20/F21 | Operator edit semantics | ①Edit `phone` on a visible OC location → saved, baseline refreshed, `phone` locked, `DOWNSTREAM_PROPAGATED` written, toast says "pushed downstream now"; ②edit a field that has a pending provider change → that change becomes `superseded`, disappears from Sync Changes; ③edit on a non-visible location → not pushed, but baseline and lock still recorded | Clearing `address_line1` / `city` / `postal_code` while visible → rejected, record untouched (validation runs before the write) | Clearing every opening-hours range while visible → rejected with "disable it first" | Field-level assertion + audit order check | P0 |
 
 ### 10.2 End-to-End Flow Acceptance
 
 - [ ] Core path walkable: filter → select OC rows → batch disable → confirm → audit entries → location hidden downstream.
 - [ ] Sync path walkable: nightly sync → vendor status change → OC auto-disable → log entry → staff reviews.
 - [ ] OC generation path: new vendor location → OC backfilled (disabled) → Manager enables → visible downstream.
+- [ ] **Protection path (v2.6.0): provider changes a live location → value held, customer keeps the verified value → operator accepts or rejects → only the accepted field changes and is logged.**
+- [ ] **Intake path (v2.6.0): a vendor location with an incomplete address never becomes a live OC location — it lands in Data Quality instead.**
+- [ ] **Sign-off path (v2.6.0): enabling requires the 5 checks and a ticked acknowledgement; batch enable cannot bypass them.**
+- [ ] **Operator edit path (v2.6.0): a manual edit is pushed downstream immediately, refreshes the baseline, locks the field and suppresses any pending provider change on it.**
+- [ ] **Fail-safe default (v2.6.0): if nobody touches a queue, the system never moves toward the provider's value — it stays at "no OC location", "not enabled", or "baseline value".**
 - [ ] All P0 features clickable in the prototype.
 
 ## 11. Success Metrics
@@ -357,6 +440,9 @@ The v2.0 redesign splits these into two distinct layers and two menus, so that:
 | Data volume exceeds 10k export cap | Risk | Export blocked | Prompt to narrow filters |
 | Timezone handling | Risk | Confusing displayed times | Normalize to console timezone (UTC) with labels |
 | OC/vendor drift (OC overrides diverge from provider) | Risk | OC store details stale vs provider | Re-backfill on major provider field change (flagged for ops review) |
+| **Provider writes a batch of wrong data** (v2.6.0) | Risk | Wrong addresses pushed to every customer in one night | Held baseline for live locations + two-run confirmation + drift thresholds + breaker (§8.2/§8.6) |
+| **Operator edits something wrong themselves** (v2.6.0) | Risk | A manual edit is trusted by design and goes downstream immediately | Field-level baseline history (last 5 versions) + per-location Change History + rollback; option to add "revert to previous value" in the detail page |
+| **Review backlog during onboarding** (v2.6.0) | Risk | A few hundred Data Quality items arrive at once; staff start bulk-approving and the gate becomes decorative | Plan onboarding capacity up front; show per-provider rejection rate so the conversation with the provider is data-backed |
 
 ## 13. Appendix
 
@@ -383,6 +469,13 @@ The v2.0 redesign splits these into two distinct layers and two menus, so that:
 | Incremental sync | Daily pull of only changed records since last success |
 | FX / CP / TB | PUDO Inc service codes |
 | Cutoff time | LMS — latest drop-off time for same-day processing |
+| **Baseline** (v2.6.0) | The version a human verified — captured at sign-off, at accepting a change, or on an operator edit. The reference for "good data", not "whatever the last sync wrote" |
+| **Held** (v2.6.0) | A provider change that was recorded on the vendor layer but deliberately **not** written to the OC layer, pending a decision |
+| **Field lock** (v2.6.0) | A permanent "ask me" on one field: any later provider change must go through review, even if the field's tier is `auto` |
+| **Sign-off** (v2.6.0) | The verification step that turns `is_enable` from false to true; captures the baseline |
+| **Intake** (v2.6.0) | The quality check a new vendor location must pass before an OC location is created for it |
+| **Breaker** (v2.6.0) | Automatic dry-run downgrade when a single sync run looks abnormal (too many changes at once) |
+| **Review Center** (v2.6.0) | The single menu holding the four decision types: Duplicates / Data Quality / Sync Changes / Enable Sign-off |
 
 ### 13.2 References
 
@@ -391,7 +484,9 @@ The v2.0 redesign splits these into two distinct layers and two menus, so that:
 
 ### 13.3 Prototype Link
 
-- `Location-Management-Admin-Prototype-2026-10-29.html` (generated after PRD confirmation)
+- `Location-Management-Admin-Prototype-2026-10-29.html` — v2.6.0, hi-fi single-file prototype
+- Public: https://jama-dev520.github.io/location-prototype/
+- Demo seed data deliberately includes: a live location whose provider moved the coordinates 297 km (`OC-00102`) · a held postal-code change (`OC-00103`) · a held name change (`OC-00106`) · a held opening-hours change (`OC-00109`) · two intake failures with no OC record (`LOC-00187` / `LOC-00188`) · one blocked sign-off (`OC-00002`, vendor inactive) and two ready ones
 
 ### 13.4 Test Requirements
 
@@ -400,4 +495,5 @@ The v2.0 redesign splits these into two distinct layers and two menus, so that:
 | External system test environments | PUDO Inc / LMS sandbox endpoints TBD | If unavailable, mock provider APIs |
 | Test data source | Seed from samples + ~500 synthetic locations across both providers | Include edge cases: empty hours, missing address2, inactive status |
 | Test accounts | 1 Viewer + 1 Location Manager | Per §3.1 |
-| Mock requirements | Mock nightly sync trigger; mock partial batch failure; mock vendor→inactive transition | Verify F09 partial-failure, F13 auto-disable |
+| Mock requirements | Mock nightly sync trigger; mock partial batch failure; mock vendor→inactive transition; **mock a provider run that moves coordinates 297 km, a run with > 30% changed records (breaker), and an intake failure (empty address1 / coordinates (0,0))** | Verify F09 partial-failure, F13 auto-disable, F19 intake, F20 held change, F22 breaker |
+| **Plain-language acceptance** | Plain-language acceptance checklist (Chinese, for business and test readers) — an 8-item quick check, per-page checklists, 6 end-to-end stories, and a "must never happen" list | Written for operations staff and PM sign-off, not engineers |
