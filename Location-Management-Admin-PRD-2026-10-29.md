@@ -34,6 +34,10 @@
 
 Every screen in this document exists to make one of four daily jobs take **seconds instead of a ticket**. They are stated first because the mechanics below (two layers, review center, baselines) are only justified by them.
 
+![Full picture](https://workbuddy-space-static.codebuddy.work/image/M9nBRbD9eQJBNFivHPpu8l.png)
+
+*The whole system on one page: providers → vendor layer → two gates → OC layer → downstream, with the decision queues on the right and the change trail underneath. The J1–J4 tags mark where each daily job happens.*
+
 | # | The job | What "done" looks like | Where it lives |
 |---|---|---|---|
 | **J1** | **Find out which locations are enabled** | Ask "which stores are live right now?" and get an answer from the UI: filter to `status = active AND is_enable = true`, read the count, export exactly that set. No SQL, no engineering request, no exported-then-filtered spreadsheet | P02 · `Enable` / `Downstream` filters + CSV export |

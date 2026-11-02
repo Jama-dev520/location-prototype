@@ -127,6 +127,10 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 
 这套后台不是为了「管理数据」，是为了让运营**在几秒内**做完四件具体的活。后面的两层模型、Review Center、签收基线，全部是从这四件事推出来的。
 
+![整体全貌](https://workbuddy-space-static.codebuddy.work/image/M9nBRbD9eQJBNFivHPpu8l.png)
+
+*一张图看全：供应商 → 供应商层 → 两道闸门 → OC 层 → 下游；右侧是三个决策队列，底部是贯穿全链路的变更记录。J1–J4 标记的四件事，就是运营每天真正要做的动作。*
+
 | # | 运营要做什么 | 做完是什么样 | 在哪儿做 |
 |---|---|---|---|
 | **J1** | **查哪些门店是 enabled / 在线的** | 问「现在有哪些店在客户那儿可见」，界面上直接得到答案：按 `status = active 且 is_enable = true` 筛一下，看到条数，把这一批导出来。不用提 SQL、不用找研发、不用导全量再自己筛 | P02 · `Enable` / `Downstream` 筛选 + 导出 CSV |
