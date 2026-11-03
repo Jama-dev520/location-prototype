@@ -1,6 +1,8 @@
-# Location Management Admin Console — Database Field Mapping (v2.7.0)
+# Location Management Admin Console — Database Field Mapping (v3.0.0)
 
-> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v2.7.0)
+> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.0.0)
+>
+> **v3.0.0 model change.** The console no longer writes location fields. `field_lock` is replaced by `data_issue`; `sync_change_set` decisions and `oc_field_baseline` versions used for revert are retired; downstream values are a per-field merge with **LMS first**. The console writes exactly four things: `oc_location.is_enable`, `data_issue` rows, baseline captures, and `change_log`.
 > Purpose: help engineering/data teams understand "front-end filter ↔ API param ↔ DB field" and the table schemas for the **two-layer model**.
 
 ---
@@ -158,7 +160,7 @@ oc_location (OC-owned, downstream-facing)
 | `location_layer` | enum(VENDOR,OC) | which layer the change belongs to |
 | `occurred_at` | timestamp | occurred time |
 | `operator` | varchar | operator, or `System · PUDO Sync` / `System · LMS Sync` |
-| `operation_type` | enum | ENABLE / DISABLE / BATCH_ENABLE / BATCH_DISABLE / SWEEPER_CHANGE / STORE_DETAIL_EDIT / OC_LINK_CONFIRMED / OC_LINK_REJECTED / OC_GENERATED / PROVIDER_STATUS_CHANGE / PROVIDER_FIELD_UPDATE / PROVIDER_CREATED / PROVIDER_REMOVED / ENABLE_SIGNED_OFF / SYNC_CHANGE_ACCEPTED / SYNC_CHANGE_REJECTED / FIELD_UNLOCKED (v2.7.0) / FIELD_REVERTED (v2.7.0) / DOWNSTREAM_PROPAGATED |
+| `operation_type` | enum | ENABLE / DISABLE / BATCH_ENABLE / BATCH_DISABLE / ENABLE_SIGNED_OFF / RE_SIGNED_OFF (v3.0.0) / DATA_ISSUE_RAISED (v3.0.0) / DATA_ISSUE_REPORTED (v3.0.0) / DATA_ISSUE_CLOSED (v3.0.0) / OC_LINK_CONFIRMED / OC_LINK_REJECTED / OC_GENERATED / PROVIDER_STATUS_CHANGE / PROVIDER_FIELD_UPDATE / PROVIDER_CREATED / PROVIDER_REMOVED / DOWNSTREAM_PROPAGATED — retired in v3.0.0: SWEEPER_CHANGE, STORE_DETAIL_EDIT, SYNC_CHANGE_ACCEPTED, SYNC_CHANGE_REJECTED, FIELD_UNLOCKED, FIELD_REVERTED |
 | `field_name` | varchar | changed field |
 | `old_value` | text | old value |
 | `new_value` | text | new value |
@@ -241,24 +243,23 @@ oc_location (OC-owned, downstream-facing)
 | `reason` | varchar | why it was held (e.g. "coordinate moved 297 km — exceeds the 1 km limit") |
 | `decided_by` / `decided_at` | varchar / timestamp | who decided, when |
 
-### Table 10 — `field_lock` (field lock, added in v2.6.0)
+### Table 10 — `data_issue` (data anomalies, replaces `field_lock` in v3.0.0)
 
-> An "ask me", not a "never again" (wording fixed in v2.7.0). While a row is active, a provider change to that field goes to review **even if its base tier is `auto`**. A row can be **released** (v2.7.0): manually with a reason, or in one move through «Accept & unlock» on a held change.
+> A flag, not an edit. It records **what is wrong and why** on the vendor record; the value itself is never touched by the console. An open issue blocks enablement of the OC location it feeds.
 
 | Field | Type | Notes |
 |---|---|---|
-| `lock_id` | bigint PK | primary key |
-| `oc_location_id` | varchar FK → oc_location | which OC location |
-| `field_name` | varchar | which field |
-| `locked_at` | timestamp | when |
-| `locked_by` | varchar | operator |
-| `reason` | enum(OPERATOR_EDIT, REJECTED_CHANGE) | why it was locked: an operator fixed the field, or a provider change was rejected |
-| `released_at` | timestamp NULL | v2.7.0 — null while the lock is active |
-| `released_by` | varchar NULL | v2.7.0 — operator who released it |
-| `release_reason` | text NULL | v2.7.0 — **mandatory** when the release is manual; auto-filled as `accepted & unlocked` when it comes from a review decision |
-| `release_path` | enum(MANUAL, ACCEPT_UNLOCK) NULL | v2.7.0 — which of the two exits was used |
+| `issue_id` | varchar PK | `ISS-0001` |
+| `vendor_location_id` | varchar FK → vendor_location | the record that has to be fixed |
+| `field_name` | varchar | which field is wrong (`address_line1`, `sweeper`, `opening_hours`, …) |
+| `reason` | text NOT NULL | **mandatory**; what is wrong, in the operator's words |
+| `status` | enum(OPEN, REPORTED, FIXED) | open → reported (chased with the provider) → fixed (provider corrected it or the next sync did) |
+| `raised_by` | varchar | operator |
+| `raised_at` | timestamp | when |
+| `closed_at` | timestamp NULL | when it reached FIXED |
+| `source` | enum(OPERATOR, INTAKE, DRIFT) | raised by hand, by the intake check, or from a drift review |
 
-> Rows are **never deleted**: a release stamps the row, so "was this field ever locked, and why was it released?" stays answerable. An active lock is `released_at IS NULL`.
+> `oc_location_id` is **not** stored: the link is derived through `vendor_oc_mapping`, so the same issue follows the vendor record even if the mapping later becomes 2:1.
 
 ### Table 11 — `intake_issue` (intake check, added in v2.6.0)
 
@@ -277,42 +278,47 @@ oc_location (OC-owned, downstream-facing)
 
 ## 3. Field Ownership Quick Reference
 
-| Field Category | Owner | Writable Path | Read-only? |
+### 3.1 Who owns what (v3.0.0)
+
+| Layer | Fields | Who writes them | Can the console change them? |
 |---|---|---|---|
-| Vendor `status` + business attributes (address/hours/services) | Provider | daily sync | yes |
-| Vendor `qr_dropoff` | Provider (LMS) | daily sync | yes |
-| Vendor `sweeper` | OC (Location Manager) | F10 vendor list/detail | no |
-| OC `is_enable` | OC (Location Manager) | F08 single / F09 batch | no |
-| OC store details (address, opening hours, etc.) | OC (Location Manager) | F11 OC list/detail | no |
-| `oc_location_id` | System | OC generation (F12) + duplicate resolution (F14) | yes |
-| `vendor_location_id` / `created_at` | System | — | yes |
+| `vendor_location` | every field, **including `sweeper`** | the provider sync | **no** — a wrong value is flagged (`data_issue`) |
+| `oc_location` | `is_enable` only | the operator (sign-off, F21) | yes, and that is the only OC write |
+| derived (not stored) | name / address / hours / coordinates / sweeper as shown downstream | computed from the linked vendor records | no |
 
-> **Key rules**:
-> - Provider sync **never overwrites** `sweeper`, OC `is_enable`, OC store details, or `oc_location_id`.
-> - When vendor `status` → `inactive`, the linked OC location is auto-disabled and blocked from downstream sync; force-enable raises an error.
+### 3.2 Downstream merge rule — LMS first (F25)
 
-### 3.1 Sync tiers (introduced in v2.6.0; applies only to OC locations that are already visible)
+When one OC location is fed by several vendor records (2:1), each field is resolved independently:
 
-| Tier | Fields | What happens when the provider changes it |
+```
+for each field f:
+    candidates = linked vendor records with status = active and a non-empty f
+    if any candidate.provider = LMS  -> value = that LMS value
+    else if candidates               -> value = first candidate by provider priority
+    else                             -> value = last known value, flagged as stale
+```
+
+| Situation | Result |
+|---|---|
+| LMS active with a value, PUDO active with a different value | **LMS value wins** |
+| LMS active but the field is empty, PUDO has a value | PUDO value fills the gap |
+| LMS inactive, PUDO active | PUDO value |
+| Both inactive | last known value, surfaced as a data-quality problem |
+
+> The rule is field-level on purpose. A record-level rule ("use LMS entirely") would blank every field LMS happens not to supply — phone and coordinates are the usual gaps.
+
+### 3.3 What the console writes (and what it no longer writes)
+
+| Write | Trigger | Table |
 |---|---|---|
-| `auto` | `qr_dropoff`, `services`, `restrictions`, `cutoff_time`, `phone`, `timezone` | Written straight through, logs `PROVIDER_FIELD_UPDATE` |
-| `conditional auto` | `opening_hours` | Auto if the structure is valid and no day moves more than 2 h; otherwise `review` |
-| `review` | `name`, `address_line1/2`, `city`, `state`, `postal_code`, `latitude`, `longitude` | Held (`sync_change_set.decision = pending`); the OC location keeps its baseline value |
-| `immediate (one-way)` | `status` | `active → inactive` applies at once; a batch of `inactive` trips the breaker |
-| **forced review** | **any field with an active `field_lock` row** (`released_at IS NULL`) | Held regardless of its base tier — a human must decide. Releasing the lock (F23) returns the field to the tier in the row above |
+| `is_enable = true` + baseline | sign-off (F21) | `oc_location` + `oc_field_baseline` |
+| `is_enable = false` | disable, batch disable, vendor inactive | `oc_location` |
+| `data_issue` row | operator flags a field (F11) | `data_issue` |
+| `data_issue.status` | chased / fixed | `data_issue` |
+| baseline refresh | re-sign after drift (F20) | `oc_field_baseline` |
+| audit row | every action above | `change_log` |
 
-> Two extra gates: **two-run confirmation** (an `auto` field is applied only when two consecutive runs agree) and **magnitude thresholds** (coordinate drift > 1 km, any postal/city change, opening hours moving > 2 h on a day → forced review).
-
-### 3.2 The three write paths (v2.6.0)
-
-| Path | Trigger | Enters the review queue? | Pushed downstream? | Baseline |
-|---|---|---|---|---|
-| Provider sync, `auto` tier | daily job | no | yes | unchanged |
-| Provider sync, `review` tier | daily job | **yes** (held) | **no** — keeps the old value | unchanged |
-| Operator edit | human saves | **no** — an operator edit is the final decision | yes if visible, logs `DOWNSTREAM_PROPAGATED` | **refreshed**, and the edited fields are written into `field_lock` |
-| Field revert (v2.7.0) | operator undoes one field | **no** | yes if visible, logs `DOWNSTREAM_PROPAGATED` after `FIELD_REVERTED` | **refreshed**; the field stays locked (it is still a hand correction) |
-
----
+Retired in v3.0.0: `STORE_DETAIL_EDIT`, `SWEEPER_CHANGE`, `FIELD_UNLOCKED`, `FIELD_REVERTED`, `SYNC_CHANGE_ACCEPTED`, `SYNC_CHANGE_REJECTED`, and the `field_lock` / `sync_change_set` decision columns. `oc_field_baseline` keeps one row per sign-off (no 5-version stack — nothing is reverted any more).
 
 ## 4. API ↔ Table Quick Reference
 
@@ -338,10 +344,12 @@ oc_location (OC-owned, downstream-facing)
 | **`/api/review/data-quality`** (v2.6.0) | GET | `intake_issue` + `vendor_location` | Data Quality list (failed intake, no OC record) |
 | **`/api/review/data-quality/{id}/override`** (v2.6.0) | POST | `oc_location` + `intake_issue` + `change_log` | force-create an OC record with `is_enable=false`, `intake_status=overridden` |
 | **`/api/review/sync-changes`** (v2.6.0) | GET | `sync_change_set` + `oc_field_baseline` | held changes grouped by OC location, with baseline value |
-| **`/api/review/sync-changes/{id}/decide`** (v2.6.0; `decision=accepted_unlock` added in v2.7.0) | POST | `sync_change_set` + `oc_field_baseline` + `field_lock` + `oc_location` + `change_log` | accept → write + refresh baseline; **accepted_unlock → accept + release the lock (`FIELD_UNLOCKED`)**; reject → keep baseline + lock field |
+| ~~`/api/review/sync-changes/{id}/decide`~~ | — | — | **retired in v3.0.0**: there is no per-field accept/reject, the provider value already applies |
 | **`/api/oc-locations/{id}/enable`** (v2.6.0, extended) | PATCH | `oc_location` + `oc_field_baseline` + `change_log` | enable now requires the sign-off payload (checklist acknowledged); writes `baseline_at`, `propagated_at`, `ENABLE_SIGNED_OFF` |
-| **`/api/oc-locations/{id}/fields/{field}/unlock`** (v2.7.0) | POST | `field_lock` + `change_log` + `oc_location` | release one lock; `reason` required (400 without it); stamps `released_at/by/reason/path = MANUAL` |
-| **`/api/oc-locations/{id}/fields/{field}/revert`** (v2.7.0) | POST | `oc_field_baseline` + `oc_location` + `change_log` | restore the previous version of one field, refresh the baseline, keep the lock, push downstream if visible; rejected when a newer edit exists on that field |
+| **`/api/vendor-locations/{id}/issues`** (v3.0.0) | POST | `data_issue` + `change_log` | flag a field: `field_name` + `reason` (both required); never writes a value |
+| **`/api/issues/{id}`** (v3.0.0) | PATCH | `data_issue` + `change_log` | move status OPEN → REPORTED → FIXED; closing requires the provider value to have changed or an explicit confirmation |
+| **`/api/oc-locations/{id}/resign`** (v3.0.0) | POST | `oc_field_baseline` + `change_log` | re-sign after drift: baseline moves to current merged values, `RE_SIGNED_OFF` |
+| **`/api/oc-locations/{id}/resolved`** (v3.0.0) | GET | `vendor_location` + `vendor_oc_mapping` | the merged, per-field view with a `source` per field (F25) — what downstream receives |
 | **`/api/oc-locations/{id}`** (v2.6.0, extended) | PATCH | `oc_location` + `oc_field_baseline` + `field_lock` + `sync_change_set` + `change_log` | operator edit: refresh baseline, lock fields, supersede pending changes, set `propagated_at` if visible |
 | **`/api/sync/runs/{id}/rollback`** (v2.6.0) | POST | `oc_location` + `change_log` | revert a run's OC rows to the stored before-image (7-day window) |
 | **`/api/sync/safe-mode`** (v2.6.0) | PATCH | `sync_run` (flag) | freeze / unfreeze all propagation |

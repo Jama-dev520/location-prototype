@@ -1,12 +1,10 @@
-# Location Management Admin Console — Requirement Overview (v2.7.0)
+# Location Management Admin Console — Requirement Overview (v3.0.0)
 
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
-> **Demo video (2.5 min)**: https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
-> Companion: `Location-Management-Admin-PRD-2026-10-29` (v2.7.0)
+> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.0.0)
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
 > Detail view (v2.4.0): clicking a location ID opens a **full page** with tabs — Basic Info / Operations / Hours & Services / Linked Records / Change History.
-> Sync protection (v2.6.0): provider data is a **proposal** — an enabled location keeps a signed-off baseline, changes are held until someone decides, and enabling is a sign-off checklist.
-> Decision comes back (v2.7.0): a field lock can be **released**, a hand edit can be **reverted field by field**, and the sign-off queue lives on the **OC list** (`⏳ Not live yet`), not in the Review Center.
+> **v3.0.0 — provider data is the only data.** The OC layer no longer edits anything: it has exactly two verbs, **enable** and **flag an anomaly**. A wrong sweeper or address is flagged back to the provider with a reason (on the vendor record, no separate page). Duplicate checking is its own page and is marked 2:1 in the OC list. Downstream values are merged **per field with LMS first**. M&MP works the same data under the same rules.
 
 ---
 
@@ -18,10 +16,10 @@ The console is split into **two layers**:
 
 | Layer | Table | Meaning | Who owns it |
 |---|---|---|---|
-| **Vendor Location** | `vendor_location` | Raw provider data (PUDO Inc / LMS) | Provider (read-only except `sweeper`) |
-| **OC Location** | `oc_location` | OC-owned, downstream-facing store entity | OC (enable switch + editable store details) |
+| **Vendor Location** | `vendor_location` | Raw provider data (PUDO Inc / LMS), **including sweeper** | Provider — fully read-only for OC |
+| **OC Location** | `oc_location` | Downstream-facing store, assembled per field from its vendor records | OC — **enable + flag only**, no editing |
 
-A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one vendor location → one OC location); a confirmed cross-provider duplicate links **2:1**.
+A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a duplicate confirmed as the same store links **2:1** and the OC record is merged field by field (**LMS wins**, PUDO fills the gaps).
 
 ### 1.2 `vendor_location`（供应商门店层）
 
@@ -76,9 +74,9 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 | `duplicate_pair` | `pair_id` / `vendor_location_a` / `vendor_location_b` / `matched_on` / `match_score` / `diff` / `status` / `detected_at` / `resolved_by` / `resolved_at` | cross-provider fuzzy duplicate pairs |
 | `sync_run` | `run_id` / `provider` / `started_at` / `finished_at` / `result` / counts / `error_message` | one record per provider per day |
 | `user` | `user_id` / `name` / `email` / `has_enable_permission` | SSO user; `has_enable_permission` gates enable/edit |
-| **`oc_field_baseline`** (v2.6.0) | `baseline_id` / `oc_location_id` / `field_name` / `baseline_value` / `version_no` / `captured_at` / `capture_reason` | 每个字段"人工核实过"的历史值，保留最近 5 版，供单字段回退 |
+| **`oc_field_baseline`** (v2.6.0) | `baseline_id` / `oc_location_id` / `field_name` / `baseline_value` / `captured_at` / `capture_reason` | 签收时的值，用来判断「签收后变了哪些字段」；v3.0 起不再用于回退 |
 | **`sync_change_set`** (v2.6.0) | `change_id` / `run_id` / `oc_location_id` / `field_name` / `old_value` / `new_value` / `risk_tier` / `decision` / `reason` | 上游变更的字段级记录；`pending` = 已记录但未写入 OC |
-| **`field_lock`** (v2.6.0) | `lock_id` / `oc_location_id` / `field_name` / `locked_at` / `reason` | 字段锁：锁住后该字段的上游变更一律走 review |
+| **`data_issue`** (v3.0.0) | `issue_id` / `vendor_id` / `field_name` / `reason` / `status` / `raised_by` / `raised_at` | 数据异常标记：只记录问题与原因，不改变值；状态 open → reported → fixed |
 | **`intake_issue`** (v2.6.0) | `issue_id` / `vendor_location_id` / `check_code` / `severity` / `status` | 数据质量检查项；`fail` 阻断生成 OC 门店 |
 
 ### 1.5 Audit operation types (`operation_type`)
@@ -96,7 +94,8 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 | `PROVIDER_CREATED` / `PROVIDER_REMOVED` | vendor created/removed (sync) |
 | `ENABLE_SIGNED_OFF` (v2.6.0) | 启用签收：完成核对并记录基线 |
 | `FIELD_UNLOCKED` (v2.7.0) | 解锁字段：手理解锁或"接受并解锁"，必带理由 |
-| `FIELD_REVERTED` (v2.7.0) | 字段回退：恢复到该字段上一版的值 |
+| `DATA_ISSUE_RAISED` (v3.0.0) | 标记数据异常：字段 + 原因，推供应商改 |
+| `RE_SIGNED_OFF` (v3.0.0) | 重新签收：认可漂移后的新值，刷新基线 |
 | `DOWNSTREAM_PROPAGATED` (v2.6.0) | 人工编辑后立即推送下游（缓存失效） |
 | `SYNC_CHANGE_ACCEPTED` / `SYNC_CHANGE_REJECTED` (v2.6.0) | 接受上游变更 / 拒绝并锁定字段 |
 | `SYNC_ROLLBACK` (v2.6.0) | 按同步批次或单字段回退 |
@@ -114,7 +113,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 | `vendor_location_id` vs `oc_location_id` | internal vendor ID vs OC-owned ID | OC ID gates downstream sync |
 | **baseline vs 当前值** (v2.6.0) | 人工核实过的版本 vs 库里的值 | 上游改了、但运营没点头时，两者**不相等**，OC 用 baseline 对外 |
 | **held vs rejected** (v2.6.0) | 已记录但未写入（等决定） vs 已明确拒绝并锁字段 | held 可以随后接受；rejected 之后同字段不再自动应用 |
-| **手改 vs 上游变更** (v2.6.0) | 人工裁决 vs 待裁决提案 | 手改立即生效并锁字段；上游变更按档位挂起 |
+| **标记 vs 改值** (v3.0.0) | 报告问题 vs 修改数据 | OC 只能标记，值只由供应商给；标记不改值、不下线 |
 | **四个 review tab** (v2.6.0) | duplicates / data quality / sync changes / sign-off | 决策对象分别是「对 / 整条 / 字段 / 记录」，不能合成一个列表 |
 
 **Visibility rule (core)**: an OC location is visible downstream **iff `status = active` AND `is_enable = true`**. When the linked vendor location is `inactive`, the OC location is auto-disabled and blocked.
@@ -125,7 +124,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 
 ### 2.1 背景与目的：运营每天要做的四件事
 
-这套后台不是为了「管理数据」，是为了让运营**在几秒内**做完四件具体的活。后面的两层模型、Review Center、签收基线，全部是从这四件事推出来的。
+这套后台不是为了「管理数据」，是为了让运营**在几秒内**做完四件具体的活。从 v3.0.0 起，这四件事里已经没有「改数据」——数据归供应商，OC 只判断能不能给客户看，以及把错的地方标回去。
 
 ![整体全貌](https://workbuddy-space-static.codebuddy.work/image/M9nBRbD9eQJBNFivHPpu8l.png)
 
@@ -134,20 +133,20 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 | # | 运营要做什么 | 做完是什么样 | 在哪儿做 |
 |---|---|---|---|
 | **J1** | **查哪些门店是 enabled / 在线的** | 问「现在有哪些店在客户那儿可见」，界面上直接得到答案：按 `status = active 且 is_enable = true` 筛一下，看到条数，把这一批导出来。不用提 SQL、不用找研发、不用导全量再自己筛 | P02 · `Enable` / `Downstream` 筛选 + 导出 CSV |
-| **J2** | **改谁去揽收（Sweeper）** | 两次点击改掉，哪怕新的揽收方是另一家供应商也照改，记 `SWEEPER_CHANGE`。这是 OC 唯一被允许动的供应商层字段 | P03 → Operations → **Edit Sweeper**（供应商层） |
-| **J3** | **改门店地址** | 客户会被导航到的那个地址、城市、邮编、坐标，用一个合并弹框改完，**保存即生效**——地址错了客户是真会跑错地方的 | P03 → **Edit Store Details**（OC 层） |
+| **J2** | **确认谁去揽收（Sweeper）对不对** | sweeper 现在随同步一起进来，OC 不再改它。不对就**标记异常 + 写原因**，推供应商改，下次同步进来 | 供应商门店详情 → **Flag a data issue**（field = sweeper） |
+| **J3** | **确认门店地址对不对** | 地址、城市、邮编、坐标错 → **标记异常**，理由写在供应商记录上；改由供应商做，OC 不做二次录入 | 供应商门店详情 → **Flag a data issue**，或在 Data Issues 里点「Flag as an issue」 |
 | **J4** | **及时查前后变化** | 任意门店、任意字段：谁改的、什么时候、旧值 → 新值。查一家店看它自己的时间线；和供应商对账时看全站日志 | P03 · **Change History** / P05 · **Change Log** |
 
-> **为什么这四件事决定了架构。** 它们作用在**同一条门店**上，但归属不同：J2 是供应商那条记录的事实，J3 是 OC 自己的判断，J1 问的是「下游目录里有没有这家」（既不是供应商的也不是 OC 记录本身的，而是 `status AND is_enable` 的组合），J4 要把这三种都覆盖。所以才有两个列表而不是一个，「启用开关」只放在 OC 层，「变更记录」也从报表变成了流程的一部分。
+> **为什么这四件事决定了架构。** 它们作用在**同一条门店**上，但归属不同：J2/J3 是供应商那条记录的事实（所以只能标记、不能改），J1 问的是「下游目录里有没有这家」（`status AND is_enable` 的组合，既不是供应商记录也不是 OC 自己的值），J4 要把这三种都覆盖。所以有两个列表而不是一个，启用开关只在 OC 层，而变更记录是流程的一部分。
 
 两条推论也先说在前面，它们解释了后面很多规则的由来：
 
 - **J1 是频率最高、也最容易答错的一件。** 每次投放、每次故障、每次和供应商复盘，第一个问题都是「哪些店在线」。如果答案要靠导出全量再自己筛，那答案永远慢半拍——所以开关、筛选、条数、导出这四样必须永远互相对得上。
-- **J3 和 J4 是一对。** 能在几秒内改掉地址是好事，前提是改完之后**旧值还看得见**。改得快又没有痕迹，就是同一家店一周被「修」三次的由来。
+- **J3 和 J4 是一对。** 标记异常之所以有意义，前提是**同一个问题不会被标两次、修好了看得见**。所以一条 issue 有 open → reported → fixed 的状态，修复结果由下次同步带进来，而不是靠人再点一次。
 
 ### 2.2 一句话概括（架构层面）
 
-> Build an internal console with **two layers**: a **Vendor Location List** (raw provider data, read-only except sweeper) and an **OC Location List** (OC-owned, downstream-facing — enable switch + editable store details). OC locations are auto-generated from vendor records; when a vendor goes inactive, its OC location is auto-disabled.
+> Build an internal console with **two layers**: a **Vendor Location List** (provider data, fully read-only — a wrong value is flagged with a reason and sent back to the provider) and an **OC Location List** (what customers see — **enable + flag only**). OC records are auto-generated from vendor records; when every linked vendor is inactive the OC record is auto-disabled. Downstream values are merged per field from the linked records, **LMS first**.
 
 ### 2.3 Priority table
 
@@ -164,21 +163,23 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 | F07 | Change History | Per-location log | P0 | full timeline |
 | F08 | Enable | Single enable/disable | P0 | OC layer; blocked if vendor inactive |
 | F09 | Enable | Batch enable/disable | P0 | Mode A inline + Mode B Excel |
-| F10 | Sweeper | Edit sweeper | P0 | vendor layer; writes SWEEPER_CHANGE |
-| F11 | OC Edit | Edit OC store details | P0 | address/hours/etc.; writes STORE_DETAIL_EDIT |
+| F10 | Sweeper | Sweeper sync + flag | P0 | sweeper comes with the sync, read-only; a wrong one is flagged (`DATA_ISSUE_RAISED`) |
+| F11 | Data issue | Flag an anomaly on a vendor field | P0 | field + reason, no value change; open issues block enable |
 | F12 | OC Generation | Auto-generate OC | P0 | new vendor (non-duplicate) → one OC (disabled) |
 | F13 | Status Propagation | Vendor inactive → OC disable | P0 | auto-disable + block downstream |
-| F14 | Duplicate | Fuzzy duplicate review | P0 | ≥75% flagged; no OC until resolved |
+| F14 | Duplicate | Standalone duplicate check | P0 | own page; same store → 2:1 (marked in OC list), not same → 1:1 |
 | F15 | Change History | Global log | P1 | cross-location search |
 | F16 | Data Sync | Sync status | P1 | per-provider run + failure alerts |
 | F17 | Overview | Dashboard | P2 | KPIs |
 | F18 | QR Dropoff | QR-code dropoff marker | P0 | LMS-only flag; shown on both lists + detail, filterable, exported |
 | F19 | Review Center | Intake data-quality gate | P0 | 新门店地址/坐标/营业时间不合格 → **不生成 OC 门店**，进 Data Quality |
-| F20 | Review Center | Field-level provider change review | P0 | 已上线门店被上游改动 → 挂起，保持签收值；逐字段接受/拒绝并锁定 |
-| F21 | Enable | Enable sign-off (replaces one-click) | P0 | 启用前核对地址/坐标/营业时间 + 5 项检查 + 必须勾选，同时记基线 |
+| F20 | Drift | Baseline drift + re-sign | P0 | 已上线门店被上游改动 → 下游用新值，台账显示漂移，可重新签收或标记异常 |
+| F21 | Enable | Enable sign-off | P0 | 前置 5 项检查 + 必须勾选 + 记基线；无在营供应商/缺时间/重复未决/有未关问题都不能启用 |
 | F22 | Data Sync | Breaker & rollback | P1 | 单次 run 变更过多 → 降级干跑；按 run 一键回滚（7 天） |
-| F23 | Field lock | Unlock a locked field | P0 | 手改锁死的字段可解锁：手动解锁（必须写理由）或"接受并解锁"一步到位；都写 `FIELD_UNLOCKED` |
-| F24 | Change History | Field-level revert | P0 | 手改错了可逐字段回退上一版：`FIELD_REVERTED` + 刷基线 + 可见则立即推下游，锁保留 |
+| F23 | *(retired)* | Field lock release | — | v3.0.0 删除：没有手改，就没有需要解锁的锁 |
+| F24 | *(retired)* | Field-level revert | — | v3.0.0 删除：值只能由供应商改，回退等于改数据 |
+| F25 | Merge | LMS-first field merge | P0 | 同一条 OC 记录逐字段取源：LMS 有值用 LMS，缺了用 PUDO，详情页标来源 |
+| F26 | Data Issues | One ledger for all anomalies | P0 | 供应商问题 + 签收后漂移 + 入库失败合成一页，替代 Review Center |
 
 ### 2.4 Key business decisions
 
@@ -197,13 +198,15 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 | 11 | QR dropoff | LMS-only capability flag (`qr_dropoff`); shown as marker on both lists + detail; OC backfilled from linked vendor; read-only |
 | 12 | Provider data (v2.6.0) | **提案，不是事实**：未上线门店直接写入；已上线门店按字段档位判定，非低风险字段一律挂起，OC 保持签收基线值 |
 | 13 | Baseline (v2.6.0) | 「好数据」的参照物是**人工核实过的那一版**，不是"上次同步写进去的值"。签收/接受变更/人工编辑三处产生 |
-| 14 | Review Center (v2.6.0，v2.7.0 收口) | **三个 tab**：Duplicates（一对记录）· Data Quality（整条记录）· Sync Changes（单个字段）。决策粒度不同，状态机独立。签收不是"对数据的决定"，v2.7.0 起移回 OC 列表 |
+| 14 | No review center (v3.0.0) | 只保留一个 **Data Issues 台账**（供应商问题 / 漂移 / 入库失败）；重复裁决独立成页。不再有多个 review tab |
 | 15 | Enable (v2.6.0) | 启用 = 签收（核对 + 勾选 + 记基线），关闭 = 一键生效。批量启用逐条过检查并回报跳过项 |
-| 16 | Operator edit (v2.6.0) | 人工编辑是**最终裁决**，不进 review：立即推下游 + 刷新基线 + 锁定字段 + 作废同字段的待审上游变更 |
+| 16 | No OC editing (v3.0.0) | OC 不再改任何值。数据错 → **标记异常**（字段 + 原因），推供应商修；OC 只保留 enable 与标记两个动作 |
 | 17 | Fail-safe (v2.6.0) | 队列无人处理的结果永远是"不生成 / 不启用 / 保持旧值"，系统绝不替人决定接受上游值 |
-| 18 | Field lock (v2.7.0) | 锁的语义是**"问我"**，不是**"以后永远不许"**。两个出口：手动解锁（必须填理由）+「接受并解锁」。没有出口的话，"永远要人看"的字段只增不减，几年后自动档形同虚设 |
-| 19 | Sign-off entry (v2.7.0) | 签收是**对一条门店的动作**，不是对一堆数据的裁决 → 入口搬到 OC 列表的 `⏳ Not live yet` 预设筛选。侧边栏 Review Center 徽章只数"等决策的事"，OC 菜单徽章数"待上线门店"，两个数字从此不混 |
-| 20 | Revert (v2.7.0) | 手改是唯一"没经过第二个人看就到达客户"的变更，所以只有它需要后悔键。回退做成**字段级、且只对每个字段最新一次手改开放**——回退更早的一条会覆盖掉之后的修改 |
+| 18 | Sweeper (v3.0.0) | Sweeper 随同步进来，OC 只读。跨供应商揽收仍允许（值本身来自供应商），但 OC 不能改，只能标记 |
+| 19 | Duplicate (v3.0.0) | 独立 **Duplicate Check** 页；同一家 → 2:1 并在 OC 列表标出；不是同一家 → 1:1。未裁决的重复对阻塞启用 |
+| 20 | Merge priority (v3.0.0) | 同一条 OC 记录逐字段取源：**LMS 有值用 LMS，缺了用 PUDO**。详情页与列表都标出来源 |
+| 21 | Drift (v3.0.0) | 签收后供应商改了值：下游直接用新值，台账显示「与基线不同」，运营可**重新签收**或**标记异常**。基线是参照物，不是冻结器 |
+| 22 | M&MP (v3.0.0) | 与运营同权限、同规则、同一份数据，差别只在负责范围；不做第二套系统或二审环节 |
 
 ---
 
@@ -221,49 +224,43 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 
 ![Operator Batch Disable](https://workbuddy-space-static.codebuddy.work/image/bRWhlIpawHygvuqvunNgMg.png)
 
-### 3.4 Sweeper Edit
+### 3.4 Sweeper 随同步进来（v3.0.0）
 
-![Sweeper Edit](https://workbuddy-space-static.codebuddy.work/image/jKmlOtst4dF3BjBCWQ3NBm.png)
+sweeper 由供应商随门店一起提供，和其它字段一样只读。发现不对（没给、给了错的揽收方）→ 在供应商记录上**标记异常**，写明原因，推供应商改；下次同步把新值带进来。原「Sweeper 编辑」流程（flow3）已下线。
 
-### 3.5 Duplicate Review (fuzzy)
+### 3.5 Duplicate Check（独立页）
 
 ![Duplicate Review](https://workbuddy-space-static.codebuddy.work/image/THq85hNgrIbu1LIbM5Pwrz.png)
+
+> 独立页面只回答一个问题：这两条供应商门店是不是同一家。是 → 2:1（两条记录喂一个 OC 门店，下游按字段合并，LMS 优先）；不是 → 1:1。OC 列表里 2:1 的门店带 `2:1` 标记。
 
 ### 3.6 Exception
 
 ![Exception](https://workbuddy-space-static.codebuddy.work/image/NkJGL93Qos7exTRSPNYWNK.png)
 
-### 3.7 上游变更审核（v2.6.0）— 挂起 → 接受 / 拒绝并锁定
+### 3.7 签收后漂移（v3.0.0）— 下游用新值，台账提示
 
-![Provider Change Review](https://workbuddy-space-static.codebuddy.work/image/JiFebJG3wYiHkyD3TtdGjh.png)
+供应商改了已上线门店的值：下游立刻用新值（数据归供应商，OC 不拦），同时台账多一条「与基线不同」。运营两个选择：
 
-> 已上线门店的字段被上游改动时，先记账不动手：值挂在 `sync_change_set`，OC 继续用基线值对外。接受才会写并刷新基线；拒绝则保持旧值并把字段锁死。没人处理 = 什么都不变。
+- **重新签收**：认可新值，基线刷新，写 `RE_SIGNED_OFF`；
+- **标记异常**：不认可，写 `DATA_ISSUE_RAISED`，推供应商修，修好后下次同步回来。
 
-### 3.8 启用签收（v2.6.0）— 上线前的核对清单
+基线在这里的作用变了：v2.x 它**冻结**下游值，v3.0 它**只做参照**——回答「这条门店自签收以来变了哪些字段」。
+
+### 3.8 启用签收（v2.6.0，v3.0.0 收紧）
 
 ![Enable Sign-off](https://workbuddy-space-static.codebuddy.work/image/UggYn65vVXnsaDXfZaUvPM.png)
 
-> 启用是门店唯一变成「客户可见」的时刻，所以它是签收而不是开关：先过 4 项阻塞检查，再把地址/坐标/营业时间连同来源一起摆出来，勾选确认前按钮点不动。关闭则始终一键，因为下线是安全方向。
+> 启用仍是唯一让门店变成客户可见的动作：先过 5 项前置检查（无在营供应商 / 缺营业时间 / 入库被绕过 / 重复未裁决 / 有未关问题），再把地址、坐标、营业时间连同**每字段来源**摆出来，勾选确认后才可点，确认时记基线。关闭始终一键。
 
-### 3.9 手改即裁决（v2.6.0）— 立即写入、锁字段、立即推下游
+### 3.9 异常闭环（v3.0.0）— 标记 → 催 → 修 → 同步
 
-![Operator Edit](https://workbuddy-space-static.codebuddy.work/image/TSwKon3o9fXffDrGi2Q3u4.png)
+1. 运营在供应商记录上标记：字段 + 原因 → `data_issue` 状态 `open`。
+2. 运营跟进后标 `reported`（已催供应商），或供应商已改则标 `fixed`。
+3. 下一次同步把源数据带进来；问题关闭、漂移消失。
+4. 该门店在问题关闭前**不能启用**；已经上线的门店不受影响（不会被自动下线）。
 
-> 运营手改被当作「决定」而不是「提案」：刷新基线、锁住改过的字段、把该字段上挂起的上游变更标记为 superseded，若门店已可见则立刻推下游。手改不进 review 队列——让人审批自己的修改只是多加一步。
-
----
-
-### 3.10 字段锁的生命周期（v2.7.0）— 问我，不是永远不许
-
-![Field lock lifecycle](https://workbuddy-space-static.codebuddy.work/image/w2Hfn8dVMoqUggQcS4sFh9.png)
-
-> 锁回答的是「上游能不能直接覆盖这个字段」，答案是「先问我」。它必须有两个出口：接受这次上游值并顺手解锁，或者等上游把源数据修好后手动解锁（必须写理由）。否则"永远要人看"的集合只增不减，被运营改得最多的门店反而最不自动。
-
-### 3.11 字段级回退（v2.7.0）— 撤销一次已经推到客户的修改
-
-![Field revert](https://workbuddy-space-static.codebuddy.work/image/1FaraNobi2h9ImcewxE4rv.png)
-
-> 手改是唯一不经第二个人复核就到达客户的变更，所以也只有它需要后悔键。回退刻意做成字段级、且只对每个字段**最新的一次**手改开放：回退更早的那条，会把之后别人的修改一起冲掉。回退后锁保留——这个值仍然是人工更正过的。
+原来的「手改即裁决」「字段锁」「字段回退」三条流程（flow9/10/11）在 v3.0.0 全部下线——没有改，就没有锁和回退。
 
 ## 附：一页速览（30 秒看懂）
 
@@ -278,10 +275,10 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1** (one 
 | **去重** | 跨供应商地址模糊匹配 ≥75% 疑似重复；未确认不生成 OC |
 | **审计** | 每次 sweeper/编辑/启用/去重/状态变化都留痕 |
 | **上游数据是提案**（v2.6.0） | 已上线门店被上游改动 → 按字段档位判定，敏感字段挂起，客户继续看签收值 |
-| **一个审查入口**（v2.6.0，v2.7.0 收口） | Review Center = Duplicates + Data Quality + Sync Changes（三个待决策队列）；签收移到 OC 列表的 `⏳ Not live yet` |
+| **一个异常台账**（v3.0.0） | Data Issues = 供应商问题 + 签收后漂移 + 入库失败；重复裁决独立成页，不再挤在队列里 |
 | **启用即签收**（v2.6.0） | 核对地址/坐标/营业时间 + 5 项检查 + 必须勾选，同时记录基线 |
-| **锁可解、改可退**（v2.7.0） | 字段锁两个出口（手理解锁 / 接受并解锁）；手改错误可在 Change History 逐字段回退 |
+| **只能标、不能改**（v3.0.0） | 错值一律标记给供应商；下游按字段合并，LMS 优先；签收后漂移靠「重新签收」而不是改值 |
 | **人工编辑即生效**（v2.6.0） | 不进 review，立即推下游 + 刷基线 + 锁字段 + 作废同字段待审变更 |
 | **兜底原则**（v2.6.0） | 没人处理 → 不生成 / 不启用 / 保持旧值，绝不自动接受上游错值 |
 | **验收** | 见 `Location-Management-Admin-验收标准-2026-10-29.md`（通俗版，8 条快检 + 6 个故事） |
-| **交付页面** | P01 Vendor List / P02 OC List（含 `⏳ Not live yet` 签收队列）/ P03 详情 / **P04 Review Center（3 tab）** / P05 全局日志 / P06 同步状态 / P07 仪表盘 |
+| **交付页面** | P01 Vendor List / P02 OC List（含 `Not live yet`）/ **Duplicate Check** / **Data Issues** / Change Log / Sync Status / 详情（5 tab，含 Issues） |
