@@ -4,6 +4,8 @@
 > Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.0.0)
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
 > Detail view (v2.4.0): clicking a location ID opens a **full page** with tabs — Basic Info / Operations / Hours & Services / Linked Records / Change History.
+> **v3.0.0 — 供应商之外，自营 M&MP 小店也走同一套。** M&MP = 自营小店（美国叫法），是门店目录里的第三类来源，数据由门店自己维护，异常找门店负责人；规则与供应商门店完全一致。
+>
 > **v3.0.0 — provider data is the only data.** The OC layer no longer edits anything: it has exactly two verbs, **enable** and **flag an anomaly**. A wrong sweeper or address is flagged back to the provider with a reason (on the vendor record, no separate page). Duplicate checking is its own page and is marked 2:1 in the OC list. Downstream values are merged **per field with LMS first**. M&MP works the same data under the same rules.
 
 ---
@@ -16,7 +18,7 @@ The console is split into **two layers**:
 
 | Layer | Table | Meaning | Who owns it |
 |---|---|---|---|
-| **Vendor Location** | `vendor_location` | Raw provider data (PUDO Inc / LMS), **including sweeper** | Provider — fully read-only for OC |
+| **Vendor Location** | `vendor_location` | Raw provider data (PUDO Inc / LMS), **including sweeper**; plus our own **M&MP self-operated stores** | Provider (PUDO Inc / LMS) or the store itself (M&MP) — fully read-only for OC |
 | **OC Location** | `oc_location` | Downstream-facing store, assembled per field from its vendor records | OC — **enable + flag only**, no editing |
 
 A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a duplicate confirmed as the same store links **2:1** and the OC record is merged field by field (**LMS wins**, PUDO fills the gaps).
@@ -204,9 +206,9 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | 17 | Fail-safe (v2.6.0) | 队列无人处理的结果永远是"不生成 / 不启用 / 保持旧值"，系统绝不替人决定接受上游值 |
 | 18 | Sweeper (v3.0.0) | Sweeper 随同步进来，OC 只读。跨供应商揽收仍允许（值本身来自供应商），但 OC 不能改，只能标记 |
 | 19 | Duplicate (v3.0.0) | 独立 **Duplicate Check** 页；同一家 → 2:1 并在 OC 列表标出；不是同一家 → 1:1。未裁决的重复对阻塞启用 |
-| 20 | Merge priority (v3.0.0) | 同一条 OC 记录逐字段取源：**LMS 有值用 LMS，缺了用 PUDO**。详情页与列表都标出来源 |
+| 20 | Merge priority (v3.0.0) | 同一条 OC 记录逐字段取源：**M&MP（自营）→ LMS → PUDO Inc 依次取，先有值的赢**。详情页与列表都标出来源 |
 | 21 | Drift (v3.0.0) | 签收后供应商改了值：下游直接用新值，台账显示「与基线不同」，运营可**重新签收**或**标记异常**。基线是参照物，不是冻结器 |
-| 22 | M&MP (v3.0.0) | 与运营同权限、同规则、同一份数据，差别只在负责范围；不做第二套系统或二审环节 |
+| 22 | M&MP (v3.0.0) | **M&MP = 自营小店**（美国叫法），是第三类数据来源，与 PUDO Inc / LMS 并列，不是角色或团队。同样的目录、同样的 enable 与签收、同样的异常台账；差别是 M&MP 的数据由门店自己维护，标记异常找**门店负责人（内部）**而不是供应商 |
 
 ---
 

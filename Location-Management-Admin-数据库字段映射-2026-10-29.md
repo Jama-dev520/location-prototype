@@ -258,6 +258,7 @@ oc_location (OC-owned, downstream-facing)
 | `raised_at` | timestamp | when |
 | `closed_at` | timestamp NULL | when it reached FIXED |
 | `source` | enum(OPERATOR, INTAKE, DRIFT) | raised by hand, by the intake check, or from a drift review |
+| `owner_type` | enum(PROVIDER, STORE) | who has to fix it: an external provider (PUDO Inc / LMS) or the **M&MP store owner** internally |
 
 > `oc_location_id` is **not** stored: the link is derived through `vendor_oc_mapping`, so the same issue follows the vendor record even if the mapping later becomes 2:1.
 
@@ -292,14 +293,15 @@ When one OC location is fed by several vendor records (2:1), each field is resol
 
 ```
 for each field f:
-    candidates = linked vendor records with status = active and a non-empty f
-    if any candidate.provider = LMS  -> value = that LMS value
-    else if candidates               -> value = first candidate by provider priority
-    else                             -> value = last known value, flagged as stale
+    candidates = linked source records with status = active and a non-empty f
+    pick by priority: M&MP (self-operated) > LMS > PUDO Inc
+    if the highest priority with a value has one -> take it, else fall through
+    if nothing has a value -> last known value, flagged as stale
 ```
 
 | Situation | Result |
 |---|---|
+| M&MP (self-operated) active with a value, LMS active with a different value | **M&MP value wins** — first-party data outranks a partner's |
 | LMS active with a value, PUDO active with a different value | **LMS value wins** |
 | LMS active but the field is empty, PUDO has a value | PUDO value fills the gap |
 | LMS inactive, PUDO active | PUDO value |

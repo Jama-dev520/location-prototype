@@ -58,6 +58,7 @@ OC's location network is aggregated from two upstream providers:
 
 - **PUDO Inc** — supplies dealer locations (PUDOpoints and Lockers) with dealer numbers, addresses, coordinates, operating hours, supported services (FX/CP/TB), and activation lifecycle dates.
 - **LMS** — supplies package hub locations with location codes, cutoff times, services (returns / platform_dropoff / retail), restrictions, and holiday closures.
+- **M&MP** — our own **self-operated stores** (US industry term). They are not supplied by a third party: the store maintains its own record, and it follows exactly the same rules as partner locations — same directory, same sign-off, same issue ledger. The only difference is ownership of the data: a data issue on an M&MP store is chased with the store owner internally rather than with a provider.
 
 In v1.x the console exposed a single merged catalog where provider locations and OC-managed attributes were mixed on one row. This conflated two different concerns that OC actually needs to manage separately:
 
@@ -147,7 +148,7 @@ Two invariants replace them:
 | F22 | Sync Breaker & Rollback | Stop a bad provider run from spreading | A run is downgraded to dry-run (vendor layer written, nothing propagated) when changed records > 30%, address-type changes > 20, or batch `inactive` > 5. A global **SAFE MODE** switch freezes all propagation. Every run stores a before-image of the OC rows it would touch (7 days), so a run can be rolled back as a batch (`SYNC_ROLLBACK`) and a single field can be reverted to its previous version | P1 | F20 | P04/P06 | New: `POST /api/sync/runs/{id}/rollback` + `PATCH /api/sync/safe-mode` | Rollback is the fastest remedy after an upstream mistake — target MTTR one operation |
 | F23 | *(retired in v3.0.0)* | Field lock release | Removed with the editing model: with no manual edits there is nothing to lock or unlock. `field_lock` and `FIELD_UNLOCKED` are dropped | — | — | — | — | Kept as a row so readers of older material can see it is gone on purpose |
 | F24 | *(retired in v3.0.0)* | Field revert | Removed: reverting a value is an edit, which the OC layer no longer performs. A wrong provider value is flagged, not reverted | — | — | — | — | Same rationale as F23 |
-| F25 | Field Merge | LMS-first downstream merge | When one OC location is fed by several vendor records, each **field** is taken independently: **LMS wins when it has a value**, otherwise the other active provider fills the gap. Every field shows its source in the detail page and the list carries a Source column | P0 | F03/F14 | P02/P03 | Computed view; new: `GET /api/oc-locations/{id}/resolved` | Field-level, not record-level: an empty LMS field never blanks the merged value |
+| F25 | Field Merge | Source-priority downstream merge | When one OC location is fed by several source records, each **field** is taken independently: **M&MP (our own store) wins first, then LMS, then PUDO Inc fills the gap**. Every field shows its source in the detail page and the list carries a Source column | P0 | F03/F14 | P02/P03 | Computed view; new: `GET /api/oc-locations/{id}/resolved` | Field-level, not record-level: an empty field from the winning source never blanks the merged value |
 | F26 | Duplicate Check | Standalone duplicate page | Duplicate pairs get their own page with fuzzy score, per-field diff and both OC links; the decision is **same store (2:1)** — both vendor records feed one OC location, which is marked `2:1` — or **not the same (1:1)**, which gives the second record its own OC location. A pending pair blocks enablement | P0 | F14 | Duplicate Check | Existing `GET /api/duplicates`, `POST /api/duplicates/{id}/resolve` | Split out of the Review Center so that a query page is not mixed with decision queues |
 
 ## 5. User Flows
@@ -545,7 +546,8 @@ Pairs are decided on their own page: **same store → 2:1** (both vendor records
 | **Duplicate Check** (v3.0.0) | Standalone page answering one question — same store (2:1) or not (1:1). Replaces the Duplicates tab |
 | **Data Issues** (v3.0.0) | One ledger: provider issues, baseline drift, failed intake. Replaces the Review Center |
 | **data_issue** (v3.0.0) | A flag on a vendor field with a mandatory reason. Never changes the value; blocks enablement until closed |
-| **LMS-first merge** (v3.0.0) | Per-field rule: LMS value when present, otherwise the other active provider |
+| **Source-priority merge** (v3.0.0) | Per-field rule: M&MP (self-operated) → LMS → PUDO Inc; first source with a value wins |
+| **M&MP** (v3.0.0) | Our own self-operated store (US term). A location source like PUDO Inc and LMS, but first-party: the store maintains its own record and data issues are chased internally |
 | *(see above — field lock is retired in v3.0.0)* |
 | **Revert** *(retired v3.0.0)* | Removed: reverting is an edit. A wrong provider value is flagged, not reverted |
 

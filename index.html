@@ -307,7 +307,6 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
       <div class="header-right">
         <div class="role-switch">
           <button class="role-btn active" id="role-manager" onclick="setRole('manager')">Operations</button>
-          <button class="role-btn" id="role-mmp" onclick="setRole('mmp')">M&amp;MP</button>
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
@@ -319,14 +318,14 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 
       <div class="page active" id="page-p01">
         <h2 class="page-title">Vendor Location List</h2>
-        <p class="page-desc">What the providers actually sent us — <b>every field is read-only</b>, including <b>sweeper</b>, which now arrives with the daily sync. When a value is wrong, we do not correct it here: we <b>flag it with a reason</b>, the flag travels on this record, and the provider fixes the source. The OC layer only decides whether the location goes live.</p>
+        <p class="page-desc">What the providers actually sent us — <b>every field is read-only</b>, including <b>sweeper</b>, which now arrives with the daily sync. <b>M&amp;MP</b> stores are self-operated, so their owner is the store itself rather than a provider. When a value is wrong, we do not correct it here: we <b>flag it with a reason</b>, the flag travels on this record, and the provider fixes the source. The OC layer only decides whether the location goes live.</p>
 
         <div class="card">
           <div class="filter-grid">
             <div><label class="f-label">Location ID</label><input id="v-f-id" placeholder="e.g. LOC-10024" oninput="applyVendorFilters()"></div>
             <div><label class="f-label">OC Location ID</label><input id="v-f-ocid" placeholder="e.g. OC-00001" oninput="applyVendorFilters()"></div>
             <div><label class="f-label">Name</label><input id="v-f-name" placeholder="keyword" oninput="applyVendorFilters()"></div>
-            <div><label class="f-label">Provider</label><select id="v-f-provider" onchange="applyVendorFilters()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
+            <div><label class="f-label">Source</label><select id="v-f-provider" onchange="applyVendorFilters()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option><option>M&MP</option></select></div>
             <div><label class="f-label">Status</label><select id="v-f-status" onchange="applyVendorFilters()"><option value="">All</option><option>active</option><option>inactive</option><option>removed</option></select></div>
             <div><label class="f-label">Type</label><select id="v-f-type" onchange="applyVendorFilters()"><option value="">All</option><option>PUDOpoint</option><option>Locker</option><option>packagehub</option></select></div>
             <div><label class="f-label">Sweeper</label><select id="v-f-sweeper" onchange="applyVendorFilters()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
@@ -356,14 +355,14 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 
       <div class="page" id="page-p02">
         <h2 class="page-title">OC Location List</h2>
-        <p class="page-desc">The record customers see. <b>Two actions only: enable, and flag an anomaly.</b> There is no editing here — a wrong address does not get typed over, it gets flagged back to the provider. Values are <b>merged per field</b>: when an active LMS and an active PUDO location feed the same store, <b>LMS wins each field</b> and PUDO fills the gaps.</p>
+        <p class="page-desc">The record customers see. <b>Two actions only: enable, and flag an anomaly.</b> There is no editing here — a wrong address does not get typed over, it gets flagged back to the provider. Values are <b>merged per field</b>: an <b>M&amp;MP</b> self-operated store is its own source and wins first, then <b>LMS</b>, then PUDO Inc fills whatever is still empty.</p>
 
         <div class="card">
           <div class="filter-grid">
             <div><label class="f-label">OC Location ID</label><input id="o-f-id" placeholder="e.g. OC-00001" oninput="applyOCFilters()"></div>
             <div><label class="f-label">Vendor Location ID</label><input id="o-f-vendorid" placeholder="e.g. LOC-10024" oninput="applyOCFilters()"></div>
             <div><label class="f-label">Name</label><input id="o-f-name" placeholder="keyword" oninput="applyOCFilters()"></div>
-            <div><label class="f-label">Provider</label><select id="o-f-provider" onchange="applyOCFilters()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
+            <div><label class="f-label">Source</label><select id="o-f-provider" onchange="applyOCFilters()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option><option>M&MP</option></select></div>
             <div><label class="f-label">Status</label><select id="o-f-status" onchange="applyOCFilters()"><option value="">All</option><option>active</option><option>inactive</option></select></div>
             <div><label class="f-label">Downstream</label><select id="o-f-live" onchange="applyOCFilters()"><option value="">All</option><option value="no">Not live yet</option><option value="yes">Live</option></select></div>
             <div><label class="f-label">Issues</label><select id="o-f-issues" onchange="applyOCFilters()"><option value="">All</option><option value="any">Has any issue</option><option value="drift">Baseline drift</option><option value="dup">Duplicate 2:1</option><option value="open">Open provider issue</option></select></div>
@@ -459,7 +458,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
   <div class="modal" style="width:520px">
     <div class="modal-header">Report a data issue<span class="close" onclick="closeModal('modal-flag')">✕</span></div>
     <div class="modal-body">
-      <div class="info-line" style="margin:0 0 12px">This does <b>not</b> change the value. It records the problem on the provider record and asks the provider to correct the source.</div>
+      <div class="info-line" style="margin:0 0 12px">This does <b>not</b> change the value. It records the problem on the source record and asks the owner to correct it — a provider for PUDO Inc / LMS, the store itself for an <b>M&amp;MP</b> self-operated store.</div>
       <label class="f-label">Field</label>
       <select id="flag-field" style="width:100%"></select>
       <label class="f-label" style="margin-top:12px">What is wrong?</label>
@@ -529,7 +528,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
         <tr><td>6</td><td>Duplicate Check</td><td>Confirm the pending pair as "same store"</td><td>2:1 mapping · the OC row shows both vendors and switches to LMS values</td></tr>
         <tr><td>7</td><td>Data Issues</td><td>Read the three sections</td><td>Provider issues · baseline drift · intake failures — no review queues</td></tr>
         <tr><td>8</td><td>Data Issues</td><td>Re-sign a drifted location</td><td>Baseline moves to the provider values · downstream pushed</td></tr>
-        <tr><td>9</td><td>Header</td><td>Switch role to M&amp;MP</td><td>Same rules, same actions — different scope</td></tr>
+        <tr><td>9</td><td>OC List</td><td>Filter Source = M&amp;MP</td><td>Self-operated stores follow the same rules: same sign-off, same issue ledger — only the data owner differs</td></tr>
       </tbody>
     </table>
   </div>
@@ -600,7 +599,7 @@ var VERSIONS=[
  {v:'2.7.0',type:'minor',date:'2026-11-02',desc:'Field lock release, field revert, sign-off queue on the OC list.'}
 ];
 var currentUser={name:'Sarah Lin',initials:'SL',role:'manager'};
-var MGR_ROLES=['manager','mmp'];
+var MGR_ROLES=['manager'];
 function isMgr(){return MGR_ROLES.indexOf(currentUser.role)>=0;}
 
 var QR_IDS=['LOC-00176','LOC-00177','LOC-00181','LOC-00183','LOC-00184','LOC-00186'];
@@ -624,6 +623,8 @@ var SYNC_RUN={runId:'RUN-20261103-0230',provider:'LMS',startedAt:'2026-11-03 02:
 var BASELINE={};
 function mergedField(o,f){
   var vs=(o.vendorIds||[]).map(findVendor).filter(function(v){return v&&v.status==='active';});
+  var own=vs.filter(function(v){return v.provider==='M&MP'&&hasVal(v,f);});
+  if(own.length)return {value:valOf(own[0],f),src:'M&MP',vendor:own[0]};
   var lms=vs.filter(function(v){return v.provider==='LMS'&&hasVal(v,f);});
   if(lms.length)return {value:valOf(lms[0],f),src:'LMS',vendor:lms[0]};
   var any=vs.filter(function(v){return hasVal(v,f);});
@@ -713,7 +714,7 @@ function findVendor(id){return VENDORS.find(function(v){return v.id===id;});}
 function findOC(id){return OC_LOCATIONS.find(function(o){return o.ocId===id;});}
 function nowStr(){var d=new Date(),p=function(n){return (n<10?'0':'')+n;};return d.getUTCFullYear()+'-'+p(d.getUTCMonth()+1)+'-'+p(d.getUTCDate())+' '+p(d.getUTCHours())+':'+p(d.getUTCMinutes())+':'+p(d.getUTCSeconds());}
 function statusBadge(st){if(st==='active')return '<span class="badge badge-green">active</span>';if(st==='removed')return '<span class="badge badge-gray">removed</span>';return '<span class="badge badge-red">inactive</span>';}
-function provBadge(p){return '<span class="badge '+(p==='PUDO Inc'?'badge-teal':'badge-blue')+'">'+esc(p)+'</span>';}
+function provBadge(p){return '<span class="badge '+(p==='M&MP'?'badge-green':p==='PUDO Inc'?'badge-teal':'badge-blue')+'">'+esc(p)+'</span>';}
 function val(id){var el=document.getElementById(id);return el?el.value.trim():'';}
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
@@ -741,12 +742,11 @@ function switchPage(pid){
 }
 function setRole(role){
   currentUser.role=role;
-  if(role==='mmp'){currentUser.name='Priya Raman';currentUser.initials='PR';}
-  else if(role==='viewer'){currentUser.name='Tom Weber';currentUser.initials='TW';}
+  if(role==='viewer'){currentUser.name='Tom Weber';currentUser.initials='TW';}
   else {currentUser.name='Sarah Lin';currentUser.initials='SL';}
   document.getElementById('user-initials').textContent=currentUser.initials;
-  document.getElementById('user-name').textContent=currentUser.name+' · '+(role==='viewer'?'Viewer':role==='mmp'?'M&MP':'Location Manager');
-  ['manager','mmp','viewer'].forEach(function(r){document.getElementById('role-'+r).classList.toggle('active',r===role);});
+  document.getElementById('user-name').textContent=currentUser.name+' · '+(role==='viewer'?'Viewer':'Location Manager');
+  ['manager','viewer'].forEach(function(r){document.getElementById('role-'+r).classList.toggle('active',r===role);});
   renderVendor();renderOC();renderDup();renderIssuesPage();renderLog();
   if(document.getElementById('page-pd').classList.contains('active'))renderProfile();
 }
@@ -840,9 +840,9 @@ function renderOC(){
     var name=mergedField(o,'name'), addr=mergedField(o,'addr1'), city=mergedField(o,'city');
     var sweeper=mergedField(o,'sweeper');
     var srcs={};o.vendorIds.forEach(function(id){var v=findVendor(id);if(v)srcs[v.provider]=1;});
-    var srcBadges=Object.keys(srcs).map(function(p){return '<span class="badge '+(p==='LMS'?'badge-blue':'badge-teal')+'">'+esc(p==='PUDO Inc'?'PUDO':p)+'</span>';}).join(' ');
+    var srcBadges=Object.keys(srcs).map(function(p){return '<span class="badge '+(p==='M&MP'?'badge-green':p==='LMS'?'badge-blue':'badge-teal')+'">'+esc(p==='PUDO Inc'?'PUDO':p)+'</span>';}).join(' ');
     var sw=(o.enable&&st!=='active')?'<span class="switch disabled" title="no active vendor location"></span>'
-      :(!isMgr()?'<span class="switch '+(o.enable?'on':'')+' disabled" title="requires operations or M&amp;MP"></span>'
+      :(!isMgr()?'<span class="switch '+(o.enable?'on':'')+' disabled" title="requires the Location Manager role"></span>'
       :'<span class="switch '+(o.enable?'on':'')+'" onclick="toggleEnable(\''+o.ocId+'\')"></span>');
     return '<tr>'
       +'<td><input type="checkbox" class="o-chk" data-ocid="'+esc(o.ocId)+'" onclick="updateOCSelection()"></td>'
@@ -873,7 +873,7 @@ function clearOCSelection(){document.querySelectorAll('.o-chk').forEach(function
 
 /* ============ enable / sign-off ============ */
 function toggleEnable(ocId){
-  if(!isMgr()){showToast('Permission required','Enable requires the Operations or M&amp;MP role.','error');return;}
+  if(!isMgr()){showToast('Permission required','Enable requires the Location Manager role.','error');return;}
   var o=findOC(ocId);
   if(o.enable){
     o.enable=false;o.updated=nowStr();
@@ -988,7 +988,7 @@ function renderDup(){
   }).join(''):'<div class="card"><div style="font-size:13px">No pair matches these filters.</div></div>';
 }
 function resolveDup(pairId,res){
-  if(!isMgr()){showToast('Permission required','Duplicate decisions need Operations or M&amp;MP.','error');return;}
+  if(!isMgr()){showToast('Permission required','Duplicate decisions need the Location Manager role.','error');return;}
   var d=DUPLICATES.filter(function(x){return x.pairId===pairId;})[0];if(!d||d.status!=='pending')return;
   var a=findVendor(d.locA),b=findVendor(d.locB);
   var ocA=OC_LOCATIONS.filter(function(o){return o.vendorIds.indexOf(d.locA)>=0;})[0];
@@ -1020,7 +1020,7 @@ function renderIssuesPage(){
   var drift=[];
   OC_LOCATIONS.forEach(function(o){driftOf(o).forEach(function(d){drift.push({oc:o,field:d.field,old:d.old,new:d.new});});});
   var html='';
-  html+='<div class="card" style="margin-bottom:14px"><div style="display:flex;align-items:center;gap:10px"><b style="font-size:13px">Provider data issues</b><span class="badge badge-orange">'+open.length+'</span><span class="rc-meta" style="margin:0">flagged by us · the provider fixes the source</span></div>'
+  html+='<div class="card" style="margin-bottom:14px"><div style="display:flex;align-items:center;gap:10px"><b style="font-size:13px">Data issues — provider and self-operated</b><span class="badge badge-orange">'+open.length+'</span><span class="rc-meta" style="margin:0">flagged by us · the provider fixes the source</span></div>'
     +(open.length?open.map(function(i){
       var v=findVendor(i.vendorId);
       return '<div class="rc-item"><div class="rc-item-head"><b>'+esc(v.name)+'</b><span class="mono" style="font-size:12px">'+esc(i.vendorId)+'</span><span class="badge badge-gray">'+esc(i.field)+'</span><span class="risk '+(i.status==='reported'?'risk-review':'risk-block')+'">'+esc(i.status==='reported'?'reported to provider':'open')+'</span></div>'
@@ -1056,7 +1056,7 @@ function flagIntake(vid){showToast('Flagged to provider',vid+' · intake failure
 /* ============ flag modal ============ */
 var flagCtx=null;
 function openFlag(vendorId,preset){
-  if(!isMgr()){showToast('Permission required','Flagging needs Operations or M&amp;MP.','error');return;}
+  if(!isMgr()){showToast('Permission required','Flagging needs the Location Manager role.','error');return;}
   var v=findVendor(vendorId);if(!v)return;
   flagCtx={vendorId:vendorId};
   var fields=[['name','Name'],['addr1','Address'],['city','City'],['state','State'],['postal','Postal code'],['latitude','Coordinates'],['sweeper','Sweeper'],['hoursText','Opening hours'],['phone','Phone']];
@@ -1132,7 +1132,7 @@ function issueCount(rec){
 }
 function srcChip(o,f){
   var m=mergedField(o,mapF(f));
-  return '<span class="badge '+(m.src==='LMS'?'badge-blue':'badge-teal')+'" style="font-size:9.5px">'+esc(m.src==='PUDO Inc'?'PUDO':m.src)+'</span>';
+  return '<span class="badge '+(m.src==='M&MP'?'badge-green':m.src==='LMS'?'badge-blue':'badge-teal')+'" style="font-size:9.5px">'+esc(m.src==='PUDO Inc'?'PUDO':m.src)+'</span>';
 }
 function vendorPanels(v){
   if(detailTab==='overview'){
@@ -1171,7 +1171,7 @@ function ocPanels(o){
       return kv(r[0],(m.value?esc(m.value):'—')+(r[1]==='sweeper'?'':' '+srcChip(o,r[1])));
     }).join('')+kv('Coordinates',esc(mergedField(o,'lat').value+', '+mergedField(o,'lng').value)+' '+srcChip(o,'lat'))
       +kv('Type',esc(mergedField(o,'type').value))+'</div>','')
-      +psec('How this record is assembled','<div style="font-size:12.5px;line-height:1.7;color:var(--text-secondary)">Each field is taken from the linked vendor locations independently: <b>LMS wins when it has a value</b>, PUDO fills the rest. Two vendor records (2:1) still produce one customer-facing row.</div>');
+      +psec('How this record is assembled','<div style="font-size:12.5px;line-height:1.7;color:var(--text-secondary)">Each field is taken from the linked source records independently: <b>M&amp;MP</b> (our own store) wins first, then <b>LMS</b>, then PUDO Inc fills the gaps. Two records (2:1) still produce one customer-facing row.</div>');
   }
   if(detailTab==='operations'){
     var dr=driftOf(o),oi=openIssues(o);
@@ -1236,6 +1236,20 @@ function exportCSV(kind){showToast('Export started',kind+' view will download as
 
 /* ============ boot ============ */
 ['ISS-0007','ISS-0008','ISS-0009','ISS-0010'].forEach(function(){}); 
+(function seedMmp(){
+  var mmp=[
+    {id:'LOC-MMP-201',name:'M&MP — Downtown Austin',addr1:'600 Congress Ave',city:'Austin',state:'TX',postal:'78701',status:'active',sweeper:'M&MP',type:'M&MP store',lat:30.2686,lng:-97.7429,phone:'5125550142',timezone:'America/Chicago',hoursText:'Mon - Sat: 09:00am to 07:00pm',hoursOfOp:[{day:'MONDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'TUESDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'WEDNESDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'THURSDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'FRIDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'SATURDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]}],created:'2026-02-11 10:00:00',updated:'2026-10-30 18:20:00'},
+    {id:'LOC-MMP-202',name:'M&MP — Nashville Gulch',addr1:'1000 Broadway',city:'Nashville',state:'TN',postal:'37203',status:'active',sweeper:'M&MP',type:'M&MP store',lat:36.1566,lng:-86.7901,phone:'6155550188',timezone:'America/Chicago',hoursText:'Mon - Sat: 08:00am to 08:00pm',hoursOfOp:[{day:'MONDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'TUESDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'WEDNESDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'THURSDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'FRIDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'SATURDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]}],created:'2026-03-04 09:30:00',updated:'2026-11-01 12:05:00'}
+  ];
+  mmp.forEach(function(v){
+    v.provider='M&MP';v.country='US';v.qrDropoff=false;v.supports=[];
+    VENDORS.push(v);
+    OC_LOCATIONS.push({ocId:'OC-'+String(300+VENDORS.length).padStart(5,'0'),name:v.name,addr1:v.addr1,addr2:'',city:v.city,state:v.state,country:'US',postal:v.postal,
+      provider:'M&MP',type:v.type,sweeper:'M&MP',phone:v.phone,lat:v.lat,lng:v.lng,timezone:v.timezone,
+      hoursText:v.hoursText,hoursOfOp:v.hoursOfOp,enable:false,vendorIds:[v.id],created:v.created,updated:v.updated});
+  });
+  var first=OC_LOCATIONS[OC_LOCATIONS.length-2]; first.enable=true;
+})();
 (function seed(){
   var v80=findVendor('LOC-00180');
   if(v80){v80.hoursText='Mon - Fri: 08:30am to 06:00pm\nSat: 09:00am to 01:00pm';v80.hoursOfOp=[{day:'MONDAY',timeRanges:[{startTime:'08:30',endTime:'18:00'}]},{day:'TUESDAY',timeRanges:[{startTime:'08:30',endTime:'18:00'}]},{day:'WEDNESDAY',timeRanges:[{startTime:'08:30',endTime:'18:00'}]},{day:'THURSDAY',timeRanges:[{startTime:'08:30',endTime:'18:00'}]},{day:'FRIDAY',timeRanges:[{startTime:'08:30',endTime:'18:00'}]},{day:'SATURDAY',timeRanges:[{startTime:'09:00',endTime:'13:00'}]}];}
