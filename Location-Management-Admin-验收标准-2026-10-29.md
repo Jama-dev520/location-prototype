@@ -1,7 +1,7 @@
 # Location Management Admin Console — 功能验收标准（通俗版）
 
-> 版本 **v3.2.1** · 对照原型 https://jama-dev520.github.io/location-prototype/
-> 配套文档：PRD v3.2.1（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
+> 版本 **v3.2.2** · 对照原型 https://jama-dev520.github.io/location-prototype/
+> 配套文档：PRD v3.2.2（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
 > 对外（英文，给外国同事）：https://jama-dev520.github.io/location-prototype/feature-overview.html
 
 **怎么用这份文档**：打开原型，照着「怎么做」点一遍，看是否与「应该看到什么」一致。三条都对就算过。不需要懂技术，用页面上的字就能判断。
@@ -70,6 +70,7 @@
 | V8 | 把 `Source` 切成 **LMS**，看 `Type` | Type 只剩 `packagehub` 且已自动选中；标签旁显示「LMS → packagehub」；结果数与 Type 后面括号里的数字一致 | Type 里还能选 Locker，或选了得到空表 |
 | V9 | `Source` 切回 All | Type 一并清空，列表恢复全部；Reset 也能回到这个状态 | 留下一个悬空的 Type 条件 |
 | V10 | `Source` = **PUDO Inc**，`Type` 选 `Locker` | 只剩柜机（2 条）；Type 下拉里只有 PUDOpoint / Locker 两项 | 出现 packagehub |
+| V11 | `Source` 选 **M&MP** | Type 只有一项且就叫 **`M&MP`**（不是 `M&MP store`）；列表里 Type 列也显示 `M&MP` | 同一个概念出现两个名字 |
 
 ### 2.2 OC Location List（OC 门店列表）
 
@@ -170,6 +171,7 @@ Duplicate Check 里一组 75% 的疑似重复。运营核对地址与邮编，�
 - ❌ 数据库/接口里还留着字段锁、回退这类已下线的概念
 - ❌ 把 M&MP 当成一个角色或团队（它是**自营小店**这一类数据来源）
 - ❌ 选了 Source = LMS 还能在 Type 里选到 Locker / PUDOpoint（不可能的搭配不该出现在下拉里）
+- ❌ 自营门店的类型写成 `M&MP store`（类型值就叫 `M&MP`，与来源同名）
 - ❌ 选了 Source 之后 Type 还给一堆无关选项、选了得到空表
 - ❌ 清空 Source 后 Type 还留着一个旧值，导致列表「看起来有数据其实被过滤掉了」
 - ❌ 记录类型不属于它的来源，列表里却没有任何标记

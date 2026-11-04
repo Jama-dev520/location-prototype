@@ -1,6 +1,6 @@
-# Location Management Admin Console — PRD Change Summary (v3.2.1)
+# Location Management Admin Console — PRD Change Summary (v3.2.2)
 
-> Document version v3.2.1 ｜ Change date 2026-11-04 ｜ Status: Draft — pending review
+> Document version v3.2.2 ｜ Change date 2026-11-04 ｜ Status: Draft — pending review
 > 本轮（v3.0.0）是**模型换向**：OC 层不再改数据，只做两件事——**enable** 和 **标记异常**。所有数据以供应商为唯一来源，错的地方标记回去让供应商改；重复对单独成页；下游按字段合并，LMS 优先；M&MP 用同一套规则管同一份数据。
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
 > **验收标准（通俗版）**: `Location-Management-Admin-验收标准-2026-10-29.md`
@@ -372,7 +372,7 @@ v3.0.0 的「标记异常」只有字段 + 一句话，实际用起来有两个�
 |---|---|---|
 | LMS | 只有 `packagehub` | 自动选中，标签旁提示「· LMS → packagehub」 |
 | PUDO Inc | `PUDOpoint`、`Locker` | 两个都可选，不强制 |
-| M&amp;MP | 只有 `M&amp;MP store` | 自动选中 |
+| M&amp;MP | 只有 `M&MP` | 自动选中 |
 | 空（All） | 四种全部 | 类型清空 |
 
 每个选项后面带**实时条数**（在当前其它筛选条件不变的前提下算出），所以点开下拉就知道「选了会剩多少」。清空 Source 会同时清空 Type，不留一个悬空条件。
@@ -409,6 +409,22 @@ https://jama-dev520.github.io/location-prototype/feature-overview.html
 
 附录「30 秒看懂」还留着 v2 时代的说法：给谁用写着「+sweeper/编辑」、去重写着「未确认不生成 OC」、审计写着「sweeper/编辑/去重都留痕」。已按 v3 重写，并补上三来源、来源决定类型、逐字段合并、签收后漂移四行。
 
+## 二之九、v3.2.2：自营门店的类型值就叫 M&MP
+
+`location_type` 是来源的产物，值本身也该用来源的名字。此前后台把自营门店写成 `M&MP store`，等于给同一个概念造了两个名字：筛选器叫 M&MP、类型叫 M&MP store，取数和对账时很容易以为这是两类东西。
+
+### 38. 一个概念一个名字
+
+| 位置 | 之前 | 现在 |
+|---|---|---|
+| 来源筛选 | `M&MP` | `M&MP`（不变） |
+| 类型取值 / 类型筛选 | `M&MP store` | **`M&MP`** |
+| 来源→类型映射 | `M&MP → M&MP store` | `M&MP → M&MP` |
+| 门店性质（叙述） | self-operated store | 不变（说明它是什么，不作为取值） |
+
+影响面：来源→类型约束表、两个列表的 Type 筛选与 Type 列、演示数据（两家自营门店）、字段映射的枚举、PRD 的约束段与术语。历史记录里既有的 `M&MP store` 若已落库，按同一规则迁移（一次性 UPDATE，不改语义）。
+
+| v3.2.2 | PATCH | 2026-11-04 | **类型值修正**：自营门店 `location_type` 由 `M&MP store` 改为 `M&MP`，与来源同名；来源→类型映射、筛选器、演示数据、文档枚举同步 |
 | v3.2.1 | PATCH | 2026-11-04 | **交付物补齐**：新增英文功能概览（单页 + Markdown，给外部同事）· 需求总览加交付物清单 · 重写「一页速览」并修掉 v2 残留 |
 | v3.2.0 | MINOR | 2026-11-04 | **Source 决定 Type**：两个列表的 Type 筛选由 Source 派生（含实时条数、单选项自动选中）；`type ≠ source` 徽章与筛选；接口拒绝不可能组合；修 PRD 两处过期描述 |
 | v3.1.0 | MINOR | 2026-11-04 | **issue 细化**：字段 → 子字段 → 类型（7 类）→ 严重度（blocking/warning）+ 必填原因；10 条示例数据；台账按类型筛选；只有 blocking 阻塞签收 |

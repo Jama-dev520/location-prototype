@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v3.2.1)</title>
+<title>Location Management Admin Console — Interactive Prototype (v3.2.2)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -287,7 +287,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.2.1</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.2.2</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -311,7 +311,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.2.1</div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.2.2</div>
       </div>
     </div>
 
@@ -356,7 +356,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 
       <div class="page" id="page-p02">
         <h2 class="page-title">OC Location List</h2>
-        <p class="page-desc"><b>Source fixes the type:</b> LMS → packagehub · PUDO Inc → PUDOpoint / Locker · M&amp;MP → self-operated store, so picking a Source narrows the Type filter. The record customers see. <b>Two actions only: enable, and flag an anomaly.</b> There is no editing here — a wrong address does not get typed over, it gets flagged back to the provider. Values are <b>merged per field</b>: an <b>M&amp;MP</b> self-operated store is its own source and wins first, then <b>LMS</b>, then PUDO Inc fills whatever is still empty.</p>
+        <p class="page-desc"><b>Source fixes the type:</b> LMS → packagehub · PUDO Inc → PUDOpoint / Locker · M&amp;MP → <b>M&amp;MP</b>, so picking a Source narrows the Type filter. The record customers see. <b>Two actions only: enable, and flag an anomaly.</b> There is no editing here — a wrong address does not get typed over, it gets flagged back to the provider. Values are <b>merged per field</b>: an <b>M&amp;MP</b> self-operated store is its own source and wins first, then <b>LMS</b>, then PUDO Inc fills whatever is still empty.</p>
 
         <div class="card">
           <div class="filter-grid">
@@ -523,7 +523,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3>Walkthrough — v3.2.1 (source fixes the type)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3>Walkthrough — v3.2.2 (source fixes the type)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -602,8 +602,9 @@ var CHANGELOG=[
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='3.2.1';
+var APP_VERSION='3.2.2';
 var VERSIONS=[
+ {v:'3.2.2',type:'patch',date:'2026-11-04',desc:'<b>Type value corrected.</b> A self-operated store carries the type <b>M&amp;MP</b> itself — not “M&amp;MP store”. The source→type map, the Type filter and the demo records are aligned, so a filter on M&amp;MP returns the self-operated stores without a renamed type.'},
  {v:'3.2.1',type:'patch',date:'2026-11-04',desc:'<b>Deliverables pass.</b> Added a plain-English feature overview for readers outside the team (shareable page + Markdown), a deliverables list in the requirement overview, and corrected the 30-second summary, which still described sweeper editing and the pre-v3 duplicate rule. No behaviour change.'},
  {v:'3.2.0',type:'minor',date:'2026-11-04',desc:'<b>Source fixes the type.</b> LMS only ever means <b>packagehub</b>, PUDO Inc means <b>PUDOpoint</b> or <b>Locker</b>, M&amp;MP means a self-operated store. Both lists now cascade: pick a Source and the Type filter reduces to what that source can actually be, with live counts per option. A record whose type does not belong to its source is flagged in the list and can be isolated with one filter.'},
  {v:'3.1.0',type:'minor',date:'2026-11-04',desc:'<b>Finer issue granularity.</b> A flag is no longer “field + a sentence”: it now carries an <b>issue type</b> (missing / incorrect / inconsistent / out of range / duplicate / stale / format), an optional <b>sub-field</b> (which address line, which weekday), and a <b>severity</b> that decides whether it blocks enablement.'},
@@ -765,8 +766,8 @@ function provBadge(p){return '<span class="badge '+(p==='M&MP'?'badge-green':p==
 /* v3.2.0 — a source can only produce certain types. LMS ships package hubs only;
    PUDO Inc ships points and lockers; M&MP is our own shop. The filter and the list
    both read this map, so the UI can never offer an impossible combination. */
-var SOURCE_TYPES={'PUDO Inc':['PUDOpoint','Locker'],'LMS':['packagehub'],'M&MP':['M&MP store']};
-var ALL_TYPES=['PUDOpoint','Locker','packagehub','M&MP store'];
+var SOURCE_TYPES={'PUDO Inc':['PUDOpoint','Locker'],'LMS':['packagehub'],'M&MP':['M&MP']};
+var ALL_TYPES=['PUDOpoint','Locker','packagehub','M&MP'];
 function typesForSource(p){return (p&&SOURCE_TYPES[p])?SOURCE_TYPES[p]:ALL_TYPES;}
 function typeMatches(v){
   var allowed=SOURCE_TYPES[v.provider];
@@ -1398,8 +1399,8 @@ function exportCSV(kind){showToast('Export started',kind+' view will download as
 ['ISS-0007','ISS-0008','ISS-0009','ISS-0010'].forEach(function(){}); 
 (function seedMmp(){
   var mmp=[
-    {id:'LOC-MMP-201',name:'M&MP — Downtown Austin',addr1:'600 Congress Ave',city:'Austin',state:'TX',postal:'78701',status:'active',sweeper:'M&MP',type:'M&MP store',lat:30.2686,lng:-97.7429,phone:'5125550142',timezone:'America/Chicago',hoursText:'Mon - Sat: 09:00am to 07:00pm',hoursOfOp:[{day:'MONDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'TUESDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'WEDNESDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'THURSDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'FRIDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'SATURDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]}],created:'2026-02-11 10:00:00',updated:'2026-10-30 18:20:00'},
-    {id:'LOC-MMP-202',name:'M&MP — Nashville Gulch',addr1:'1000 Broadway',city:'Nashville',state:'TN',postal:'37203',status:'active',sweeper:'M&MP',type:'M&MP store',lat:36.1566,lng:-86.7901,phone:'6155550188',timezone:'America/Chicago',hoursText:'Mon - Sat: 08:00am to 08:00pm',hoursOfOp:[{day:'MONDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'TUESDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'WEDNESDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'THURSDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'FRIDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'SATURDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]}],created:'2026-03-04 09:30:00',updated:'2026-11-01 12:05:00'}
+    {id:'LOC-MMP-201',name:'M&MP — Downtown Austin',addr1:'600 Congress Ave',city:'Austin',state:'TX',postal:'78701',status:'active',sweeper:'M&MP',type:'M&MP',lat:30.2686,lng:-97.7429,phone:'5125550142',timezone:'America/Chicago',hoursText:'Mon - Sat: 09:00am to 07:00pm',hoursOfOp:[{day:'MONDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'TUESDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'WEDNESDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'THURSDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'FRIDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'SATURDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]}],created:'2026-02-11 10:00:00',updated:'2026-10-30 18:20:00'},
+    {id:'LOC-MMP-202',name:'M&MP — Nashville Gulch',addr1:'1000 Broadway',city:'Nashville',state:'TN',postal:'37203',status:'active',sweeper:'M&MP',type:'M&MP',lat:36.1566,lng:-86.7901,phone:'6155550188',timezone:'America/Chicago',hoursText:'Mon - Sat: 08:00am to 08:00pm',hoursOfOp:[{day:'MONDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'TUESDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'WEDNESDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'THURSDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'FRIDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'SATURDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]}],created:'2026-03-04 09:30:00',updated:'2026-11-01 12:05:00'}
   ];
   mmp.forEach(function(v){
     v.provider='M&MP';v.country='US';v.qrDropoff=false;v.supports=[];

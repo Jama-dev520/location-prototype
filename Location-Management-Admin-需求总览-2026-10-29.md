@@ -1,7 +1,7 @@
-# Location Management Admin Console — Requirement Overview (v3.2.1)
+# Location Management Admin Console — Requirement Overview (v3.2.2)
 
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
-> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.2.1)
+> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.2.2)
 > 给外部同事看的英文功能概览：https://jama-dev520.github.io/location-prototype/feature-overview.html
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
 > Detail view (v2.4.0): clicking a location ID opens a **full page** with tabs — Basic Info / Operations / Hours & Services / Linked Records / Change History.
@@ -33,7 +33,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | `provider_ref` | varchar | sync | yes | dealerNo (PUDO) / loc_id (LMS) |
 | `store_code` | varchar | sync | yes | store code |
 | `name` | varchar | sync | yes | store name |
-| `location_type` | enum | sync | yes | provider-exclusive：PUDO Inc → PUDOpoint/Locker；LMS → packagehub；M&MP → M&MP store。**筛选器里由 Source 决定可选项**（v3.2.0） |
+| `location_type` | enum | sync | yes | provider-exclusive：PUDO Inc → PUDOpoint/Locker；LMS → packagehub；M&MP → `M&MP`。**筛选器里由 Source 决定可选项**（v3.2.0） |
 | `sweeper` | enum(PUDO/LMS) | OC (editable) | no | **Sweeper** — who physically picks up packages (renamed from "Pickup"); default = source_provider; cross-provider allowed |
 | `address_line1`/`address_line2` | varchar | sync | yes | address |
 | `city`/`state`/`postal_code`/`country` | varchar | sync | yes | city/state/postal/country |
@@ -296,7 +296,7 @@ sweeper 由供应商随门店一起提供，和其它字段一样只读。发现
 | **可见性** | `status = active` **且** `is_enable = true`，下游才可见 |
 | **状态联动** | 供应商 inactive → 关联 OC 自动 disable + 阻断下游；强制启用报错 |
 | **取值规则** | 逐字段合并：**M&MP → LMS → PUDO Inc**，先有值者胜，缺的由下一个补 |
-| **来源决定类型**（v3.2.0） | LMS → packagehub · PUDO Inc → PUDOpoint / Locker · M&MP → 自营；筛选器按此级联 |
+| **来源决定类型**（v3.2.0） | LMS → packagehub · PUDO Inc → PUDOpoint / Locker · M&MP → `M&MP`；筛选器按此级联 |
 | **去重** | 独立 Duplicate Check 页；≥75% 疑似；**未裁决阻塞启用**；确认 2:1 后两条记录喂一条 OC 记录 |
 | **异常** | 四层粒度（字段 → 子字段 → 7 类 → 严重度）；`blocking` 阻塞签收、`warning` 不阻塞；open → reported → fixed |
 | **签收即基线** | 5 项检查 + 核对客户可见值 + 必须勾选；记基线，写 `ENABLE_SIGNED_OFF` |

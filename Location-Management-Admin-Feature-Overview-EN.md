@@ -1,7 +1,7 @@
 # Location Management Admin Console — Feature Overview
 
 **Audience:** operations, partner-facing and M&MP teams who work with location data
-**Document version:** 1.1 (covers console v3.2.1) · **Status:** clickable prototype (not in production)
+**Document version:** 1.2 (covers console v3.2.2) · **Status:** clickable prototype (not in production)
 **Prototype:** https://jama-dev520.github.io/location-prototype/
 **One-page version (shareable):** https://jama-dev520.github.io/location-prototype/feature-overview.html
 
@@ -63,7 +63,7 @@ A source can only ever produce its own location type, so the UI never offers an 
 |---|---|---|
 | LMS | `packagehub` | one option, selected automatically |
 | PUDO Inc | `PUDOpoint`, `Locker` | both offered, with live counts |
-| M&MP | `M&MP store` | one option, selected automatically |
+| M&MP | `M&MP` | one option, selected automatically |
 
 Choosing a Source rebuilds the Type filter from this table; each option shows how many rows it would return; clearing the
 source clears the type. If a record ever arrives with a type that does not belong to its source, the Type column marks it
@@ -190,6 +190,7 @@ M&MP is not a role — self-operated stores are handled by the same people under
 
 | Version | Change |
 |---|---|
+| v3.2.2 | The self-operated type value is `M&MP` (it used to read “M&MP store”) |
 | v3.2.1 | Documentation only — sharper summary of what the console does and does not do |
 | **v3.2.0** | Source fixes the type; both lists' Type filter is derived from Source with live counts |
 | v3.1.0 | Data issues split into field → sub-field → type → severity |
