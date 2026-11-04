@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Location Management Admin Console — Feature Overview (v3.2.0)</title>
+<style>
+  :root{
+    --text:#0f172a; --muted:#64748b; --faint:#94a3b8;
+    --line:#e2e8f0; --bg:#f6f8fb; --card:#ffffff;
+    --blue:#2563eb; --blue-soft:#eff6ff; --teal:#0d9488; --teal-soft:#ecfdf5;
+    --green:#059669; --green-soft:#ecfdf5; --amber:#b45309; --amber-soft:#fffbeb;
+    --red:#b91c1c; --red-soft:#fef2f2;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  .page{max-width:980px; margin:0 auto; padding:44px 40px 64px; background:var(--card); box-shadow:0 1px 3px rgba(15,23,42,.06)}
+  .eyebrow{font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--blue); font-weight:700}
+  h1{font-size:31px; line-height:1.2; margin:10px 0 10px; letter-spacing:-.02em}
+  .sub{font-size:15px; color:var(--muted); margin:0 0 18px; max-width:74ch}
+  .meta{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px}
+  .pill{font-size:11.5px; padding:4px 10px; border-radius:999px; background:#f1f5f9; color:#334155; border:1px solid var(--line)}
+  .pill.blue{background:var(--blue-soft); color:#1d4ed8; border-color:#dbeafe}
+  .pill.teal{background:var(--teal-soft); color:#0f766e; border-color:#ccfbf1}
+  .links{font-size:12.5px; color:var(--muted); margin:10px 0 0}
+  .links a{color:var(--blue); text-decoration:none}
+  .links a:hover{text-decoration:underline}
+
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:26px 0 6px}
+  .stat{border:1px solid var(--line); border-radius:10px; padding:12px 14px; background:#fcfdff}
+  .stat b{display:block; font-size:22px; line-height:1.1; letter-spacing:-.02em}
+  .stat span{display:block; font-size:11.5px; color:var(--muted); margin-top:4px}
+
+  h2{font-size:19px; margin:38px 0 12px; padding-top:18px; border-top:1px solid var(--line); letter-spacing:-.01em}
+  h2 .n{color:var(--faint); font-weight:600; margin-right:8px; font-variant-numeric:tabular-nums}
+  h3{font-size:14px; margin:20px 0 8px; color:#1e293b}
+  p{margin:0 0 12px}
+  ul{margin:0 0 12px; padding-left:20px}
+  li{margin:4px 0}
+  code{font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; background:#f1f5f9; padding:1px 5px; border-radius:4px; color:#0f172a}
+
+  table{width:100%; border-collapse:collapse; margin:8px 0 16px; font-size:13.5px}
+  th,td{text-align:left; vertical-align:top; padding:8px 10px; border-bottom:1px solid var(--line)}
+  th{font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:700; background:#fafcff}
+  td:first-child{white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+
+  .flow{display:flex; align-items:stretch; gap:8px; margin:6px 0 10px; flex-wrap:nowrap}
+  .node{flex:1; border:1px solid var(--line); border-radius:10px; padding:10px 12px; background:#fcfdff; min-width:0}
+  .node.hl{background:var(--blue-soft); border-color:#dbeafe}
+  .node h4{margin:0 0 4px; font-size:12.5px}
+  .node p{margin:0; font-size:11.5px; color:var(--muted); line-height:1.45}
+  .arrow{display:flex; align-items:center; color:var(--faint); font-size:16px}
+  .srcs{display:flex; flex-direction:column; gap:4px}
+  .src{font-size:10.5px; padding:2px 7px; border-radius:999px; border:1px solid var(--line); white-space:nowrap}
+  .src.a{background:#f0fdfa; color:#0f766e; border-color:#ccfbf1}
+  .src.b{background:#eff6ff; color:#1d4ed8; border-color:#dbeafe}
+  .src.c{background:#ecfdf5; color:#047857; border-color:#a7f3d0}
+
+  .loop{margin:0 0 4px; font-size:12px; color:var(--muted); border-left:2px dashed #cbd5e1; padding:6px 0 6px 12px}
+
+  .callout{border-left:3px solid var(--blue); background:var(--blue-soft); padding:10px 14px; border-radius:0 8px 8px 0; margin:12px 0 16px; font-size:13.5px}
+  .callout.warn{border-color:#f59e0b; background:var(--amber-soft)}
+  .callout b{font-weight:700}
+
+  .cols{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+  .box{border:1px solid var(--line); border-radius:10px; padding:12px 14px}
+  .box h4{margin:0 0 6px; font-size:12.5px; letter-spacing:.02em; text-transform:uppercase; color:var(--muted)}
+  .box ul{margin:0; padding-left:18px; font-size:13px}
+
+  .sev{font-size:10.5px; font-weight:700; padding:2px 6px; border-radius:4px; white-space:nowrap}
+  .sev.block{background:var(--red-soft); color:var(--red); border:1px solid #fecaca}
+  .sev.warn{background:var(--amber-soft); color:var(--amber); border:1px solid #fde68a}
+
+  footer{margin-top:38px; padding-top:16px; border-top:1px solid var(--line); font-size:12px; color:var(--faint)}
+  footer a{color:var(--blue); text-decoration:none}
+
+  @media (max-width:820px){
+    .page{padding:26px 18px 40px}
+    .stats{grid-template-columns:1fr 1fr}
+    .flow{flex-wrap:wrap}
+    .arrow{display:none}
+    .cols{grid-template-columns:1fr}
+    h1{font-size:25px}
+  }
+  @media print{
+    body{background:#fff}
+    .page{box-shadow:none; padding:0; max-width:none}
+    h2{break-after:avoid}
+    table, .box, .flow{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="eyebrow">Internal console · feature overview</div>
+  <h1>Location Management Admin Console</h1>
+  <p class="sub">One console for every location our customers can see — partner pickup points, lockers, package hubs and our
+  own self-operated stores. It answers four daily questions in seconds, and it never edits the data it shows.</p>
+
+  <div class="meta">
+    <span class="pill blue">v3.2.0</span>
+    <span class="pill">Clickable prototype — not in production</span>
+    <span class="pill teal">Two layers · three sources</span>
+    <span class="pill">20 vendor records · 16 OC locations in demo data</span>
+  </div>
+  <p class="links">
+    Prototype: <a href="https://jama-dev520.github.io/location-prototype/">jama-dev520.github.io/location-prototype</a>
+    &nbsp;·&nbsp;
+    Full written overview: <a href="https://jama-dev520.github.io/location-prototype/Location-Management-Admin-Feature-Overview-EN.md">Feature overview (Markdown)</a>
+  </p>
+
+  <div class="stats">
+    <div class="stat"><b>2</b><span>layers — a read-only vendor mirror, and the record customers see</span></div>
+    <div class="stat"><b>3</b><span>sources — PUDO Inc, LMS, M&amp;MP self-operated stores</span></div>
+    <div class="stat"><b>2</b><span>verbs on the OC layer — enable, and flag an issue</span></div>
+    <div class="stat"><b>5</b><span>checks before a location can go live</span></div>
+  </div>
+
+  <h2><span class="n">1</span>Four jobs, and why the console looks like this</h2>
+  <table>
+    <thead><tr><th>#</th><th>What someone needs to do</th><th>What “done” looks like</th></tr></thead>
+    <tbody>
+      <tr><td><b>J1</b></td><td>Find out which locations are live</td><td><code>Status = active</code> + <code>Downstream = Live</code>, count on screen, export exactly that set</td></tr>
+      <tr><td><b>J2</b></td><td>Know who actually collects parcels (sweeper)</td><td>On the row and in the detail page, filterable — no spreadsheet</td></tr>
+      <tr><td><b>J3</b></td><td>Get a wrong address fixed</td><td>Reported to the data owner with a precise reason; fixed at the source, arrives with the next sync</td></tr>
+      <tr><td><b>J4</b></td><td>See what changed, and when</td><td>Any field: who, when (to the second), old → new</td></tr>
+    </tbody>
+  </table>
+  <p>These four jobs forced the architecture: J2 is a fact about the vendor record, J3 is a judgement about the OC record,
+  J1 is the intersection of the two, and J4 has to cover all three. Hence two lists, not one.</p>
+
+  <h2><span class="n">2</span>The model</h2>
+
+  <div class="flow">
+    <div class="node">
+      <h4>Sources</h4>
+      <div class="srcs">
+        <span class="src b">LMS · packagehub</span>
+        <span class="src a">PUDO Inc · point / locker</span>
+        <span class="src c">M&amp;MP · self-operated</span>
+      </div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="node">
+      <h4>Vendor layer</h4>
+      <p>Read-only mirror of what was sent. Every field, including sweeper. Nothing here is editable.</p>
+    </div>
+    <div class="arrow">→</div>
+    <div class="node">
+      <h4>Two gates</h4>
+      <p>Intake check (fails → no OC record). Duplicate check ≥75% → hold for a decision.</p>
+    </div>
+    <div class="arrow">→</div>
+    <div class="node hl">
+      <h4>OC layer</h4>
+      <p>One customer-facing record per store. Only two writes: <b>enable</b> and <b>flag</b>.</p>
+    </div>
+    <div class="arrow">→</div>
+    <div class="node">
+      <h4>Downstream</h4>
+      <p>Visible iff the vendor record is active <b>and</b> the operator enabled it.</p>
+    </div>
+  </div>
+  <p class="loop">Quality loop: a wrong value is flagged on the vendor record → the owner fixes the source → the next sync brings
+  the correct value → the change shows as drift against the signed-off baseline.</p>
+
+  <h3>Three sources, one directory</h3>
+  <table>
+    <thead><tr><th>Source</th><th>What it is</th><th>Who maintains it</th><th>Who fixes a problem</th></tr></thead>
+    <tbody>
+      <tr><td><b>PUDO Inc</b></td><td>Partner dealer locations — <code>PUDOpoint</code>, <code>Locker</code></td><td>PUDO Inc sync</td><td>PUDO Inc</td></tr>
+      <tr><td><b>LMS</b></td><td>Partner package hubs — <code>packagehub</code></td><td>LMS sync</td><td>LMS</td></tr>
+      <tr><td><b>M&amp;MP</b></td><td>Our own <b>self-operated stores</b> (first-party)</td><td>the store itself</td><td>the store owner, internally</td></tr>
+    </tbody>
+  </table>
+  <p>M&amp;MP is a <b>data source</b>, not a team or a role. Same directory, same sign-off, same issue ledger — only ownership
+  differs, and first-party data outranks a partner’s when values disagree.</p>
+
+  <h3>Source fixes the type</h3>
+  <table>
+    <thead><tr><th>Source</th><th>Allowed type</th><th>In the filter</th></tr></thead>
+    <tbody>
+      <tr><td>LMS</td><td><code>packagehub</code></td><td>one option, selected automatically</td></tr>
+      <tr><td>PUDO Inc</td><td><code>PUDOpoint</code>, <code>Locker</code></td><td>both offered, each with a live count</td></tr>
+      <tr><td>M&amp;MP</td><td><code>M&amp;MP store</code></td><td>one option, selected automatically</td></tr>
+    </tbody>
+  </table>
+  <p>Choosing a Source rebuilds the Type filter from this table, so an impossible combination cannot be expressed. A record
+  whose type does not belong to its source is marked <code>type ≠ source</code> and isolatable with one filter — a signal
+  about the feed, not something we correct by hand.</p>
+
+  <h3>One store, several vendor records</h3>
+  <p>When a duplicate pair is confirmed as the same physical store, two vendor records feed one OC location (mapping
+  <code>2:1</code>). Each <b>field</b> is resolved independently:</p>
+  <div class="callout"><b>M&amp;MP (self-operated) → LMS → PUDO Inc.</b> The first source with a value wins; the next fills the
+  gaps. Every field in the detail page shows its source, so “why does this say X?” is answerable without asking anyone.</div>
+
+  <h3>One visibility rule</h3>
+  <div class="callout">A location is visible to customers <b>iff</b> its vendor record is <code>active</code> <b>and</b> the
+  operator has enabled it. <code>status</code> comes from the source; <code>is_enable</code> is our decision.</div>
+
+  <h2><span class="n">3</span>What an operator can do — two verbs</h2>
+
+  <div class="cols">
+    <div class="box">
+      <h4>Enable — a sign-off, not a switch</h4>
+      <ul>
+        <li>An <b>active</b> vendor location feeds this store</li>
+        <li>Opening hours are present</li>
+        <li>Intake checks passed</li>
+        <li>No duplicate pair waiting</li>
+        <li>No open <b>blocking</b> data issue</li>
+      </ul>
+      <p style="font-size:12.5px;color:var(--muted);margin:8px 0 0">All five pass → the dialog shows the customer-facing values
+      with their source, plus an acknowledgement. Confirming captures a <b>signed-off baseline</b>. Turning a location
+      <b>off</b> is one click — going offline is always safe.</p>
+    </div>
+    <div class="box">
+      <h4>Flag a data issue — the replacement for editing</h4>
+      <table style="margin:4px 0 0;font-size:12.5px">
+        <tr><td><b>Field</b></td><td><code>opening_hours</code></td></tr>
+        <tr><td><b>Sub-field</b></td><td><code>SATURDAY</code>, <code>address_line2</code></td></tr>
+        <tr><td><b>Type</b></td><td><code>MISSING</code> <code>INCORRECT</code> <code>INCONSISTENT</code> <code>OUT_OF_RANGE</code> <code>DUPLICATE</code> <code>STALE</code> <code>FORMAT</code></td></tr>
+        <tr><td><b>Severity</b></td><td><span class="sev block">blocking</span> stops a sign-off · <span class="sev warn">warning</span> does not</td></tr>
+        <tr><td><b>Reason</b></td><td>mandatory, free text</td></tr>
+      </table>
+      <p style="font-size:12.5px;color:var(--muted);margin:8px 0 0">Lifecycle: <code>open → reported → fixed</code>. The fix arrives
+      with the next provider sync.</p>
+    </div>
+  </div>
+
+  <div class="callout warn"><b>There is no edit button, and that is the design.</b> Field locks, unlock reasons, per-field revert and
+  accept/reject of provider changes all existed to make manual edits safe. Remove the edit, and they have nothing left to
+  protect — while every value downstream can still be traced to one source record.</div>
+
+  <h2><span class="n">4</span>After go-live</h2>
+  <p>Provider values keep flowing — the data belongs to the provider, so nothing is frozen. What the console keeps is the
+  signed-off <b>baseline</b>, and it compares the two. A field that moved since sign-off shows as <b>drift</b> on the list row,
+  in the detail page and in Data Issues. Two moves, neither of which edits a value:</p>
+  <ul>
+    <li><b>Re-sign</b> — accept the new values as the new baseline (<code>RE_SIGNED_OFF</code>).</li>
+    <li><b>Flag</b> — the new values are wrong; raise a data issue and let the owner fix the source.</li>
+  </ul>
+
+  <h2><span class="n">5</span>Finding things</h2>
+  <table>
+    <thead><tr><th>Need</th><th>How</th></tr></thead>
+    <tbody>
+      <tr><td>Which locations are live</td><td><code>Downstream = Live</code>; the <b>Not live yet (N)</b> preset is the onboarding queue and matches the menu badge</td></tr>
+      <tr><td>Which provider sent this</td><td><code>Source</code> filter; <code>2:1</code> rows show both</td></tr>
+      <tr><td>Only hubs, or only lockers</td><td><code>Source</code> → <code>Type</code>, with live counts</td></tr>
+      <tr><td>Everything wrong right now</td><td><b>Data Issues</b> — one ledger: open issues, baseline drift, failed intake</td></tr>
+      <tr><td>Records that look like the same store</td><td><b>Duplicate Check</b> — fuzzy score, per-field diff, <code>Same store (2:1)</code> / <code>Not same (1:1)</code></td></tr>
+      <tr><td>What changed last week</td><td><b>Change Log</b> — every action, every field, old → new</td></tr>
+    </tbody>
+  </table>
+  <p>All timestamps are shown and exported to the second (<code>YYYY-MM-DD HH:MM:SS</code>); the header carries a live clock so the
+  audit trail and the screen always agree.</p>
+
+  <h2><span class="n">6</span>Roles</h2>
+  <table>
+    <thead><tr><th>Role</th><th>Can do</th></tr></thead>
+    <tbody>
+      <tr><td><b>Location Manager</b></td><td>enable / disable, sign off, flag issues, decide duplicates, re-sign, export</td></tr>
+      <tr><td><b>Viewer</b></td><td>read and export only; every action control is disabled</td></tr>
+    </tbody>
+  </table>
+  <p>M&amp;MP is not a role — self-operated stores are handled by the same people under the same permissions.</p>
+
+  <h2><span class="n">7</span>Scope of this build</h2>
+  <div class="cols">
+    <div class="box">
+      <h4>In the clickable prototype</h4>
+      <ul>
+        <li>Vendor Location List · OC Location List (with the sign-off queue)</li>
+        <li>Location detail — 5 tabs: Basic Info / Operations / Hours &amp; Services / Issues / Change History</li>
+        <li>Duplicate Check · Data Issues · Change Log · Sync Status</li>
+        <li>Demo data includes deliberately broken records: missing address, <code>(0,0)</code> coordinates, a 297 km coordinate jump, an undecided duplicate pair</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h4>Not built yet</h4>
+      <ul>
+        <li>Overview dashboard — specified, out of scope for this round</li>
+        <li>Batch upload (Excel) — in the PRD, not in the prototype</li>
+        <li>The demo video was recorded at v2.7.0 and still shows store editing; superseded by v3.0.0 — do not use it for acceptance</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2><span class="n">8</span>Questions this usually raises</h2>
+  <h3>Why not let operations fix the address?</h3>
+  <p>Because then two systems hold different addresses and neither is authoritative. A flag with a reason reaches the party who
+  can actually fix it, and the fix lands everywhere at once.</p>
+  <h3>What if a provider is slow?</h3>
+  <p>The issue stays open and keeps blocking new sign-offs if it is <code>blocking</code>; locations already live keep serving
+  their current values. Nothing changes silently.</p>
+  <h3>What about a store that genuinely moved?</h3>
+  <p>The provider updates the record; the next sync brings the new address, it shows as drift against the baseline, and the
+  operator re-signs. Two clicks, full trace.</p>
+  <h3>Can we see who did what?</h3>
+  <p>Yes — every action writes an audit row with actor, timestamp to the second, field, old value and new value.</p>
+
+  <footer>
+    Location Management Admin Console · v3.2.0 · clickable prototype ·
+    <a href="https://jama-dev520.github.io/location-prototype/">open the prototype</a> ·
+    <a href="https://jama-dev520.github.io/location-prototype/Location-Management-Admin-Feature-Overview-EN.md">full overview</a>
+  </footer>
+</div>
+</body>
+</html>
