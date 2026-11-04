@@ -1,7 +1,7 @@
 # Location Management Admin Console — 功能验收标准（通俗版）
 
-> 版本 **v3.2.2** · 对照原型 https://jama-dev520.github.io/location-prototype/
-> 配套文档：PRD v3.2.2（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
+> 版本 **v3.3.0** · 对照原型 https://jama-dev520.github.io/location-prototype/
+> 配套文档：PRD v3.3.0（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
 > 对外（英文，给外国同事）：https://jama-dev520.github.io/location-prototype/feature-overview.html
 
 **怎么用这份文档**：打开原型，照着「怎么做」点一遍，看是否与「应该看到什么」一致。三条都对就算过。不需要懂技术，用页面上的字就能判断。
@@ -50,7 +50,9 @@
 | 12 | 在任一列表把 `Source` 选成 **LMS**，再点开 `Type` | Type 里只剩 `packagehub` 一项且已自动选中，标签旁写着「LMS → packagehub」；把 Source 清回 All，Type 也跟着清空 |
 | 13 | 把 `Source` 选成 **PUDO Inc** 后看 Type | 只有 `PUDOpoint` 和 `Locker` 两项，各带条数；选 `Locker` 后列表只剩柜机 |
 
-这 13 条全对，模型就是通的。剩下的条目用来确认细节和边界。
+| 14 | 打开 **Data Issues**，点顶部 `Apply next provider sync` | 2 条自动关闭（sweeper 缺失、邮编矛盾）、1 条「变了但仍不合格」保持 open、1 条「需要人工复核」保持 open、1 条「未变化」保持 open；页面下方出现「Closed automatically by a sync」并列出旧值 → 新值 | 全关 / 全不关，或只显示一个总数 |
+
+这 14 条全对，模型就是通的。剩下的条目用来确认细节和边界。
 
 ---
 
@@ -127,6 +129,9 @@
 | I1 | 打开页面 | 三块：Provider data issues / Changed after sign-off / Failed intake | 又出现"Review Center"或按 tab 分的决策队列 |
 | I2 | 看一条 issue 的卡片 | 显示 `字段 · 子字段` + 类型徽章 + `blocks sign-off` / `warning only` + 状态；按钮 Mark reported / Owner fixed it | 只有字段名和一个状态，看不出是什么问题 |
 | I7 | 用顶部 `Filter by issue type` 选 MISSING | 只剩缺失类；选 All 恢复全部 | 过滤只改标题、列表不变 |
+| I8 | 点 `Apply next provider sync` 后看 ISS-0009 / ISS-0011 | 两条变成 fixed，出现在「Closed automatically by a sync」里，写明 `closed_by = AUTO_SYNC`、run id、旧值 → 新值 | 直接消失、没有去向 |
+| I9 | 看 ISS-0013（电话格式） | 仍 open，备注「value changed to "555-0142" but is still invalid」——供应商改了但没改对 | 被当成修好而关闭 |
+| I10 | 看 ISS-0015（名称 INCORRECT） | 仍 open，备注「需要人工复核」——新值只是证据，不是结论 | 名称类问题被自动关闭 |
 | I3 | 点 Provider fixed it | 状态变 fixed，门店的 `N data` 减少 | 值被本地改掉 |
 | I4 | 看 Changed after sign-off | 列出字段、旧值 → 新值，两个动作：重新签收 / 标记异常 | 只有"接受/拒绝" |
 | I5 | 点重新签收 | 基线刷新、写 `RE_SIGNED_OFF`、漂移消失 | 只改界面数字，没有审计 |
@@ -177,6 +182,11 @@ Duplicate Check 里一组 75% 的疑似重复。运营核对地址与邮编，�
 - ❌ 记录类型不属于它的来源，列表里却没有任何标记
 - ❌ 页面上的条数与筛选器里括号中的数字、或菜单徽章不一致
 - ❌ 自营 M&MP 门店的数据被排在 LMS / PUDO 之后
+- ❌ 值没变却把 issue 关掉（什么都没发生，不该有结果）
+- ❌ 供应商改了但仍不合格（如电话还是 7 位）却被关闭
+- ❌ `INCORRECT` / `STALE` / `DUPLICATE` 被自动关闭（这些要人判断，同步只能提供证据）
+- ❌ 自动关闭后 issue 从审计里消失，查不到旧值和验证值
+- ❌ 一个 blocking issue 关了，门店签收还显示被它卡着
 
 ---
 

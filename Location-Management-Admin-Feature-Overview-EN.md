@@ -1,7 +1,7 @@
 # Location Management Admin Console — Feature Overview
 
 **Audience:** operations, partner-facing and M&MP teams who work with location data
-**Document version:** 1.2 (covers console v3.2.2) · **Status:** clickable prototype (not in production)
+**Document version:** 1.3 (covers console v3.3.0) · **Status:** clickable prototype (not in production)
 **Prototype:** https://jama-dev520.github.io/location-prototype/
 **One-page version (shareable):** https://jama-dev520.github.io/location-prototype/feature-overview.html
 
@@ -122,6 +122,12 @@ The console never writes a location field. A wrong value is reported to whoever 
 A free-text reason is mandatory. The flag lives on the source record and moves `open → reported → fixed`; the fix arrives
 with the next provider sync. Owners are different: a provider for PUDO Inc / LMS, the store owner for M&MP.
 
+**And the issue closes itself when the fix lands.** The next run compares the delivered value with the value that was flagged:
+if it changed *and* is valid, the issue closes (`closed_by = AUTO_SYNC`, run id and verified value kept in the audit trail);
+if it changed but is still invalid, the issue stays open and says so; if nothing changed, nothing happens. Only
+machine-checkable types close this way — `MISSING`, `FORMAT`, `INCONSISTENT`, `OUT_OF_RANGE`. `INCORRECT`, `STALE` and
+`DUPLICATE` always come back to a human, because the feed can deliver a new value but cannot prove it is the right one.
+
 ### 3.3 Why there is no edit button
 
 Every safety mechanism this console used to need — field locks, unlock reasons, per-field revert, accept/reject of
@@ -190,6 +196,7 @@ M&MP is not a role — self-operated stores are handled by the same people under
 
 | Version | Change |
 |---|---|
+| v3.3.0 | Issues close themselves when a provider run delivers a valid value |
 | v3.2.2 | The self-operated type value is `M&MP` (it used to read “M&MP store”) |
 | v3.2.1 | Documentation only — sharper summary of what the console does and does not do |
 | **v3.2.0** | Source fixes the type; both lists' Type filter is derived from Source with live counts |

@@ -1,6 +1,6 @@
-# Location Management Admin Console — PRD Change Summary (v3.2.2)
+# Location Management Admin Console — PRD Change Summary (v3.3.0)
 
-> Document version v3.2.2 ｜ Change date 2026-11-04 ｜ Status: Draft — pending review
+> Document version v3.3.0 ｜ Change date 2026-11-04 ｜ Status: Draft — pending review
 > 本轮（v3.0.0）是**模型换向**：OC 层不再改数据，只做两件事——**enable** 和 **标记异常**。所有数据以供应商为唯一来源，错的地方标记回去让供应商改；重复对单独成页；下游按字段合并，LMS 优先；M&MP 用同一套规则管同一份数据。
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
 > **验收标准（通俗版）**: `Location-Management-Admin-验收标准-2026-10-29.md`
@@ -424,6 +424,39 @@ https://jama-dev520.github.io/location-prototype/feature-overview.html
 
 影响面：来源→类型约束表、两个列表的 Type 筛选与 Type 列、演示数据（两家自营门店）、字段映射的枚举、PRD 的约束段与术语。历史记录里既有的 `M&MP store` 若已落库，按同一规则迁移（一次性 UPDATE，不改语义）。
 
+## 二之十、v3.3.0：修好了就自己关掉
+
+到 v3.2.2 为止，异常闭环的最后一步仍然是手工：供应商改好了源头，下一次同步把值带进来，**还要有人点一下「Owner fixed it」**。这一下点击不带任何判断——值已经在那儿了——却要花时间，还让已经解决的老问题挂在台账上，越积越多。
+
+### 39. 关闭条件写成规则，而不是习惯
+
+同步跑完之后，对每个「这轮碰到的字段」判断：
+
+| 同步带来的 | 结果 |
+|---|---|
+| 和标记时**一样的值** | 保持 open，备注「未变化」——什么都没发生，也无需处理 |
+| **不同的值且合格** | 关闭，`closed_by = AUTO_SYNC`，记下验证值与 run id，写 `DATA_ISSUE_AUTO_CLOSED` |
+| **不同的值但仍不合格** | 保持 open，备注「改成了 X，但仍不合格」——尝试被记录，问题继续挂着 |
+| **不同的值，但类型需要人判断** | 保持 open，备注「需要人工复核」 |
+
+**关键约束：只有机器能判定的类型才允许自动关闭**——缺失 / 格式 / 不一致 / 越界。`INCORRECT`（名称错、揽收方错）、`STALE`（时间过时）、`DUPLICATE`（像另一家店）描述的是与业务事实的矛盾，同步带来新值只是**证据**，不是**结论**；这类必须回到人。
+
+合格性按字段判：sweeper 必须是已知来源、邮编 5 位、电话至少 10 位、坐标不能是占位值、某天营业时间必须存在 start<end 的区间。
+
+### 40. 两个直接后果
+
+- **关闭即解阻**：blocking 的 issue 一关，门店的签收阻塞立刻消失，不需要人工回头处理。
+- **记录不消失**：自动关闭不是删除——标记、旧值、验证值、run id 全留在审计里，一年后仍能回答「这条为什么关了」。
+
+### 41. 顺带修掉三处「issue 与数据对不上」
+
+写演示数据时发现三处标记描述的数据与记录本身不符，会让验收时看到的和读到的不一致：
+
+- `LOC-00181` 的 issue 说「sweeper 缺失」，记录里却有值 → 记录改为空；
+- `LOC-00182` 的 issue 说「sweeper 错填 PUDO Inc」，记录里是 LMS → 记录改为 PUDO Inc；
+- `LOC-00179` 的 issue 说「电话只有 7 位」，记录里电话是空的 → 记录改为 7 位号码。
+
+| v3.3.0 | MINOR | 2026-11-04 | **issue 自动关闭**：同步带来「变了且合格」的值即自动 fixed（记 `closed_by` / 验证值 / run id）；仅机器可判定类型可自动关闭；变了仍不合格保持 open；关闭即解阻；修三处演示数据与 issue 不一致 |
 | v3.2.2 | PATCH | 2026-11-04 | **类型值修正**：自营门店 `location_type` 由 `M&MP store` 改为 `M&MP`，与来源同名；来源→类型映射、筛选器、演示数据、文档枚举同步 |
 | v3.2.1 | PATCH | 2026-11-04 | **交付物补齐**：新增英文功能概览（单页 + Markdown，给外部同事）· 需求总览加交付物清单 · 重写「一页速览」并修掉 v2 残留 |
 | v3.2.0 | MINOR | 2026-11-04 | **Source 决定 Type**：两个列表的 Type 筛选由 Source 派生（含实时条数、单选项自动选中）；`type ≠ source` 徽章与筛选；接口拒绝不可能组合；修 PRD 两处过期描述 |

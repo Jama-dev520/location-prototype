@@ -1,7 +1,7 @@
-# Location Management Admin Console — Requirement Overview (v3.2.2)
+# Location Management Admin Console — Requirement Overview (v3.3.0)
 
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
-> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.2.2)
+> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.3.0)
 > 给外部同事看的英文功能概览：https://jama-dev520.github.io/location-prototype/feature-overview.html
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
 > Detail view (v2.4.0): clicking a location ID opens a **full page** with tabs — Basic Info / Operations / Hours & Services / Linked Records / Change History.
@@ -209,6 +209,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | 19 | Duplicate (v3.0.0) | 独立 **Duplicate Check** 页；同一家 → 2:1 并在 OC 列表标出；不是同一家 → 1:1。未裁决的重复对阻塞启用 |
 | 20 | Merge priority (v3.0.0) | 同一条 OC 记录逐字段取源：**M&MP（自营）→ LMS → PUDO Inc 依次取，先有值的赢**。详情页与列表都标出来源 |
 | 21 | Drift (v3.0.0) | 签收后供应商改了值：下游直接用新值，台账显示「与基线不同」，运营可**重新签收**或**标记异常**。基线是参照物，不是冻结器 |
+| 25 | 修复后自动关闭 (v3.3.0) | 供应商下一次同步带来新值时，系统自动比对「标记时的值」：**变了且合格** → 自动关闭（`closed_by = AUTO_SYNC`，记 run id 与验证值）；**变了但仍不合格** → 保持 open 并写明原因；**没变** → 保持 open，记为「未变化」。只有**机器可判定**的类型能自动关闭（缺失 / 格式 / 不一致 / 越界）；`INCORRECT` / `STALE` / `DUPLICATE` 永远回到人——同步能带来新值，但证明不了它是对的 |
 | 24 | Source 决定 Type (v3.2.0) | 一个来源只可能产生它自己的类型：**LMS → packagehub；PUDO Inc → PUDOpoint / Locker；M&MP → 自营门店**。所以筛选不能把 Source 和 Type 当两个独立条件：选 Source 后 Type 只列该来源能产生的值（带条数），只有一个选项时自动选中；清空 Source 也清空 Type。列表里若出现「来源不可能产生的类型」，标 `type ≠ source` 并可用 `Issues → Type ≠ source` 一键筛出——这是发现供应商传错的手段，不是在这里改值 |
 | 23 | Issue 粒度 (v3.1.0) | 一个 issue 必须说清四层：哪个**字段**（address_line1）→ 哪个**子字段**（address_line2 / SATURDAY / latitude）→ 哪类**问题**（缺失 / 错误 / 不一致 / 越界 / 重复 / 过期 / 格式）→ 多**严重**（blocking 阻止签收 / warning 只提示）。子字段是让 issue 可执行的关键：「营业时间不对」供应商没法改，「周六没有时间段」可以 |
 | 22 | M&MP (v3.0.0) | **M&MP = 自营小店**（美国叫法），是第三类数据来源，与 PUDO Inc / LMS 并列，不是角色或团队。同样的目录、同样的 enable 与签收、同样的异常台账；差别是 M&MP 的数据由门店自己维护，标记异常找**门店负责人（内部）**而不是供应商 |
@@ -301,6 +302,7 @@ sweeper 由供应商随门店一起提供，和其它字段一样只读。发现
 | **异常** | 四层粒度（字段 → 子字段 → 7 类 → 严重度）；`blocking` 阻塞签收、`warning` 不阻塞；open → reported → fixed |
 | **签收即基线** | 5 项检查 + 核对客户可见值 + 必须勾选；记基线，写 `ENABLE_SIGNED_OFF` |
 | **签收后漂移** | 上游改动照常生效；与基线比对显示 drift；**重新签收**或**标记异常**，都不改值 |
+| **修复后自动关闭**（v3.3.0） | 同步带来「变了且合格」的值 → issue 自动 fixed；变了但还不合格 → 保持 open 并记下尝试值 |
 | **审计** | 每个动作一条：谁、何时（到秒）、字段、旧值 → 新值 |
 | **兜底原则** | 没人处理 → 不启用 / 保持旧值 / 不生成 OC ID，绝不自动接受错值 |
 | **交付页面** | Vendor List · OC List · Duplicate Check · Data Issues · Change Log · Sync Status + 详情（5 tab） |

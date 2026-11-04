@@ -1,6 +1,6 @@
-# Location Management Admin Console — Database Field Mapping (v3.2.2)
+# Location Management Admin Console — Database Field Mapping (v3.3.0)
 
-> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.2.2)
+> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.3.0)
 > Feature overview (English, for readers outside the team): `https://jama-dev520.github.io/location-prototype/feature-overview.html`
 >
 > **v3.0.0 model change.** The console no longer writes location fields. `field_lock` is replaced by `data_issue`; `sync_change_set` decisions and `oc_field_baseline` versions used for revert are retired; downstream values are a per-field merge with **LMS first**. The console writes exactly four things: `oc_location.is_enable`, `data_issue` rows, baseline captures, and `change_log`.
@@ -161,7 +161,7 @@ oc_location (OC-owned, downstream-facing)
 | `location_layer` | enum(VENDOR,OC) | which layer the change belongs to |
 | `occurred_at` | timestamp | occurred time |
 | `operator` | varchar | operator, or `System · PUDO Sync` / `System · LMS Sync` |
-| `operation_type` | enum | ENABLE / DISABLE / BATCH_ENABLE / BATCH_DISABLE / ENABLE_SIGNED_OFF / RE_SIGNED_OFF (v3.0.0) / DATA_ISSUE_RAISED (v3.0.0) / DATA_ISSUE_REPORTED (v3.0.0) / DATA_ISSUE_CLOSED (v3.0.0) / OC_LINK_CONFIRMED / OC_LINK_REJECTED / OC_GENERATED / PROVIDER_STATUS_CHANGE / PROVIDER_FIELD_UPDATE / PROVIDER_CREATED / PROVIDER_REMOVED / DOWNSTREAM_PROPAGATED — retired in v3.0.0: SWEEPER_CHANGE, STORE_DETAIL_EDIT, SYNC_CHANGE_ACCEPTED, SYNC_CHANGE_REJECTED, FIELD_UNLOCKED, FIELD_REVERTED |
+| `operation_type` | enum | ENABLE / DISABLE / BATCH_ENABLE / BATCH_DISABLE / ENABLE_SIGNED_OFF / RE_SIGNED_OFF (v3.0.0) / DATA_ISSUE_RAISED (v3.0.0) / DATA_ISSUE_REPORTED (v3.0.0) / DATA_ISSUE_CLOSED (v3.0.0) / DATA_ISSUE_AUTO_CLOSED (v3.3.0) / OC_LINK_CONFIRMED / OC_LINK_REJECTED / OC_GENERATED / PROVIDER_STATUS_CHANGE / PROVIDER_FIELD_UPDATE / PROVIDER_CREATED / PROVIDER_REMOVED / DOWNSTREAM_PROPAGATED — retired in v3.0.0: SWEEPER_CHANGE, STORE_DETAIL_EDIT, SYNC_CHANGE_ACCEPTED, SYNC_CHANGE_REJECTED, FIELD_UNLOCKED, FIELD_REVERTED |
 | `field_name` | varchar | changed field |
 | `old_value` | text | old value |
 | `new_value` | text | new value |
@@ -261,6 +261,11 @@ oc_location (OC-owned, downstream-facing)
 | `owner_type` | enum(PROVIDER, STORE) | who fixes it: PUDO Inc / LMS, or the **M&MP store owner** internally |
 | `raised_by` / `raised_at` | varchar / timestamp | who, when (to the second) |
 | `closed_at` | timestamp NULL | when it reached FIXED |
+| `closed_by` | enum(OPERATOR, AUTO_SYNC) NULL | who closed it; `AUTO_SYNC` is written by the provider run (v3.3.0) |
+| `verified_value` | text NULL | the value the run delivered that closed it — the evidence, kept with the issue |
+| `auto_close_run` | varchar NULL | `sync_run.run_id` that closed it |
+| `last_checked_at` | timestamp NULL | last run that re-checked this flag, closed or not |
+| `check_note` | varchar NULL | what that run saw: `unchanged` / `still invalid` / `needs a human re-check` |
 
 #### 10.1 Issue types, with one example each
 
@@ -332,6 +337,8 @@ for each field f:
 | `data_issue` row | operator flags a field (F11) | `data_issue` |
 | `data_issue.status` | chased / fixed | `data_issue` |
 | baseline refresh | re-sign after drift (F20) | `oc_field_baseline` |
+| **`data_issue.status = FIXED`** (v3.3.0) | **provider run delivers a valid value** — not a human click | `data_issue` (`closed_by = AUTO_SYNC`) + `change_log` |
+| `last_checked_at` / `check_note` (v3.3.0) | every run that touches the flagged field, whether it closes or not | `data_issue` |
 | audit row | every action above | `change_log` |
 
 Retired in v3.0.0: `STORE_DETAIL_EDIT`, `SWEEPER_CHANGE`, `FIELD_UNLOCKED`, `FIELD_REVERTED`, `SYNC_CHANGE_ACCEPTED`, `SYNC_CHANGE_REJECTED`, and the `field_lock` / `sync_change_set` decision columns. `oc_field_baseline` keeps one row per sign-off (no 5-version stack — nothing is reverted any more).
@@ -353,6 +360,38 @@ Rules:
 3. **Mismatch detection**: `location_type NOT IN allowed(source_provider)` → the row carries a `type ≠ source` badge in the Type column, and the list filter `Issues → Type ≠ source` isolates those rows. Producing this list is a monitoring signal for the provider feed, not a window to fix values here — the record is flagged (F11) so the provider corrects it.
 4. On the OC list the type is the **merged** type (source-priority: M&amp;MP → LMS → PUDO Inc), so a 2:1 location shows the type of the source that wins the merge.
 5. Server side: `location_type=<value>` is accepted only together with (or compatible with) `provider`; a request pairing `provider=LMS` with `location_type=Locker` returns `400 INVALID_TYPE_FOR_PROVIDER` instead of an empty page.
+
+### 3.5 Issue auto-close rule (v3.3.0)
+
+A run closes an issue only when all four conditions hold:
+
+```sql
+-- evaluated per issue, after the run has written the provider values
+issue.status <> 'FIXED'
+AND issue.issue_type IN ('MISSING','FORMAT','INCONSISTENT','OUT_OF_RANGE')
+AND current_value(issue.vendor_location_id, issue.field_name, issue.sub_field) <> issue.value_at_flag
+AND is_valid(issue.field_name, issue.sub_field, current_value(...))
+```
+
+`value_at_flag` is captured when the flag is raised (`issue_base` in the prototype); comparing against the *current* value would make every issue look closed on the next read.
+
+| `issue_type` | Auto-closable | Why |
+|---|---|---|
+| `MISSING` | yes | presence is objective — a value arrived or it did not |
+| `FORMAT` | yes | the format rule is fixed (5-digit postal, 10-digit phone) |
+| `INCONSISTENT` | yes | the contradiction is re-evaluated against the same rule |
+| `OUT_OF_RANGE` | yes | placeholder / impossible values are detectable |
+| `INCORRECT` | **no** | “wrong name” needs the business fact, which the feed cannot supply |
+| `STALE` | **no** | “no longer true” is a judgement about the real world |
+| `DUPLICATE` | **no** | whether two records are one store is a decision (F26) |
+
+Validity per field: `sweeper` ∈ {PUDO Inc, LMS, M&MP} · `postal_code` = 5 digits · `phone` ≥ 10 digits · `latitude`/`longitude` ≠ placeholder · `opening_hours[day]` has at least one range with `start < end` · anything else: non-empty.
+
+Failure modes the rule deliberately produces:
+
+- **changed but still invalid** → stays open, `check_note` records the attempted value, no status change.
+- **unchanged** → stays open, `check_note = value unchanged`, and **no** `PROVIDER_FIELD_UPDATE` row is written (nothing was delivered).
+- **closed** → `DATA_ISSUE_AUTO_CLOSED` row carries `open → fixed`, the run id, and both values.
 
 ## 4. API ↔ Table Quick Reference
 

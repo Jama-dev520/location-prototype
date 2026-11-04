@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v3.2.2)</title>
+<title>Location Management Admin Console — Interactive Prototype (v3.3.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -287,7 +287,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.2.2</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.3.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -311,7 +311,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.2.2</div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.3.0</div>
       </div>
     </div>
 
@@ -430,7 +430,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
           <div class="filter-grid">
             <div><label class="f-label">Location or OC ID</label><input id="c-f-id" placeholder="LOC-… / OC-…" oninput="renderLog()"></div>
             <div><label class="f-label">Layer</label><select id="c-f-layer" onchange="renderLog()"><option value="">All</option><option>VENDOR</option><option>OC</option></select></div>
-            <div><label class="f-label">Type</label><select id="c-f-type" onchange="renderLog()"><option value="">All</option><option>PROVIDER_FIELD_UPDATE</option><option>DATA_ISSUE</option><option>ENABLE_SIGNED_OFF</option><option>RE_SIGNED_OFF</option><option>DISABLE</option><option>OC_LINK_CONFIRMED</option></select></div>
+            <div><label class="f-label">Type</label><select id="c-f-type" onchange="renderLog()"><option value="">All</option><option>PROVIDER_FIELD_UPDATE</option><option>DATA_ISSUE_AUTO_CLOSED</option><option>DATA_ISSUE</option><option>ENABLE_SIGNED_OFF</option><option>RE_SIGNED_OFF</option><option>DISABLE</option><option>OC_LINK_CONFIRMED</option></select></div>
           </div>
           <div class="toolbar"><button class="btn btn-secondary btn-sm" onclick="exportCSV('log')">Export CSV</button><span class="spacer"></span><span class="result-meta" id="c-result-meta"></span></div>
           <div class="table-wrap">
@@ -523,7 +523,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3>Walkthrough — v3.2.2 (source fixes the type)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3>Walkthrough — v3.3.0 (a fix closes its own issue)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -531,6 +531,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
         <tr><td>2</td><td>Vendor Detail</td><td>Report a data issue on an empty sweeper</td><td>Reason required · flag recorded on the vendor record · no value changed</td></tr>
         <tr><td>3</td><td>OC List</td><td>Read the Source column</td><td>LMS, PUDO or M&amp;MP per record; a 2:1 store shows both</td></tr>
         <tr><td>10</td><td>Both lists</td><td>Set Source = LMS, then open the Type filter</td><td>Only <b>packagehub</b> is offered and it is selected for you; the hint reads “LMS → packagehub”. Same for PUDO Inc (PUDOpoint / Locker) and M&amp;MP</td></tr>
+        <tr><td>12</td><td>Data Issues</td><td>Click “Apply next provider sync”</td><td>Three issues close themselves (value changed <b>and</b> valid), one stays open with “changed but still invalid”, the rest are untouched — no manual close anywhere</td></tr>
         <tr><td>11</td><td>Vendor List</td><td>Issues filter → “Type ≠ source”</td><td>Zero rows on clean data; a record whose type cannot belong to its source is tagged in the Type column and isolated here</td></tr>
         <tr><td>4</td><td>OC Detail</td><td>Basic Info → each field carries its source</td><td>LMS wins the field when LMS has a value, PUDO fills the rest</td></tr>
         <tr><td>5</td><td>OC List</td><td>Enable a ready location</td><td>Sign-off checklist · baseline captured · no data edited</td></tr>
@@ -553,10 +554,10 @@ var VENDORS=[
  {id:'LOC-00176',name:'Pdq Mail Plus',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_176',locationCode:'AA0010',storeCode:'AA0010',addr1:'2005 Palmer Ave',addr2:'',city:'Larchmont',state:'NY',country:'US',postal:'10538',status:'active',phone:'',lat:40.930514,lng:-73.762192,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:11:44',updated:'2026-10-05 09:40:17'},
  {id:'LOC-00177',name:'Super Postal Center',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_177',locationCode:'AA0013',storeCode:'AA0013',addr1:'160 W Camino Real',addr2:'',city:'Boca Raton',state:'FL',country:'US',postal:'33432',status:'active',phone:'',lat:27.984120,lng:-82.401883,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'Mon - Fri: 09:00am to 12:00pm, 01:00pm to 06:00pm\nSat: 10:00am to 03:00pm\nSun: 10:00am to 02:00pm',hoursOfOp:[{day:'MONDAY',timeRanges:[{startTime:'09:00',endTime:'12:00'},{startTime:'13:00',endTime:'18:00'}]},{day:'TUESDAY',timeRanges:[{startTime:'09:00',endTime:'12:00'},{startTime:'13:00',endTime:'18:00'}]},{day:'WEDNESDAY',timeRanges:[{startTime:'09:00',endTime:'12:00'},{startTime:'13:00',endTime:'18:00'}]},{day:'THURSDAY',timeRanges:[{startTime:'09:00',endTime:'12:00'},{startTime:'13:00',endTime:'18:00'}]},{day:'FRIDAY',timeRanges:[{startTime:'09:00',endTime:'12:00'},{startTime:'13:00',endTime:'18:00'}]},{day:'SATURDAY',timeRanges:[{startTime:'10:00',endTime:'15:00'}]},{day:'SUNDAY',timeRanges:[{startTime:'10:00',endTime:'14:00'}]}],created:'2024-03-02 08:12:03',updated:'2026-08-19 10:02:51'},
  {id:'LOC-00178',name:'Pack & Ship North',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_178',locationCode:'AA0014',storeCode:'AA0014',addr1:'9477 W 104th Ave',addr2:'',city:'Westminster',state:'CO',country:'US',postal:'80021',status:'active',phone:'',lat:39.886107,lng:-105.103101,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:12:21',updated:'2026-07-11 11:14:36'},
- {id:'LOC-00179',name:'The Box',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_179',locationCode:'AA0016',storeCode:'AA0016',addr1:'3023 S. University Drive',addr2:'',city:'Fort Worth',state:'TX',country:'US',postal:'76109',status:'active',phone:'',lat:32.707053,lng:-97.360128,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:12:39',updated:'2026-06-30 12:22:08'},
+ {id:'LOC-00179',name:'The Box',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_179',locationCode:'AA0016',storeCode:'AA0016',addr1:'3023 S. University Drive',addr2:'',city:'Fort Worth',state:'TX',country:'US',postal:'76109',status:'active',phone:'5550142',lat:32.707053,lng:-97.360128,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:12:39',updated:'2026-06-30 12:22:08'},
  {id:'LOC-00180',name:'Postal Options',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_180',locationCode:'AA0020',storeCode:'AA0020',addr1:'2448 Lamar Ave',addr2:'',city:'Paris',state:'TX',country:'US',postal:'75460',status:'active',phone:'',lat:33.660832,lng:-95.530295,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:12:57',updated:'2026-10-21 14:30:45'},
- {id:'LOC-00181',name:'Private Postal Systems',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_181',locationCode:'AA0021',storeCode:'AA0021',addr1:'12555 Biscayne Blvd',addr2:'',city:'North Miami',state:'FL',country:'US',postal:'33181',status:'active',phone:'',lat:25.891822,lng:-80.162421,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:13:15',updated:'2026-05-02 09:55:19'},
- {id:'LOC-00182',name:'Eagle Postal Center #11',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_182',locationCode:'AA0029',storeCode:'AA0029',addr1:'4101 W Green Oaks Blvd Ste 305',addr2:'',city:'Arlington',state:'TX',country:'US',postal:'76016',status:'active',phone:'',lat:32.682112,lng:-97.195009,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:13:33',updated:'2026-04-18 10:41:27'},
+ {id:'LOC-00181',name:'Private Postal Systems',provider:'LMS',sweeper:'',type:'packagehub',ref:'loc_181',locationCode:'AA0021',storeCode:'AA0021',addr1:'12555 Biscayne Blvd',addr2:'',city:'North Miami',state:'FL',country:'US',postal:'33181',status:'active',phone:'',lat:25.891822,lng:-80.162421,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:13:15',updated:'2026-05-02 09:55:19'},
+ {id:'LOC-00182',name:'Eagle Postal Center #11',provider:'LMS',sweeper:'PUDO Inc',type:'packagehub',ref:'loc_182',locationCode:'AA0029',storeCode:'AA0029',addr1:'4101 W Green Oaks Blvd Ste 305',addr2:'',city:'Arlington',state:'TX',country:'US',postal:'76016',status:'active',phone:'',lat:32.682112,lng:-97.195009,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:13:33',updated:'2026-04-18 10:41:27'},
  {id:'LOC-00183',name:'Upost Shipping Center',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_183',locationCode:'AA0030',storeCode:'AA0030',addr1:'3784 Mission Ave Ste 148',addr2:'',city:'Oceanside',state:'CA',country:'US',postal:'92058',status:'active',phone:'',lat:33.227719,lng:-117.33188,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:13:51',updated:'2026-03-27 11:08:53'},
  {id:'LOC-00184',name:'Postal Dispatch Business Center',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_184',locationCode:'AA0034',storeCode:'AA0034',addr1:'5123 W 98th St',addr2:'',city:'Bloomington',state:'MN',country:'US',postal:'55437',status:'active',phone:'',lat:44.824115,lng:-93.347352,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:14:09',updated:'2026-02-14 12:36:40'},
  {id:'LOC-00185',name:'Intown Business Center',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_185',locationCode:'AA0035',storeCode:'AA0035',addr1:'245 N Highland Ave NE Ste 230',addr2:'',city:'Atlanta',state:'GA',country:'US',postal:'30307',status:'removed',phone:'',lat:33.761663,lng:-84.359729,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:14:27',updated:'2026-10-27 02:31:18'},
@@ -576,7 +577,7 @@ var OC_LOCATIONS=[
  {ocId:'OC-00103',name:'Pack & Ship North',addr1:'9477 W 104th Ave',addr2:'',city:'Westminster',state:'CO',country:'US',postal:'80021',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:39.886107,lng:-105.103101,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00178'],created:'2024-03-02 08:12:21',updated:'2026-07-11 11:14:36'},
  {ocId:'OC-00104',name:'The Box',addr1:'3023 S. University Drive',addr2:'',city:'Fort Worth',state:'TX',country:'US',postal:'76109',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:32.707053,lng:-97.360128,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00179'],created:'2024-03-02 08:12:39',updated:'2026-06-30 12:22:08'},
  {ocId:'OC-00105',name:'Postal Options',addr1:'2448 Lamar Ave',addr2:'',city:'Paris',state:'TX',country:'US',postal:'75460',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:33.660832,lng:-95.530295,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:false,vendorIds:['LOC-00180'],created:'2024-03-02 08:12:57',updated:'2026-10-21 14:30:45'},
- {ocId:'OC-00106',name:'Private Postal Systems',addr1:'12555 Biscayne Blvd',addr2:'',city:'North Miami',state:'FL',country:'US',postal:'33181',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:25.891822,lng:-80.162421,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00181'],created:'2024-03-02 08:13:15',updated:'2026-05-02 09:55:19'},
+ {ocId:'OC-00106',name:'Private Postal Systems',addr1:'12555 Biscayne Blvd',addr2:'',city:'North Miami',state:'FL',country:'US',postal:'33181',provider:'LMS',type:'packagehub',sweeper:'',phone:'',lat:25.891822,lng:-80.162421,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00181'],created:'2024-03-02 08:13:15',updated:'2026-05-02 09:55:19'},
  {ocId:'OC-00107',name:'Eagle Postal Center #11',addr1:'4101 W Green Oaks Blvd Ste 305',addr2:'',city:'Arlington',state:'TX',country:'US',postal:'76016',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:32.682112,lng:-97.195009,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00182'],created:'2024-03-02 08:13:33',updated:'2026-04-18 10:41:27'},
  {ocId:'OC-00108',name:'Upost Shipping Center',addr1:'3784 Mission Ave Ste 148',addr2:'',city:'Oceanside',state:'CA',country:'US',postal:'92058',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:33.227719,lng:-117.33188,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00183'],created:'2024-03-02 08:13:51',updated:'2026-03-27 11:08:53'},
  {ocId:'OC-00109',name:'Postal Dispatch Business Center',addr1:'5123 W 98th St',addr2:'',city:'Bloomington',state:'MN',country:'US',postal:'55437',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:44.824115,lng:-93.347352,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00184'],created:'2024-03-02 08:14:09',updated:'2026-02-14 12:36:40'}
@@ -602,8 +603,9 @@ var CHANGELOG=[
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='3.2.2';
+var APP_VERSION='3.3.0';
 var VERSIONS=[
+ {v:'3.3.0',type:'minor',date:'2026-11-04',desc:'<b>Issues close themselves when the fix arrives.</b> The next provider sync compares each flagged field with the value that was flagged: if the value changed <i>and</i> is now valid, the issue closes with <code>closed_by = AUTO_SYNC</code> and the run id in the audit trail; if it changed but is still invalid, the issue stays open and says why; if it did not change, nothing happens. Blocking issues stop blocking the moment they close.'},
  {v:'3.2.2',type:'patch',date:'2026-11-04',desc:'<b>Type value corrected.</b> A self-operated store carries the type <b>M&amp;MP</b> itself — not “M&amp;MP store”. The source→type map, the Type filter and the demo records are aligned, so a filter on M&amp;MP returns the self-operated stores without a renamed type.'},
  {v:'3.2.1',type:'patch',date:'2026-11-04',desc:'<b>Deliverables pass.</b> Added a plain-English feature overview for readers outside the team (shareable page + Markdown), a deliverables list in the requirement overview, and corrected the 30-second summary, which still described sweeper editing and the pre-v3 duplicate rule. No behaviour change.'},
  {v:'3.2.0',type:'minor',date:'2026-11-04',desc:'<b>Source fixes the type.</b> LMS only ever means <b>packagehub</b>, PUDO Inc means <b>PUDOpoint</b> or <b>Locker</b>, M&amp;MP means a self-operated store. Both lists now cascade: pick a Source and the Type filter reduces to what that source can actually be, with live counts per option. A record whose type does not belong to its source is flagged in the list and can be isolated with one filter.'},
@@ -654,7 +656,7 @@ var ISSUES=[
  {id:'ISS-0014',vendorId:'LOC-00184',field:'hoursText',subField:'MONDAY',type:'STALE',severity:'warning',
   reason:'Hours unchanged since 2024 and now conflict with the store’s own website (closes 16:00, not 17:00)',status:'open',raisedBy:'Alex Chen',raisedAt:'2026-11-03 09:15:02'},
  {id:'ISS-0015',vendorId:'LOC-12193',field:'name',subField:'',type:'INCORRECT',severity:'warning',
-  reason:'Name carries a store number that no longer exists ("#11") — customer-facing label is misleading',status:'open',raisedBy:'Sarah Lin',raisedAt:'2026-11-03 15:08:44'},
+  reason:'Name still carries the old co-op brand — the store was rebranded in 2025, so the customer-facing label is misleading',status:'open',raisedBy:'Sarah Lin',raisedAt:'2026-11-03 15:08:44'},
  {id:'ISS-0016',vendorId:'LOC-00182',field:'sweeper',subField:'',type:'INCORRECT',severity:'blocking',
   reason:'Sweeper is PUDO Inc, but this is an LMS packagehub with no PUDO agreement — routing sends parcels to a partner who cannot take them',status:'reported',raisedBy:'Alex Chen',raisedAt:'2026-10-29 08:31:19'}
 ];
@@ -663,6 +665,98 @@ var INTAKE=[
  {vid:'LOC-00188',status:'open',detected:'2026-10-30 02:31:46',issues:['coordinates (0, 0) are a placeholder — outside any service area','postal_code 80202 does not match the (0, 0) coordinate']}
 ];
 var SYNC_RUN={runId:'RUN-20261103-0230',provider:'LMS',startedAt:'2026-11-03 02:30:11',finishedAt:'2026-11-03 02:33:58',pulled:42,created:1,updated:9,flagged:4,breaker:'normal'};
+
+/* ===== v3.3.0 — an issue closes itself when the run that fixes it arrives =====
+   The value at flag time is the reference: a new value only counts as a fix if it
+   actually changed AND passes the basic validity check for that field. */
+var SYNC_RUNS=[SYNC_RUN];
+var NEXT_SYNC={
+  runId:'RUN-20261104-0230', at:'2026-11-04 02:30:07', finished:'2026-11-04 02:33:41',
+  pulled:38, created:0, updated:7, flagged:2,
+  changes:[
+    {vendorId:'LOC-00181',field:'sweeper',value:'LMS'},
+    {vendorId:'LOC-00183',field:'postal',value:'92054'},
+    {vendorId:'LOC-00179',field:'phone',value:'555-0142'},
+    {vendorId:'LOC-00182',field:'sweeper',value:'PUDO Inc'},   /* re-sent unchanged — the provider did nothing */
+    {vendorId:'LOC-12193',field:'name',value:'Ideal Food Basket'}
+  ]
+};
+var SYNC_DONE=false, SYNC_SUMMARY=null, ISSUE_BASE={};
+/* A run can verify a missing value, a format, a contradiction or an impossible
+   number. It cannot verify a judgement: "incorrect", "stale" and "duplicate"
+   always come back to a human, even when the value did change. */
+var AUTO_CLOSABLE=['MISSING','FORMAT','INCONSISTENT','OUT_OF_RANGE'];
+function rangesOf(v,day){
+  if(!v||!v.hoursOfOp)return [];
+  var row=v.hoursOfOp.filter(function(x){return x.day===day;})[0];
+  return (row&&row.timeRanges)?row.timeRanges:[];
+}
+function issueValue(i){
+  var v=findVendor(i.vendorId); if(!v)return '';
+  if(i.field==='hoursText')return JSON.stringify(rangesOf(v,i.subField));
+  return String(v[i.field]==null?'':v[i.field]);
+}
+function captureIssueBase(){
+  ISSUES.forEach(function(i){if(ISSUE_BASE[i.id]===undefined)ISSUE_BASE[i.id]=issueValue(i);});
+}
+function incomingValid(field,sub,value){
+  if(field==='sweeper')return ['PUDO Inc','LMS','M&MP'].indexOf(value)>=0;
+  if(field==='postal')return /^[0-9]{5}$/.test(value);
+  if(field==='phone')return String(value).replace(/[^0-9]/g,'').length>=10;
+  if(field==='latitude'||field==='longitude')return Math.abs(parseFloat(value))>1;
+  if(field==='hoursText'){
+    try{var rs=JSON.parse(value);return rs.length>0&&rs.every(function(r){return r.startTime<r.endTime;});}catch(e){return false;}
+  }
+  return !!String(value).trim();
+}
+function pendingChecks(){
+  return ISSUES.filter(function(i){
+    if(i.status==='fixed')return false;
+    return NEXT_SYNC.changes.some(function(c){return c.vendorId===i.vendorId&&c.field===i.field;});
+  }).length;
+}
+function runProviderSync(){
+  if(SYNC_DONE){showToast('Already applied','This demo has one pending run — reload the page to replay it.','error');return null;}
+  var closed=0,stillInvalid=0,unchanged=0,needsHuman=0;
+  NEXT_SYNC.changes.forEach(function(c){
+    var v=findVendor(c.vendorId); if(!v)return;
+    var old=String(v[c.field]==null?'':v[c.field]);
+    if(old===String(c.value))return;                    /* nothing delivered, nothing to log */
+    v[c.field]=c.value; v.updated=NEXT_SYNC.at;
+    log('VENDOR','Provider sync','PROVIDER_FIELD_UPDATE',v.id,c.field+(c.subField?' · '+c.subField:''),old||'—',String(c.value),'run '+NEXT_SYNC.runId);
+  });
+  ISSUES.forEach(function(i){
+    if(i.status==='fixed')return;
+    var ch=NEXT_SYNC.changes.filter(function(c){return c.vendorId===i.vendorId&&c.field===i.field;})[0];
+    if(!ch)return;
+    var base=(ISSUE_BASE[i.id]===undefined)?issueValue(i):ISSUE_BASE[i.id];
+    var nowVal=issueValue(i);
+    i.lastChecked=NEXT_SYNC.at; i.checkRun=NEXT_SYNC.runId;
+    if(nowVal===base){i.checkNote='value unchanged since it was flagged';unchanged++;return;}
+    if(AUTO_CLOSABLE.indexOf(i.type)<0){
+      i.checkNote='value changed to “'+nowVal+'” — '+ISSUE_TYPES[i.type].label.toLowerCase()+' needs a human re-check';
+      needsHuman++;return;
+    }
+    if(!incomingValid(i.field,i.subField,nowVal)){
+      i.checkNote='value changed to “'+nowVal+'” but is still invalid';
+      stillInvalid++;return;
+    }
+    i.status='fixed'; i.closedBy='AUTO_SYNC'; i.closedAt=NEXT_SYNC.at;
+    i.prevValue=base; i.verifiedValue=nowVal;
+    i.checkNote='closed automatically — value '+base+' → '+nowVal;
+    log('VENDOR','Provider sync','DATA_ISSUE_AUTO_CLOSED',i.vendorId,i.field+(i.subField?' · '+i.subField:''),'open','fixed','run '+NEXT_SYNC.runId+' · '+base+' → '+nowVal);
+    closed++;
+  });
+  SYNC_DONE=true;
+  SYNC_SUMMARY={closed:closed,stillInvalid:stillInvalid,unchanged:unchanged,needsHuman:needsHuman,runId:NEXT_SYNC.runId};
+  SYNC_RUNS.unshift({runId:NEXT_SYNC.runId,provider:'Multiple',startedAt:NEXT_SYNC.at,finishedAt:NEXT_SYNC.finished,
+    pulled:NEXT_SYNC.pulled,created:NEXT_SYNC.created,updated:NEXT_SYNC.updated,flagged:NEXT_SYNC.flagged,
+    breaker:'normal',autoClosed:closed});
+  renderIssuesPage();renderSync();renderVendor();renderOC();updateBadges();
+  if(document.getElementById('page-pd').classList.contains('active'))renderProfile();
+  showToast('Sync applied',closed+' closed automatically · '+needsHuman+' need a human · '+stillInvalid+' still invalid · '+unchanged+' unchanged','success');
+  return SYNC_SUMMARY;
+}
 
 /* baseline = the merged values signed off when the location went live */
 var BASELINE={};
@@ -1133,6 +1227,15 @@ function fieldLabel(i){
   var names={name:'Name',addr1:'Street address',city:'City',state:'State',postal:'Postal code',latitude:'Coordinates',sweeper:'Sweeper',hoursText:'Opening hours',phone:'Phone'};
   return (names[i.field]||i.field)+(i.subField?' · '+i.subField:'');
 }
+function syncCard(){
+  var pending=pendingChecks();
+  var body=SYNC_DONE
+    ? '<span class="risk risk-auto">applied · '+esc(SYNC_SUMMARY.runId)+'</span><span class="rc-meta" style="margin:0">'+SYNC_SUMMARY.closed+' closed automatically · '+SYNC_SUMMARY.needsHuman+' need a human · '+SYNC_SUMMARY.stillInvalid+' still invalid · '+SYNC_SUMMARY.unchanged+' unchanged</span>'
+    : '<span class="rc-meta" style="margin:0">'+pending+' flagged field(s) are covered by this run. A missing value, a format error, a contradiction or an impossible number closes itself once the value arrives valid; <b>incorrect / stale / duplicate</b> always come back to a human.</span>'
+      +'<button class="btn btn-primary btn-sm" onclick="runProviderSync()">Apply next provider sync</button>';
+  return '<div class="card" style="margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b style="font-size:13px">Next provider sync</b>'
+    +'<span class="badge badge-blue">'+esc(NEXT_SYNC.runId)+'</span>'+body+'</div>';
+}
 function renderIssuesPage(){
   var typeFilter=val('di-f-type')||'';
   var open=ISSUES.filter(function(i){return i.status!=='fixed';});
@@ -1146,13 +1249,14 @@ function renderIssuesPage(){
     return '<option value="'+k+'">'+ISSUE_TYPES[k].label+(counts[k]?' ('+counts[k]+')':'')+'</option>';
   }).join('');
 
-  var html='<div class="card" style="margin-bottom:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">'
+  var html=syncCard();
+  html+='<div class="card" style="margin-bottom:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">'
     +'<b style="font-size:13px">Filter by issue type</b>'
     +'<select id="di-f-type" onchange="renderIssuesPage()" style="min-width:220px"><option value="">All types ('+open.length+')</option>'+legend+'</select>'
     +'<span class="rc-meta" style="margin:0">Granularity: field → sub-field → type → severity. Blocking stops new sign-offs; warnings do not.</span>'
     +'</div>';
 
-  html+='<div class="card" style="margin-bottom:14px"><div style="display:flex;align-items:center;gap:10px"><b style="font-size:13px">Data issues — provider and self-operated</b><span class="badge badge-orange">'+shown.length+'</span><span class="rc-meta" style="margin:0">flagged by us · the owner fixes the source</span></div>'
+  html+='<div class="card" id="di-issues-card" style="margin-bottom:14px"><div style="display:flex;align-items:center;gap:10px"><b style="font-size:13px">Data issues — provider and self-operated</b><span class="badge badge-orange">'+shown.length+'</span><span class="rc-meta" style="margin:0">flagged by us · the owner fixes the source</span></div>'
     +(shown.length?shown.map(function(i){
       var v=findVendor(i.vendorId);
       return '<div class="rc-item"><div class="rc-item-head"><b>'+esc(v.name)+'</b><span class="mono" style="font-size:12px">'+esc(i.vendorId)+'</span>'
@@ -1161,6 +1265,7 @@ function renderIssuesPage(){
         +'<span class="risk '+(i.status==='reported'?'risk-review':'risk-block')+'">'+esc(i.status==='reported'?'reported to owner':i.status)+'</span></div>'
         +'<div class="rc-meta">'+esc(i.reason)+'</div>'
         +'<div class="rc-meta">'+esc(i.id)+' · raised by '+esc(i.raisedBy)+' · '+esc(i.raisedAt)+'</div>'
+        +(i.checkNote?'<div class="rc-meta"><b>✔ checked '+esc(i.lastChecked||'')+'</b> · '+esc(i.checkNote)+(i.checkRun?' · '+esc(i.checkRun):'')+'</div>':'')
         +'<div class="rc-actions">'
         +(i.status==='open'?'<button class="btn btn-secondary btn-sm" onclick="markReported(\''+i.id+'\')">Mark reported</button>':'')
         +'<button class="btn btn-secondary btn-sm" onclick="markFixed(\''+i.id+'\')">Owner fixed it</button>'
@@ -1185,6 +1290,19 @@ function renderIssuesPage(){
         +'<div class="rc-actions"><button class="btn btn-secondary btn-sm" onclick="flagIntake(\''+i.vid+'\')">Flag to owner</button><span class="rc-meta" style="margin:0">There is no override that lets a bad record go live.</span></div></div>';
     }).join('')+'</div>';
 
+  var autoClosed=ISSUES.filter(function(i){return i.closedBy==='AUTO_SYNC';});
+  if(autoClosed.length){
+    html+='<div class="card" style="margin-top:14px"><div style="display:flex;align-items:center;gap:10px"><b style="font-size:13px">Closed automatically by a sync</b><span class="badge badge-green">'+autoClosed.length+'</span><span class="rc-meta" style="margin:0">the run delivered a valid value — nobody had to click</span></div>'
+      +autoClosed.map(function(i){
+        var v=findVendor(i.vendorId);
+        return '<div class="rc-item"><div class="rc-item-head"><b>'+esc(v?v.name:i.vendorId)+'</b><span class="mono" style="font-size:12px">'+esc(i.vendorId)+'</span>'
+          +'<span class="badge badge-gray">'+esc(fieldLabel(i))+'</span>'+typeBadge(i)
+          +'<span class="risk risk-auto">closed · '+esc(i.closedBy)+'</span>'
+          +'<span class="rc-meta" style="margin:0">'+esc(i.closedAt)+' · '+esc(i.checkRun||'')+'</span></div>'
+          +'<div class="rc-meta"><span class="val-old">'+esc(i.prevValue||'—')+'</span> → <span class="val-new">'+esc(i.verifiedValue||'—')+'</span> · the value the run delivered is what closed it</div>'
+          +'<div class="rc-meta">'+esc(i.id)+' · stays in the audit trail as <b>DATA_ISSUE_AUTO_CLOSED</b></div></div>';
+      }).join('')+'</div>';
+  }
   document.getElementById('di-body').innerHTML=html;
 }
 function markReported(id){var i=ISSUES.filter(function(x){return x.id===id;})[0];i.status='reported';log('VENDOR',currentUser.name,'DATA_ISSUE_REPORTED',i.vendorId,i.field,'open','reported',i.reason);renderIssuesPage();updateBadges();showToast('Marked reported','Chased with the provider — the issue stays open until the data changes');}
@@ -1388,10 +1506,14 @@ function renderLog(){
   document.getElementById('c-result-meta').textContent=rows.length+' entries';
 }
 function renderSync(){
-  document.getElementById('sync-body').innerHTML='<div class="card"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b>'+esc(SYNC_RUN.runId)+'</b>'+provBadge(SYNC_RUN.provider)
-    +'<span class="risk risk-auto">breaker: '+esc(SYNC_RUN.breaker)+'</span><span class="rc-meta" style="margin:0">'+esc(SYNC_RUN.startedAt)+' → '+esc(SYNC_RUN.finishedAt)+'</span></div>'
-    +'<div class="rc-meta">pulled '+SYNC_RUN.pulled+' · created '+SYNC_RUN.created+' · updated '+SYNC_RUN.updated+' · flagged '+SYNC_RUN.flagged+'</div>'
-    +'<div class="info-line" style="margin-top:10px">A run writes provider values. It never writes an OC decision: enable, flags and sign-offs are human acts.</div></div>';
+  var rows=SYNC_RUNS.map(function(r){
+    return '<div class="card" style="margin-bottom:12px"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b>'+esc(r.runId)+'</b>'+provBadge(r.provider)
+      +'<span class="risk risk-auto">breaker: '+esc(r.breaker)+'</span><span class="rc-meta" style="margin:0">'+esc(r.startedAt)+' → '+esc(r.finishedAt)+'</span>'
+      +(r.autoClosed?'<span class="badge badge-green">'+r.autoClosed+' issue(s) auto-closed</span>':'')+'</div>'
+      +'<div class="rc-meta">pulled '+r.pulled+' · created '+r.created+' · updated '+r.updated+' · flagged '+r.flagged+'</div></div>';
+  }).join('');
+  document.getElementById('sync-body').innerHTML=rows
+    +'<div class="info-line">A run writes provider values. It never writes an OC decision — enable, flags and sign-offs stay human. Since v3.3.0 a run may also <b>close</b> an issue, but only when the value it delivered is valid; the fix is the owner’s, the record of it is ours.</div>';
 }
 function exportCSV(kind){showToast('Export started',kind+' view will download as CSV');}
 
@@ -1428,7 +1550,7 @@ function exportCSV(kind){showToast('Export started',kind+' view will download as
     BASELINE[o.ocId]=snap;
   });
 })();
-switchPage('p01');tickClock();syncTypeFilter('v',true);syncTypeFilter('o',true);
+captureIssueBase();switchPage('p01');tickClock();syncTypeFilter('v',true);syncTypeFilter('o',true);
 </script>
 </body>
 </html>
