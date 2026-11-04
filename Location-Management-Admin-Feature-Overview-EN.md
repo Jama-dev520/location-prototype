@@ -1,9 +1,10 @@
 # Location Management Admin Console — Feature Overview
 
 **Audience:** operations, partner-facing and M&MP teams who work with location data
-**Document version:** 1.4 (covers console v3.4.0) · **Status:** clickable prototype (not in production)
+**Document version:** 1.5 (covers console v3.5.0) · **Status:** clickable prototype (not in production)
 **Prototype:** https://jama-dev520.github.io/location-prototype/
 **One-page version (shareable):** https://jama-dev520.github.io/location-prototype/feature-overview.html
+**Languages:** the console itself switches between English and Chinese in the header (v3.5.0); interface only — data stays as delivered  
 **Demo video (2:44, English captions):** https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 
 ---

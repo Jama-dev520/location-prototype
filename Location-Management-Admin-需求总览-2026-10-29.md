@@ -1,7 +1,7 @@
-# Location Management Admin Console — Requirement Overview (v3.4.0)
+# Location Management Admin Console — Requirement Overview (v3.5.0)
 
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
-> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.4.0)
+> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.5.0)
 > 给外部同事看的英文功能概览：https://jama-dev520.github.io/location-prototype/feature-overview.html
 > 演示视频（2 分 46 秒，30 条英文字幕，对应 v3.3.0）：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
@@ -210,6 +210,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | 19 | Duplicate (v3.0.0) | 独立 **Duplicate Check** 页；同一家 → 2:1 并在 OC 列表标出；不是同一家 → 1:1。未裁决的重复对阻塞启用 |
 | 20 | Merge priority (v3.0.0) | 同一条 OC 记录逐字段取源：**M&MP（自营）→ LMS → PUDO Inc 依次取，先有值的赢**。详情页与列表都标出来源 |
 | 21 | Drift (v3.0.0) | 签收后供应商改了值：下游直接用新值，台账显示「与基线不同」，运营可**重新签收**或**标记异常**。基线是参照物，不是冻结器 |
+| 28 | 中英双语 (v3.5.0) | 顶部右上角 `EN / 中文` 换的是**界面**：导航、筛选、表头、页面说明、弹框、详情标签页、演示脚本、提示、异常类型名、版本说明，连 `<html lang>` 和浏览器标题一起换。**数据不翻**：门店名、地址、供应商、ID、字段名、事件码、时间戳一律保持供应商推来的原样 —— 翻了就等于造出第二个真相来源。选择存在 `localStorage`，也可以用 `?lang=zh` / `?lang=en` 按链接锁定，方便把英文版直接发给外国同事 |
 | 27 | enable 保留 (v3.4.0) | 控制台只放弃「数据是否应用」这一层，**不放弃「门店是否上线」**。两个决定分属两处：值是否给下游——不由控制台决定，永远给；门店是否对客户可见——由运营 `enable` 决定，走签收（5 项检查 + 勾选 + 记基线）。如果连签收也去掉，入库通过即自动上线，就没有人确认客户会开到的那个地址了 |
 | 26 | 不决定是否应用 (v3.4.0) | 供应商推来的值**永远直接给下游**，控制台里没有「接受 / 拒绝 / 重新签收」。所以「签收后漂移」只是**信息**：告诉你自签收以来哪些字段变了；发现变错了就标记异常。同理，issue 也不该由人点「已修复」——只有同步跑完、值确实变了且合格，才由系统关闭。控制台的出口是**导出**：把异常清单导成 CSV 发给供应商当工单，而不是在这里做流程 |
 | 25 | 修复后自动关闭 (v3.3.0) | 供应商下一次同步带来新值时，系统自动比对「标记时的值」：**变了且合格** → 自动关闭（`closed_by = AUTO_SYNC`，记 run id 与验证值）；**变了但仍不合格** → 保持 open 并写明原因；**没变** → 保持 open，记为「未变化」。只有**机器可判定**的类型能自动关闭（缺失 / 格式 / 不一致 / 越界）；`INCORRECT` / `STALE` / `DUPLICATE` 永远回到人——同步能带来新值，但证明不了它是对的 |

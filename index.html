@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v3.4.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v3.5.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -280,6 +280,16 @@ table.wt{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:var(
 table.wt th{background:var(--bg-section);text-align:left;padding:8px 10px;font-size:12px}
 table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-align:top}
 @media (max-width:1100px){.filter-grid{grid-template-columns:repeat(3,1fr)}.kv-grid{grid-template-columns:1fr}}
+
+/* ===== v3.5.0 — Chinese does not break where Latin does ===== */
+.badge{white-space:nowrap}
+.pending-badge{white-space:nowrap}
+table.data td .badge{white-space:nowrap}
+table.data td.mono{white-space:nowrap}
+table.data td .mono{white-space:nowrap}
+table.data td.val-old,table.data td.val-new,table.data td .val-old,table.data td .val-new{word-break:keep-all}
+.p-kv .k{white-space:nowrap}
+.p-kv .v{word-break:break-word}
 </style>
 </head>
 <body>
@@ -287,7 +297,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.4.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.5.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -306,12 +316,13 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
     <div class="admin-header">
       <div class="breadcrumb" id="breadcrumb"><b>Vendor Location List</b> — raw provider locations</div>
       <div class="header-right">
+        <div class="role-switch" id="lang-switch" title="Language / 语言"><button class="role-btn active" id="lang-en" onclick="setLang('en')">EN</button><button class="role-btn" id="lang-zh" onclick="setLang('zh')">中文</button></div>
         <div class="role-switch">
           <button class="role-btn active" id="role-manager" onclick="setRole('manager')">Operations</button>
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.4.0</div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.5.0</div>
       </div>
     </div>
 
@@ -319,7 +330,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 
       <div class="page active" id="page-p01">
         <h2 class="page-title">Vendor Location List</h2>
-        <p class="page-desc"><b>Source fixes the type</b> — LMS can only be a <b>packagehub</b>, PUDO Inc a <b>PUDOpoint</b> or <b>Locker</b>, M&amp;MP a self-operated store — so picking a Source narrows the Type filter automatically. What the providers actually sent us — <b>every field is read-only</b>, including <b>sweeper</b>, which now arrives with the daily sync. <b>M&amp;MP</b> stores are self-operated, so their owner is the store itself rather than a provider. When a value is wrong, we do not correct it here: we <b>flag it with a reason</b>, the flag travels on this record, and the provider fixes the source. The OC layer only decides whether the location goes live.</p>
+        <p class="page-desc" data-i18n="p01.desc"><b>Source fixes the type</b> — LMS can only be a <b>packagehub</b>, PUDO Inc a <b>PUDOpoint</b> or <b>Locker</b>, M&amp;MP a self-operated store — so picking a Source narrows the Type filter automatically. What the providers actually sent us — <b>every field is read-only</b>, including <b>sweeper</b>, which now arrives with the daily sync. <b>M&amp;MP</b> stores are self-operated, so their owner is the store itself rather than a provider. When a value is wrong, we do not correct it here: we <b>flag it with a reason</b>, the flag travels on this record, and the provider fixes the source. The OC layer only decides whether the location goes live.</p>
 
         <div class="card">
           <div class="filter-grid">
@@ -327,7 +338,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
             <div><label class="f-label">OC Location ID</label><input id="v-f-ocid" placeholder="e.g. OC-00001" oninput="applyVendorFilters()"></div>
             <div><label class="f-label">Name</label><input id="v-f-name" placeholder="keyword" oninput="applyVendorFilters()"></div>
             <div><label class="f-label">Source</label><select id="v-f-provider" onchange="onSourceChange('v')"><option value="">All</option><option>PUDO Inc</option><option>LMS</option><option>M&MP</option></select></div>
-            <div><label class="f-label">Status</label><select id="v-f-status" onchange="applyVendorFilters()"><option value="">All</option><option>active</option><option>inactive</option><option>removed</option></select></div>
+            <div><label class="f-label">Status</label><select id="v-f-status" onchange="applyVendorFilters()"><option value="">All</option><option value="active">active</option><option value="inactive">inactive</option><option value="removed">removed</option></select></div>
             <div><label class="f-label">Type <span id="v-f-type-hint" class="f-hint"></span></label><select id="v-f-type" onchange="applyVendorFilters()"><option value="">All</option></select></div>
             <div><label class="f-label">Sweeper</label><select id="v-f-sweeper" onchange="applyVendorFilters()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option><option>M&amp;MP</option></select></div>
             <div><label class="f-label">Issues</label><select id="v-f-issues" onchange="applyVendorFilters()"><option value="">All</option><option value="open">Has open issue</option><option value="none">No issue</option><option value="mismatch">Type ≠ source</option></select></div>
@@ -356,7 +367,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 
       <div class="page" id="page-p02">
         <h2 class="page-title">OC Location List</h2>
-        <p class="page-desc"><b>Source fixes the type:</b> LMS → packagehub · PUDO Inc → PUDOpoint / Locker · M&amp;MP → <b>M&amp;MP</b>, so picking a Source narrows the Type filter. The record customers see. <b>Two actions only: enable, and flag an anomaly.</b> There is no editing here — a wrong address does not get typed over, it gets flagged back to the provider. Values are <b>merged per field</b>: an <b>M&amp;MP</b> self-operated store is its own source and wins first, then <b>LMS</b>, then PUDO Inc fills whatever is still empty.</p>
+        <p class="page-desc" data-i18n="p02.desc"><b>Source fixes the type:</b> LMS → packagehub · PUDO Inc → PUDOpoint / Locker · M&amp;MP → <b>M&amp;MP</b>, so picking a Source narrows the Type filter. The record customers see. <b>Two actions only: enable, and flag an anomaly.</b> There is no editing here — a wrong address does not get typed over, it gets flagged back to the provider. Values are <b>merged per field</b>: an <b>M&amp;MP</b> self-operated store is its own source and wins first, then <b>LMS</b>, then PUDO Inc fills whatever is still empty.</p>
 
         <div class="card">
           <div class="filter-grid">
@@ -365,7 +376,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
             <div><label class="f-label">Name</label><input id="o-f-name" placeholder="keyword" oninput="applyOCFilters()"></div>
             <div><label class="f-label">Source</label><select id="o-f-provider" onchange="onSourceChange('o')"><option value="">All</option><option>PUDO Inc</option><option>LMS</option><option>M&MP</option></select></div>
             <div><label class="f-label">Type <span id="o-f-type-hint" class="f-hint"></span></label><select id="o-f-type" onchange="applyOCFilters()"><option value="">All</option></select></div>
-            <div><label class="f-label">Status</label><select id="o-f-status" onchange="applyOCFilters()"><option value="">All</option><option>active</option><option>inactive</option></select></div>
+            <div><label class="f-label">Status</label><select id="o-f-status" onchange="applyOCFilters()"><option value="">All</option><option value="active">active</option><option value="inactive">inactive</option></select></div>
             <div><label class="f-label">Downstream</label><select id="o-f-live" onchange="applyOCFilters()"><option value="">All</option><option value="no">Not live yet</option><option value="yes">Live</option></select></div>
             <div><label class="f-label">Issues</label><select id="o-f-issues" onchange="applyOCFilters()"><option value="">All</option><option value="any">Has any issue</option><option value="drift">Baseline drift</option><option value="dup">Duplicate 2:1</option><option value="open">Open provider issue</option></select></div>
           </div>
@@ -382,7 +393,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
           </div>
           <div class="toolbar">
             <button class="btn btn-secondary btn-sm" onclick="exportCSV('oc')">Export CSV</button>
-            <button class="btn btn-secondary btn-sm" onclick="filterNotLive()">Not live yet (<span id="o-notlive-count">0</span>)</button>
+            <button class="btn btn-secondary btn-sm" onclick="filterNotLive()"><span data-i18n="btn.notlive">Not live yet</span> (<span id="o-notlive-count">0</span>)</button>
             <span class="spacer"></span>
             <span class="result-meta" id="o-result-meta"></span>
           </div>
@@ -400,7 +411,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 
       <div class="page" id="page-pdup">
         <h2 class="page-title">Duplicate Check</h2>
-        <p class="page-desc">A standalone page for one question only: <b>are these two vendor locations the same store?</b> Pairs are detected by fuzzy match (address 50 · postal 25 · city 15 · state 10, threshold 75%). The decision decides the mapping — <b>same store = 2:1</b> (two vendor records, one OC location, LMS values win), <b>not the same = 1:1</b> (each gets its own OC location). Every OC location that is fed by more than one vendor record is marked <b>2:1</b> in the OC list.</p>
+        <p class="page-desc" data-i18n="pdup.desc">A standalone page for one question only: <b>are these two vendor locations the same store?</b> Pairs are detected by fuzzy match (address 50 · postal 25 · city 15 · state 10, threshold 75%). The decision decides the mapping — <b>same store = 2:1</b> (two vendor records, one OC location, LMS values win), <b>not the same = 1:1</b> (each gets its own OC location). Every OC location that is fed by more than one vendor record is marked <b>2:1</b> in the OC list.</p>
 
         <div class="card">
           <div class="filter-grid">
@@ -419,13 +430,13 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 
       <div class="page" id="page-pdi">
         <h2 class="page-title">Data Issues</h2>
-        <p class="page-desc">Everything that is wrong with the data, in one ledger — <b>no review queues</b>. Three kinds: what we asked the provider to fix, what changed after sign-off (information, not a decision), and what never passed intake. Nothing here decides whether a value is applied — <b>provider values always go downstream</b>. Marking an issue is how we ask for a correction; the next push is how it lands. <b>Export the list</b> to send it to the provider.</p>
+        <p class="page-desc" data-i18n="pdi.desc">Everything that is wrong with the data, in one ledger — <b>no review queues</b>. Three kinds: what we asked the provider to fix, what changed after sign-off (information, not a decision), and what never passed intake. Nothing here decides whether a value is applied — <b>provider values always go downstream</b>. Marking an issue is how we ask for a correction; the next push is how it lands. <b>Export the list</b> to send it to the provider.</p>
         <div id="di-body"></div>
       </div>
 
       <div class="page" id="page-p03">
         <h2 class="page-title">Change Log</h2>
-        <p class="page-desc">Every create, sync write, flag, decision and sign-off, across both layers. Filterable by layer and type.</p>
+        <p class="page-desc" data-i18n="p03.desc">Every create, sync write, flag, decision and sign-off, across both layers. Filterable by layer and type.</p>
         <div class="card">
           <div class="filter-grid">
             <div><label class="f-label">Location or OC ID</label><input id="c-f-id" placeholder="LOC-… / OC-…" oninput="renderLog()"></div>
@@ -444,7 +455,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 
       <div class="page" id="page-p04">
         <h2 class="page-title">Sync Status</h2>
-        <p class="page-desc">One row per provider run. A run that trips the breaker stops propagating and waits for a human.</p>
+        <p class="page-desc" data-i18n="p04.desc">One row per provider run. A run that trips the breaker stops propagating and waits for a human.</p>
         <div id="sync-body"></div>
       </div>
 
@@ -460,7 +471,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
   <div class="modal" style="width:560px">
     <div class="modal-header">Report a data issue<span class="close" onclick="closeModal('modal-flag')">✕</span></div>
     <div class="modal-body">
-      <div class="info-line" style="margin:0 0 12px">This does <b>not</b> change the value. It records the problem on the source record and asks the owner to correct it — a provider for PUDO Inc / LMS, the store itself for an <b>M&amp;MP</b> self-operated store.</div>
+      <div class="info-line" data-i18n="flag.intro" style="margin:0 0 12px">This does <b>not</b> change the value. It records the problem on the source record and asks the owner to correct it — a provider for PUDO Inc / LMS, the store itself for an <b>M&amp;MP</b> self-operated store.</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div><label class="f-label">Field</label><select id="flag-field" style="width:100%" onchange="flagFieldChanged()"></select></div>
         <div><label class="f-label">Sub-field <span id="flag-sub-wrap" style="color:var(--text-tertiary);font-weight:400">(optional)</span></label><select id="flag-sub" style="width:100%"></select></div>
@@ -470,7 +481,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
       <div class="info-line" id="flag-hint" style="margin-top:10px">Pick a type to see what it means.</div>
       <label class="f-label" style="margin-top:10px">What exactly is wrong?</label>
       <textarea id="flag-reason" rows="3" style="width:100%;resize:vertical" placeholder="e.g. postal 92058 belongs to Oceanside but the street line is in 92054"></textarea>
-      <div class="warn-line" style="margin-top:10px">The location keeps its current value. Blocking issues stop new sign-offs; warnings do not.</div>
+      <div class="warn-line" data-i18n="flag.warn" style="margin-top:10px">The location keeps its current value. Blocking issues stop new sign-offs; warnings do not.</div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-flag')">Cancel</button>
@@ -512,22 +523,22 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3>Walkthrough — v3.4.0 (mark, export, let the push land)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.5.0 (mark, export, let the push land)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
         <tr><td>1</td><td>Vendor List</td><td>Look at the Sweeper column</td><td>Every sweeper comes with the sync — no edit affordance anywhere</td></tr>
         <tr><td>2</td><td>Vendor Detail</td><td>Report a data issue on an empty sweeper</td><td>Reason required · flag recorded on the vendor record · no value changed</td></tr>
         <tr><td>3</td><td>OC List</td><td>Read the Source column</td><td>LMS, PUDO or M&amp;MP per record; a 2:1 store shows both</td></tr>
-        <tr><td>10</td><td>Both lists</td><td>Set Source = LMS, then open the Type filter</td><td>Only <b>packagehub</b> is offered and it is selected for you; the hint reads “LMS → packagehub”. Same for PUDO Inc (PUDOpoint / Locker) and M&amp;MP</td></tr>
-        <tr><td>12</td><td>Data Issues</td><td>Click “Apply next provider sync”</td><td>Three issues close themselves (value changed <b>and</b> valid), one stays open with “changed but still invalid”, the rest are untouched — no manual close anywhere</td></tr>
-        <tr><td>11</td><td>Vendor List</td><td>Issues filter → “Type ≠ source”</td><td>Zero rows on clean data; a record whose type cannot belong to its source is tagged in the Type column and isolated here</td></tr>
         <tr><td>4</td><td>OC Detail</td><td>Basic Info → each field carries its source</td><td>LMS wins the field when LMS has a value, PUDO fills the rest</td></tr>
         <tr><td>5</td><td>OC List</td><td>Enable a ready location</td><td>Sign-off checklist · baseline captured · no data edited</td></tr>
         <tr><td>6</td><td>Duplicate Check</td><td>Confirm the pending pair as "same store"</td><td>2:1 mapping · the OC row shows both vendors and switches to LMS values</td></tr>
         <tr><td>7</td><td>Data Issues</td><td>Read the three sections</td><td>Provider issues · baseline drift · intake failures — no review queues</td></tr>
         <tr><td>8</td><td>Data Issues</td><td>Open a drifted location</td><td>See which fields moved since sign-off; downstream already has the new values — drift is information, not a decision</td></tr>
         <tr><td>9</td><td>OC List</td><td>Filter Source = M&amp;MP</td><td>Self-operated stores follow the same rules: same sign-off, same issue ledger — only the data owner differs</td></tr>
+        <tr><td>10</td><td>Both lists</td><td>Set Source = LMS, then open the Type filter</td><td data-i18n="walk.10.exp">Only <b>packagehub</b> is offered and it is selected for you; the hint reads “LMS → packagehub”. Same for PUDO Inc (PUDOpoint / Locker) and M&amp;MP</td></tr>
+        <tr><td>11</td><td>Vendor List</td><td>Issues filter → “Type ≠ source”</td><td>Zero rows on clean data; a record whose type cannot belong to its source is tagged in the Type column and isolated here</td></tr>
+        <tr><td>12</td><td>Data Issues</td><td>Click “Apply next provider sync”</td><td data-i18n="walk.12.exp">Two issues close themselves (value changed <b>and</b> valid); one stays open with “changed but still invalid”, one comes back to a human, the rest are untouched — no manual close anywhere</td></tr>
       </tbody>
     </table>
   </div>
@@ -591,9 +602,565 @@ var CHANGELOG=[
 
 </script>
 <script>
+/* =====================================================================
+   v3.5.0 — bilingual layer
+   One dictionary, three mechanisms:
+     1. I18N_ZH    plain text nodes (labels, badges, sentences) — exact match
+     2. I18N_RULES regex rules for anything carrying a number or an id
+     3. I18N_BLOCK whole elements whose English contains inline markup —
+        marked with data-i18n="key" in the markup, swapped as innerHTML
+   Anything not in the dictionary stays as it is (store names, addresses,
+   provider names, ids) — data is not translated, only the interface.
+   ===================================================================== */
+var I18N_ZH = {
+  /* ---- shell ---- */
+  "Locations":"门店",
+  "Quality":"数据质量",
+  "Vendor Location List":"供应商门店列表",
+  "OC Location List":"OC 门店列表",
+  "Duplicate Check":"重复门店检查",
+  "Data Issues":"数据异常",
+  "Change Log":"变更日志",
+  "Sync Status":"同步状态",
+  "Daily sync":"每日同步",
+  "Operations":"运营",
+  "Viewer":"只读",
+  "Sarah Lin · Location Manager":"Sarah Lin · 门店管理员",
+  "Tom Weber · Viewer":"Tom Weber · 只读用户",
+
+  /* ---- filter labels / table headers ---- */
+  "Location ID":"门店 ID",
+  "OC Location ID":"OC 门店 ID",
+  "Vendor Location ID":"供应商门店 ID",
+  "Location or OC ID":"门店 ID 或 OC ID",
+  "Name":"名称",
+  "Source":"来源",
+  "Status":"状态",
+  "Type":"类型",
+  "Sweeper":"揽收方",
+  "Issues":"异常",
+  "Provider":"供应商",
+  "Downstream":"下游",
+  "Layer":"层级",
+  "Pair ID":"配对 ID",
+  "Min score":"最低相似度",
+  "Address":"地址",
+  "City":"城市",
+  "City / State":"城市 / 州",
+  "OC Location":"OC 门店",
+  "Updated":"更新时间",
+  "Enable":"启用",
+  "Linked Vendors":"关联供应商",
+  "Time":"时间",
+  "Field":"字段",
+  "Old":"旧值",
+  "New":"新值",
+  "Operator":"操作人",
+  "Remark":"备注",
+  "Location":"门店",
+  "synced":"同步",
+
+  /* ---- buttons ---- */
+  "Reset":"重置",
+  "Apply Filters":"应用筛选",
+  "Export CSV":"导出 CSV",
+  "Batch Enable":"批量启用",
+  "Batch Disable":"批量停用",
+  "Clear selection":"清除选择",
+  "Cancel":"取消",
+  "Confirm":"确认",
+  "Not live yet":"未上线",
+  "Walkthrough Script":"演示脚本",
+  "Version history":"版本历史",
+  "Report a data issue":"标记数据异常",
+  "Enable OC location":"启用 OC 门店",
+  "Batch action":"批量操作",
+  "Mark chased":"标记为已催",
+  "Open the location":"打开门店",
+  "Flag as an issue":"标记为异常",
+  "Flag to owner":"标记并通知责任方",
+  "Enable & sign off":"启用并签收",
+  "Blocked":"已被阻塞",
+  "Export open issues (CSV)":"导出未关闭异常 (CSV)",
+  "Apply next provider sync":"执行下一次供应商同步",
+  "Same store (2:1)":"同一门店 (2:1)",
+  "Not same (1:1 each)":"非同一门店（各 1:1）",
+  "← Back to list":"← 返回列表",
+  "Flag a data issue":"标记数据异常",
+  "Enable…":"启用…",
+  "Disable":"停用",
+  "enable":"启用",
+  "disable":"停用",
+
+  /* ---- option values ---- */
+  "All":"全部",
+  "active":"生效中",
+  "inactive":"已失效",
+  "removed":"已移除",
+  "Pending":"待判定",
+  "Same store (2:1)":"同一门店 (2:1)",
+  "Not same (1:1)":"非同一门店 (1:1)",
+  "Live":"已上线",
+  "Has any issue":"有任意异常",
+  "Baseline drift":"基线漂移",
+  "Duplicate 2:1":"重复 2:1",
+  "Open provider issue":"未关闭的供应商异常",
+  "Has open issue":"有未关闭异常",
+  "No issue":"无异常",
+  "Type ≠ source":"类型 ≠ 来源",
+
+  /* ---- badges ---- */
+  "missing":"缺失",
+  "none":"无",
+  "intake":"入池",
+  "type ≠ source":"类型 ≠ 来源",
+  "blocks sign-off":"阻塞签收",
+  "warning only":"仅提醒",
+  "differs from baseline":"与基线不同",
+  "reported to owner":"已通知责任方",
+  "open":"未关闭",
+  "reported":"已通知",
+  "fixed":"已修复",
+  "blocked — no OC ID":"阻塞 —— 没有 OC 单号",
+  "warning":"提醒",
+  "major":"主版本",
+  "minor":"次版本",
+  "patch":"修复",
+  "captured":"已记录",
+  "not captured":"未记录",
+  "Yes":"是",
+  "No":"否",
+
+  /* ---- detail page ---- */
+  "Basic Info":"基本信息",
+  "Operations":"运营信息",
+  "Hours & Services":"营业时间与服务",
+  "Change History":"变更历史",
+  "What customers see":"客户看到的内容",
+  "How this record is assembled":"这条记录如何拼装",
+  "Downstream visibility":"下游可见性",
+  "Opening Hours":"营业时间",
+  "Issues on this store":"该门店的异常",
+  "Sweeper edits":"揽收方修改",
+  "Cutoff time":"截单时间",
+  "Time zone":"时区",
+  "Services":"服务",
+  "Enable (is_enable)":"启用 (is_enable)",
+  "Visible downstream":"下游可见",
+  "Linked vendors":"关联供应商",
+  "Mapping":"映射关系",
+  "Last pushed downstream":"最近一次推送到下游",
+  "Signed-off baseline":"签收基线",
+  "Postal code":"邮政编码",
+  "Postal":"邮编",
+  "Coordinates":"坐标",
+  "Phone":"电话",
+  "State":"州",
+  "Street address":"街道地址",
+  "from sync":"来自同步",
+  "none — a wrong sweeper is flagged, not typed over":"不允许修改 —— 揽收方有误应标记异常，不能直接改写",
+  "cache invalidated on last change":"最近一次变更时已失效",
+  "— never pushed":"— 从未推送",
+  "Not found":"未找到",
+
+  /* ---- empty states / helper text ---- */
+  "No issue flagged on this record.":"这条记录还没有标记异常。",
+  "No open issue.":"没有未关闭的异常。",
+  "No entries for this record yet.":"这条记录暂无变更。",
+  "No pair matches these filters.":"没有符合当前筛选的配对。",
+  "Nothing outstanding for this filter.":"当前筛选下没有待处理项。",
+  "No drift.":"没有基线漂移。",
+  "No skips expected.":"预计没有跳过项。",
+  "No issue":"无异常",
+
+  /* ---- issue types ---- */
+  "Missing":"缺失",
+  "Incorrect":"错误",
+  "Inconsistent":"前后矛盾",
+  "Out of range":"超出范围",
+  "Duplicate":"重复",
+  "Stale":"过期",
+  "Format":"格式错误",
+  "the provider sent no value at all":"供应商完全没有给值",
+  "a value exists but it is the wrong one":"有值，但值是错的",
+  "two fields contradict each other":"两个字段互相矛盾",
+  "placeholder or impossible (0,0), hours end before start":"占位值或不可能是真的（0,0），结束时间早于开始时间",
+  "this record looks like another one":"这条记录与另一条看起来是同一家",
+  "unchanged in a way that no longer matches reality":"长期未变，已经与现实不符",
+  "unparseable or truncated (phone, free-text hours)":"无法解析或被截断（电话、自由文本营业时间）",
+
+  /* ---- flag modal ---- */
+  "Sub-field":"子字段",
+  "(optional)":"（可选）",
+  "(pick one)":"（请选择）",
+  "(none for this field)":"（该字段无子字段）",
+  "— whole field —":"— 整个字段 —",
+  "What kind of problem?":"问题属于哪一类？",
+  "Severity":"严重程度",
+  "What exactly is wrong?":"具体哪里不对？",
+  "blocking · cannot go live":"阻塞 · 不能上线",
+  "warning · live but wrong":"提醒 · 已上线但有误",
+  "Pick a type to see what it means.":"选一个类型，这里会解释它的含义。",
+
+  /* ---- sign-off ---- */
+  "Checks":"检查项",
+  "An active vendor location feeds this store":"有生效中的供应商门店为这家店供货",
+  "Opening hours are present":"营业时间齐全",
+  "Intake checks passed":"入池校验已通过",
+  "No duplicate pair waiting":"没有等待判定的重复配对",
+  "No open data issue on this store":"这家店没有未关闭的数据异常",
+  "I verified the address, coordinates and opening hours with the provider record.":"我已对照供应商记录核对了地址、坐标和营业时间。",
+  "no active vendor location":"没有生效中的供应商门店",
+  "opening hours missing from the provider record":"供应商记录缺营业时间",
+  "intake check was overridden":"入池校验曾被覆盖",
+  "duplicate pair still undecided":"重复配对尚未判定",
+
+  /* ---- duplicate page ---- */
+  "same store · 2:1":"同一门店 · 2:1",
+  "not same · 1:1":"非同一门店 · 1:1",
+  "needs decision":"待判定",
+  "Resolved — see Change Log":"已处理 —— 见变更日志",
+  "OC location:":"OC 门店：",
+  "address":"地址",
+  "vs":"对",
+  "· postal":"· 邮编",
+
+  /* ---- data issues page ---- */
+  "Send the list to the provider":"把清单发给供应商",
+  "CSV of every open issue — field · sub-field · type · severity · reason — ready to paste into a ticket. This is the hand-off; nothing is applied or approved here.":"每条未关闭异常的 CSV —— 字段 · 子字段 · 类型 · 严重程度 · 原因 —— 可以直接贴进工单。这一步就是交接；这里不应用、也不审批任何数据。",
+  "Next provider sync":"下一次供应商同步",
+  "Filter by issue type":"按异常类型筛选",
+  "Granularity: field → sub-field → type → severity. Blocking stops new sign-offs; warnings do not.":"颗粒度：字段 → 子字段 → 类型 → 严重程度。阻塞级会挡住新的签收，提醒级不会。",
+  "Data issues — provider and self-operated":"数据异常 —— 供应商与自营",
+  "flagged by us · the owner fixes the source":"由我们标记 · 责任方修源头",
+  "The value never changes here, and nobody closes it by hand — the next push either fixes it or it stays open.":"这里的值永远不会变，也没有人手工关闭 —— 下一次推送要么把它修好，要么它继续挂着。",
+  "Changed after sign-off":"签收之后发生变化",
+  "for information only — these values are already downstream":"仅供参考 —— 这些值已经给到下游",
+  "Failed intake":"入池失败",
+  "no OC record exists — nothing can go live":"没有生成 OC 记录 —— 不可能上线",
+  "There is no override that lets a bad record go live.":"没有任何覆盖入口能让一条坏记录上线。",
+  "Closed automatically by a sync":"由某次同步自动关闭",
+  "the run delivered a valid value — nobody had to click":"那次推送带来了合法值 —— 没有人需要点任何东西",
+  "value unchanged since it was flagged":"自标记以来值没有变化",
+  "· the value the run delivered is what closed it":"· 正是这次推送的值关闭了它",
+  "stays in the audit trail as":"保留在审计记录里，类型为",
+  "baseline captured":"已记录基线",
+
+  /* ---- sync page ---- */
+  "A run writes provider values. It never writes an OC decision — enable, flags and sign-offs stay human. Since v3.3.0 a run may also close an issue, but only when the value it delivered is valid; the fix is the owner’s, the record of it is ours.":"一次推送只写供应商的值，从不写 OC 的决定 —— 启用、标记、签收都由人做。自 v3.3.0 起，推送也可以关闭异常，但只有它带来的值合法时才关；修是责任方的事，记录是我们的。",
+
+
+  "LMS, PUDO or M&MP per record; a 2:1 store shows both":"每条记录是 LMS、PUDO 或 M&MP；2:1 的门店两个都显示",
+  "Flag an issue on this record":"在这条记录上标记异常",
+  "Flag an issue on the source record":"在源记录上标记异常",
+  "Batch enable still records a baseline per row and cannot bypass the checks.":"批量启用依然逐条记录基线，也无法绕过检查。",
+  "location delisted by provider":"供应商下架了这个门店",
+  "ops corrected hours":"运营修正了营业时间",
+  /* ---- toasts ---- */
+  "Already applied":"已经执行过了",
+  "This demo has one pending run — reload the page to replay it.":"这个演示只有一次待执行的推送 —— 刷新页面可以重放。",
+  "Sync applied":"同步已执行",
+  "Waiting for sign-off":"等待签收",
+  "Permission required":"需要权限",
+  "Enable requires the Location Manager role.":"启用需要门店管理员角色。",
+  "Duplicate decisions need the Location Manager role.":"重复门店判定需要门店管理员角色。",
+  "Flagging needs the Location Manager role.":"标记异常需要门店管理员角色。",
+  "Disabled":"已停用",
+  "Enabled · baseline captured":"已启用 · 基线已记录",
+  "Batch complete":"批量操作完成",
+  "Marked reported":"已标记为已催",
+  "Chased with the provider — the issue stays open until the data changes":"已向供应商催办 —— 数据没变之前，这条异常一直保持未关闭。",
+  "Flagged to provider":"已标记给供应商",
+  "Reason required":"必须填原因",
+  "A flag tells the owner what to fix — write what is wrong":"标记是告诉责任方要改什么 —— 请写清哪里不对。",
+  "Flagged to owner":"已标记并通知责任方",
+  "Cannot merge":"无法合并",
+  "Mapped 2:1":"已映射为 2:1",
+  "Kept 1:1":"保持 1:1",
+  "Nothing to export":"没有可导出的内容",
+  "The current filter matches no rows":"当前筛选没有匹配的行",
+  "No open issue matches this filter":"没有符合当前筛选的未关闭异常",
+  "Exported":"已导出",
+  "Exported for the provider":"已导出，可直接发给供应商",
+  "blocking":"阻塞",
+  "value unchanged":"值未变",
+  /* ---- table heads / placeholders / titles ---- */
+  "Page":"页面",
+  "Action":"操作",
+  "Expected":"预期",
+  "LMS, PUDO or M&amp;MP per record; a 2:1 store shows both":"每条记录是 LMS、PUDO 或 M&amp;MP；2:1 的门店两个都显示",
+  "Click “Apply next provider sync”":"点“执行下一次供应商同步”",
+  "e.g. LOC-10024":"例如 LOC-10024",
+  "e.g. OC-00001":"例如 OC-00001",
+  "keyword":"关键词",
+  "e.g. DUP-001":"例如 DUP-001",
+  "e.g. postal 92058 belongs to Oceanside but the street line is in 92054":"例如：邮编 92058 属于 Oceanside，但街道地址落在 92054",
+  "Console time (local)":"控制台时间（本地）",
+  "open provider issue":"未关闭的供应商异常",
+  "values changed since sign-off":"签收之后变更的值",
+  "requires the Location Manager role":"需要门店管理员权限",
+  "two vendor records feed this store":"两条供应商记录供养这家店",
+  "Opening hours":"营业时间",
+  /* ---- walkthrough ---- */
+  "Vendor List":"供应商列表",
+  "Vendor Detail":"供应商详情",
+  "OC List":"OC 列表",
+  "OC Detail":"OC 详情",
+  "Both lists":"两个列表",
+  "Look at the Sweeper column":"看揽收方这一列",
+  "Every sweeper comes with the sync — no edit affordance anywhere":"所有揽收方都随同步进来 —— 任何地方都没有编辑入口",
+  "Report a data issue on an empty sweeper":"给为空的揽收方标记一条数据异常",
+  "Reason required · flag recorded on the vendor record · no value changed":"必须填原因 · 标记记在供应商记录上 · 值不变",
+  "Read the Source column":"看来源这一列",
+  "Set Source = LMS, then open the Type filter":"来源选 LMS，再打开类型筛选",
+  "Data Issues":"数据异常",
+  "Issues filter → “Type ≠ source”":"异常筛选 →“类型 ≠ 来源”",
+  "Zero rows on clean data; a record whose type cannot belong to its source is tagged in the Type column and isolated here":"干净数据下是零行；类型不可能属于其来源的记录会在类型列打标，并在这里被单独筛出",
+  "Basic Info → each field carries its source":"基本信息 → 每个字段都带来源",
+  "LMS wins the field when LMS has a value, PUDO fills the rest":"LMS 有值时该字段归 LMS，其余由 PUDO 补",
+  "Enable a ready location":"启用一家已就绪的门店",
+  "Sign-off checklist · baseline captured · no data edited":"签收检查清单 · 记录基线 · 不改任何数据",
+  "Confirm the pending pair as \"same store\"":"把待判定的配对确认为“同一门店”",
+  "2:1 mapping · the OC row shows both vendors and switches to LMS values":"2:1 映射 · OC 行同时显示两个供应商，取值切换为 LMS",
+  "Read the three sections":"读三个分区",
+  "Provider issues · baseline drift · intake failures — no review queues":"供应商异常 · 基线漂移 · 入池失败 —— 没有审核队列",
+  "Open a drifted location":"打开一家发生漂移的门店",
+  "See which fields moved since sign-off; downstream already has the new values — drift is information, not a decision":"看签收之后哪些字段变了；下游其实已经拿到新值 —— 漂移是信息，不是待决策",
+  "Filter Source = M&MP":"筛选来源 = M&MP",
+  "Self-operated stores follow the same rules: same sign-off, same issue ledger — only the data owner differs":"自营店遵守同一套规则：同样签收、同一个异常台账 —— 只是数据责任方不同"
+};
+
+/* ---- whole blocks (inline markup inside the sentence) ---- */
+var I18N_BLOCK = {
+  "p01.desc":"<b>来源决定类型</b> —— LMS 只能是 <b>packagehub</b>，PUDO Inc 只能是 <b>PUDOpoint</b> 或 <b>Locker</b>，M&amp;MP 是自营小店 —— 所以选定来源后，类型筛选会自动收窄。这里是供应商实际推过来的内容，<b>所有字段只读</b>，包括<b>揽收方</b>，它现在随每日同步一起进来。<b>M&amp;MP</b> 是自营店，责任方是门店本身而不是某个供应商。发现值不对，我们不在这一层改：我们<b>带着原因标记它</b>，标记挂在这条记录上，由供应商去修源头。OC 层只决定这家店是否上线。",
+  "p02.desc":"<b>来源决定类型：</b>LMS → packagehub · PUDO Inc → PUDOpoint / Locker · M&amp;MP → <b>M&amp;MP</b>，所以选定来源后类型筛选会自动收窄。这是客户实际看到的那条记录。<b>只有两个动作：启用，以及标记异常。</b>这里不能编辑 —— 地址错了不会被改写，而是标记回供应商。值<b>按字段逐个合并</b>：<b>M&amp;MP</b> 自营店是自己的来源，优先级最高，然后是 <b>LMS</b>，最后由 PUDO Inc 补上仍为空的字段。",
+  "pdup.desc":"独立页面，只回答一个问题：<b>这两条供应商门店记录是不是同一家店？</b>配对由模糊匹配产生（地址 50 · 邮编 25 · 城市 15 · 州 10，阈值 75%）。判定结果决定映射关系 —— <b>同一家 = 2:1</b>（两条供应商记录对应一个 OC 门店，取值以 LMS 优先），<b>不是同一家 = 1:1</b>（各自有独立的 OC 门店）。凡是挂在多条供应商记录下的 OC 门店，都会在 OC 列表里标 <b>2:1</b>。",
+  "pdi.desc":"所有数据问题集中在一个台账里 —— <b>没有审核队列</b>。三类：我们已经请供应商修的、签收之后变了的（只是信息，不是待决策），以及从来没通过入池校验的。这里不决定任何值是否被应用 —— <b>供应商的值永远给到下游</b>。标记异常是我们提要求的方式，下一次推送是它落地的方式。<b>导出清单</b>就可以发给供应商。",
+  "p03.desc":"两个层级上的每一次创建、同步写入、标记、判定和签收都在这里。可按层级和类型筛选。",
+  "p04.desc":"每一次供应商同步一行。触发熔断的那一次会停止下发，等人工处理。",
+  "flag.intro":"这<b>不会</b>改值。它把问题记在源记录上，并要求责任方去改 —— PUDO Inc / LMS 由供应商改，<b>M&amp;MP</b> 自营店由门店自己改。",
+  "flag.warn":"门店保留当前值。阻塞级异常会挡住新的签收，提醒级不会。",
+  "signoff.intro":"启用是 OC 层<b>唯一</b>决定的事。它把下面的值冻结为签收基线 —— 之后供应商的变更都以它为参照。",
+  "sync.pending":"缺失、格式错、自相矛盾、不可能的数字 —— 只要值合法地到了，就自己关闭；<b>错误 / 过期 / 重复</b>永远回到人工。",
+  "drift.note":"客户已经拿到<b>新</b>值 —— 没有什么需要批准。基线只是记录签收时是什么样，好让你看出供应商改了什么。",
+  "oc.assemble":"每个字段都独立地从关联的源记录里取：<b>M&amp;MP</b>（自营店）优先，然后是 <b>LMS</b>，最后由 PUDO Inc 补空。两条记录（2:1）依然只产出客户看到的一行。",
+  "walk.10.exp":"只提供 <b>packagehub</b>，并已自动选中；提示显示“LMS → packagehub”。PUDO Inc（PUDOpoint / Locker）和 M&amp;MP 同理",
+  "walk.12.exp":"两条异常自己关闭（值变了<b>并且</b>合法）；一条保持未关闭并注明“值变了但仍不合法”，一条回到人工，其余不动 —— 任何地方都没有手工关闭",
+  "btn.notlive":"未上线",
+  "sync.info":"一次推送只写供应商的值，从不写 OC 的决定 —— 启用、标记、签收都由人做。自 v3.3.0 起，推送也可以<b>关闭</b>一条异常，但只有它带来的值合法时才关；修是责任方的事，记录是我们的。",
+  "wt.title":"演示脚本 —— v3.5.0（标记、导出、等推送落地）"
+};
+
+/* ---- rules for text that carries a number, an id or a filename ---- */
+var I18N_RULES = [
+  [/^(\d+) flagged field\(s\) are covered by this run\.$/, "本次推送覆盖 $1 个已标记字段。"],
+  [/^A source can only produce its own type, so the Type filter is now limited to (.+)\.$/, "来源只可能产出自己的类型，所以类型筛选现在只保留 $1。"],
+  [/^No OC location exists for (.+)$/, "$1 还没有 OC 门店"],
+  [/^OC location (OC-\d+) auto-disabled$/, "OC 门店 $1 已自动停用"],
+  [/^OC location: (.+) vs$/, "OC 门店：$1 对 —"],
+  [/^blocks sign-off · (.+) · (.+)$/, "阻塞签收 · $1 · $2"],
+  [/^warning · (.+) · (.+)$/, "提醒 · $1 · $2"],
+  [/^System · (.+)$/, "系统 · $1"],
+  [/^created — fuzzy match (.+) vs (.+) \(pending duplicate, no OC location ID\)$/, "创建 —— 与 $2 模糊匹配 $1（待判定重复，暂不生成 OC 单号）"],
+  [/^this type cannot come from (.+)$/, "这个类型不可能来自 $1"],
+  [/^OC location: (.+) vs (.+)$/, "OC 门店：$1 对 $2"],
+  [/^OC Internal Console · v[\d.]+$/, "OC 内部管理控制台 · v3.5.0"],
+  [/^(\d+) vendor location\(s\)$/, "$1 个供应商门店"],
+  [/^(\d+) OC location\(s\)$/, "$1 个 OC 门店"],
+  [/^(\d+) pair\(s\)$/, "$1 组配对"],
+  [/^(\d+) entries$/, "$1 条记录"],
+  [/^(\d+) flagged$/, "$1 条异常"],
+  [/^(\d+) data$/, "$1 条数据"],
+  [/^(\d+) drift$/, "$1 处漂移"],
+  [/^(\d+) open$/, "$1 未关闭"],
+  [/^(\d+) selected$/, "已选 $1 条"],
+  [/^All types \((\d+)\)$/, "全部类型 ($1)"],
+  [/^(\d+)% match$/, "相似度 $1%"],
+  [/^detected (.+)$/, "检测于 $1"],
+  [/^(\d+) closed automatically · (\d+) need a human · (\d+) still invalid · (\d+) unchanged$/, "自动关闭 $1 条 · 需人工 $2 条 · 仍不合法 $3 条 · 未变化 $4 条"],
+  [/^pulled (\d+) · created (\d+) · updated (\d+) · flagged (\d+)$/, "拉取 $1 · 新建 $2 · 更新 $3 · 标记 $4"],
+  [/^breaker: (.+)$/, "熔断：$1"],
+  [/^(\d+) issue\(s\) auto-closed$/, "自动关闭 $1 条异常"],
+  [/^applied · (.+)$/, "已应用 · $1"],
+  [/^closed · (.+)$/, "已关闭 · $1"],
+  [/^(\d+) location\(s\) not live yet$/, "还有 $1 家门店未上线"],
+  [/^(\d+) location\(s\) selected$/, "已选 $1 家门店"],
+  [/^(\d+) will be skipped$/, "有 $1 条会被跳过"],
+  [/^(\d+) field\(s\) changed since sign-off\. (.+)$/, "有 $1 个字段在签收后发生变化。$2"],
+  [/^(\d+) open data issue\(s\) — the provider has to fix the source\.$/, "有 $1 条未关闭的数据异常 —— 需要供应商去修源头。"],
+  [/^(\d+) blocking data issue\(s\) — see Issues$/, "$1 条阻塞级数据异常 —— 见异常页"],
+  [/^Blocked: (.+)$/, "阻塞：$1"],
+  [/^(ISS-\d+) · raised by (.+?) · (.+)$/, "$1 · 由 $2 提出 · $3"],
+  [/^✔ checked (.+)$/, "✔ 已核对于 $1"],
+  [/^value changed to “(.+)” — (.+) needs a human re-check$/, "值变为 “$1” —— $2 需要人工复核"],
+  [/^value changed to “(.+)” but is still invalid$/, "值变为 “$1”，但仍不合法"],
+  [/^closed automatically — value (.+?) → (.+)$/, "自动关闭 —— 值 $1 → $2"],
+  [/^(\d+) row\(s\) · (.+)$/, "共 $1 行 · $2"],
+  [/^(\d+) open issue\(s\) · (.+)$/, "共 $1 条未关闭异常 · $2"],
+  [/^(\d+) processed · (\d+) skipped \(blocked\)$/, "完成 $1 条 · 跳过 $2 条（被阻塞）"],
+  [/^(\d+) processed$/, "完成 $1 条"],
+  [/^(OC-\d+) · hidden from downstream immediately$/, "$1 · 已立即对下游隐藏"],
+  [/^(OC-\d+) is live; downstream cache invalidated$/, "$1 已上线，下游缓存已失效"],
+  [/^(LOC-\d+) · intake failures are chased, never overridden$/, "$1 · 入池失败只会催办，不会被覆盖"],
+  [/^(LOC-\d+) · (.+?) · (.+?) · value unchanged$/, "$1 · $2 · $3 · 值未变"],
+  [/^(.+) · keeps its own OC location (OC-\d+)$/, "$1 · 保留自己的 OC 门店 $2"],
+  [/^(.+) now feeds (OC-\d+) · LMS values take precedence per field$/, "$1 现在并入 $2 · 取值按字段以 LMS 优先"]
+];
+
+var VER_ZH = {
+  "3.5.0":"<b>这套控制台现在有中文了。</b>顶部右上角多了一个 EN / 中文 切换，整份界面 —— 列表、筛选、弹框、详情页、演示脚本、版本说明 —— 都会跟着换语言，选择会记住。数据本身（门店名、地址、供应商、单号、字段名）保持英文原样：这些是供应商推过来的值，翻译它们反而制造第二个真相来源。",
+  "3.4.0":"<b>控制台不再决定「是否应用」。</b>供应商的值永远会到下游 —— 没有接受、拒绝或重签这一步，也没有手工关闭。由此带来两件事：漂移变成了<b>信息</b>（签收之后变了什么），而不是一个待决策项；异常台账可以<b>导出成 CSV</b>，直接发给供应商当工作清单。标记是我们提要求的方式，下一次推送是它被修好的方式。",
+  "3.3.0":"<b>修好之后异常自己关闭。</b>下一次供应商同步会拿每个被标记字段的值和标记时的值比：如果值变了<i>并且</i>现在合法，异常自动关闭，记 <code>closed_by = AUTO_SYNC</code> 和这次的 run id；如果变了但仍不合法，异常保持未关闭并注明原因；如果没变，什么都不发生。阻塞级异常一关闭就不再阻塞。标记弹框里的严重程度文案也缩短了，只是文案。",
+  "3.2.2":"<b>类型值修正。</b>自营店本身的类型就是 <b>M&amp;MP</b>，不是「M&amp;MP store」。来源→类型映射、类型筛选和演示数据都对齐了，所以筛 M&amp;MP 就能拿到自营店，不需要给类型改名。",
+  "3.2.1":"<b>交付物补齐。</b>新增一份给团队外读者看的通俗功能概览（可分享页面 + Markdown），需求总览里加了交付物清单，并改正了一页速览里仍描述「可编辑揽收方」和 v3 之前重复规则的旧内容。行为无变化。",
+  "3.2.0":"<b>来源决定类型。</b>LMS 只可能是 <b>packagehub</b>，PUDO Inc 是 <b>PUDOpoint</b> 或 <b>Locker</b>，M&amp;MP 是自营店。两个列表都做了级联：选定来源后，类型筛选收窄到该来源真实可能的值，并带实时条数。类型不属于其来源的记录会在列表里打标，并可一键单独筛出。",
+  "3.1.0":"<b>异常颗粒度更细。</b>一条标记不再只是「字段 + 一句话」：它带上了 <b>异常类型</b>（缺失 / 错误 / 前后矛盾 / 超出范围 / 重复 / 过期 / 格式）、可选的<b>子字段</b>（哪一行地址、星期几）以及决定是否阻塞启用的<b>严重程度</b>。",
+  "3.0.1":"所有时间戳精确到秒，头部显示实时时钟。行为无变化。",
+  "3.0.0":"<b>供应商数据是唯一的数据。</b>OC 层不再编辑，只保留两个动词 —— <b>启用</b> 和 <b>标记异常</b>。揽收方随同步进来，所以揽收方有误是标记回供应商，而不是改写；重复检查独立成页；下游取值按字段合并，<b>LMS 优先</b>；M&amp;MP 走同一套数据、同一套规则。",
+  "2.7.0":"字段锁解锁、字段级回退、签收队列移到 OC 列表。",
+  "2.6.1":"一致性收口：编辑弹框「下次同步生效」的矛盾、PRD §8 重排、批量计数修正。"
+};
+
+var ISS_ZH = {
+  "ISS-0007":"坐标与街道地址相距 297 公里 —— 坐标点落在海里",
+  "ISS-0008":"与 ISS-0007 是同一条记录 —— 经纬度一起偏了",
+  "ISS-0009":"没有提供揽收方 —— 下游路由无法判断谁来揽收",
+  "ISS-0010":"单元号重复出现（“2918 Avenue I” + “Ste 2”），且与 LOC-12194 模糊匹配度 75%",
+  "ISS-0011":"邮编 92058 属于 Oceanside，但街道地址写的是 “Mission Ave Ste 148”，实际是 92054 —— 承运商无法路由",
+  "ISS-0012":"周六没有任何时段 —— 在最忙的收件日这家店显示为关门",
+  "ISS-0013":"电话只有 7 位（“5550142”）—— 区号外无法拨通",
+  "ISS-0014":"营业时间自 2024 年未变，已与门店官网冲突（官网 16:00 关门，不是 17:00）",
+  "ISS-0015":"名称还挂着旧合作社品牌 —— 门店 2025 年已改名，客户看到的标签是误导",
+  "ISS-0016":"揽收方是 PUDO Inc，但这是一家 LMS 的 packagehub，与 PUDO 没有协议 —— 路由会把包裹送给接不了的合作方"
+};
+
+var INTAKE_ZH = {
+  "LOC-00187":["address_line1 为空","缺 opening_hours —— 客户看到的营业时间无法校验"],
+  "LOC-00188":["坐标 (0, 0) 是占位值 —— 不在任何服务区内","postal_code 80202 与 (0, 0) 坐标对不上"]
+};
+
+/* ===================== runtime ===================== */
+var LANG = (function(){
+  var q = (location.search.match(/[?&]lang=(en|zh)/) || [])[1];
+  var s = null; try { s = localStorage.getItem('lm_lang'); } catch(e) {}
+  return (q || s) === 'zh' ? 'zh' : 'en';
+})();
+
+function tr(s){
+  if(LANG !== 'zh' || s == null) return s;
+  var v = I18N_ZH[s]; if(v) return v;
+  for(var i=0;i<I18N_RULES.length;i++){
+    var r = I18N_RULES[i];
+    if(r[0].test(s)) return s.replace(r[0], r[1]);
+  }
+  return s;
+}
+function trTextNode(n){
+  if(LANG === 'en'){
+    if(n.__en !== undefined){ n.nodeValue = n.__en; delete n.__en; }
+    return;
+  }
+  var raw = n.nodeValue;
+  if(!raw || !/[A-Za-z]/.test(raw)) return;
+  var m = raw.match(/^(\s*)([\s\S]*?)(\s*)$/); if(!m) return;
+  var core = m[2]; if(!core) return;
+  var out = tr(core);
+  if(out !== core){ if(n.__en === undefined) n.__en = raw; n.nodeValue = m[1] + out + m[3]; }
+}
+var I18N_SKIP = {SCRIPT:1,STYLE:1,TEXTAREA:1};
+function walkText(el){
+  for(var c = el.firstChild; c; c = c.nextSibling){
+    if(c.nodeType === 3){ trTextNode(c); continue; }
+    if(c.nodeType !== 1) continue;
+    if(I18N_SKIP[c.tagName]) continue;
+    if(c.getAttribute && c.getAttribute('data-i18n')) continue;
+    walkText(c);
+  }
+}
+function trAttrs(el){
+  var attrs = ['placeholder','title','aria-label'];
+  for(var i=0;i<attrs.length;i++){
+    var a = attrs[i], v = el.getAttribute && el.getAttribute(a);
+    if(!v) continue;
+    if(!el.__attr) el.__attr = {};
+    if(LANG === 'en'){
+      if(el.__attr[a] !== undefined){ el.setAttribute(a, el.__attr[a]); delete el.__attr[a]; }
+      continue;
+    }
+    if(!/[A-Za-z]/.test(v)) continue;
+    var o = tr(v);
+    if(o !== v){ if(el.__attr[a] === undefined) el.__attr[a] = v; el.setAttribute(a, o); }
+  }
+}
+function breadcrumb(){
+  var c = CRUMBS[curPage] || ['',''];
+  var t = (LANG === 'zh' && CRUMBS_ZH[curPage]) ? CRUMBS_ZH[curPage] : c;
+  var el = document.getElementById('breadcrumb');
+  if(el) el.innerHTML = '<b>' + t[0] + '</b> — ' + t[1];
+}
+function applyLang(){
+  document.documentElement.lang = (LANG === 'zh') ? 'zh-CN' : 'en';
+  var blocks = document.querySelectorAll('[data-i18n]');
+  for(var i=0;i<blocks.length;i++){
+    var el = blocks[i], zh = I18N_BLOCK[el.getAttribute('data-i18n')];
+    if(LANG === 'zh'){
+      if(el.__en === undefined) el.__en = el.innerHTML;
+      if(zh != null && el.innerHTML !== zh) el.innerHTML = zh;
+    } else if(el.__en !== undefined){
+      el.innerHTML = el.__en; delete el.__en;
+    }
+  }
+  walkText(document.body);
+  var nodes = document.querySelectorAll('[placeholder],[title]');
+  for(var j=0;j<nodes.length;j++) trAttrs(nodes[j]);
+  var bEn = document.getElementById('lang-en'), bZh = document.getElementById('lang-zh');
+  if(bEn) bEn.classList.toggle('active', LANG === 'en');
+  if(bZh) bZh.classList.toggle('active', LANG === 'zh');
+  document.title = (LANG === 'zh')
+    ? '门店管理后台 — 交互原型 (' + APP_VERSION + ')'
+    : 'Location Management Admin Console — Interactive Prototype (' + APP_VERSION + ')';
+  breadcrumb();
+}
+function renderActivePage(){
+  if(curPage === 'p01') renderVendor();
+  else if(curPage === 'p02') renderOC();
+  else if(curPage === 'pdup') renderDup();
+  else if(curPage === 'pdi') renderIssuesPage();
+  else if(curPage === 'p03') renderLog();
+  else if(curPage === 'p04') renderSync();
+  else if(curPage === 'pd') renderProfile();
+}
+function modalOpen(id){ var el = document.getElementById(id); return !!(el && el.classList.contains('open')); }
+function refreshOpenModals(){
+  if(modalOpen('modal-ver')) openVersionModal();
+  if(modalOpen('modal-batch') && pendingBatch){ closeModal('modal-batch'); openBatchModal(pendingBatch); }
+  if(modalOpen('modal-signoff') && soTarget){ closeModal('modal-signoff'); var o = findOC(soTarget); if(o) openSignoff(o); }
+  if(modalOpen('modal-flag') && flagCtx){
+    var reason = document.getElementById('flag-reason').value;
+    var field = val('flag-field'), sub = val('flag-sub'), type = val('flag-type');
+    closeModal('modal-flag'); openFlag(flagCtx.vendorId, field, sub);
+    if(type) document.getElementById('flag-type').value = type;
+    flagTypeChanged();
+    document.getElementById('flag-reason').value = reason;
+  }
+}
+function setLang(l){
+  LANG = (l === 'zh') ? 'zh' : 'en';
+  try { localStorage.setItem('lm_lang', LANG); } catch(e) {}
+  renderActivePage();
+  refreshOpenModals();
+  applyLang();
+  updateBadges();
+}
+function whyOf(i){ return (LANG === 'zh' && ISS_ZH[i.id]) ? ISS_ZH[i.id] : i.reason; }
+function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.vid] : i.issues; }
+
+</script>
+<script>
 /* ============ v3 model ============ */
-var APP_VERSION='3.4.0';
+var APP_VERSION='3.5.0';
 var VERSIONS=[
+ {v:'3.5.0',type:'minor',date:'2026-11-04',desc:'<b>The console speaks Chinese now.</b> A EN / 中文 switch sits in the header: lists, filters, dialogs, detail pages, the walkthrough script and this version history all follow it, and the choice is remembered. Data stays as it arrived — store names, addresses, provider names, ids and field names are not translated, because a translated value would be a second source of truth.'},
  {v:'3.4.0',type:'minor',date:'2026-11-04',desc:'<b>The console stops deciding what to apply.</b> Provider values always reach downstream — there is no accept, reject or re-sign step, and no manual close. Two things follow: a drift is now <b>information</b> (what moved since sign-off) rather than a decision, and the issue ledger can be <b>exported to CSV</b> so it can be sent to the provider as a work list. Marking an issue is how we ask; the next push is how it gets fixed.'},
  {v:'3.3.0',type:'minor',date:'2026-11-04',desc:'<b>Issues close themselves when the fix arrives.</b> The next provider sync compares each flagged field with the value that was flagged: if the value changed <i>and</i> is now valid, the issue closes with <code>closed_by = AUTO_SYNC</code> and the run id in the audit trail; if it changed but is still invalid, the issue stays open and says why; if it did not change, nothing happens. Blocking issues stop blocking the moment they close. The flag dialog’s severity labels were also shortened so they fit the dialog — copy only.'},
  {v:'3.2.2',type:'patch',date:'2026-11-04',desc:'<b>Type value corrected.</b> A self-operated store carries the type <b>M&amp;MP</b> itself — not “M&amp;MP store”. The source→type map, the Type filter and the demo records are aligned, so a filter on M&amp;MP returns the self-operated stores without a renamed type.'},
@@ -861,23 +1428,26 @@ function typeMatches(v){
 function val(id){var el=document.getElementById(id);return el?el.value.trim():'';}
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
-function showToast(t,m,kind){var w=document.getElementById('toast-wrap'),d=document.createElement('div');d.className='toast '+(kind||'');d.innerHTML='<div class="t-title">'+esc(t)+'</div><div class="t-msg">'+esc(m)+'</div>';w.appendChild(d);setTimeout(function(){d.remove();},5200);}
+function showToast(t,m,kind){var w=document.getElementById('toast-wrap'),d=document.createElement('div');d.className='toast '+(kind||'');d.innerHTML='<div class="t-title">'+esc(tr(t))+'</div><div class="t-msg">'+esc(tr(m))+'</div>';w.appendChild(d);setTimeout(function(){d.remove();},5200);}
 function toggleWalkthrough(){document.getElementById('walkthrough').classList.toggle('open');}
 function openVersionModal(){
   document.getElementById('ver-body').innerHTML='<div class="ver-list">'+VERSIONS.map(function(v){
-    return '<div class="ver-row"><span class="ver-no">v'+v.v+'</span><span class="ver-cur vt-'+v.type+'">'+v.type+'</span><span class="ver-desc">'+v.desc+'</span></div>';
+    var d=(LANG==='zh'&&VER_ZH[v.v])?VER_ZH[v.v]:v.desc;
+    return '<div class="ver-row"><span class="ver-no">v'+v.v+'</span><span class="ver-cur vt-'+v.type+'">'+tr(v.type)+'</span><span class="ver-desc">'+d+'</span></div>';
   }).join('')+'</div>';
+  applyLang();
   openModal('modal-ver');
 }
 
 /* ============ navigation ============ */
 var CRUMBS={p01:['Vendor Location List','provider data · read-only · flags, not edits'],p02:['OC Location List','customers see this · enable + flag only'],pdup:['Duplicate Check','same store or not — 2:1 vs 1:1'],pdi:['Data Issues','provider issues · drift · intake'],p03:['Change Log','every write and every flag'],p04:['Sync Status','daily provider runs'],pd:['Location Detail','vendor and OC share one record shape']};
+var CRUMBS_ZH={p01:['供应商门店列表','供应商数据 · 只读 · 只标记不改'],p02:['OC 门店列表','客户看到的就是这条 · 只能启用和标记'],pdup:['重复门店检查','同一家还是两家 —— 2:1 还是 1:1'],pdi:['数据异常','供应商异常 · 漂移 · 入池失败'],p03:['变更日志','每一次写入、每一次标记'],p04:['同步状态','每日供应商推送'],pd:['门店详情','供应商与 OC 共用同一种记录结构']};
+var curPage='p01';
 function switchPage(pid){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   var el=document.getElementById('page-'+pid);if(el)el.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.toggle('active',n.getAttribute('data-nav')===pid);});
-  var c=CRUMBS[pid]||['',''];
-  document.getElementById('breadcrumb').innerHTML='<b>'+c[0]+'</b> — '+c[1];
+  curPage=pid; breadcrumb();
   if(pid==='p01')renderVendor(); if(pid==='p02')renderOC();
   if(pid==='pdup')renderDup(); if(pid==='pdi')renderIssuesPage();
   if(pid==='p03')renderLog(); if(pid==='p04')renderSync();
@@ -983,7 +1553,7 @@ function renderVendor(){
   }).join('');
   document.getElementById('v-result-meta').textContent=rows.length+' vendor location(s)';
   syncTypeFilter('v');
-  updateBadges();
+  updateBadges();applyLang();
 }
 
 /* ============ OC list ============ */
@@ -1054,7 +1624,7 @@ function renderOC(){
   }).join('');
   document.getElementById('o-result-meta').textContent=rows.length+' OC location(s)';
   syncTypeFilter('o');
-  updateOCSelection();updateBadges();
+  updateOCSelection();updateBadges();applyLang();
 }
 function updateOCSelection(){
   var n=document.querySelectorAll('.o-chk:checked').length;
@@ -1080,11 +1650,11 @@ var soTarget=null;
 function openSignoff(o){
   var b=blockers(o);
   var rows=[['name','Name'],['addr1','Address'],['city','City / State'],['postal','Postal code'],['latitude','Coordinates'],['sweeper','Sweeper'],['hoursText','Opening hours']];
-  var body='<div class="info-line" style="margin:0 0 12px">Enabling is the <b>only</b> thing the OC layer decides. It freezes the values below as the signed-off baseline — later provider changes are measured against them.</div>';
+  var body='<div class="info-line" data-i18n="signoff.intro" style="margin:0 0 12px">Enabling is the <b>only</b> thing the OC layer decides. It freezes the values below as the signed-off baseline — later provider changes are measured against them.</div>';
   body+='<div class="dp-kv-grid">'+rows.map(function(r){
     var m=mergedField(o,mapF(r[0]));
     var v=r[0]==='latitude'?m.value+', '+mergedField(o,'lng').value:m.value||'—';
-    return '<div class="p-kv"><span class="k">'+r[1]+'</span><span class="v">'+esc(v)+' <span class="badge '+(m.src==='LMS'?'badge-blue':'badge-teal')+'" style="font-size:9px">'+esc(m.src==='PUDO Inc'?'PUDO':m.src)+'</span></span></div>';
+    return '<div class="p-kv"'+(r[0]==='hoursText'?' style="grid-column:1/-1"':'')+'><span class="k">'+r[1]+'</span><span class="v">'+esc(v)+' <span class="badge '+(m.src==='LMS'?'badge-blue':'badge-teal')+'" style="font-size:9px">'+esc(m.src==='PUDO Inc'?'PUDO':m.src)+'</span></span></div>';
   }).join('')+'</div>';
   body+='<div style="margin-top:14px;font-weight:600;font-size:12.5px">Checks</div><div class="chk-list">';
   var checks=[['An active vendor location feeds this store',b.indexOf('no active vendor location')<0],
@@ -1093,11 +1663,12 @@ function openSignoff(o){
     ['No duplicate pair waiting',b.indexOf('duplicate pair still undecided')<0],
     ['No open data issue on this store',!openIssues(o).length]];
   body+=checks.map(function(c){return '<div class="chk-item"><span class="'+(c[1]?'ok':'no')+'">'+(c[1]?'✓':'✕')+'</span><span>'+c[0]+'</span></div>';}).join('')+'</div>';
-  if(b.length)body+='<div class="warn-line" style="margin-top:10px">Blocked: '+esc(b.join(' · '))+'</div>';
+  if(b.length)body+='<div class="warn-line" style="margin-top:10px">Blocked: '+esc(b.map(tr).join(' · '))+'</div>';
   body+='<label class="ack-line" style="display:flex;gap:8px;margin-top:12px;font-size:12.5px"><input type="checkbox" id="so-ack" onchange="soAck()"><span>I verified the address, coordinates and opening hours with the provider record.</span></label>';
   document.getElementById('so-body').innerHTML=body;
+  applyLang();
   var btn=document.getElementById('so-confirm');
-  btn.disabled=true;btn.textContent=b.length?'Blocked':'Enable & sign off';
+  btn.disabled=true;btn.textContent=tr(b.length?'Blocked':'Enable & sign off');
   openModal('modal-signoff');
 }
 function soAck(){
@@ -1128,10 +1699,10 @@ function openBatchModal(action){
   });
   document.getElementById('batch-body').innerHTML='<div class="info-line">'+ids.length+' location(s) selected · <b>'+action+'</b></div>'
     +(willSkip.length?'<div style="margin-top:10px;font-size:12.5px"><b>'+willSkip.length+' will be skipped</b><div class="chk-list">'+willSkip.map(function(s){
-      return '<div class="chk-item"><span class="no">✕</span><span class="mono">'+s.id+'</span> '+esc(s.why.join(' · '))+'</div>';
+      return '<div class="chk-item"><span class="no">✕</span><span class="mono">'+s.id+'</span> '+esc(s.why.map(tr).join(' · '))+'</div>';
     }).join('')+'</div></div>':'<div class="rc-meta" style="margin-top:8px">No skips expected.</div>')
     +'<div class="warn-line" style="margin-top:10px">Batch enable still records a baseline per row and cannot bypass the checks.</div>';
-  openModal('modal-batch');
+  openModal('modal-batch');applyLang();
 }
 function confirmBatch(){
   var ids=Array.from(document.querySelectorAll('.o-chk:checked')).map(function(b){return b.getAttribute('data-ocid');});
@@ -1179,6 +1750,7 @@ function renderDup(){
         :'<div class="rc-actions"><button class="btn btn-primary btn-sm" onclick="resolveDup(\''+d.pairId+'\',\'confirmed\')">Same store (2:1)</button><button class="btn btn-secondary btn-sm" onclick="resolveDup(\''+d.pairId+'\',\'rejected\')">Not same (1:1 each)</button></div>')
       +'</div>';
   }).join(''):'<div class="card"><div style="font-size:13px">No pair matches these filters.</div></div>';
+  applyLang();
 }
 function resolveDup(pairId,res){
   if(!isMgr()){showToast('Permission required','Duplicate decisions need the Location Manager role.','error');return;}
@@ -1215,7 +1787,7 @@ function typeBadge(i){
 }
 function fieldLabel(i){
   var names={name:'Name',addr1:'Street address',city:'City',state:'State',postal:'Postal code',latitude:'Coordinates',sweeper:'Sweeper',hoursText:'Opening hours',phone:'Phone'};
-  return (names[i.field]||i.field)+(i.subField?' · '+i.subField:'');
+  return tr(names[i.field]||i.field)+(i.subField?' · '+i.subField:'');
 }
 function exportCard(){
   var open=ISSUES.filter(function(i){return i.status!=='fixed';}).length;
@@ -1228,7 +1800,7 @@ function syncCard(){
   var pending=pendingChecks();
   var body=SYNC_DONE
     ? '<span class="risk risk-auto">applied · '+esc(SYNC_SUMMARY.runId)+'</span><span class="rc-meta" style="margin:0">'+SYNC_SUMMARY.closed+' closed automatically · '+SYNC_SUMMARY.needsHuman+' need a human · '+SYNC_SUMMARY.stillInvalid+' still invalid · '+SYNC_SUMMARY.unchanged+' unchanged</span>'
-    : '<span class="rc-meta" style="margin:0">'+pending+' flagged field(s) are covered by this run. A missing value, a format error, a contradiction or an impossible number closes itself once the value arrives valid; <b>incorrect / stale / duplicate</b> always come back to a human.</span>'
+    : '<span class="rc-meta" style="margin:0">'+tr(pending+' flagged field(s) are covered by this run.')+' <span data-i18n="sync.pending">A missing value, a format error, a contradiction or an impossible number closes itself once the value arrives valid; <b>incorrect / stale / duplicate</b> always come back to a human.</span></span>'
       +'<button class="btn btn-primary btn-sm" onclick="runProviderSync()">Apply next provider sync</button>';
   return '<div class="card" style="margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b style="font-size:13px">Next provider sync</b>'
     +'<span class="badge badge-blue">'+esc(NEXT_SYNC.runId)+'</span>'+body+'</div>';
@@ -1243,7 +1815,7 @@ function renderIssuesPage(){
   var counts={};
   open.forEach(function(i){counts[i.type]=(counts[i.type]||0)+1;});
   var legend=Object.keys(ISSUE_TYPES).map(function(k){
-    return '<option value="'+k+'"'+(k===typeFilter?' selected':'')+'>'+ISSUE_TYPES[k].label+(counts[k]?' ('+counts[k]+')':'')+'</option>';
+    return '<option value="'+k+'"'+(k===typeFilter?' selected':'')+'>'+tr(ISSUE_TYPES[k].label)+(counts[k]?' ('+counts[k]+')':'')+'</option>';
   }).join('');
 
   var html=syncCard()+exportCard();
@@ -1260,7 +1832,7 @@ function renderIssuesPage(){
         +'<span class="badge badge-gray">'+esc(fieldLabel(i))+'</span>'+typeBadge(i)
         +'<span class="rc-meta" style="margin:0">'+(i.severity==='blocking'?'blocks sign-off':'warning only')+'</span>'
         +'<span class="risk '+(i.status==='reported'?'risk-review':'risk-block')+'">'+esc(i.status==='reported'?'reported to owner':i.status)+'</span></div>'
-        +'<div class="rc-meta">'+esc(i.reason)+'</div>'
+        +'<div class="rc-meta">'+esc(whyOf(i))+'</div>'
         +'<div class="rc-meta">'+esc(i.id)+' · raised by '+esc(i.raisedBy)+' · '+esc(i.raisedAt)+'</div>'
         +(i.checkNote?'<div class="rc-meta"><b>✔ checked '+esc(i.lastChecked||'')+'</b> · '+esc(i.checkNote)+(i.checkRun?' · '+esc(i.checkRun):'')+'</div>':'')
         +'<div class="rc-actions">'
@@ -1271,9 +1843,9 @@ function renderIssuesPage(){
 
   html+='<div class="card" style="margin-bottom:14px"><div style="display:flex;align-items:center;gap:10px"><b style="font-size:13px">Changed after sign-off</b><span class="badge badge-red">'+drift.length+'</span><span class="rc-meta" style="margin:0">for information only — these values are already downstream</span></div>'
     +(drift.length?drift.map(function(d){
-      return '<div class="rc-item"><div class="rc-item-head"><b class="mono">'+esc(d.oc.ocId)+'</b><span class="badge badge-gray">'+esc(d.field)+'</span><span class="risk risk-review">differs from baseline</span></div>'
+      return '<div class="rc-item"><div class="rc-item-head"><b class="mono">'+esc(d.oc.ocId)+'</b><span class="badge badge-gray">'+esc(fieldLabel({field:d.field,subField:''}))+'</span><span class="risk risk-review">differs from baseline</span></div>'
         +'<div class="rc-meta"><span class="val-old">'+esc(d.old)+'</span> → <span class="val-new">'+esc(d.new)+'</span></div>'
-        +'<div class="rc-meta">Customers already have the <b>new</b> value — nothing to approve. The baseline only records what was signed off, so you can see what the provider changed.</div>'
+        +'<div class="rc-meta" data-i18n="drift.note">Customers already have the <b>new</b> value — nothing to approve. The baseline only records what was signed off, so you can see what the provider changed.</div>'
         +'<div class="rc-actions"><button class="btn btn-secondary btn-sm" onclick="openOCDetail(\''+d.oc.ocId+'\')">Open the location</button>'
         +'<button class="btn btn-secondary btn-sm" onclick="flagFor(\''+d.oc.ocId+'\',\''+d.field+'\')">Flag as an issue</button></div></div>';
     }).join(''):'<div class="rc-meta" style="margin-top:8px">No drift.</div>')+'</div>';
@@ -1282,7 +1854,7 @@ function renderIssuesPage(){
     +INTAKE.map(function(i){
       var v=findVendor(i.vid);
       return '<div class="rc-item"><div class="rc-item-head"><b>'+esc(v.name)+'</b><span class="mono" style="font-size:12px">'+esc(i.vid)+'</span><span class="risk risk-block">'+(i.status==='fixed'?'fixed':'blocked — no OC ID')+'</span></div>'
-        +'<div class="chk-list">'+i.issues.map(function(x){return '<div class="chk-item"><span class="no">✕</span><span>'+esc(x)+'</span></div>';}).join('')+'</div>'
+        +'<div class="chk-list">'+intakeOf(i).map(function(x){return '<div class="chk-item"><span class="no">✕</span><span>'+esc(x)+'</span></div>';}).join('')+'</div>'
         +'<div class="rc-actions"><button class="btn btn-secondary btn-sm" onclick="flagIntake(\''+i.vid+'\')">Flag to owner</button><span class="rc-meta" style="margin:0">There is no override that lets a bad record go live.</span></div></div>';
     }).join('')+'</div>';
 
@@ -1300,6 +1872,7 @@ function renderIssuesPage(){
       }).join('')+'</div>';
   }
   document.getElementById('di-body').innerHTML=html;
+  applyLang();
 }
 function markReported(id){var i=ISSUES.filter(function(x){return x.id===id;})[0];i.status='reported';log('VENDOR',currentUser.name,'DATA_ISSUE_REPORTED',i.vendorId,i.field,'open','reported',i.reason);renderIssuesPage();updateBadges();showToast('Marked reported','Chased with the provider — the issue stays open until the data changes');}
 function flagIntake(vid){showToast('Flagged to provider',vid+' · intake failures are chased, never overridden');}
@@ -1322,7 +1895,7 @@ function openFlag(vendorId,preset,presetSub){
   document.getElementById('flag-reason').value='';
   flagFieldChanged(presetSub);
   flagTypeChanged();
-  openModal('modal-flag');
+  openModal('modal-flag');applyLang();
 }
 function flagFieldChanged(presetSub){
   var f=val('flag-field');
@@ -1336,7 +1909,7 @@ function flagFieldChanged(presetSub){
 function flagTypeChanged(){
   var k=val('flag-type'),meta=ISSUE_TYPES[k];
   if(!meta)return;
-  document.getElementById('flag-hint').innerHTML='<b>'+meta.label+'</b> — '+meta.hint;
+  document.getElementById('flag-hint').innerHTML='<b>'+tr(meta.label)+'</b> — <span>'+meta.hint+'</span>';
   document.getElementById('flag-sev').value=meta.sev;
 }
 function flagFor(ocId,field){
@@ -1355,7 +1928,7 @@ function submitFlag(){
   log('VENDOR',currentUser.name,'DATA_ISSUE_RAISED',v.id,field+(sub?' · '+sub:''),'—',type+' ('+sev+')',reason);
   closeModal('modal-flag');renderVendor();renderOC();renderIssuesPage();updateBadges();
   if(document.getElementById('page-pd').classList.contains('active'))renderProfile();
-  showToast('Flagged to owner',v.id+' · '+field+(sub?' / '+sub:'')+' · '+ISSUE_TYPES[type].label+' ('+sev+') · value unchanged');
+  showToast('Flagged to owner',v.id+' · '+field+(sub?' / '+sub:'')+' · '+tr(ISSUE_TYPES[type].label)+' ('+tr(sev)+') · value unchanged');
 }
 
 /* ============ detail page ============ */
@@ -1382,6 +1955,7 @@ function renderProfile(){
     +'</div></div>';
   var tabs='<div class="tabs">'+TABS.map(function(t){return '<div class="tab'+(detailTab===t[0]?' active':'')+'" onclick="switchDetailTab(\''+t[0]+'\')">'+t[1]+(t[0]==='issues'&&issueCount(rec)?' <span class="badge badge-orange">'+issueCount(rec)+'</span>':'')+'</div>';}).join('')+'</div>';
   document.getElementById('pd-panels').innerHTML=head+tabs+'<div id="pd-body">'+(isV?vendorPanels(rec):ocPanels(rec))+'</div>';
+  applyLang();
 }
 function issueCount(rec){
   if(profile.layer==='VENDOR')return issuesOfVendor(rec.id).filter(function(i){return i.status!=='fixed';}).length;
@@ -1415,7 +1989,7 @@ function vendorPanels(v){
   if(detailTab==='issues'){
     var list=issuesOfVendor(v.id);
     return psec('Issues',list.length?list.map(function(i){
-      return '<div class="rc-item"><div class="rc-item-head"><span class="badge badge-gray">'+esc(fieldLabel(i))+'</span>'+typeBadge(i)+'<span class="rc-meta" style="margin:0">'+(i.severity==='blocking'?'blocks sign-off':'warning')+' · '+esc(i.raisedAt)+' · '+esc(i.raisedBy)+'</span><span class="risk '+(i.status==='fixed'?'risk-auto':i.status==='reported'?'risk-review':'risk-block')+'">'+esc(i.status)+'</span></div><div class="rc-meta">'+esc(i.reason)+'</div></div>';
+      return '<div class="rc-item"><div class="rc-item-head"><span class="badge badge-gray">'+esc(fieldLabel(i))+'</span>'+typeBadge(i)+'<span class="rc-meta" style="margin:0">'+(i.severity==='blocking'?'blocks sign-off':'warning')+' · '+esc(i.raisedAt)+' · '+esc(i.raisedBy)+'</span><span class="risk '+(i.status==='fixed'?'risk-auto':i.status==='reported'?'risk-review':'risk-block')+'">'+esc(i.status)+'</span></div><div class="rc-meta">'+esc(whyOf(i))+'</div></div>';
     }).join(''):'<div style="font-size:12.5px;color:var(--text-tertiary)">No issue flagged on this record.</div>');
   }
   return historyBlock(v.id);
@@ -1428,7 +2002,7 @@ function ocPanels(o){
       return kv(r[0],(m.value?esc(m.value):'—')+(r[1]==='sweeper'?'':' '+srcChip(o,r[1])));
     }).join('')+kv('Coordinates',esc(mergedField(o,'lat').value+', '+mergedField(o,'lng').value)+' '+srcChip(o,'lat'))
       +kv('Type',esc(mergedField(o,'type').value))+'</div>','')
-      +psec('How this record is assembled','<div style="font-size:12.5px;line-height:1.7;color:var(--text-secondary)">Each field is taken from the linked source records independently: <b>M&amp;MP</b> (our own store) wins first, then <b>LMS</b>, then PUDO Inc fills the gaps. Two records (2:1) still produce one customer-facing row.</div>');
+      +psec('How this record is assembled','<div data-i18n="oc.assemble" style="font-size:12.5px;line-height:1.7;color:var(--text-secondary)">Each field is taken from the linked source records independently: <b>M&amp;MP</b> (our own store) wins first, then <b>LMS</b>, then PUDO Inc fills the gaps. Two records (2:1) still produce one customer-facing row.</div>');
   }
   if(detailTab==='operations'){
     var dr=driftOf(o),oi=openIssues(o);
@@ -1450,7 +2024,7 @@ function ocPanels(o){
     var oi2=openIssues(o);
     return psec('Issues on this store',oi2.length?oi2.map(function(i){
       var v=findVendor(i.vendorId);
-      return '<div class="rc-item"><div class="rc-item-head"><b>'+esc(v.name)+'</b><span class="mono" style="font-size:11.5px">'+esc(i.vendorId)+'</span><span class="badge badge-gray">'+esc(fieldLabel(i))+'</span>'+typeBadge(i)+'<span class="rc-meta" style="margin:0">'+(i.severity==='blocking'?'blocks sign-off':'warning')+'</span><span class="risk '+(i.status==='reported'?'risk-review':'risk-block')+'">'+esc(i.status)+'</span></div><div class="rc-meta">'+esc(i.reason)+'</div></div>';
+      return '<div class="rc-item"><div class="rc-item-head"><b>'+esc(v.name)+'</b><span class="mono" style="font-size:11.5px">'+esc(i.vendorId)+'</span><span class="badge badge-gray">'+esc(fieldLabel(i))+'</span>'+typeBadge(i)+'<span class="rc-meta" style="margin:0">'+(i.severity==='blocking'?'blocks sign-off':'warning')+'</span><span class="risk '+(i.status==='reported'?'risk-review':'risk-block')+'">'+esc(i.status)+'</span></div><div class="rc-meta">'+esc(whyOf(i))+'</div></div>';
     }).join(''):'<div style="font-size:12.5px;color:var(--text-tertiary)">No open issue.</div>')
       +(isMgr()?'<div style="margin-top:12px"><button class="btn btn-secondary btn-sm" onclick="flagFor(\''+o.ocId+'\',\'addr1\')">Flag an issue on the source record</button></div>':'');
   }
@@ -1482,6 +2056,7 @@ function renderLog(){
       +'<td class="mono" style="font-size:11.5px">'+esc(e.locId)+'</td><td>'+esc(e.field)+'</td><td class="val-old">'+esc(e.old)+'</td><td class="val-new">'+esc(e.new)+'</td><td>'+esc(e.operator)+'</td><td style="font-size:11.5px">'+esc(e.remark)+'</td></tr>';
   }).join('');
   document.getElementById('c-result-meta').textContent=rows.length+' entries';
+  applyLang();
 }
 function renderSync(){
   var rows=SYNC_RUNS.map(function(r){
@@ -1491,7 +2066,8 @@ function renderSync(){
       +'<div class="rc-meta">pulled '+r.pulled+' · created '+r.created+' · updated '+r.updated+' · flagged '+r.flagged+'</div></div>';
   }).join('');
   document.getElementById('sync-body').innerHTML=rows
-    +'<div class="info-line">A run writes provider values. It never writes an OC decision — enable, flags and sign-offs stay human. Since v3.3.0 a run may also <b>close</b> an issue, but only when the value it delivered is valid; the fix is the owner’s, the record of it is ours.</div>';
+    +'<div class="info-line" data-i18n="sync.info">A run writes provider values. It never writes an OC decision — enable, flags and sign-offs stay human. Since v3.3.0 a run may also <b>close</b> an issue, but only when the value it delivered is valid; the fix is the owner’s, the record of it is ours.</div>';
+  applyLang();
 }
 function csvCell(v){
   var s=String(v==null?'':v);
@@ -1591,7 +2167,7 @@ function exportIssues(){
     BASELINE[o.ocId]=snap;
   });
 })();
-captureIssueBase();switchPage('p01');tickClock();syncTypeFilter('v',true);syncTypeFilter('o',true);
+captureIssueBase();switchPage('p01');tickClock();syncTypeFilter('v',true);syncTypeFilter('o',true);applyLang();
 </script>
 </body>
 </html>

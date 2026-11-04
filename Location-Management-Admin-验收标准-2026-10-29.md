@@ -1,7 +1,7 @@
 # Location Management Admin Console — 功能验收标准（通俗版）
 
-> 版本 **v3.4.0** · 对照原型 https://jama-dev520.github.io/location-prototype/
-> 配套文档：PRD v3.4.0（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
+> 版本 **v3.5.0** · 对照原型 https://jama-dev520.github.io/location-prototype/
+> 配套文档：PRD v3.5.0（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
 > 对外（英文，给外国同事）：https://jama-dev520.github.io/location-prototype/feature-overview.html
 > 演示视频（2 分 44 秒，30 条英文字幕，按 v3.4.0 录制）：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 
@@ -54,7 +54,7 @@
 
 ---
 
-## 一、十分钟快检（只有 10 分钟就跑这 13 条）
+## 一、十分钟快检（只有 10 分钟就跑这 17 条）
 
 | # | 怎么做 | 应该看到 |
 |---|---|---|
@@ -76,6 +76,7 @@
 | 14 | 打开 **Data Issues**，点顶部 `Apply next provider sync` | 2 条自动关闭（sweeper 缺失、邮编矛盾）、1 条「变了但仍不合格」保持 open、1 条「需要人工复核」保持 open、1 条「未变化」保持 open；页面下方出现「Closed automatically by a sync」并列出旧值 → 新值 | 全关 / 全不关，或只显示一个总数 |
 
 | 15 | 在 **Data Issues** 点 `Export open issues (CSV)` | 下载 `data-issues-YYYYMMDD-HHMMSS.csv`，每行一条未关闭异常，包含 OC ID、字段·子字段、类型、严重度、原因；筛选了类型就只有该类型 | 只能截图、或导出的是全部历史 |
+| 17 | 点顶部 `中文`，逐页翻一遍；再点回 `EN` | 导航、表头、页面说明、弹框、详情标签页、演示脚本、提示全部变中文；**门店名、地址、供应商名、单号、字段名仍是英文**（数据不翻）；切回 `EN` 全部还原，不留中文；刷新后记住上次选择 |
 | 16 | 在 OC 列表筛 `Issues = Baseline drift` 后点 `Export CSV` | 下载的行数与屏幕上的条数一致，且带 `Open issues` / `Changed since sign-off` 两列 | 导全量、或列里没有异常信息 |
 
 这 16 条全对，模型就是通的。剩下的条目用来确认细节和边界。
