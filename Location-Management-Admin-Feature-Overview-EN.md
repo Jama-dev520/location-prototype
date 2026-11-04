@@ -94,6 +94,10 @@ Exactly **two verbs**. Everything else on these screens is read-only, and that i
 
 ### 3.1 Enable — a sign-off, not a switch
 
+Two different questions, two different owners: **is this value applied?** — it always is, and nothing here decides it;
+**is this store visible?** — the operator decides, through this sign-off. Enabling is the only moment a location becomes
+customer-visible, so it is treated as a signed release.
+
 Turning a location on is the only moment it becomes customer-visible, so it is treated as a signed release. Five checks
 run first; any failure blocks the button and states the reason:
 

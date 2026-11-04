@@ -193,6 +193,19 @@ Any field that moved shows as drift on the OC row, in the detail page (Operation
 
 > **Removed in v3.4.0**: `re-sign` / `RE_SIGNED_OFF`. Earlier versions asked the operator to confirm the provider's change before it counted; that implied the console could hold data back, which it never does.
 
+### 5.7a Where the line is: data vs visibility
+
+Two decisions exist, and only one of them belongs to this console:
+
+| Decision | Owner | Where |
+|---|---|---|
+| **Is this provider value applied downstream?** | nobody — it always is | nowhere. There is no accept / reject / re-sign control, by design (v3.4.0) |
+| **Is this location visible to customers?** | the operator | `enable`, through the sign-off in §5.8 |
+
+So `enable` stays. It is not an approval of the data — the data is already downstream whether the store is enabled or not. It decides whether a store that exists in our directory is shown to customers, which is a business call with no upstream source. Removing the sign-off would mean a location goes live the moment it passes intake, with nobody confirming the address a customer will drive to.
+
+Everything the console writes follows from this split: `is_enable`, issue flags, baseline snapshots, audit rows. Never a location field.
+
 ### 5.8 Enable sign-off — unchanged in shape (v2.6.0)
 
 ![Enable Sign-off](https://workbuddy-space-static.codebuddy.work/image/UggYn65vVXnsaDXfZaUvPM.png)
