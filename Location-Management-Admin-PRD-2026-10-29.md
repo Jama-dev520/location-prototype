@@ -587,11 +587,11 @@ Two consequences worth stating:
 
 ### 13.3 Prototype Link
 
-- `Location-Management-Admin-Prototype-2026-10-29.html` — v2.6.1, hi-fi single-file prototype
+- `Location-Management-Admin-Prototype-2026-10-29.html` — v3.3.0, hi-fi single-file prototype
 - Public: https://jama-dev520.github.io/location-prototype/
-- **Demo video**: the recording at `https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4` was captured at **v2.7.0**, before the v3.0.0 model change — it still shows store editing, which no longer exists. **Re-shoot pending**; do not use it for v3 acceptance. The clickable prototype is the source of truth.
+- **Demo video (2:46, no audio, 30 English captions)**: `https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4` — recorded against **v3.3.0** by script on the real prototype (real clicks, not an animation), so every caption can be replayed by hand in the same order. Chapters: two layers → detail → flag an issue → OC list and the source→type filter → sign-off (blocked, then signed) → duplicate decision (2:1) → issue auto-close on a provider run → drift and re-sign → viewer rights.
 - Flowcharts (2x PNG, safe to embed in Feishu by absolute URL): `https://jama-dev520.github.io/location-prototype/diagrams/flow{1..9}-*.png`
-- Demo seed data deliberately includes: a live location whose provider moved the coordinates 297 km (`OC-00102`) · a held postal-code change (`OC-00103`) · a held name change (`OC-00106`) · a held opening-hours change (`OC-00109`) · two intake failures with no OC record (`LOC-00187` / `LOC-00188`) · one blocked sign-off (`OC-00002`, vendor inactive) and two ready ones
+- Demo seed data deliberately includes: four live locations whose provider value moved after sign-off (`OC-00102` coordinates, `OC-00103` postal, `OC-00106` name, `OC-00109` hours) · a duplicate pair at 75% waiting for a decision (`LOC-12194` / `LOC-00186`) · five flagged fields, two of which a run can close by itself · one blocked sign-off (`OC-00002`, no active vendor record) and three ready ones (`OC-00089`, `OC-00105`, `OC-00320`) · two intake failures with no OC record (`LOC-00187` / `LOC-00188`)
 
 ### 13.4 Test Requirements
 

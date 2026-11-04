@@ -465,7 +465,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
         <div><label class="f-label">Field</label><select id="flag-field" style="width:100%" onchange="flagFieldChanged()"></select></div>
         <div><label class="f-label">Sub-field <span id="flag-sub-wrap" style="color:var(--text-tertiary);font-weight:400">(optional)</span></label><select id="flag-sub" style="width:100%"></select></div>
         <div><label class="f-label">What kind of problem?</label><select id="flag-type" style="width:100%" onchange="flagTypeChanged()"></select></div>
-        <div><label class="f-label">Severity</label><select id="flag-sev" style="width:100%"><option value="blocking">blocking — cannot go live</option><option value="warning">warning — live, but wrong for customers</option></select></div>
+        <div><label class="f-label">Severity</label><select id="flag-sev" style="width:100%"><option value="blocking">blocking · cannot go live</option><option value="warning">warning · live but wrong</option></select></div>
       </div>
       <div class="info-line" id="flag-hint" style="margin-top:10px">Pick a type to see what it means.</div>
       <label class="f-label" style="margin-top:10px">What exactly is wrong?</label>
@@ -605,7 +605,7 @@ var CHANGELOG=[
 /* ============ v3 model ============ */
 var APP_VERSION='3.3.0';
 var VERSIONS=[
- {v:'3.3.0',type:'minor',date:'2026-11-04',desc:'<b>Issues close themselves when the fix arrives.</b> The next provider sync compares each flagged field with the value that was flagged: if the value changed <i>and</i> is now valid, the issue closes with <code>closed_by = AUTO_SYNC</code> and the run id in the audit trail; if it changed but is still invalid, the issue stays open and says why; if it did not change, nothing happens. Blocking issues stop blocking the moment they close.'},
+ {v:'3.3.0',type:'minor',date:'2026-11-04',desc:'<b>Issues close themselves when the fix arrives.</b> The next provider sync compares each flagged field with the value that was flagged: if the value changed <i>and</i> is now valid, the issue closes with <code>closed_by = AUTO_SYNC</code> and the run id in the audit trail; if it changed but is still invalid, the issue stays open and says why; if it did not change, nothing happens. Blocking issues stop blocking the moment they close. The flag dialog’s severity labels were also shortened so they fit the dialog — copy only.'},
  {v:'3.2.2',type:'patch',date:'2026-11-04',desc:'<b>Type value corrected.</b> A self-operated store carries the type <b>M&amp;MP</b> itself — not “M&amp;MP store”. The source→type map, the Type filter and the demo records are aligned, so a filter on M&amp;MP returns the self-operated stores without a renamed type.'},
  {v:'3.2.1',type:'patch',date:'2026-11-04',desc:'<b>Deliverables pass.</b> Added a plain-English feature overview for readers outside the team (shareable page + Markdown), a deliverables list in the requirement overview, and corrected the 30-second summary, which still described sweeper editing and the pre-v3 duplicate rule. No behaviour change.'},
  {v:'3.2.0',type:'minor',date:'2026-11-04',desc:'<b>Source fixes the type.</b> LMS only ever means <b>packagehub</b>, PUDO Inc means <b>PUDOpoint</b> or <b>Locker</b>, M&amp;MP means a self-operated store. Both lists now cascade: pick a Source and the Type filter reduces to what that source can actually be, with live counts per option. A record whose type does not belong to its source is flagged in the list and can be isolated with one filter.'},

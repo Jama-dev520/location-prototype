@@ -456,6 +456,14 @@ https://jama-dev520.github.io/location-prototype/feature-overview.html
 - `LOC-00182` 的 issue 说「sweeper 错填 PUDO Inc」，记录里是 LMS → 记录改为 PUDO Inc；
 - `LOC-00179` 的 issue 说「电话只有 7 位」，记录里电话是空的 → 记录改为 7 位号码。
 
+### 42. 演示视频按 v3.3.0 重录
+
+旧片是 v2.7.0 录的，里面还在演示「改地址」——和现在「不能改、只能标记」的模型正好相反，早前已在文档里标注「不要用于验收」。这次重录完成：
+
+- **2 分 46 秒 / 30 条英文字幕 / 1440×900**，九段按真实操作顺序：两层模型 → 详情五标签 → 标记异常（四层）→ 列表与「来源决定类型」→ 签收（先被 Blocked，再正常签收）→ 重复裁决 2:1 → 跑同步自动关闭 → 签收后漂移与重签 → 只读角色。
+- 片头片尾重做：片头标 `v3.3.0 / two layers · three sources / enable is a sign-off / a fix closes its own issue`；片尾四条地基换成 v3 的版本（数据只有供应商一个来源、没人处理就不变、下线容易上线要签收、修复能自证才自动关闭）。
+- 为了录制可读性，标记弹窗的严重度下拉文案从 `warning — live, but wrong for customers` 缩短为 `warning · live but wrong`（原来在 560px 弹窗里被截断）。纯文案，不改行为。
+
 | v3.3.0 | MINOR | 2026-11-04 | **issue 自动关闭**：同步带来「变了且合格」的值即自动 fixed（记 `closed_by` / 验证值 / run id）；仅机器可判定类型可自动关闭；变了仍不合格保持 open；关闭即解阻；修三处演示数据与 issue 不一致 |
 | v3.2.2 | PATCH | 2026-11-04 | **类型值修正**：自营门店 `location_type` 由 `M&MP store` 改为 `M&MP`，与来源同名；来源→类型映射、筛选器、演示数据、文档枚举同步 |
 | v3.2.1 | PATCH | 2026-11-04 | **交付物补齐**：新增英文功能概览（单页 + Markdown，给外部同事）· 需求总览加交付物清单 · 重写「一页速览」并修掉 v2 残留 |

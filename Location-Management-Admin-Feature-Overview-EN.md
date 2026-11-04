@@ -4,6 +4,7 @@
 **Document version:** 1.3 (covers console v3.3.0) · **Status:** clickable prototype (not in production)
 **Prototype:** https://jama-dev520.github.io/location-prototype/
 **One-page version (shareable):** https://jama-dev520.github.io/location-prototype/feature-overview.html
+**Demo video (2:46, English captions):** https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 
 ---
 
@@ -187,8 +188,7 @@ M&MP is not a role — self-operated stores are handled by the same people under
 
 - Overview dashboard (P07) — specified, P2, out of scope for this round
 - Batch upload (Excel) — specified in the PRD, not in the prototype
-- The demo video at `/demo/location-admin-demo.mp4` was recorded at **v2.7.0** and still shows store editing; it is
-  superseded by v3.0.0 and must not be used for acceptance
+- The demo video at `/demo/location-admin-demo.mp4` (2:46, English captions) is current as of v3.3.0
 
 ---
 
