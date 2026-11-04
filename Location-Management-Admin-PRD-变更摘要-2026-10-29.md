@@ -1,6 +1,6 @@
-# Location Management Admin Console — PRD Change Summary (v3.0.0)
+# Location Management Admin Console — PRD Change Summary (v3.0.1)
 
-> Document version v3.0.0 ｜ Change date 2026-11-03 ｜ Status: Draft — pending review
+> Document version v3.0.1 ｜ Change date 2026-11-04 ｜ Status: Draft — pending review
 > 本轮（v3.0.0）是**模型换向**：OC 层不再改数据，只做两件事——**enable** 和 **标记异常**。所有数据以供应商为唯一来源，错的地方标记回去让供应商改；重复对单独成页；下游按字段合并，LMS 优先；M&MP 用同一套规则管同一份数据。
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
 > **验收标准（通俗版）**: `Location-Management-Admin-验收标准-2026-10-29.md`
@@ -328,6 +328,7 @@ v3.0.0 的做法是把「改」这个动作整个拿掉。
 
 | 版本 | 级别 | 日期 | 内容 |
 |---|---|---|---|
+| v3.0.1 | PATCH | 2026-11-04 | **时间精确到秒**：列表 Updated、issue 的 raised-at、审计行全部带秒；头部加一枚走秒的当前时间（本地时区）。无行为变更 |
 | v3.0.0 | MAJOR | 2026-11-03 | **模型换向**：OC 层只保留 enable + 标记异常，手改/字段锁/回退全部下线 · Sweeper 随同步进来，异常标记在供应商侧 · Duplicate 独立成页并在 OC 列表标 2:1 · 下游按字段合并、LMS 优先 · M&MP 同级同规则 · Review Center 改为 Data Issues 台账 |
 | v2.7.0 | MINOR | 2026-11-02 | **把决定权还回去**：字段锁可解锁（手动必填理由 / Accept & unlock 一步到位，`field_lock` 加 4 个释放字段，不删行）· 签收队列从 Review Center 第四 tab 移到 OC 列表 `⏳ Not live yet` 预设，两个徽章各数各的 · 手改可逐字段回退（只对每字段最新一次手改开放，锁保留）· 新增 F23/F24、flow10/flow11 |
 | v2.6.1 | PATCH | 2026-10-30 | **一致性收口**：修正编辑弹框「下次同步生效」与「手改立即生效」的矛盾 · PRD §8 重排 / F06 五 tab / F08↔F21 关系 / Page Map 注记 · 英文文档去中文 · 补 3 张流程图并全部 2x 重渲染 · 新增 2.5 分钟演示视频 |

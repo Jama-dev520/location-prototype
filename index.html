@@ -286,7 +286,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.0.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.0.1</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -310,7 +310,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.0.0</div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.0.1</div>
       </div>
     </div>
 
@@ -593,8 +593,9 @@ var CHANGELOG=[
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='3.0.0';
+var APP_VERSION='3.0.1';
 var VERSIONS=[
+ {v:'3.0.1',type:'patch',date:'2026-11-04',desc:'Every timestamp now carries seconds, and the header shows a live clock. No behaviour change.'},
  {v:'3.0.0',type:'major',date:'2026-11-03',desc:'<b>Provider data is the only data.</b> The OC layer stops editing: it keeps two verbs — <b>enable</b> and <b>flag an anomaly</b>. Sweeper now arrives with the sync, so a wrong sweeper is flagged to the provider instead of typed over; duplicate checking becomes its own page; downstream values are merged per field with <b>LMS first</b>; M&amp;MP works the same data under the same rules.'},
  {v:'2.7.0',type:'minor',date:'2026-11-02',desc:'Field lock release, field revert, sign-off queue on the OC list.'}
 ];
@@ -608,10 +609,10 @@ OC_LOCATIONS.forEach(function(o){ o.enable=!!o.enable; o.dup=(o.vendorIds.length
 
 /* provider-side issues: the only lever OC has over vendor data */
 var ISSUES=[
- {id:'ISS-0007',vendorId:'LOC-00177',field:'latitude',reason:'Coordinate is 297 km away from the street address — customer would be routed to the water',status:'reported',raisedBy:'Sarah Lin',raisedAt:'2026-10-30 09:12'},
- {id:'ISS-0008',vendorId:'LOC-00177',field:'longitude',reason:'Same record as ISS-0007 — the coordinate pair moved together',status:'reported',raisedBy:'Sarah Lin',raisedAt:'2026-10-30 09:12'},
- {id:'ISS-0009',vendorId:'LOC-00181',field:'sweeper',reason:'Sweeper was not supplied by the provider — routing cannot be resolved downstream',status:'open',raisedBy:'Alex Chen',raisedAt:'2026-10-31 11:05'},
- {id:'ISS-0010',vendorId:'LOC-00186',field:'address_line1',reason:'Unit suffix duplicated in the street line ("Ste 2") — may split the same store into two records',status:'open',raisedBy:'Sarah Lin',raisedAt:'2026-10-28 09:20'}
+ {id:'ISS-0007',vendorId:'LOC-00177',field:'latitude',reason:'Coordinate is 297 km away from the street address — customer would be routed to the water',status:'reported',raisedBy:'Sarah Lin',raisedAt:'2026-10-30 09:12:41'},
+ {id:'ISS-0008',vendorId:'LOC-00177',field:'longitude',reason:'Same record as ISS-0007 — the coordinate pair moved together',status:'reported',raisedBy:'Sarah Lin',raisedAt:'2026-10-30 09:12:41'},
+ {id:'ISS-0009',vendorId:'LOC-00181',field:'sweeper',reason:'Sweeper was not supplied by the provider — routing cannot be resolved downstream',status:'open',raisedBy:'Alex Chen',raisedAt:'2026-10-31 11:05:18'},
+ {id:'ISS-0010',vendorId:'LOC-00186',field:'address_line1',reason:'Unit suffix duplicated in the street line ("Ste 2") — may split the same store into two records',status:'open',raisedBy:'Sarah Lin',raisedAt:'2026-10-28 09:20:33'}
 ];
 var INTAKE=[
  {vid:'LOC-00187',status:'open',detected:'2026-10-30 02:31:44',issues:['address_line1 is empty','opening_hours missing — customer-facing hours cannot be validated']},
@@ -712,7 +713,9 @@ function statusOf(o){
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');}
 function findVendor(id){return VENDORS.find(function(v){return v.id===id;});}
 function findOC(id){return OC_LOCATIONS.find(function(o){return o.ocId===id;});}
-function nowStr(){var d=new Date(),p=function(n){return (n<10?'0':'')+n;};return d.getUTCFullYear()+'-'+p(d.getUTCMonth()+1)+'-'+p(d.getUTCDate())+' '+p(d.getUTCHours())+':'+p(d.getUTCMinutes())+':'+p(d.getUTCSeconds());}
+function nowStr(){var d=new Date(),p=function(n){return (n<10?'0':'')+n;};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());}
+function tickClock(){var el=document.getElementById('clock');if(!el)return;el.textContent=nowStr();}
+setInterval(tickClock,1000);
 function statusBadge(st){if(st==='active')return '<span class="badge badge-green">active</span>';if(st==='removed')return '<span class="badge badge-gray">removed</span>';return '<span class="badge badge-red">inactive</span>';}
 function provBadge(p){return '<span class="badge '+(p==='M&MP'?'badge-green':p==='PUDO Inc'?'badge-teal':'badge-blue')+'">'+esc(p)+'</span>';}
 function val(id){var el=document.getElementById(id);return el?el.value.trim():'';}
@@ -796,7 +799,7 @@ function renderVendor(){
       +'<td>'+statusBadge(v.status)+'</td>'
       +'<td>'+(oi.length?'<span class="pending-badge" onclick="openIssuesFor(\''+v.id+'\')">'+oi.length+' flagged</span>':'<span style="color:var(--text-tertiary)">—</span>')+'</td>'
       +'<td>'+(oc?'<span class="mono link" onclick="openOCDetail(\''+oc.ocId+'\')">'+esc(oc.ocId)+'</span>':'<span style="color:var(--text-tertiary)">none</span>')+'</td>'
-      +'<td class="mono" style="font-size:11.5px">'+esc((v.updated||'—').slice(0,10))+'</td>'
+      +'<td class="mono" style="font-size:10.5px;white-space:nowrap">'+esc(v.updated||'—')+'</td>'
       +'</tr>';
   }).join('');
   document.getElementById('v-result-meta').textContent=rows.length+' vendor location(s)';
@@ -857,7 +860,7 @@ function renderOC(){
       +'<td>'+issueBadges(o)+'</td>'
       +'<td>'+sw+'</td>'
       +'<td class="mono" style="font-size:11px">'+esc(o.vendorIds.join(', '))+'</td>'
-      +'<td class="mono" style="font-size:11.5px">'+esc((o.updated||'—').slice(0,10))+'</td>'
+      +'<td class="mono" style="font-size:10.5px;white-space:nowrap">'+esc(o.updated||'—')+'</td>'
       +'</tr>';
   }).join('');
   document.getElementById('o-result-meta').textContent=rows.length+' OC location(s)';
@@ -1267,7 +1270,7 @@ function exportCSV(kind){showToast('Export started',kind+' view will download as
     BASELINE[o.ocId]=snap;
   });
 })();
-switchPage('p01');
+switchPage('p01');tickClock();
 </script>
 </body>
 </html>

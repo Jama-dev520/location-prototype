@@ -1,7 +1,7 @@
 # Location Management Admin Console — 功能验收标准（通俗版）
 
-> 版本 **v3.0.0** · 对照原型 https://jama-dev520.github.io/location-prototype/
-> 配套文档：PRD v3.0.0（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
+> 版本 **v3.0.1** · 对照原型 https://jama-dev520.github.io/location-prototype/
+> 配套文档：PRD v3.0.1（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
 
 **怎么用这份文档**：打开原型，照着「怎么做」点一遍，看是否与「应该看到什么」一致。三条都对就算过。不需要懂技术，用页面上的字就能判断。
 

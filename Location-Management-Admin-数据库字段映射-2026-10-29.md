@@ -1,6 +1,6 @@
-# Location Management Admin Console — Database Field Mapping (v3.0.0)
+# Location Management Admin Console — Database Field Mapping (v3.0.1)
 
-> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.0.0)
+> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.0.1)
 >
 > **v3.0.0 model change.** The console no longer writes location fields. `field_lock` is replaced by `data_issue`; `sync_change_set` decisions and `oc_field_baseline` versions used for revert are retired; downstream values are a per-field merge with **LMS first**. The console writes exactly four things: `oc_location.is_enable`, `data_issue` rows, baseline captures, and `change_log`.
 > Purpose: help engineering/data teams understand "front-end filter ↔ API param ↔ DB field" and the table schemas for the **two-layer model**.
