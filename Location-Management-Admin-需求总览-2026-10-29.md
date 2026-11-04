@@ -1,7 +1,7 @@
-# Location Management Admin Console — Requirement Overview (v3.1.0)
+# Location Management Admin Console — Requirement Overview (v3.2.0)
 
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
-> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.1.0)
+> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.2.0)
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
 > Detail view (v2.4.0): clicking a location ID opens a **full page** with tabs — Basic Info / Operations / Hours & Services / Linked Records / Change History.
 > **v3.0.0 — 供应商之外，自营 M&MP 小店也走同一套。** M&MP = 自营小店（美国叫法），是门店目录里的第三类来源，数据由门店自己维护，异常找门店负责人；规则与供应商门店完全一致。
@@ -32,7 +32,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | `provider_ref` | varchar | sync | yes | dealerNo (PUDO) / loc_id (LMS) |
 | `store_code` | varchar | sync | yes | store code |
 | `name` | varchar | sync | yes | store name |
-| `location_type` | enum | sync | yes | provider-exclusive: PUDO → PUDOpoint/Locker; LMS → packagehub |
+| `location_type` | enum | sync | yes | provider-exclusive：PUDO Inc → PUDOpoint/Locker；LMS → packagehub；M&MP → M&MP store。**筛选器里由 Source 决定可选项**（v3.2.0） |
 | `sweeper` | enum(PUDO/LMS) | OC (editable) | no | **Sweeper** — who physically picks up packages (renamed from "Pickup"); default = source_provider; cross-provider allowed |
 | `address_line1`/`address_line2` | varchar | sync | yes | address |
 | `city`/`state`/`postal_code`/`country` | varchar | sync | yes | city/state/postal/country |
@@ -208,6 +208,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | 19 | Duplicate (v3.0.0) | 独立 **Duplicate Check** 页；同一家 → 2:1 并在 OC 列表标出；不是同一家 → 1:1。未裁决的重复对阻塞启用 |
 | 20 | Merge priority (v3.0.0) | 同一条 OC 记录逐字段取源：**M&MP（自营）→ LMS → PUDO Inc 依次取，先有值的赢**。详情页与列表都标出来源 |
 | 21 | Drift (v3.0.0) | 签收后供应商改了值：下游直接用新值，台账显示「与基线不同」，运营可**重新签收**或**标记异常**。基线是参照物，不是冻结器 |
+| 24 | Source 决定 Type (v3.2.0) | 一个来源只可能产生它自己的类型：**LMS → packagehub；PUDO Inc → PUDOpoint / Locker；M&MP → 自营门店**。所以筛选不能把 Source 和 Type 当两个独立条件：选 Source 后 Type 只列该来源能产生的值（带条数），只有一个选项时自动选中；清空 Source 也清空 Type。列表里若出现「来源不可能产生的类型」，标 `type ≠ source` 并可用 `Issues → Type ≠ source` 一键筛出——这是发现供应商传错的手段，不是在这里改值 |
 | 23 | Issue 粒度 (v3.1.0) | 一个 issue 必须说清四层：哪个**字段**（address_line1）→ 哪个**子字段**（address_line2 / SATURDAY / latitude）→ 哪类**问题**（缺失 / 错误 / 不一致 / 越界 / 重复 / 过期 / 格式）→ 多**严重**（blocking 阻止签收 / warning 只提示）。子字段是让 issue 可执行的关键：「营业时间不对」供应商没法改，「周六没有时间段」可以 |
 | 22 | M&MP (v3.0.0) | **M&MP = 自营小店**（美国叫法），是第三类数据来源，与 PUDO Inc / LMS 并列，不是角色或团队。同样的目录、同样的 enable 与签收、同样的异常台账；差别是 M&MP 的数据由门店自己维护，标记异常找**门店负责人（内部）**而不是供应商 |
 

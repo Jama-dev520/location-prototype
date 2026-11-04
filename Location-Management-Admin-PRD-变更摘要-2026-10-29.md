@@ -1,6 +1,6 @@
-# Location Management Admin Console — PRD Change Summary (v3.1.0)
+# Location Management Admin Console — PRD Change Summary (v3.2.0)
 
-> Document version v3.1.0 ｜ Change date 2026-11-04 ｜ Status: Draft — pending review
+> Document version v3.2.0 ｜ Change date 2026-11-04 ｜ Status: Draft — pending review
 > 本轮（v3.0.0）是**模型换向**：OC 层不再改数据，只做两件事——**enable** 和 **标记异常**。所有数据以供应商为唯一来源，错的地方标记回去让供应商改；重复对单独成页；下游按字段合并，LMS 优先；M&MP 用同一套规则管同一份数据。
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
 > **验收标准（通俗版）**: `Location-Management-Admin-验收标准-2026-10-29.md`
@@ -362,6 +362,31 @@ v3.0.0 的「标记异常」只有字段 + 一句话，实际用起来有两个�
 
 ---
 
+## 二之七、v3.2.0：来源决定类型，筛选跟着变
+
+原来的筛选把「来源」和「类型」当成两个互不相干的下拉框，但它们在业务上不是并列关系：**LMS 只会传 packagehub，PUDO Inc 只会传 PUDOpoint 或 Locker，M&amp;MP 只会是自营门店**。当成两个独立条件会带来两个具体问题：选 `LMS` 后 Type 里仍然能选 `Locker`，点了得到一张空表；反过来，选 `Locker` 也无法知道它意味着 PUDO Inc。
+
+### 32. 筛选器改成级联
+
+| 选中的 Source | Type 下拉里剩下的选项 | 行为 |
+|---|---|---|
+| LMS | 只有 `packagehub` | 自动选中，标签旁提示「· LMS → packagehub」 |
+| PUDO Inc | `PUDOpoint`、`Locker` | 两个都可选，不强制 |
+| M&amp;MP | 只有 `M&amp;MP store` | 自动选中 |
+| 空（All） | 四种全部 | 类型清空 |
+
+每个选项后面带**实时条数**（在当前其它筛选条件不变的前提下算出），所以点开下拉就知道「选了会剩多少」。清空 Source 会同时清空 Type，不留一个悬空条件。
+
+### 33. 数据里出现「不可能的搭配」要能被发现
+
+约束不只做在前端：如果某条记录的类型不属于它的来源（供应商传错、历史数据遗留），Type 列会标 `type ≠ source`，并且 `Issues → Type ≠ source` 可以一键筛出来。这不是让人在这里改值——值仍然只能由来源修，标记走 F11；这个筛选的意义是**监控供应商的数据质量**。接口层同样拦住无意义组合：`provider=LMS` 配 `location_type=Locker` 返回 400，而不是一张空表。
+
+### 34. 顺手修掉两处过期描述
+
+- PRD §7.1 还写着 sweeper「由 Location Manager 在小弹框里改」——那是 v2.5.0 的做法，v3.0.0 起 sweeper 随同步进来、只读。
+- PRD §7.2 的交互列表里还留着「店铺信息编辑弹框 → F11」，编辑入口早已删除。
+
+| v3.2.0 | MINOR | 2026-11-04 | **Source 决定 Type**：两个列表的 Type 筛选由 Source 派生（含实时条数、单选项自动选中）；`type ≠ source` 徽章与筛选；接口拒绝不可能组合；修 PRD 两处过期描述 |
 | v3.1.0 | MINOR | 2026-11-04 | **issue 细化**：字段 → 子字段 → 类型（7 类）→ 严重度（blocking/warning）+ 必填原因；10 条示例数据；台账按类型筛选；只有 blocking 阻塞签收 |
 | v3.0.1 | PATCH | 2026-11-04 | **时间精确到秒**：列表 Updated、issue 的 raised-at、审计行全部带秒；头部加一枚走秒的当前时间（本地时区）。无行为变更 |
 | v3.0.0 | MAJOR | 2026-11-03 | **模型换向**：OC 层只保留 enable + 标记异常，手改/字段锁/回退全部下线 · Sweeper 随同步进来，异常标记在供应商侧 · Duplicate 独立成页并在 OC 列表标 2:1 · 下游按字段合并、LMS 优先 · M&MP 同级同规则 · Review Center 改为 Data Issues 台账 |

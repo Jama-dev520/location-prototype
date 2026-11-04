@@ -1,6 +1,6 @@
-# Location Management Admin Console — Database Field Mapping (v3.1.0)
+# Location Management Admin Console — Database Field Mapping (v3.2.0)
 
-> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.1.0)
+> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.2.0)
 >
 > **v3.0.0 model change.** The console no longer writes location fields. `field_lock` is replaced by `data_issue`; `sync_change_set` decisions and `oc_field_baseline` versions used for revert are retired; downstream values are a per-field merge with **LMS first**. The console writes exactly four things: `oc_location.is_enable`, `data_issue` rows, baseline captures, and `change_log`.
 > Purpose: help engineering/data teams understand "front-end filter ↔ API param ↔ DB field" and the table schemas for the **two-layer model**.
@@ -35,10 +35,10 @@ oc_location (OC-owned, downstream-facing)
 | OC Location ID (reverse lookup) | `oc_location_id` | `vendor_oc_mapping` → `oc_location` | `oc_location_id` | varchar(32) | exact/prefix | cross-layer: find vendors mapped to a given OC location |
 | Name | `name` | `vendor_location` | `name` | varchar | LIKE %…% | hits index |
 | Address keyword | `address_keyword` | `vendor_location` | `address_line1`/`address_line2` | varchar | LIKE %…% | joint search |
-| Provider | `provider` | `vendor_location` | `source_provider` | enum(PUDO,LMS) | exact | cascades Type |
+| Provider | `provider` | `vendor_location` | `source_provider` | enum(PUDO,LMS,M&amp;MP) | exact | **hard-cascades Type** (v3.2.0) |
 | Sweeper | `sweeper` | `vendor_location` | `sweeper` | enum(PUDO,LMS) | exact | OC-editable |
 | Status | `status` | `vendor_location` | `status` | enum(active,inactive,removed) | exact | provider-sourced, read-only |
-| Type | `location_type` | `vendor_location` | `location_type` | enum(PUDOpoint,Locker,packagehub) | exact | provider-exclusive |
+| Type | `location_type` | `vendor_location` | `location_type` | enum(PUDOpoint,Locker,packagehub,M&amp;MP store) | exact | provider-exclusive; options derived from Provider |
 | QR Dropoff | `qr_dropoff` | `vendor_location` | `qr_dropoff` | bool | exact | LMS-only store capability; PUDO = N/A |
 | City | `city` | `vendor_location` | `city` | varchar | exact | — |
 | State | `state` | `vendor_location` | `state` | varchar | exact | — |
@@ -86,7 +86,7 @@ oc_location (OC-owned, downstream-facing)
 | `provider_ref` | varchar | sync | yes | dealerNo (PUDO) / loc_id (LMS) |
 | `store_code` | varchar | sync | yes | store code |
 | `name` | varchar | sync | yes | store name |
-| `location_type` | enum(PUDOpoint,Locker,packagehub) | sync | yes | provider-exclusive |
+| `location_type` | enum(PUDOpoint,Locker,packagehub,M&MP store) | sync | yes | provider-exclusive: PUDO Inc → PUDOpoint/Locker; LMS → packagehub; M&MP → M&MP store |
 | `sweeper` | enum(PUDO,LMS) | OC | no | **who performs the physical pickup** (renamed from `pickup_provider`); default = source_provider; cross-provider allowed; writable via F10 |
 | `address_line1` | varchar | sync | yes | address line 1 |
 | `address_line2` | varchar | sync | yes | address line 2 (nullable) |
@@ -300,7 +300,7 @@ oc_location (OC-owned, downstream-facing)
 | `oc_location` | `is_enable` only | the operator (sign-off, F21) | yes, and that is the only OC write |
 | derived (not stored) | name / address / hours / coordinates / sweeper as shown downstream | computed from the linked vendor records | no |
 
-### 3.2 Downstream merge rule — LMS first (F25)
+### 3.2 Downstream merge rule — source priority M&MP → LMS → PUDO Inc (F25)
 
 When one OC location is fed by several vendor records (2:1), each field is resolved independently:
 
@@ -320,7 +320,7 @@ for each field f:
 | LMS inactive, PUDO active | PUDO value |
 | Both inactive | last known value, surfaced as a data-quality problem |
 
-> The rule is field-level on purpose. A record-level rule ("use LMS entirely") would blank every field LMS happens not to supply — phone and coordinates are the usual gaps.
+> The rule is field-level on purpose. A record-level rule ("use the top source entirely") would blank every field that source happens not to supply — phone and coordinates are the usual gaps. Type is not merged loosely: it follows the constraint in 3.4.
 
 ### 3.3 What the console writes (and what it no longer writes)
 
@@ -334,6 +334,24 @@ for each field f:
 | audit row | every action above | `change_log` |
 
 Retired in v3.0.0: `STORE_DETAIL_EDIT`, `SWEEPER_CHANGE`, `FIELD_UNLOCKED`, `FIELD_REVERTED`, `SYNC_CHANGE_ACCEPTED`, `SYNC_CHANGE_REJECTED`, and the `field_lock` / `sync_change_set` decision columns. `oc_field_baseline` keeps one row per sign-off (no 5-version stack — nothing is reverted any more).
+
+### 3.4 Source → type constraint (v3.2.0)
+
+`location_type` is not a free field: it is determined by `source_provider`. The console never offers a combination the provider cannot produce, and it reports one if the data ever contains it.
+
+| `source_provider` | Allowed `location_type` | UI behaviour when selected |
+|---|---|---|
+| `LMS` | `packagehub` | Type shows the single option and selects it automatically |
+| `PUDO Inc` | `PUDOpoint`, `Locker` | Type offers both; operator may narrow further |
+| `M&MP` | `M&MP store` | Type shows the single option and selects it automatically |
+
+Rules:
+
+1. The Type filter's options are **built from the selected Source**, each with a live count computed from the current result set (same page, minus the type filter itself). Clearing the Source clears the Type.
+2. The Type column is never edited. A mismatch means the source sent something it should not be able to send.
+3. **Mismatch detection**: `location_type NOT IN allowed(source_provider)` → the row carries a `type ≠ source` badge in the Type column, and the list filter `Issues → Type ≠ source` isolates those rows. Producing this list is a monitoring signal for the provider feed, not a window to fix values here — the record is flagged (F11) so the provider corrects it.
+4. On the OC list the type is the **merged** type (source-priority: M&amp;MP → LMS → PUDO Inc), so a 2:1 location shows the type of the source that wins the merge.
+5. Server side: `location_type=<value>` is accepted only together with (or compatible with) `provider`; a request pairing `provider=LMS` with `location_type=Locker` returns `400 INVALID_TYPE_FOR_PROVIDER` instead of an empty page.
 
 ## 4. API ↔ Table Quick Reference
 

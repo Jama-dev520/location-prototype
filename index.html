@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v3.0.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v3.2.0)</title>
 <style>
+.f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
   --bg-page:#F8FAFC;--bg-section:#F1F5F9;--bg-card:#FFFFFF;--bg-hover:#F0F7FF;
   --text-primary:#1A1A1A;--text-secondary:#555555;--text-tertiary:#8A8A8A;--text-on-primary:#FFFFFF;
@@ -286,7 +287,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.1.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.2.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -310,7 +311,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.1.0</div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.2.0</div>
       </div>
     </div>
 
@@ -318,18 +319,18 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 
       <div class="page active" id="page-p01">
         <h2 class="page-title">Vendor Location List</h2>
-        <p class="page-desc">What the providers actually sent us — <b>every field is read-only</b>, including <b>sweeper</b>, which now arrives with the daily sync. <b>M&amp;MP</b> stores are self-operated, so their owner is the store itself rather than a provider. When a value is wrong, we do not correct it here: we <b>flag it with a reason</b>, the flag travels on this record, and the provider fixes the source. The OC layer only decides whether the location goes live.</p>
+        <p class="page-desc"><b>Source fixes the type</b> — LMS can only be a <b>packagehub</b>, PUDO Inc a <b>PUDOpoint</b> or <b>Locker</b>, M&amp;MP a self-operated store — so picking a Source narrows the Type filter automatically. What the providers actually sent us — <b>every field is read-only</b>, including <b>sweeper</b>, which now arrives with the daily sync. <b>M&amp;MP</b> stores are self-operated, so their owner is the store itself rather than a provider. When a value is wrong, we do not correct it here: we <b>flag it with a reason</b>, the flag travels on this record, and the provider fixes the source. The OC layer only decides whether the location goes live.</p>
 
         <div class="card">
           <div class="filter-grid">
             <div><label class="f-label">Location ID</label><input id="v-f-id" placeholder="e.g. LOC-10024" oninput="applyVendorFilters()"></div>
             <div><label class="f-label">OC Location ID</label><input id="v-f-ocid" placeholder="e.g. OC-00001" oninput="applyVendorFilters()"></div>
             <div><label class="f-label">Name</label><input id="v-f-name" placeholder="keyword" oninput="applyVendorFilters()"></div>
-            <div><label class="f-label">Source</label><select id="v-f-provider" onchange="applyVendorFilters()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option><option>M&MP</option></select></div>
+            <div><label class="f-label">Source</label><select id="v-f-provider" onchange="onSourceChange('v')"><option value="">All</option><option>PUDO Inc</option><option>LMS</option><option>M&MP</option></select></div>
             <div><label class="f-label">Status</label><select id="v-f-status" onchange="applyVendorFilters()"><option value="">All</option><option>active</option><option>inactive</option><option>removed</option></select></div>
-            <div><label class="f-label">Type</label><select id="v-f-type" onchange="applyVendorFilters()"><option value="">All</option><option>PUDOpoint</option><option>Locker</option><option>packagehub</option></select></div>
-            <div><label class="f-label">Sweeper</label><select id="v-f-sweeper" onchange="applyVendorFilters()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
-            <div><label class="f-label">Issues</label><select id="v-f-issues" onchange="applyVendorFilters()"><option value="">All</option><option value="open">Has open issue</option><option value="none">No issue</option></select></div>
+            <div><label class="f-label">Type <span id="v-f-type-hint" class="f-hint"></span></label><select id="v-f-type" onchange="applyVendorFilters()"><option value="">All</option></select></div>
+            <div><label class="f-label">Sweeper</label><select id="v-f-sweeper" onchange="applyVendorFilters()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option><option>M&amp;MP</option></select></div>
+            <div><label class="f-label">Issues</label><select id="v-f-issues" onchange="applyVendorFilters()"><option value="">All</option><option value="open">Has open issue</option><option value="none">No issue</option><option value="mismatch">Type ≠ source</option></select></div>
           </div>
           <div class="filter-actions">
             <button class="btn btn-secondary" onclick="resetVendorFilters()">Reset</button>
@@ -355,14 +356,15 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 
       <div class="page" id="page-p02">
         <h2 class="page-title">OC Location List</h2>
-        <p class="page-desc">The record customers see. <b>Two actions only: enable, and flag an anomaly.</b> There is no editing here — a wrong address does not get typed over, it gets flagged back to the provider. Values are <b>merged per field</b>: an <b>M&amp;MP</b> self-operated store is its own source and wins first, then <b>LMS</b>, then PUDO Inc fills whatever is still empty.</p>
+        <p class="page-desc"><b>Source fixes the type:</b> LMS → packagehub · PUDO Inc → PUDOpoint / Locker · M&amp;MP → self-operated store, so picking a Source narrows the Type filter. The record customers see. <b>Two actions only: enable, and flag an anomaly.</b> There is no editing here — a wrong address does not get typed over, it gets flagged back to the provider. Values are <b>merged per field</b>: an <b>M&amp;MP</b> self-operated store is its own source and wins first, then <b>LMS</b>, then PUDO Inc fills whatever is still empty.</p>
 
         <div class="card">
           <div class="filter-grid">
             <div><label class="f-label">OC Location ID</label><input id="o-f-id" placeholder="e.g. OC-00001" oninput="applyOCFilters()"></div>
             <div><label class="f-label">Vendor Location ID</label><input id="o-f-vendorid" placeholder="e.g. LOC-10024" oninput="applyOCFilters()"></div>
             <div><label class="f-label">Name</label><input id="o-f-name" placeholder="keyword" oninput="applyOCFilters()"></div>
-            <div><label class="f-label">Source</label><select id="o-f-provider" onchange="applyOCFilters()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option><option>M&MP</option></select></div>
+            <div><label class="f-label">Source</label><select id="o-f-provider" onchange="onSourceChange('o')"><option value="">All</option><option>PUDO Inc</option><option>LMS</option><option>M&MP</option></select></div>
+            <div><label class="f-label">Type <span id="o-f-type-hint" class="f-hint"></span></label><select id="o-f-type" onchange="applyOCFilters()"><option value="">All</option></select></div>
             <div><label class="f-label">Status</label><select id="o-f-status" onchange="applyOCFilters()"><option value="">All</option><option>active</option><option>inactive</option></select></div>
             <div><label class="f-label">Downstream</label><select id="o-f-live" onchange="applyOCFilters()"><option value="">All</option><option value="no">Not live yet</option><option value="yes">Live</option></select></div>
             <div><label class="f-label">Issues</label><select id="o-f-issues" onchange="applyOCFilters()"><option value="">All</option><option value="any">Has any issue</option><option value="drift">Baseline drift</option><option value="dup">Duplicate 2:1</option><option value="open">Open provider issue</option></select></div>
@@ -521,13 +523,15 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3>Walkthrough — v3.0.0 (provider data is the only data)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3>Walkthrough — v3.2.0 (source fixes the type)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
         <tr><td>1</td><td>Vendor List</td><td>Look at the Sweeper column</td><td>Every sweeper comes with the sync — no edit affordance anywhere</td></tr>
         <tr><td>2</td><td>Vendor Detail</td><td>Report a data issue on an empty sweeper</td><td>Reason required · flag recorded on the vendor record · no value changed</td></tr>
-        <tr><td>3</td><td>OC List</td><td>Read the Source column</td><td>LMS or PUDO per record; a 2:1 store shows both</td></tr>
+        <tr><td>3</td><td>OC List</td><td>Read the Source column</td><td>LMS, PUDO or M&amp;MP per record; a 2:1 store shows both</td></tr>
+        <tr><td>10</td><td>Both lists</td><td>Set Source = LMS, then open the Type filter</td><td>Only <b>packagehub</b> is offered and it is selected for you; the hint reads “LMS → packagehub”. Same for PUDO Inc (PUDOpoint / Locker) and M&amp;MP</td></tr>
+        <tr><td>11</td><td>Vendor List</td><td>Issues filter → “Type ≠ source”</td><td>Zero rows on clean data; a record whose type cannot belong to its source is tagged in the Type column and isolated here</td></tr>
         <tr><td>4</td><td>OC Detail</td><td>Basic Info → each field carries its source</td><td>LMS wins the field when LMS has a value, PUDO fills the rest</td></tr>
         <tr><td>5</td><td>OC List</td><td>Enable a ready location</td><td>Sign-off checklist · baseline captured · no data edited</td></tr>
         <tr><td>6</td><td>Duplicate Check</td><td>Confirm the pending pair as "same store"</td><td>2:1 mapping · the OC row shows both vendors and switches to LMS values</td></tr>
@@ -598,8 +602,9 @@ var CHANGELOG=[
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='3.1.0';
+var APP_VERSION='3.2.0';
 var VERSIONS=[
+ {v:'3.2.0',type:'minor',date:'2026-11-04',desc:'<b>Source fixes the type.</b> LMS only ever means <b>packagehub</b>, PUDO Inc means <b>PUDOpoint</b> or <b>Locker</b>, M&amp;MP means a self-operated store. Both lists now cascade: pick a Source and the Type filter reduces to what that source can actually be, with live counts per option. A record whose type does not belong to its source is flagged in the list and can be isolated with one filter.'},
  {v:'3.1.0',type:'minor',date:'2026-11-04',desc:'<b>Finer issue granularity.</b> A flag is no longer “field + a sentence”: it now carries an <b>issue type</b> (missing / incorrect / inconsistent / out of range / duplicate / stale / format), an optional <b>sub-field</b> (which address line, which weekday), and a <b>severity</b> that decides whether it blocks enablement.'},
  {v:'3.0.1',type:'patch',date:'2026-11-04',desc:'Every timestamp now carries seconds, and the header shows a live clock. No behaviour change.'},
  {v:'3.0.0',type:'major',date:'2026-11-03',desc:'<b>Provider data is the only data.</b> The OC layer stops editing: it keeps two verbs — <b>enable</b> and <b>flag an anomaly</b>. Sweeper now arrives with the sync, so a wrong sweeper is flagged to the provider instead of typed over; duplicate checking becomes its own page; downstream values are merged per field with <b>LMS first</b>; M&amp;MP works the same data under the same rules.'},
@@ -755,6 +760,18 @@ function tickClock(){var el=document.getElementById('clock');if(!el)return;el.te
 setInterval(tickClock,1000);
 function statusBadge(st){if(st==='active')return '<span class="badge badge-green">active</span>';if(st==='removed')return '<span class="badge badge-gray">removed</span>';return '<span class="badge badge-red">inactive</span>';}
 function provBadge(p){return '<span class="badge '+(p==='M&MP'?'badge-green':p==='PUDO Inc'?'badge-teal':'badge-blue')+'">'+esc(p)+'</span>';}
+
+/* v3.2.0 — a source can only produce certain types. LMS ships package hubs only;
+   PUDO Inc ships points and lockers; M&MP is our own shop. The filter and the list
+   both read this map, so the UI can never offer an impossible combination. */
+var SOURCE_TYPES={'PUDO Inc':['PUDOpoint','Locker'],'LMS':['packagehub'],'M&MP':['M&MP store']};
+var ALL_TYPES=['PUDOpoint','Locker','packagehub','M&MP store'];
+function typesForSource(p){return (p&&SOURCE_TYPES[p])?SOURCE_TYPES[p]:ALL_TYPES;}
+function typeMatches(v){
+  var allowed=SOURCE_TYPES[v.provider];
+  if(!allowed||!v.type)return true;          /* an empty type is a MISSING issue, not a mismatch */
+  return allowed.indexOf(v.type)>=0;
+}
 function val(id){var el=document.getElementById(id);return el?el.value.trim():'';}
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
@@ -798,9 +815,9 @@ function updateBadges(){
 }
 
 /* ============ vendor list ============ */
-function vendorFilters(){
+function vendorFilters(skipType){
   var f={id:val('v-f-id').toLowerCase(),ocid:val('v-f-ocid').toLowerCase(),name:val('v-f-name').toLowerCase(),
-    provider:val('v-f-provider'),status:val('v-f-status'),type:val('v-f-type'),sweeper:val('v-f-sweeper'),issues:val('v-f-issues')};
+    provider:val('v-f-provider'),status:val('v-f-status'),type:skipType?'':val('v-f-type'),sweeper:val('v-f-sweeper'),issues:val('v-f-issues')};
   return VENDORS.filter(function(v){
     if(f.id&&v.id.toLowerCase().indexOf(f.id)<0)return false;
     if(f.ocid){
@@ -815,11 +832,50 @@ function vendorFilters(){
     var oi=issuesOfVendor(v.id).filter(function(i){return i.status!=='fixed';}).length;
     if(f.issues==='open'&&!oi)return false;
     if(f.issues==='none'&&oi)return false;
+    if(f.issues==='mismatch'&&typeMatches(v))return false;
     return true;
   });
 }
 function applyVendorFilters(){renderVendor();}
-function resetVendorFilters(){['v-f-id','v-f-ocid','v-f-name','v-f-sweeper','v-f-status'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('v-f-provider').value='';document.getElementById('v-f-type').value='';document.getElementById('v-f-issues').value='';renderVendor();}
+function typeCounts(kind){
+  var rows=kind==='v'?vendorFilters(true):ocFilters(true),c={};
+  rows.forEach(function(r){
+    var ty=kind==='v'?(r.type||''):mergedField(r,'type').value;
+    if(ty)c[ty]=(c[ty]||0)+1;
+  });
+  return c;
+}
+/* rebuild the Type dropdown from the chosen Source, keeping counts truthful */
+function syncTypeFilter(kind,applyRules){
+  var get=function(n){return document.getElementById(kind+'-f-'+n);};
+  var sel=get('provider'),t=get('type'),h=get('type-hint');
+  if(!sel||!t)return;
+  var src=sel.value,list=typesForSource(src),counts=typeCounts(kind),cur=t.value;
+  t.innerHTML='<option value="">All</option>'+list.map(function(x){
+    var n=counts[x]||0;
+    return '<option value="'+esc(x)+'">'+esc(x)+' ('+n+')</option>';
+  }).join('');
+  if(applyRules){
+    if(!src){t.value='';}                       /* clearing the source clears the type */
+    else if(list.length===1){t.value=list[0];}   /* a source with one type selects it */
+    else if(list.indexOf(cur)>=0){t.value=cur;}  /* keep a still-valid manual choice */
+    else {t.value='';}
+  } else {                                       /* re-render: keep the operator's choice */
+    t.value=(list.indexOf(cur)>=0)?cur:'';
+  }
+  if(h){
+    h.textContent=src?('· '+src+' → '+list.join(' / ')):'';
+    h.style.display=src?'inline':'none';
+  }
+}
+function onSourceChange(kind){
+  syncTypeFilter(kind,true);
+  if(kind==='v')renderVendor();else renderOC();
+  var src=document.getElementById(kind+'-f-provider').value;
+  var list=typesForSource(src);
+  if(src)showToast(src+' → '+list.join(' / '),'A source can only produce its own type, so the Type filter is now limited to '+list.join(' / ')+'.');
+}
+function resetVendorFilters(){['v-f-id','v-f-ocid','v-f-name','v-f-sweeper','v-f-status'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('v-f-provider').value='';document.getElementById('v-f-issues').value='';syncTypeFilter('v',true);renderVendor();}
 function renderVendor(){
   var rows=vendorFilters();
   document.getElementById('v-tbody').innerHTML=rows.map(function(v){
@@ -831,7 +887,7 @@ function renderVendor(){
       +'<td>'+esc(v.addr1||'—')+'</td>'
       +'<td>'+esc(v.city)+'</td>'
       +'<td>'+provBadge(v.provider)+'</td>'
-      +'<td>'+esc(v.type)+'</td>'
+      +'<td>'+esc(v.type||'—')+(typeMatches(v)?'':' <span class="badge badge-red" title="this type cannot come from '+esc(v.provider)+'">type ≠ source</span>')+'</td>'
       +'<td>'+(v.sweeper?provBadge(v.sweeper):'<span class="badge badge-orange">missing</span>')+'</td>'
       +'<td>'+statusBadge(v.status)+'</td>'
       +'<td>'+(oi.length?'<span class="pending-badge" onclick="openIssuesFor(\''+v.id+'\')">'+oi.length+' flagged</span>':'<span style="color:var(--text-tertiary)">—</span>')+'</td>'
@@ -840,19 +896,21 @@ function renderVendor(){
       +'</tr>';
   }).join('');
   document.getElementById('v-result-meta').textContent=rows.length+' vendor location(s)';
+  syncTypeFilter('v');
   updateBadges();
 }
 
 /* ============ OC list ============ */
-function ocFilters(){
+function ocFilters(skipType){
   var f={id:val('o-f-id').toLowerCase(),vid:val('o-f-vendorid').toLowerCase(),name:val('o-f-name').toLowerCase(),
-    provider:val('o-f-provider'),status:val('o-f-status'),live:val('o-f-live'),issues:val('o-f-issues')};
+    provider:val('o-f-provider'),status:val('o-f-status'),type:skipType?'':val('o-f-type'),live:val('o-f-live'),issues:val('o-f-issues')};
   return OC_LOCATIONS.filter(function(o){
     if(f.id&&o.ocId.toLowerCase().indexOf(f.id)<0)return false;
     if(f.vid&&!o.vendorIds.some(function(v){return v.toLowerCase().indexOf(f.vid)>=0;}))return false;
     if(f.name&&mergedField(o,'name').value.toLowerCase().indexOf(f.name)<0)return false;
     if(f.provider&&!o.vendorIds.some(function(id){var v=findVendor(id);return v&&v.provider===f.provider;}))return false;
     if(f.status&&statusOf(o)!==f.status)return false;
+    if(f.type&&mergedField(o,'type').value!==f.type)return false;
     if(f.live==='no'&&o.enable)return false;
     if(f.live==='yes'&&!o.enable)return false;
     if(f.issues==='any'&&!(openIssues(o).length||driftOf(o).length||o.dup||o.intake==='overridden'))return false;
@@ -863,8 +921,16 @@ function ocFilters(){
   });
 }
 function applyOCFilters(){renderOC();}
-function resetOCFilters(){['o-f-id','o-f-vendorid','o-f-name'].forEach(function(i){document.getElementById(i).value='';});['o-f-provider','o-f-status','o-f-live','o-f-issues'].forEach(function(i){document.getElementById(i).value='';});renderOC();}
-function filterNotLive(){document.getElementById('o-f-live').value='no';renderOC();showToast('Waiting for sign-off',OC_LOCATIONS.filter(function(o){return !o.enable;}).length+' location(s) not live yet');}
+function resetOCFilters(){['o-f-id','o-f-vendorid','o-f-name'].forEach(function(i){document.getElementById(i).value='';});['o-f-provider','o-f-status','o-f-live','o-f-issues'].forEach(function(i){document.getElementById(i).value='';});syncTypeFilter('o',true);renderOC();}
+function filterNotLive(){
+  /* a preset wins over leftover filters, otherwise the count in the toast and the
+     count on the menu badge would disagree with what is on screen */
+  document.getElementById('o-f-provider').value='';syncTypeFilter('o',true);
+  document.getElementById('o-f-issues').value='';
+  document.getElementById('o-f-live').value='no';renderOC();
+  var n=OC_LOCATIONS.filter(function(o){return !o.enable;}).length;
+  showToast('Waiting for sign-off',n+' location(s) not live yet');
+}
 function issueBadges(o){
   var b=[];
   var oi=openIssues(o).length; if(oi)b.push('<span class="badge badge-orange" title="open provider issue">'+oi+' data</span>');
@@ -901,6 +967,7 @@ function renderOC(){
       +'</tr>';
   }).join('');
   document.getElementById('o-result-meta').textContent=rows.length+' OC location(s)';
+  syncTypeFilter('o');
   updateOCSelection();updateBadges();
 }
 function updateOCSelection(){
@@ -1359,7 +1426,7 @@ function exportCSV(kind){showToast('Export started',kind+' view will download as
     BASELINE[o.ocId]=snap;
   });
 })();
-switchPage('p01');tickClock();
+switchPage('p01');tickClock();syncTypeFilter('v',true);syncTypeFilter('o',true);
 </script>
 </body>
 </html>
