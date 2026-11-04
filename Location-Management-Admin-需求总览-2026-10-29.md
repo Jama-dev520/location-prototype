@@ -1,7 +1,7 @@
-# Location Management Admin Console — Requirement Overview (v3.0.1)
+# Location Management Admin Console — Requirement Overview (v3.1.0)
 
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
-> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.0.1)
+> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.1.0)
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
 > Detail view (v2.4.0): clicking a location ID opens a **full page** with tabs — Basic Info / Operations / Hours & Services / Linked Records / Change History.
 > **v3.0.0 — 供应商之外，自营 M&MP 小店也走同一套。** M&MP = 自营小店（美国叫法），是门店目录里的第三类来源，数据由门店自己维护，异常找门店负责人；规则与供应商门店完全一致。
@@ -78,7 +78,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | `user` | `user_id` / `name` / `email` / `has_enable_permission` | SSO user; `has_enable_permission` gates enable/edit |
 | **`oc_field_baseline`** (v2.6.0) | `baseline_id` / `oc_location_id` / `field_name` / `baseline_value` / `captured_at` / `capture_reason` | 签收时的值，用来判断「签收后变了哪些字段」；v3.0 起不再用于回退 |
 | **`sync_change_set`** (v2.6.0) | `change_id` / `run_id` / `oc_location_id` / `field_name` / `old_value` / `new_value` / `risk_tier` / `decision` / `reason` | 上游变更的字段级记录；`pending` = 已记录但未写入 OC |
-| **`data_issue`** (v3.0.0) | `issue_id` / `vendor_id` / `field_name` / `reason` / `status` / `raised_by` / `raised_at` | 数据异常标记：只记录问题与原因，不改变值；状态 open → reported → fixed |
+| **`data_issue`** (v3.0.0，v3.1.0 细化) | `issue_id` / `vendor_id` / `field_name` / **`sub_field`** / **`issue_type`** / **`severity`** / `reason` / `status` / `owner_type` / `raised_by` / `raised_at` | 数据异常标记：只记录问题，不改值。粒度 = 字段 → 子字段 → 类型 → 严重度；`blocking` 阻止签收，`warning` 不阻止 |
 | **`intake_issue`** (v2.6.0) | `issue_id` / `vendor_location_id` / `check_code` / `severity` / `status` | 数据质量检查项；`fail` 阻断生成 OC 门店 |
 
 ### 1.5 Audit operation types (`operation_type`)
@@ -208,6 +208,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | 19 | Duplicate (v3.0.0) | 独立 **Duplicate Check** 页；同一家 → 2:1 并在 OC 列表标出；不是同一家 → 1:1。未裁决的重复对阻塞启用 |
 | 20 | Merge priority (v3.0.0) | 同一条 OC 记录逐字段取源：**M&MP（自营）→ LMS → PUDO Inc 依次取，先有值的赢**。详情页与列表都标出来源 |
 | 21 | Drift (v3.0.0) | 签收后供应商改了值：下游直接用新值，台账显示「与基线不同」，运营可**重新签收**或**标记异常**。基线是参照物，不是冻结器 |
+| 23 | Issue 粒度 (v3.1.0) | 一个 issue 必须说清四层：哪个**字段**（address_line1）→ 哪个**子字段**（address_line2 / SATURDAY / latitude）→ 哪类**问题**（缺失 / 错误 / 不一致 / 越界 / 重复 / 过期 / 格式）→ 多**严重**（blocking 阻止签收 / warning 只提示）。子字段是让 issue 可执行的关键：「营业时间不对」供应商没法改，「周六没有时间段」可以 |
 | 22 | M&MP (v3.0.0) | **M&MP = 自营小店**（美国叫法），是第三类数据来源，与 PUDO Inc / LMS 并列，不是角色或团队。同样的目录、同样的 enable 与签收、同样的异常台账；差别是 M&MP 的数据由门店自己维护，标记异常找**门店负责人（内部）**而不是供应商 |
 
 ---

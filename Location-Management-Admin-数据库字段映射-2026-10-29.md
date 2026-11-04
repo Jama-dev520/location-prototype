@@ -1,6 +1,6 @@
-# Location Management Admin Console — Database Field Mapping (v3.0.1)
+# Location Management Admin Console — Database Field Mapping (v3.1.0)
 
-> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.0.1)
+> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.1.0)
 >
 > **v3.0.0 model change.** The console no longer writes location fields. `field_lock` is replaced by `data_issue`; `sync_change_set` decisions and `oc_field_baseline` versions used for revert are retired; downstream values are a per-field merge with **LMS first**. The console writes exactly four things: `oc_location.is_enable`, `data_issue` rows, baseline captures, and `change_log`.
 > Purpose: help engineering/data teams understand "front-end filter ↔ API param ↔ DB field" and the table schemas for the **two-layer model**.
@@ -245,22 +245,35 @@ oc_location (OC-owned, downstream-facing)
 
 ### Table 10 — `data_issue` (data anomalies, replaces `field_lock` in v3.0.0)
 
-> A flag, not an edit. It records **what is wrong and why** on the vendor record; the value itself is never touched by the console. An open issue blocks enablement of the OC location it feeds.
+> A flag, not an edit. It records **what is wrong, at what granularity, and how bad** — on the source record. The value itself is never touched. A **blocking** issue stops new sign-offs; a **warning** does not.
 
 | Field | Type | Notes |
 |---|---|---|
 | `issue_id` | varchar PK | `ISS-0001` |
 | `vendor_location_id` | varchar FK → vendor_location | the record that has to be fixed |
-| `field_name` | varchar | which field is wrong (`address_line1`, `sweeper`, `opening_hours`, …) |
-| `reason` | text NOT NULL | **mandatory**; what is wrong, in the operator's words |
-| `status` | enum(OPEN, REPORTED, FIXED) | open → reported (chased with the provider) → fixed (provider corrected it or the next sync did) |
-| `raised_by` | varchar | operator |
-| `raised_at` | timestamp | when |
+| `field_name` | varchar | top-level field (`address_line1`, `postal_code`, `opening_hours`, `sweeper`, …) |
+| `sub_field` | varchar NULL | **granularity** — which address line, which weekday, which coordinate (`address_line2`, `SATURDAY`, `latitude`) |
+| `issue_type` | enum | `MISSING` · `INCORRECT` · `INCONSISTENT` · `OUT_OF_RANGE` · `DUPLICATE` · `STALE` · `FORMAT` |
+| `severity` | enum(BLOCKING, WARNING) | blocking = cannot be signed off; warning = live but wrong for customers. Defaults from `issue_type`, can be raised |
+| `reason` | text NOT NULL | **mandatory**; what exactly is wrong, in the operator's words |
+| `status` | enum(OPEN, REPORTED, FIXED) | open → reported (chased) → fixed (source corrected) |
+| `owner_type` | enum(PROVIDER, STORE) | who fixes it: PUDO Inc / LMS, or the **M&MP store owner** internally |
+| `raised_by` / `raised_at` | varchar / timestamp | who, when (to the second) |
 | `closed_at` | timestamp NULL | when it reached FIXED |
-| `source` | enum(OPERATOR, INTAKE, DRIFT) | raised by hand, by the intake check, or from a drift review |
-| `owner_type` | enum(PROVIDER, STORE) | who has to fix it: an external provider (PUDO Inc / LMS) or the **M&MP store owner** internally |
 
-> `oc_location_id` is **not** stored: the link is derived through `vendor_oc_mapping`, so the same issue follows the vendor record even if the mapping later becomes 2:1.
+#### 10.1 Issue types, with one example each
+
+| Type | Default severity | What it means | Example (from the prototype) |
+|---|---|---|---|
+| `MISSING` | blocking | the owner sent no value at all | `LOC-00181 · sweeper` — sweeper was not supplied, downstream routing cannot resolve who picks up |
+| `INCORRECT` | blocking | a value exists but it is the wrong one | `LOC-00182 · sweeper` — set to PUDO Inc on an LMS packagehub with no PUDO agreement |
+| `INCONSISTENT` | blocking | two fields contradict each other | `LOC-00183 · postal_code` — 92058 belongs to Oceanside, the street line is in 92054 |
+| `OUT_OF_RANGE` | blocking | placeholder or impossible value | `LOC-00177 · latitude/longitude` — (0,0)-style drift, the pin lands 297 km away in the water |
+| `DUPLICATE` | warning | this record looks like another one | `LOC-00186 · unit / suite` — suffix appears twice and fuzzy-matches LOC-12194 at 75% |
+| `STALE` | warning | unchanged in a way that no longer matches reality | `LOC-00184 · MONDAY` — hours unchanged since 2024, the store now closes at 16:00 |
+| `FORMAT` | warning | unparseable or truncated | `LOC-00179 · phone` — 7 digits, cannot be dialled from another area code |
+
+> Granularity ladder: **field → sub-field → type → severity → free-text reason.** The sub-field is what makes an issue actionable: "opening hours are wrong" cannot be fixed by a provider, "SATURDAY has no range" can.
 
 ### Table 11 — `intake_issue` (intake check, added in v2.6.0)
 

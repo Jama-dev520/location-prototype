@@ -1,6 +1,6 @@
-# Location Management Admin Console — PRD Change Summary (v3.0.1)
+# Location Management Admin Console — PRD Change Summary (v3.1.0)
 
-> Document version v3.0.1 ｜ Change date 2026-11-04 ｜ Status: Draft — pending review
+> Document version v3.1.0 ｜ Change date 2026-11-04 ｜ Status: Draft — pending review
 > 本轮（v3.0.0）是**模型换向**：OC 层不再改数据，只做两件事——**enable** 和 **标记异常**。所有数据以供应商为唯一来源，错的地方标记回去让供应商改；重复对单独成页；下游按字段合并，LMS 优先；M&MP 用同一套规则管同一份数据。
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
 > **验收标准（通俗版）**: `Location-Management-Admin-验收标准-2026-10-29.md`
@@ -328,6 +328,41 @@ v3.0.0 的做法是把「改」这个动作整个拿掉。
 
 | 版本 | 级别 | 日期 | 内容 |
 |---|---|---|---|
+## 二之六、v3.1.0：issue 拆到可执行的程度
+
+v3.0.0 的「标记异常」只有字段 + 一句话，实际用起来有两个问题：**同一句话可以指很多地方**（「地址不对」到底是街道、单元号还是邮编？），**严重程度没区分**（缺一个营业时间段的周六，和整条记录没揽收方，不该一样处理）。
+
+### 29. 四层粒度
+
+| 层 | 取值 | 例子 |
+|---|---|---|
+| 字段 | `address_line1` / `postal_code` / `opening_hours` / `sweeper` / `name` / `phone` / `coordinates` | 营业时间 |
+| **子字段** | 哪一行地址、星期几、哪个坐标 | `SATURDAY` |
+| **类型** | MISSING · INCORRECT · INCONSISTENT · OUT_OF_RANGE · DUPLICATE · STALE · FORMAT | MISSING |
+| **严重度** | `blocking`（不能签收）/ `warning`（能上线但客户看到的是错的） | blocking |
+
+### 30. 七个类型，每个都有一个真实例子
+
+| 类型 | 默认严重度 | 含义 | 原型里的例子 |
+|---|---|---|---|
+| MISSING | blocking | 完全没有值 | LOC-00181 没给 sweeper → 下游无法路由 |
+| INCORRECT | blocking | 有值但是错的 | LOC-00182 的 sweeper 写成 PUDO Inc，可它是 LMS 的 packagehub，没有 PUDO 协议 |
+| INCONSISTENT | blocking | 两个字段互相矛盾 | LOC-00183 邮编 92058 属于 Oceanside，街道却在 92054 |
+| OUT_OF_RANGE | blocking | 占位值或不可能值 | LOC-00177 坐标偏了 297 公里，落在海里 |
+| DUPLICATE | warning | 这条记录像另一条 | LOC-00186 单元号重复且与 LOC-12194 相似度 75% |
+| STALE | warning | 长期没变、已经与现实不符 | LOC-00184 周一时间自 2024 年没改，门店现在 16:00 就关 |
+| FORMAT | warning | 解析不了或被截断 | LOC-00179 电话只有 7 位，外区打不通 |
+
+### 31. 严重度决定能不能上线
+
+- **blocking**：进入启用前置检查，签收按钮显示 Blocked；
+- **warning**：照常可以签收，但会挂在台账上，直到有人修或标记已修。
+
+这条改动让「标记」从「备注」变成了**可以排期的工作**：供应商拿到的是「周六缺时间段」而不是「营业时间有问题」。
+
+---
+
+| v3.1.0 | MINOR | 2026-11-04 | **issue 细化**：字段 → 子字段 → 类型（7 类）→ 严重度（blocking/warning）+ 必填原因；10 条示例数据；台账按类型筛选；只有 blocking 阻塞签收 |
 | v3.0.1 | PATCH | 2026-11-04 | **时间精确到秒**：列表 Updated、issue 的 raised-at、审计行全部带秒；头部加一枚走秒的当前时间（本地时区）。无行为变更 |
 | v3.0.0 | MAJOR | 2026-11-03 | **模型换向**：OC 层只保留 enable + 标记异常，手改/字段锁/回退全部下线 · Sweeper 随同步进来，异常标记在供应商侧 · Duplicate 独立成页并在 OC 列表标 2:1 · 下游按字段合并、LMS 优先 · M&MP 同级同规则 · Review Center 改为 Data Issues 台账 |
 | v2.7.0 | MINOR | 2026-11-02 | **把决定权还回去**：字段锁可解锁（手动必填理由 / Accept & unlock 一步到位，`field_lock` 加 4 个释放字段，不删行）· 签收队列从 Review Center 第四 tab 移到 OC 列表 `⏳ Not live yet` 预设，两个徽章各数各的 · 手改可逐字段回退（只对每字段最新一次手改开放，锁保留）· 新增 F23/F24、flow10/flow11 |

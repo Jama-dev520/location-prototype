@@ -1,7 +1,7 @@
 # Location Management Admin Console — 功能验收标准（通俗版）
 
-> 版本 **v3.0.1** · 对照原型 https://jama-dev520.github.io/location-prototype/
-> 配套文档：PRD v3.0.1（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
+> 版本 **v3.1.0** · 对照原型 https://jama-dev520.github.io/location-prototype/
+> 配套文档：PRD v3.1.0（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
 
 **怎么用这份文档**：打开原型，照着「怎么做」点一遍，看是否与「应该看到什么」一致。三条都对就算过。不需要懂技术，用页面上的字就能判断。
 
@@ -36,7 +36,7 @@
 |---|---|---|
 | 1 | 打开 **Vendor Location List** | 每一行都有 Sweeper 值（来自同步），**没有任何编辑按钮** |
 | 2 | 点任意门店 ID 进详情，找编辑入口 | 找不到；只有 `Flag a data issue` |
-| 3 | 在某条门店上标记一次异常（选字段 + 写原因） | 提示"值未改变"；该门店 Issues 列出现 `1 flagged`；Change Log 多一条 `DATA_ISSUE_RAISED` |
+| 3 | 在某条门店上标记一次异常（选字段 + 子字段 + 类型 + 严重度 + 写原因） | 提示"值未改变"；卡片上同时显示 `字段 · 子字段`、类型徽章、`blocks sign-off` 或 `warning only`；Change Log 多一条 `DATA_ISSUE_RAISED` |
 | 4 | 不写原因直接点确认 | 被拦住，提示必须写原因 |
 | 5 | 打开 **OC Location List** | 有 `Source` 列（LMS / PUDO）、`Issues` 列（`N data` / `N drift` / `2:1`）、`Sweeper` 列 |
 | 6 | 点工具栏 **Not live yet (n)** | 只剩未上线门店；左侧 OC 菜单徽章是同一个数字 |
@@ -60,7 +60,7 @@
 | V2 | 看表头 Sweeper | 标着 `synced`，说明值来自供应商 | 有"改揽收方"的入口 |
 | V3 | 点门店 ID 进详情 → Operations | Sweeper 只读，写明"错了就标记，不要改"，并有一个标记按钮 | 有下拉框能换人 |
 | V4 | 详情 → 逐个 tab 看 | Basic Info / Operations / Hours & Services / Issues / Change History，全部只读 | 任何字段可编辑 |
-| V5 | 点 `Flag a data issue` | 先选字段、再写原因；不写原因点确认会被拦 | 一点就提交空原因 |
+| V5 | 点 `Flag a data issue` | 四层都能选：字段 → 子字段（如 `SATURDAY`、`address_line2`）→ 类型（7 类）→ 严重度；不写原因点确认会被拦 | 只有「一个输入框」，或子字段选不了 |
 | V6 | 标记完回列表 | 该行 Issues 显示 `N flagged`；值**没有变化** | 值被改了 |
 | V7 | 点 Issues 数字 | 跳到该门店详情，列出问题、状态、谁在什么时候标的 | 跳到别的页面 |
 
@@ -115,7 +115,8 @@
 | # | 怎么做 | 应该看到 | 不该发生 |
 |---|---|---|---|
 | I1 | 打开页面 | 三块：Provider data issues / Changed after sign-off / Failed intake | 又出现"Review Center"或按 tab 分的决策队列 |
-| I2 | 看一条 issue 的按钮 | Mark reported / Provider fixed it；写明"值永远不会在这里改变" | 有"直接修改"的按钮 |
+| I2 | 看一条 issue 的卡片 | 显示 `字段 · 子字段` + 类型徽章 + `blocks sign-off` / `warning only` + 状态；按钮 Mark reported / Owner fixed it | 只有字段名和一个状态，看不出是什么问题 |
+| I7 | 用顶部 `Filter by issue type` 选 MISSING | 只剩缺失类；选 All 恢复全部 | 过滤只改标题、列表不变 |
 | I3 | 点 Provider fixed it | 状态变 fixed，门店的 `N data` 减少 | 值被本地改掉 |
 | I4 | 看 Changed after sign-off | 列出字段、旧值 → 新值，两个动作：重新签收 / 标记异常 | 只有"接受/拒绝" |
 | I5 | 点重新签收 | 基线刷新、写 `RE_SIGNED_OFF`、漂移消失 | 只改界面数字，没有审计 |
@@ -147,6 +148,9 @@ Duplicate Check 里一组 75% 的疑似重复。运营核对地址与邮编，�
 - ❌ 任何页面能直接改门店的地址 / 营业时间 / 名称 / sweeper
 - ❌ 标了异常，值也跟着变了（标记只记录问题，不改值）
 - ❌ 标记异常可以不写原因
+- ❌ 一个 issue 只有字段、没有类型（无法判断该让供应商改什么）
+- ❌ warning 也把签收按钮卡死（轻微问题不该阻止上线）
+- ❌ blocking 不阻塞签收（该拦的没拦）
 - ❌ 一条有未关闭问题的门店被启用了
 - ❌ 未裁决的重复对还能上线
 - ❌ 2:1 门店的下游值来自 PUDO，而 LMS 明明有值

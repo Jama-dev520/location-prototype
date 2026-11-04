@@ -286,7 +286,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.0.1</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.1.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -310,7 +310,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.0.1</div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.1.0</div>
       </div>
     </div>
 
@@ -455,19 +455,24 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 </div>
 
 <div class="modal-mask" id="modal-flag">
-  <div class="modal" style="width:520px">
+  <div class="modal" style="width:560px">
     <div class="modal-header">Report a data issue<span class="close" onclick="closeModal('modal-flag')">✕</span></div>
     <div class="modal-body">
       <div class="info-line" style="margin:0 0 12px">This does <b>not</b> change the value. It records the problem on the source record and asks the owner to correct it — a provider for PUDO Inc / LMS, the store itself for an <b>M&amp;MP</b> self-operated store.</div>
-      <label class="f-label">Field</label>
-      <select id="flag-field" style="width:100%"></select>
-      <label class="f-label" style="margin-top:12px">What is wrong?</label>
-      <textarea id="flag-reason" rows="3" style="width:100%;resize:vertical" placeholder="e.g. coordinates point 297 km away from the street address"></textarea>
-      <div class="warn-line" style="margin-top:10px">The location keeps its current value and stays live. Flagging is not a disable.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><label class="f-label">Field</label><select id="flag-field" style="width:100%" onchange="flagFieldChanged()"></select></div>
+        <div><label class="f-label">Sub-field <span id="flag-sub-wrap" style="color:var(--text-tertiary);font-weight:400">(optional)</span></label><select id="flag-sub" style="width:100%"></select></div>
+        <div><label class="f-label">What kind of problem?</label><select id="flag-type" style="width:100%" onchange="flagTypeChanged()"></select></div>
+        <div><label class="f-label">Severity</label><select id="flag-sev" style="width:100%"><option value="blocking">blocking — cannot go live</option><option value="warning">warning — live, but wrong for customers</option></select></div>
+      </div>
+      <div class="info-line" id="flag-hint" style="margin-top:10px">Pick a type to see what it means.</div>
+      <label class="f-label" style="margin-top:10px">What exactly is wrong?</label>
+      <textarea id="flag-reason" rows="3" style="width:100%;resize:vertical" placeholder="e.g. postal 92058 belongs to Oceanside but the street line is in 92054"></textarea>
+      <div class="warn-line" style="margin-top:10px">The location keeps its current value. Blocking issues stop new sign-offs; warnings do not.</div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('modal-flag')">Cancel</button>
-      <button class="btn btn-primary" onclick="submitFlag()">Flag to provider</button>
+      <button class="btn btn-primary" onclick="submitFlag()">Flag to owner</button>
     </div>
   </div>
 </div>
@@ -593,8 +598,9 @@ var CHANGELOG=[
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='3.0.1';
+var APP_VERSION='3.1.0';
 var VERSIONS=[
+ {v:'3.1.0',type:'minor',date:'2026-11-04',desc:'<b>Finer issue granularity.</b> A flag is no longer “field + a sentence”: it now carries an <b>issue type</b> (missing / incorrect / inconsistent / out of range / duplicate / stale / format), an optional <b>sub-field</b> (which address line, which weekday), and a <b>severity</b> that decides whether it blocks enablement.'},
  {v:'3.0.1',type:'patch',date:'2026-11-04',desc:'Every timestamp now carries seconds, and the header shows a live clock. No behaviour change.'},
  {v:'3.0.0',type:'major',date:'2026-11-03',desc:'<b>Provider data is the only data.</b> The OC layer stops editing: it keeps two verbs — <b>enable</b> and <b>flag an anomaly</b>. Sweeper now arrives with the sync, so a wrong sweeper is flagged to the provider instead of typed over; duplicate checking becomes its own page; downstream values are merged per field with <b>LMS first</b>; M&amp;MP works the same data under the same rules.'},
  {v:'2.7.0',type:'minor',date:'2026-11-02',desc:'Field lock release, field revert, sign-off queue on the OC list.'}
@@ -608,11 +614,42 @@ VENDORS.forEach(function(v){ v.qrDropoff = (v.provider==='LMS') && QR_IDS.indexO
 OC_LOCATIONS.forEach(function(o){ o.enable=!!o.enable; o.dup=(o.vendorIds.length>1); });
 
 /* provider-side issues: the only lever OC has over vendor data */
+var ISSUE_TYPES={
+  MISSING:      {label:'Missing',     sev:'blocking', hint:'the provider sent no value at all'},
+  INCORRECT:    {label:'Incorrect',   sev:'blocking', hint:'a value exists but it is the wrong one'},
+  INCONSISTENT: {label:'Inconsistent',sev:'blocking', hint:'two fields contradict each other'},
+  OUT_OF_RANGE: {label:'Out of range',sev:'blocking', hint:'placeholder or impossible (0,0), hours end before start'},
+  DUPLICATE:    {label:'Duplicate',   sev:'warning',  hint:'this record looks like another one'},
+  STALE:        {label:'Stale',       sev:'warning',  hint:'unchanged in a way that no longer matches reality'},
+  FORMAT:       {label:'Format',      sev:'warning',  hint:'unparseable or truncated (phone, free-text hours)'}
+};
+var SUBFIELDS={
+  name:[], addr1:['address_line1','address_line2','unit / suite'], city:[], state:[],
+  postal:['postal_code'], latitude:['latitude','longitude'],
+  sweeper:[], phone:[],
+  hoursText:['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY','holiday_closures']
+};
 var ISSUES=[
- {id:'ISS-0007',vendorId:'LOC-00177',field:'latitude',reason:'Coordinate is 297 km away from the street address — customer would be routed to the water',status:'reported',raisedBy:'Sarah Lin',raisedAt:'2026-10-30 09:12:41'},
- {id:'ISS-0008',vendorId:'LOC-00177',field:'longitude',reason:'Same record as ISS-0007 — the coordinate pair moved together',status:'reported',raisedBy:'Sarah Lin',raisedAt:'2026-10-30 09:12:41'},
- {id:'ISS-0009',vendorId:'LOC-00181',field:'sweeper',reason:'Sweeper was not supplied by the provider — routing cannot be resolved downstream',status:'open',raisedBy:'Alex Chen',raisedAt:'2026-10-31 11:05:18'},
- {id:'ISS-0010',vendorId:'LOC-00186',field:'address_line1',reason:'Unit suffix duplicated in the street line ("Ste 2") — may split the same store into two records',status:'open',raisedBy:'Sarah Lin',raisedAt:'2026-10-28 09:20:33'}
+ {id:'ISS-0007',vendorId:'LOC-00177',field:'latitude',subField:'latitude',type:'OUT_OF_RANGE',severity:'blocking',
+  reason:'Coordinate sits 297 km from the street address — the pin lands in the water',status:'reported',raisedBy:'Sarah Lin',raisedAt:'2026-10-30 09:12:41'},
+ {id:'ISS-0008',vendorId:'LOC-00177',field:'latitude',subField:'longitude',type:'OUT_OF_RANGE',severity:'blocking',
+  reason:'Same record as ISS-0007 — the pair moved together',status:'reported',raisedBy:'Sarah Lin',raisedAt:'2026-10-30 09:12:52'},
+ {id:'ISS-0009',vendorId:'LOC-00181',field:'sweeper',subField:'',type:'MISSING',severity:'blocking',
+  reason:'Sweeper was not supplied — downstream routing cannot resolve who picks up',status:'open',raisedBy:'Alex Chen',raisedAt:'2026-10-31 11:05:18'},
+ {id:'ISS-0010',vendorId:'LOC-00186',field:'addr1',subField:'unit / suite',type:'DUPLICATE',severity:'warning',
+  reason:'Unit suffix appears twice ("2918 Avenue I" + "Ste 2") and the record fuzzy-matches LOC-12194 at 75%',status:'open',raisedBy:'Sarah Lin',raisedAt:'2026-10-28 09:20:33'},
+ {id:'ISS-0011',vendorId:'LOC-00183',field:'postal',subField:'postal_code',type:'INCONSISTENT',severity:'blocking',
+  reason:'Postal 92058 belongs to Oceanside, but the street line says "Mission Ave Ste 148" which is 92054 — carrier cannot route',status:'reported',raisedBy:'Alex Chen',raisedAt:'2026-11-02 14:02:10'},
+ {id:'ISS-0012',vendorId:'LOC-00180',field:'hoursText',subField:'SATURDAY',type:'MISSING',severity:'warning',
+  reason:'Saturday has no time range — the location shows as closed on the busiest drop-off day',status:'open',raisedBy:'Sarah Lin',raisedAt:'2026-11-01 10:44:05'},
+ {id:'ISS-0013',vendorId:'LOC-00179',field:'phone',subField:'',type:'FORMAT',severity:'warning',
+  reason:'Phone is 7 digits ("5550142") — customers cannot dial it from outside the area code',status:'open',raisedBy:'Sarah Lin',raisedAt:'2026-11-02 16:20:51'},
+ {id:'ISS-0014',vendorId:'LOC-00184',field:'hoursText',subField:'MONDAY',type:'STALE',severity:'warning',
+  reason:'Hours unchanged since 2024 and now conflict with the store’s own website (closes 16:00, not 17:00)',status:'open',raisedBy:'Alex Chen',raisedAt:'2026-11-03 09:15:02'},
+ {id:'ISS-0015',vendorId:'LOC-12193',field:'name',subField:'',type:'INCORRECT',severity:'warning',
+  reason:'Name carries a store number that no longer exists ("#11") — customer-facing label is misleading',status:'open',raisedBy:'Sarah Lin',raisedAt:'2026-11-03 15:08:44'},
+ {id:'ISS-0016',vendorId:'LOC-00182',field:'sweeper',subField:'',type:'INCORRECT',severity:'blocking',
+  reason:'Sweeper is PUDO Inc, but this is an LMS packagehub with no PUDO agreement — routing sends parcels to a partner who cannot take them',status:'reported',raisedBy:'Alex Chen',raisedAt:'2026-10-29 08:31:19'}
 ];
 var INTAKE=[
  {vid:'LOC-00187',status:'open',detected:'2026-10-30 02:31:44',issues:['address_line1 is empty','opening_hours missing — customer-facing hours cannot be validated']},
@@ -700,8 +737,8 @@ function blockers(o){
   if(!hasHours(o))b.push('opening hours missing from the provider record');
   if(o.intake==='overridden')b.push('intake check was overridden');
   if(pendingDupFor(o))b.push('duplicate pair still undecided');
-  var open=openIssues(o);
-  if(open.length)b.push(open.length+' open data issue(s) — flag to provider first');
+  var blocking=openIssues(o).filter(function(i){return i.severity==='blocking';});
+  if(blocking.length)b.push(blocking.length+' blocking data issue(s) — see Issues');
   return b;
 }
 function statusOf(o){
@@ -1018,23 +1055,50 @@ function makeOC(v){
 }
 
 /* ============ issues page ============ */
+function typeBadge(i){
+  var meta=ISSUE_TYPES[i.type]||{label:i.type,sev:i.severity};
+  var cls=i.severity==='blocking'?'badge-orange':'badge-gray';
+  return '<span class="badge '+cls+'" title="'+esc(meta.hint||'')+'">'+esc(meta.label)+'</span>';
+}
+function fieldLabel(i){
+  var names={name:'Name',addr1:'Street address',city:'City',state:'State',postal:'Postal code',latitude:'Coordinates',sweeper:'Sweeper',hoursText:'Opening hours',phone:'Phone'};
+  return (names[i.field]||i.field)+(i.subField?' · '+i.subField:'');
+}
 function renderIssuesPage(){
+  var typeFilter=val('di-f-type')||'';
   var open=ISSUES.filter(function(i){return i.status!=='fixed';});
+  var shown=open.filter(function(i){return !typeFilter||i.type===typeFilter;});
   var drift=[];
   OC_LOCATIONS.forEach(function(o){driftOf(o).forEach(function(d){drift.push({oc:o,field:d.field,old:d.old,new:d.new});});});
-  var html='';
-  html+='<div class="card" style="margin-bottom:14px"><div style="display:flex;align-items:center;gap:10px"><b style="font-size:13px">Data issues — provider and self-operated</b><span class="badge badge-orange">'+open.length+'</span><span class="rc-meta" style="margin:0">flagged by us · the provider fixes the source</span></div>'
-    +(open.length?open.map(function(i){
+
+  var counts={};
+  open.forEach(function(i){counts[i.type]=(counts[i.type]||0)+1;});
+  var legend=Object.keys(ISSUE_TYPES).map(function(k){
+    return '<option value="'+k+'">'+ISSUE_TYPES[k].label+(counts[k]?' ('+counts[k]+')':'')+'</option>';
+  }).join('');
+
+  var html='<div class="card" style="margin-bottom:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">'
+    +'<b style="font-size:13px">Filter by issue type</b>'
+    +'<select id="di-f-type" onchange="renderIssuesPage()" style="min-width:220px"><option value="">All types ('+open.length+')</option>'+legend+'</select>'
+    +'<span class="rc-meta" style="margin:0">Granularity: field → sub-field → type → severity. Blocking stops new sign-offs; warnings do not.</span>'
+    +'</div>';
+
+  html+='<div class="card" style="margin-bottom:14px"><div style="display:flex;align-items:center;gap:10px"><b style="font-size:13px">Data issues — provider and self-operated</b><span class="badge badge-orange">'+shown.length+'</span><span class="rc-meta" style="margin:0">flagged by us · the owner fixes the source</span></div>'
+    +(shown.length?shown.map(function(i){
       var v=findVendor(i.vendorId);
-      return '<div class="rc-item"><div class="rc-item-head"><b>'+esc(v.name)+'</b><span class="mono" style="font-size:12px">'+esc(i.vendorId)+'</span><span class="badge badge-gray">'+esc(i.field)+'</span><span class="risk '+(i.status==='reported'?'risk-review':'risk-block')+'">'+esc(i.status==='reported'?'reported to provider':'open')+'</span></div>'
+      return '<div class="rc-item"><div class="rc-item-head"><b>'+esc(v.name)+'</b><span class="mono" style="font-size:12px">'+esc(i.vendorId)+'</span>'
+        +'<span class="badge badge-gray">'+esc(fieldLabel(i))+'</span>'+typeBadge(i)
+        +'<span class="rc-meta" style="margin:0">'+(i.severity==='blocking'?'blocks sign-off':'warning only')+'</span>'
+        +'<span class="risk '+(i.status==='reported'?'risk-review':'risk-block')+'">'+esc(i.status==='reported'?'reported to owner':i.status)+'</span></div>'
         +'<div class="rc-meta">'+esc(i.reason)+'</div>'
-        +'<div class="rc-meta">raised by '+esc(i.raisedBy)+' · '+esc(i.raisedAt)+'</div>'
+        +'<div class="rc-meta">'+esc(i.id)+' · raised by '+esc(i.raisedBy)+' · '+esc(i.raisedAt)+'</div>'
         +'<div class="rc-actions">'
         +(i.status==='open'?'<button class="btn btn-secondary btn-sm" onclick="markReported(\''+i.id+'\')">Mark reported</button>':'')
-        +'<button class="btn btn-secondary btn-sm" onclick="markFixed(\''+i.id+'\')">Provider fixed it</button>'
+        +'<button class="btn btn-secondary btn-sm" onclick="markFixed(\''+i.id+'\')">Owner fixed it</button>'
         +'<span class="rc-meta" style="margin:0">The value never changes here — only the next sync does that.</span>'
         +'</div></div>';
-    }).join(''):'<div class="rc-meta" style="margin-top:8px">Nothing outstanding.</div>')+'</div>';
+    }).join(''):'<div class="rc-meta" style="margin-top:8px">Nothing outstanding for this filter.</div>')+'</div>';
+
   html+='<div class="card" style="margin-bottom:14px"><div style="display:flex;align-items:center;gap:10px"><b style="font-size:13px">Changed after sign-off</b><span class="badge badge-red">'+drift.length+'</span><span class="rc-meta" style="margin:0">the provider moved a value on a live location</span></div>'
     +(drift.length?drift.map(function(d){
       return '<div class="rc-item"><div class="rc-item-head"><b class="mono">'+esc(d.oc.ocId)+'</b><span class="badge badge-gray">'+esc(d.field)+'</span><span class="risk risk-review">differs from baseline</span></div>'
@@ -1043,13 +1107,15 @@ function renderIssuesPage(){
         +'<div class="rc-actions"><button class="btn btn-primary btn-sm" onclick="openResign(\''+d.oc.ocId+'\')">Re-sign with current values</button>'
         +'<button class="btn btn-secondary btn-sm" onclick="flagFor(\''+d.oc.ocId+'\',\''+d.field+'\')">Flag as an issue</button></div></div>';
     }).join(''):'<div class="rc-meta" style="margin-top:8px">No drift.</div>')+'</div>';
+
   html+='<div class="card"><div style="display:flex;align-items:center;gap:10px"><b style="font-size:13px">Failed intake</b><span class="badge badge-gray">'+INTAKE.filter(function(i){return i.status!=='fixed';}).length+'</span><span class="rc-meta" style="margin:0">no OC record exists — nothing can go live</span></div>'
     +INTAKE.map(function(i){
       var v=findVendor(i.vid);
       return '<div class="rc-item"><div class="rc-item-head"><b>'+esc(v.name)+'</b><span class="mono" style="font-size:12px">'+esc(i.vid)+'</span><span class="risk risk-block">'+(i.status==='fixed'?'fixed':'blocked — no OC ID')+'</span></div>'
         +'<div class="chk-list">'+i.issues.map(function(x){return '<div class="chk-item"><span class="no">✕</span><span>'+esc(x)+'</span></div>';}).join('')+'</div>'
-        +'<div class="rc-actions"><button class="btn btn-secondary btn-sm" onclick="flagIntake(\''+i.vid+'\')">Flag to provider</button><span class="rc-meta" style="margin:0">There is no override that lets a bad record go live.</span></div></div>';
+        +'<div class="rc-actions"><button class="btn btn-secondary btn-sm" onclick="flagIntake(\''+i.vid+'\')">Flag to owner</button><span class="rc-meta" style="margin:0">There is no override that lets a bad record go live.</span></div></div>';
     }).join('')+'</div>';
+
   document.getElementById('di-body').innerHTML=html;
 }
 function markReported(id){var i=ISSUES.filter(function(x){return x.id===id;})[0];i.status='reported';log('VENDOR',currentUser.name,'DATA_ISSUE_REPORTED',i.vendorId,i.field,'open','reported',i.reason);renderIssuesPage();updateBadges();showToast('Marked reported','Chased with the provider — the issue stays open until the data changes');}
@@ -1058,16 +1124,38 @@ function flagIntake(vid){showToast('Flagged to provider',vid+' · intake failure
 
 /* ============ flag modal ============ */
 var flagCtx=null;
-function openFlag(vendorId,preset){
+function openFlag(vendorId,preset,presetSub){
   if(!isMgr()){showToast('Permission required','Flagging needs the Location Manager role.','error');return;}
   var v=findVendor(vendorId);if(!v)return;
   flagCtx={vendorId:vendorId};
-  var fields=[['name','Name'],['addr1','Address'],['city','City'],['state','State'],['postal','Postal code'],['latitude','Coordinates'],['sweeper','Sweeper'],['hoursText','Opening hours'],['phone','Phone']];
+  var fields=[['name','Name'],['addr1','Street address'],['city','City'],['state','State'],['postal','Postal code'],
+    ['latitude','Coordinates'],['sweeper','Sweeper'],['hoursText','Opening hours'],['phone','Phone']];
   document.getElementById('flag-field').innerHTML=fields.map(function(f){
     return '<option value="'+f[0]+'"'+(preset===f[0]?' selected':'')+'>'+f[1]+'</option>';
   }).join('');
+  document.getElementById('flag-type').innerHTML=Object.keys(ISSUE_TYPES).map(function(k){
+    return '<option value="'+k+'">'+ISSUE_TYPES[k].label+'</option>';
+  }).join('');
+  document.getElementById('flag-sev').value=ISSUE_TYPES[Object.keys(ISSUE_TYPES)[0]].sev;
   document.getElementById('flag-reason').value='';
+  flagFieldChanged(presetSub);
+  flagTypeChanged();
   openModal('modal-flag');
+}
+function flagFieldChanged(presetSub){
+  var f=val('flag-field');
+  var subs=SUBFIELDS[f]||[];
+  var sel=document.getElementById('flag-sub');
+  sel.innerHTML='<option value="">— whole field —</option>'+subs.map(function(s){
+    return '<option value="'+s+'"'+(presetSub===s?' selected':'')+'>'+s+'</option>';
+  }).join('');
+  document.getElementById('flag-sub-wrap').textContent=subs.length?'(pick one)':'(none for this field)';
+}
+function flagTypeChanged(){
+  var k=val('flag-type'),meta=ISSUE_TYPES[k];
+  if(!meta)return;
+  document.getElementById('flag-hint').innerHTML='<b>'+meta.label+'</b> — '+meta.hint;
+  document.getElementById('flag-sev').value=meta.sev;
 }
 function flagFor(ocId,field){
   var o=findOC(ocId);
@@ -1076,15 +1164,16 @@ function flagFor(ocId,field){
 }
 function openIssuesFor(vid){openVendorDetail(vid);switchDetailTab('issues');}
 function submitFlag(){
-  var field=val('flag-field'),reason=val('flag-reason');
-  if(!reason){showToast('Reason required','A flag tells the provider what to fix — write what is wrong','error');return;}
+  var field=val('flag-field'),sub=val('flag-sub'),type=val('flag-type'),sev=val('flag-sev'),reason=val('flag-reason');
+  if(!reason){showToast('Reason required','A flag tells the owner what to fix — write what is wrong','error');return;}
   var v=findVendor(flagCtx.vendorId);
   var id='ISS-'+String(ISSUES.length+10).padStart(4,'0');
-  ISSUES.push({id:id,vendorId:v.id,field:field,reason:reason,status:'open',raisedBy:currentUser.name,raisedAt:nowStr()});
-  log('VENDOR',currentUser.name,'DATA_ISSUE_RAISED',v.id,field,'—','flagged',reason);
+  ISSUES.push({id:id,vendorId:v.id,field:field,subField:sub,type:type,severity:sev,reason:reason,
+    status:'open',raisedBy:currentUser.name,raisedAt:nowStr()});
+  log('VENDOR',currentUser.name,'DATA_ISSUE_RAISED',v.id,field+(sub?' · '+sub:''),'—',type+' ('+sev+')',reason);
   closeModal('modal-flag');renderVendor();renderOC();renderIssuesPage();updateBadges();
   if(document.getElementById('page-pd').classList.contains('active'))renderProfile();
-  showToast('Flagged to provider',v.id+' · '+field+' · the value is unchanged, the provider has to fix the source');
+  showToast('Flagged to owner',v.id+' · '+field+(sub?' / '+sub:'')+' · '+ISSUE_TYPES[type].label+' ('+sev+') · value unchanged');
 }
 
 /* ============ re-sign ============ */
@@ -1161,7 +1250,7 @@ function vendorPanels(v){
   if(detailTab==='issues'){
     var list=issuesOfVendor(v.id);
     return psec('Issues',list.length?list.map(function(i){
-      return '<div class="rc-item"><div class="rc-item-head"><span class="badge badge-gray">'+esc(i.field)+'</span><span class="risk '+(i.status==='fixed'?'risk-auto':i.status==='reported'?'risk-review':'risk-block')+'">'+esc(i.status)+'</span><span class="rc-meta" style="margin:0">'+esc(i.raisedAt)+' · '+esc(i.raisedBy)+'</span></div><div class="rc-meta">'+esc(i.reason)+'</div></div>';
+      return '<div class="rc-item"><div class="rc-item-head"><span class="badge badge-gray">'+esc(fieldLabel(i))+'</span>'+typeBadge(i)+'<span class="rc-meta" style="margin:0">'+(i.severity==='blocking'?'blocks sign-off':'warning')+' · '+esc(i.raisedAt)+' · '+esc(i.raisedBy)+'</span><span class="risk '+(i.status==='fixed'?'risk-auto':i.status==='reported'?'risk-review':'risk-block')+'">'+esc(i.status)+'</span></div><div class="rc-meta">'+esc(i.reason)+'</div></div>';
     }).join(''):'<div style="font-size:12.5px;color:var(--text-tertiary)">No issue flagged on this record.</div>');
   }
   return historyBlock(v.id);
@@ -1196,7 +1285,7 @@ function ocPanels(o){
     var oi2=openIssues(o);
     return psec('Issues on this store',oi2.length?oi2.map(function(i){
       var v=findVendor(i.vendorId);
-      return '<div class="rc-item"><div class="rc-item-head"><b>'+esc(v.name)+'</b><span class="mono" style="font-size:11.5px">'+esc(i.vendorId)+'</span><span class="badge badge-gray">'+esc(i.field)+'</span><span class="risk '+(i.status==='reported'?'risk-review':'risk-block')+'">'+esc(i.status)+'</span></div><div class="rc-meta">'+esc(i.reason)+'</div></div>';
+      return '<div class="rc-item"><div class="rc-item-head"><b>'+esc(v.name)+'</b><span class="mono" style="font-size:11.5px">'+esc(i.vendorId)+'</span><span class="badge badge-gray">'+esc(fieldLabel(i))+'</span>'+typeBadge(i)+'<span class="rc-meta" style="margin:0">'+(i.severity==='blocking'?'blocks sign-off':'warning')+'</span><span class="risk '+(i.status==='reported'?'risk-review':'risk-block')+'">'+esc(i.status)+'</span></div><div class="rc-meta">'+esc(i.reason)+'</div></div>';
     }).join(''):'<div style="font-size:12.5px;color:var(--text-tertiary)">No open issue.</div>')
       +(isMgr()?'<div style="margin-top:12px"><button class="btn btn-secondary btn-sm" onclick="flagFor(\''+o.ocId+'\',\'addr1\')">Flag an issue on the source record</button></div>':'');
   }
