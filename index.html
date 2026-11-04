@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v3.3.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v3.4.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -287,7 +287,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.3.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.4.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -311,7 +311,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.3.0</div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.4.0</div>
       </div>
     </div>
 
@@ -419,7 +419,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 
       <div class="page" id="page-pdi">
         <h2 class="page-title">Data Issues</h2>
-        <p class="page-desc">Everything that is wrong with the data, in one ledger — <b>no separate review queues</b>. Three kinds: what we asked the provider to fix, what changed after sign-off, and what never passed intake. The only actions are <b>flag / chase / re-sign</b>: the console never edits a value.</p>
+        <p class="page-desc">Everything that is wrong with the data, in one ledger — <b>no review queues</b>. Three kinds: what we asked the provider to fix, what changed after sign-off (information, not a decision), and what never passed intake. Nothing here decides whether a value is applied — <b>provider values always go downstream</b>. Marking an issue is how we ask for a correction; the next push is how it lands. <b>Export the list</b> to send it to the provider.</p>
         <div id="di-body"></div>
       </div>
 
@@ -430,7 +430,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
           <div class="filter-grid">
             <div><label class="f-label">Location or OC ID</label><input id="c-f-id" placeholder="LOC-… / OC-…" oninput="renderLog()"></div>
             <div><label class="f-label">Layer</label><select id="c-f-layer" onchange="renderLog()"><option value="">All</option><option>VENDOR</option><option>OC</option></select></div>
-            <div><label class="f-label">Type</label><select id="c-f-type" onchange="renderLog()"><option value="">All</option><option>PROVIDER_FIELD_UPDATE</option><option>DATA_ISSUE_AUTO_CLOSED</option><option>DATA_ISSUE</option><option>ENABLE_SIGNED_OFF</option><option>RE_SIGNED_OFF</option><option>DISABLE</option><option>OC_LINK_CONFIRMED</option></select></div>
+            <div><label class="f-label">Type</label><select id="c-f-type" onchange="renderLog()"><option value="">All</option><option>PROVIDER_FIELD_UPDATE</option><option>DATA_ISSUE_AUTO_CLOSED</option><option>DATA_ISSUE</option><option>ENABLE_SIGNED_OFF</option><option>DISABLE</option><option>OC_LINK_CONFIRMED</option></select></div>
           </div>
           <div class="toolbar"><button class="btn btn-secondary btn-sm" onclick="exportCSV('log')">Export CSV</button><span class="spacer"></span><span class="result-meta" id="c-result-meta"></span></div>
           <div class="table-wrap">
@@ -490,17 +490,6 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
   </div>
 </div>
 
-<div class="modal-mask" id="modal-resign">
-  <div class="modal" style="width:560px">
-    <div class="modal-header">Re-sign this location<span class="close" onclick="closeModal('modal-resign')">✕</span></div>
-    <div class="modal-body" id="resign-body"></div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('modal-resign')">Cancel</button>
-      <button class="btn btn-primary" onclick="confirmResign()">Re-sign &amp; push downstream</button>
-    </div>
-  </div>
-</div>
-
 <div class="modal-mask" id="modal-batch">
   <div class="modal" style="width:560px">
     <div class="modal-header">Batch action<span class="close" onclick="closeModal('modal-batch')">✕</span></div>
@@ -523,7 +512,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3>Walkthrough — v3.3.0 (a fix closes its own issue)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3>Walkthrough — v3.4.0 (mark, export, let the push land)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -537,7 +526,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
         <tr><td>5</td><td>OC List</td><td>Enable a ready location</td><td>Sign-off checklist · baseline captured · no data edited</td></tr>
         <tr><td>6</td><td>Duplicate Check</td><td>Confirm the pending pair as "same store"</td><td>2:1 mapping · the OC row shows both vendors and switches to LMS values</td></tr>
         <tr><td>7</td><td>Data Issues</td><td>Read the three sections</td><td>Provider issues · baseline drift · intake failures — no review queues</td></tr>
-        <tr><td>8</td><td>Data Issues</td><td>Re-sign a drifted location</td><td>Baseline moves to the provider values · downstream pushed</td></tr>
+        <tr><td>8</td><td>Data Issues</td><td>Open a drifted location</td><td>See which fields moved since sign-off; downstream already has the new values — drift is information, not a decision</td></tr>
         <tr><td>9</td><td>OC List</td><td>Filter Source = M&amp;MP</td><td>Self-operated stores follow the same rules: same sign-off, same issue ledger — only the data owner differs</td></tr>
       </tbody>
     </table>
@@ -603,8 +592,9 @@ var CHANGELOG=[
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='3.3.0';
+var APP_VERSION='3.4.0';
 var VERSIONS=[
+ {v:'3.4.0',type:'minor',date:'2026-11-04',desc:'<b>The console stops deciding what to apply.</b> Provider values always reach downstream — there is no accept, reject or re-sign step, and no manual close. Two things follow: a drift is now <b>information</b> (what moved since sign-off) rather than a decision, and the issue ledger can be <b>exported to CSV</b> so it can be sent to the provider as a work list. Marking an issue is how we ask; the next push is how it gets fixed.'},
  {v:'3.3.0',type:'minor',date:'2026-11-04',desc:'<b>Issues close themselves when the fix arrives.</b> The next provider sync compares each flagged field with the value that was flagged: if the value changed <i>and</i> is now valid, the issue closes with <code>closed_by = AUTO_SYNC</code> and the run id in the audit trail; if it changed but is still invalid, the issue stays open and says why; if it did not change, nothing happens. Blocking issues stop blocking the moment they close. The flag dialog’s severity labels were also shortened so they fit the dialog — copy only.'},
  {v:'3.2.2',type:'patch',date:'2026-11-04',desc:'<b>Type value corrected.</b> A self-operated store carries the type <b>M&amp;MP</b> itself — not “M&amp;MP store”. The source→type map, the Type filter and the demo records are aligned, so a filter on M&amp;MP returns the self-operated stores without a renamed type.'},
  {v:'3.2.1',type:'patch',date:'2026-11-04',desc:'<b>Deliverables pass.</b> Added a plain-English feature overview for readers outside the team (shareable page + Markdown), a deliverables list in the requirement overview, and corrected the 30-second summary, which still described sweeper editing and the pre-v3 duplicate rule. No behaviour change.'},
@@ -1227,6 +1217,13 @@ function fieldLabel(i){
   var names={name:'Name',addr1:'Street address',city:'City',state:'State',postal:'Postal code',latitude:'Coordinates',sweeper:'Sweeper',hoursText:'Opening hours',phone:'Phone'};
   return (names[i.field]||i.field)+(i.subField?' · '+i.subField:'');
 }
+function exportCard(){
+  var open=ISSUES.filter(function(i){return i.status!=='fixed';}).length;
+  return '<div class="card" style="margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b style="font-size:13px">Send the list to the provider</b>'
+    +'<span class="badge badge-blue">'+open+' open</span>'
+    +'<span class="rc-meta" style="margin:0">CSV of every open issue — field · sub-field · type · severity · reason — ready to paste into a ticket. This is the hand-off; nothing is applied or approved here.</span>'
+    +'<button class="btn btn-secondary btn-sm" onclick="exportIssues()">Export open issues (CSV)</button></div>';
+}
 function syncCard(){
   var pending=pendingChecks();
   var body=SYNC_DONE
@@ -1246,10 +1243,10 @@ function renderIssuesPage(){
   var counts={};
   open.forEach(function(i){counts[i.type]=(counts[i.type]||0)+1;});
   var legend=Object.keys(ISSUE_TYPES).map(function(k){
-    return '<option value="'+k+'">'+ISSUE_TYPES[k].label+(counts[k]?' ('+counts[k]+')':'')+'</option>';
+    return '<option value="'+k+'"'+(k===typeFilter?' selected':'')+'>'+ISSUE_TYPES[k].label+(counts[k]?' ('+counts[k]+')':'')+'</option>';
   }).join('');
 
-  var html=syncCard();
+  var html=syncCard()+exportCard();
   html+='<div class="card" style="margin-bottom:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">'
     +'<b style="font-size:13px">Filter by issue type</b>'
     +'<select id="di-f-type" onchange="renderIssuesPage()" style="min-width:220px"><option value="">All types ('+open.length+')</option>'+legend+'</select>'
@@ -1267,18 +1264,17 @@ function renderIssuesPage(){
         +'<div class="rc-meta">'+esc(i.id)+' · raised by '+esc(i.raisedBy)+' · '+esc(i.raisedAt)+'</div>'
         +(i.checkNote?'<div class="rc-meta"><b>✔ checked '+esc(i.lastChecked||'')+'</b> · '+esc(i.checkNote)+(i.checkRun?' · '+esc(i.checkRun):'')+'</div>':'')
         +'<div class="rc-actions">'
-        +(i.status==='open'?'<button class="btn btn-secondary btn-sm" onclick="markReported(\''+i.id+'\')">Mark reported</button>':'')
-        +'<button class="btn btn-secondary btn-sm" onclick="markFixed(\''+i.id+'\')">Owner fixed it</button>'
-        +'<span class="rc-meta" style="margin:0">The value never changes here — only the next sync does that.</span>'
+        +(i.status==='open'?'<button class="btn btn-secondary btn-sm" onclick="markReported(\''+i.id+'\')">Mark chased</button>':'')
+        +'<span class="rc-meta" style="margin:0">The value never changes here, and nobody closes it by hand — the next push either fixes it or it stays open.</span>'
         +'</div></div>';
     }).join(''):'<div class="rc-meta" style="margin-top:8px">Nothing outstanding for this filter.</div>')+'</div>';
 
-  html+='<div class="card" style="margin-bottom:14px"><div style="display:flex;align-items:center;gap:10px"><b style="font-size:13px">Changed after sign-off</b><span class="badge badge-red">'+drift.length+'</span><span class="rc-meta" style="margin:0">the provider moved a value on a live location</span></div>'
+  html+='<div class="card" style="margin-bottom:14px"><div style="display:flex;align-items:center;gap:10px"><b style="font-size:13px">Changed after sign-off</b><span class="badge badge-red">'+drift.length+'</span><span class="rc-meta" style="margin:0">for information only — these values are already downstream</span></div>'
     +(drift.length?drift.map(function(d){
       return '<div class="rc-item"><div class="rc-item-head"><b class="mono">'+esc(d.oc.ocId)+'</b><span class="badge badge-gray">'+esc(d.field)+'</span><span class="risk risk-review">differs from baseline</span></div>'
         +'<div class="rc-meta"><span class="val-old">'+esc(d.old)+'</span> → <span class="val-new">'+esc(d.new)+'</span></div>'
-        +'<div class="rc-meta">Customer sees the <b>provider</b> value now — the baseline only records what was signed off.</div>'
-        +'<div class="rc-actions"><button class="btn btn-primary btn-sm" onclick="openResign(\''+d.oc.ocId+'\')">Re-sign with current values</button>'
+        +'<div class="rc-meta">Customers already have the <b>new</b> value — nothing to approve. The baseline only records what was signed off, so you can see what the provider changed.</div>'
+        +'<div class="rc-actions"><button class="btn btn-secondary btn-sm" onclick="openOCDetail(\''+d.oc.ocId+'\')">Open the location</button>'
         +'<button class="btn btn-secondary btn-sm" onclick="flagFor(\''+d.oc.ocId+'\',\''+d.field+'\')">Flag as an issue</button></div></div>';
     }).join(''):'<div class="rc-meta" style="margin-top:8px">No drift.</div>')+'</div>';
 
@@ -1306,7 +1302,6 @@ function renderIssuesPage(){
   document.getElementById('di-body').innerHTML=html;
 }
 function markReported(id){var i=ISSUES.filter(function(x){return x.id===id;})[0];i.status='reported';log('VENDOR',currentUser.name,'DATA_ISSUE_REPORTED',i.vendorId,i.field,'open','reported',i.reason);renderIssuesPage();updateBadges();showToast('Marked reported','Chased with the provider — the issue stays open until the data changes');}
-function markFixed(id){var i=ISSUES.filter(function(x){return x.id===id;})[0];i.status='fixed';log('VENDOR',currentUser.name,'DATA_ISSUE_CLOSED',i.vendorId,i.field,i.status,'fixed','provider corrected the source');renderIssuesPage();renderOC();updateBadges();}
 function flagIntake(vid){showToast('Flagged to provider',vid+' · intake failures are chased, never overridden');}
 
 /* ============ flag modal ============ */
@@ -1361,23 +1356,6 @@ function submitFlag(){
   closeModal('modal-flag');renderVendor();renderOC();renderIssuesPage();updateBadges();
   if(document.getElementById('page-pd').classList.contains('active'))renderProfile();
   showToast('Flagged to owner',v.id+' · '+field+(sub?' / '+sub:'')+' · '+ISSUE_TYPES[type].label+' ('+sev+') · value unchanged');
-}
-
-/* ============ re-sign ============ */
-var resignTarget=null;
-function openResign(ocId){
-  resignTarget=ocId;
-  var o=findOC(ocId),dr=driftOf(o);
-  document.getElementById('resign-body').innerHTML='<div class="info-line" style="margin:0 0 12px">Re-signing moves the baseline to the current provider values. Use it when the change is correct.</div>'
-    +dr.map(function(d){return '<div class="diff-line"><div class="diff-field">'+esc(d.field)+'</div><div><span class="diff-old">'+esc(d.old)+'</span><span class="diff-new">'+esc(d.new)+'</span></div></div>';}).join('');
-  openModal('modal-resign');
-}
-function confirmResign(){
-  var o=findOC(resignTarget);if(!o)return;
-  BASELINE[o.ocId]=snapshot(o);o.updated=nowStr();
-  log('OC',currentUser.name,'RE_SIGNED_OFF',o.ocId,'baseline','previous','current','drift cleared · downstream pushed');
-  closeModal('modal-resign');renderOC();renderIssuesPage();
-  showToast('Re-signed',o.ocId+' · new baseline recorded · downstream cache invalidated');
 }
 
 /* ============ detail page ============ */
@@ -1461,7 +1439,7 @@ function ocPanels(o){
       +kv('Mapping',o.vendorIds.length>1?'<span class="badge badge-blue">2:1</span>':'<span class="badge badge-gray">1:1</span>')
       +kv('Last pushed downstream',o.enable?'cache invalidated on last change':'— never pushed')
       +kv('Signed-off baseline',o.enable?(BASELINE[o.ocId]?'captured':'not captured'):'—')
-      +'</div>'+(dr.length?'<div class="warn-line" style="margin-top:10px">'+dr.length+' field(s) changed since sign-off — the customer sees the provider value now.</div><div style="margin-top:8px"><button class="btn btn-primary btn-sm" onclick="openResign(\''+o.ocId+'\')">Re-sign with current values</button></div>':'')
+      +'</div>'+(dr.length?'<div class="warn-line" style="margin-top:10px">'+dr.length+' field(s) changed since sign-off. Customers already see the new values — the baseline is kept only so you can tell what moved.</div>':'')
       +(oi.length?'<div class="warn-line" style="margin-top:10px">'+oi.length+' open data issue(s) — the provider has to fix the source.</div>':''));
   }
   if(detailTab==='hours'){
@@ -1515,7 +1493,70 @@ function renderSync(){
   document.getElementById('sync-body').innerHTML=rows
     +'<div class="info-line">A run writes provider values. It never writes an OC decision — enable, flags and sign-offs stay human. Since v3.3.0 a run may also <b>close</b> an issue, but only when the value it delivered is valid; the fix is the owner’s, the record of it is ours.</div>';
 }
-function exportCSV(kind){showToast('Export started',kind+' view will download as CSV');}
+function csvCell(v){
+  var s=String(v==null?'':v);
+  return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
+}
+function downloadCSV(name,rows){
+  var csv='\ufeff'+rows.map(function(r){return r.map(csvCell).join(',');}).join('\r\n');
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=name;
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},1200);
+}
+function stamp(){var d=new Date(),p=function(n){return (n<10?'0':'')+n;};
+  return d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds());}
+function exportCSV(kind){
+  var rows=[],name='';
+  if(kind==='vendor'){
+    rows.push(['Location ID','Name','Address','City','State','Postal','Source','Type','Sweeper','Status','Open issues','OC Location ID','Updated']);
+    vendorFilters().forEach(function(v){
+      var oc=OC_LOCATIONS.filter(function(o){return o.vendorIds.indexOf(v.id)>=0;})[0];
+      rows.push([v.id,v.name,v.addr1,v.city,v.state,v.postal,v.provider,v.type,v.sweeper||'missing',v.status,
+        issuesOfVendor(v.id).filter(function(i){return i.status!=='fixed';}).length,oc?oc.ocId:'',v.updated]);
+    });
+    name='vendor-locations-'+stamp()+'.csv';
+  } else if(kind==='oc'){
+    rows.push(['OC Location ID','Name','Address','City','State','Postal','Source','Type','Sweeper','Status','Enabled','Visible downstream','Open issues','Changed since sign-off','Mapping','Linked vendors','Updated']);
+    ocFilters().forEach(function(o){
+      var srcs={};o.vendorIds.forEach(function(id){var v=findVendor(id);if(v)srcs[v.provider]=1;});
+      rows.push([o.ocId,mergedField(o,'name').value,mergedField(o,'addr1').value,mergedField(o,'city').value,
+        mergedField(o,'state').value,mergedField(o,'postal').value,Object.keys(srcs).join(' / '),mergedField(o,'type').value,
+        mergedField(o,'sweeper').value||'missing',statusOf(o),o.enable?'true':'false',
+        (o.enable&&statusOf(o)==='active')?'yes':'no',openIssues(o).length,driftOf(o).length,
+        o.vendorIds.length>1?'2:1':'1:1',o.vendorIds.join(' '),o.updated]);
+    });
+    name='oc-locations-'+stamp()+'.csv';
+  } else if(kind==='log'){
+    rows.push(['Time','Layer','Type','Location','Field','Old','New','Operator','Remark']);
+    var id=val('c-f-id').toLowerCase(),layer=val('c-f-layer'),type=val('c-f-type');
+    CHANGELOG.filter(function(e){
+      if(id&&e.locId.toLowerCase().indexOf(id)<0)return false;
+      if(layer&&e.layer!==layer)return false;
+      if(type&&e.type!==type)return false;
+      return true;
+    }).forEach(function(e){rows.push([e.time,e.layer,e.type,e.locId,e.field,e.old,e.new,e.operator,e.remark]);});
+    name='change-log-'+stamp()+'.csv';
+  }
+  if(rows.length<2){showToast('Nothing to export','The current filter matches no rows','error');return;}
+  downloadCSV(name,rows);
+  showToast('Exported',(rows.length-1)+' row(s) · '+name,'success');
+}
+function exportIssues(){
+  var typeFilter=val('di-f-type')||'';
+  var rows=[['Issue ID','Vendor Location ID','OC Location ID','Store','Field','Sub-field','Type','Severity','Status','Reason','Raised by','Raised at','Last checked','What the run saw','Closed by','Closed at']];
+  ISSUES.filter(function(i){return i.status!=='fixed'&&(!typeFilter||i.type===typeFilter);}).forEach(function(i){
+    var v=findVendor(i.vendorId);
+    var oc=OC_LOCATIONS.filter(function(o){return o.vendorIds.indexOf(i.vendorId)>=0;})[0];
+    rows.push([i.id,i.vendorId,oc?oc.ocId:'',v?v.name:'',fieldLabel(i),i.subField||'',i.type,i.severity,i.status,i.reason,
+      i.raisedBy,i.raisedAt,i.lastChecked||'',i.checkNote||'',i.closedBy||'',i.closedAt||'']);
+  });
+  if(rows.length<2){showToast('Nothing to export','No open issue matches this filter','error');return;}
+  var name='data-issues-'+stamp()+'.csv';
+  downloadCSV(name,rows);
+  showToast('Exported for the provider',(rows.length-1)+' open issue(s) · '+name,'success');
+}
 
 /* ============ boot ============ */
 ['ISS-0007','ISS-0008','ISS-0009','ISS-0010'].forEach(function(){}); 

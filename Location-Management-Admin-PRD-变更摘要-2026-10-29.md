@@ -1,6 +1,6 @@
-# Location Management Admin Console — PRD Change Summary (v3.3.0)
+# Location Management Admin Console — PRD Change Summary (v3.4.0)
 
-> Document version v3.3.0 ｜ Change date 2026-11-04 ｜ Status: Draft — pending review
+> Document version v3.4.0 ｜ Change date 2026-11-04 ｜ Status: Draft — pending review
 > 本轮（v3.0.0）是**模型换向**：OC 层不再改数据，只做两件事——**enable** 和 **标记异常**。所有数据以供应商为唯一来源，错的地方标记回去让供应商改；重复对单独成页；下游按字段合并，LMS 优先；M&MP 用同一套规则管同一份数据。
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
 > **验收标准（通俗版）**: `Location-Management-Admin-验收标准-2026-10-29.md`
@@ -464,6 +464,37 @@ https://jama-dev520.github.io/location-prototype/feature-overview.html
 - 片头片尾重做：片头标 `v3.3.0 / two layers · three sources / enable is a sign-off / a fix closes its own issue`；片尾四条地基换成 v3 的版本（数据只有供应商一个来源、没人处理就不变、下线容易上线要签收、修复能自证才自动关闭）。
 - 为了录制可读性，标记弹窗的严重度下拉文案从 `warning — live, but wrong for customers` 缩短为 `warning · live but wrong`（原来在 560px 弹窗里被截断）。纯文案，不改行为。
 
+## 二之十一、v3.4.0：不决定「是否应用」，只负责标记与导出
+
+用户指出一个方向性问题：供应商推来的数据，**默认就是给下游的**，控制台不该出现「是否应用 / 接受 / 重新签收」这类动作；标记异常只是「我们联系供应商调整」的凭据，真正需要的是**把有问题的 location 导出来**。
+
+### 43. 删掉「重新签收」
+
+`re-sign` 是 v3.0.0 留下的尾巴：它让运营"确认"供应商的改动后才算数。但下游从第一次同步起就拿的是最新值，这个确认既拦不住什么，也不是决策——它只是把基线挪一下。现在删掉：
+
+| 之前 | 现在 |
+|---|---|
+| 漂移卡片有 `Re-sign with current values` | 只有 `Open the location` 和 `Flag as an issue` |
+| 确认后写 `RE_SIGNED_OFF`、刷新基线 | 不写、不动；漂移卡片标题直接写 **"for information only — these values are already downstream"** |
+| 详情页 Operations 里有重签按钮 | 只留一句黄色提示：变了几个字段，客户已经看到新值，基线只用于对比 |
+
+接口 `POST /api/oc-locations/{id}/resign` 一并下线。
+
+### 44. 手工关闭也拿掉
+
+`Owner fixed it` 和「同步自动关闭」是两条并行路径，前者可以被误点、也不产生任何真实变化。现在只剩一条：**同步跑完，值确实变了且合格，系统自己关**。人只保留 `Mark chased`（记一笔"已联系供应商"），它记录沟通，不碰数据。
+
+### 45. 异常清单可以直接导出
+
+这是这轮最实用的补充。Data Issues 顶部新增 `Export open issues (CSV)`，导出的列：issue id、供应商记录、OC 记录、门店名、字段·子字段、类型、严重度、状态、原因、谁在何时标的、最后一次同步看到了什么。筛选了类型就只导该类型——直接当工单附件发给供应商。
+
+OC 列表的 `Export CSV` 也从"提示一下"变成真的下载，并带上 `Open issues`、`Changed since sign-off` 两列，所以「筛出有问题的门店再导出」就是一份可交付清单。
+
+### 46. 顺手修掉筛选器的一个真 bug
+
+Data Issues 的类型筛选每次重渲染都会重建下拉，导致**选中值被重置为 All**（列表过滤了，但下拉显示 All，下一次操作就丢了条件）。改为渲染时保留 `selected`。
+
+| v3.4.0 | MINOR | 2026-11-04 | **去掉「是否应用」这一层**：删除 re-sign / RE_SIGNED_OFF 与手工关闭；漂移改为只读信息；新增异常清单 CSV 导出（含 OC 列表真实导出）；修类型筛选丢选中值的 bug |
 | v3.3.0 | MINOR | 2026-11-04 | **issue 自动关闭**：同步带来「变了且合格」的值即自动 fixed（记 `closed_by` / 验证值 / run id）；仅机器可判定类型可自动关闭；变了仍不合格保持 open；关闭即解阻；修三处演示数据与 issue 不一致 |
 | v3.2.2 | PATCH | 2026-11-04 | **类型值修正**：自营门店 `location_type` 由 `M&MP store` 改为 `M&MP`，与来源同名；来源→类型映射、筛选器、演示数据、文档枚举同步 |
 | v3.2.1 | PATCH | 2026-11-04 | **交付物补齐**：新增英文功能概览（单页 + Markdown，给外部同事）· 需求总览加交付物清单 · 重写「一页速览」并修掉 v2 残留 |

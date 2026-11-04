@@ -1,6 +1,6 @@
-# Location Management Admin Console — Database Field Mapping (v3.3.0)
+# Location Management Admin Console — Database Field Mapping (v3.4.0)
 
-> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.3.0)
+> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.4.0)
 > Feature overview (English, for readers outside the team): `https://jama-dev520.github.io/location-prototype/feature-overview.html`
 >
 > **v3.0.0 model change.** The console no longer writes location fields. `field_lock` is replaced by `data_issue`; `sync_change_set` decisions and `oc_field_baseline` versions used for revert are retired; downstream values are a per-field merge with **LMS first**. The console writes exactly four things: `oc_location.is_enable`, `data_issue` rows, baseline captures, and `change_log`.
@@ -161,7 +161,7 @@ oc_location (OC-owned, downstream-facing)
 | `location_layer` | enum(VENDOR,OC) | which layer the change belongs to |
 | `occurred_at` | timestamp | occurred time |
 | `operator` | varchar | operator, or `System · PUDO Sync` / `System · LMS Sync` |
-| `operation_type` | enum | ENABLE / DISABLE / BATCH_ENABLE / BATCH_DISABLE / ENABLE_SIGNED_OFF / RE_SIGNED_OFF (v3.0.0) / DATA_ISSUE_RAISED (v3.0.0) / DATA_ISSUE_REPORTED (v3.0.0) / DATA_ISSUE_CLOSED (v3.0.0) / DATA_ISSUE_AUTO_CLOSED (v3.3.0) / OC_LINK_CONFIRMED / OC_LINK_REJECTED / OC_GENERATED / PROVIDER_STATUS_CHANGE / PROVIDER_FIELD_UPDATE / PROVIDER_CREATED / PROVIDER_REMOVED / DOWNSTREAM_PROPAGATED — retired in v3.0.0: SWEEPER_CHANGE, STORE_DETAIL_EDIT, SYNC_CHANGE_ACCEPTED, SYNC_CHANGE_REJECTED, FIELD_UNLOCKED, FIELD_REVERTED |
+| `operation_type` | enum | ENABLE / DISABLE / BATCH_ENABLE / BATCH_DISABLE / ENABLE_SIGNED_OFF / DATA_ISSUE_RAISED (v3.0.0) / DATA_ISSUE_REPORTED (v3.0.0) / DATA_ISSUE_CLOSED (v3.0.0) / DATA_ISSUE_AUTO_CLOSED (v3.3.0) / OC_LINK_CONFIRMED / OC_LINK_REJECTED / OC_GENERATED / PROVIDER_STATUS_CHANGE / PROVIDER_FIELD_UPDATE / PROVIDER_CREATED / PROVIDER_REMOVED / DOWNSTREAM_PROPAGATED — retired in v3.0.0: SWEEPER_CHANGE, STORE_DETAIL_EDIT, SYNC_CHANGE_ACCEPTED, SYNC_CHANGE_REJECTED, FIELD_UNLOCKED, FIELD_REVERTED |
 | `field_name` | varchar | changed field |
 | `old_value` | text | old value |
 | `new_value` | text | new value |
@@ -261,7 +261,7 @@ oc_location (OC-owned, downstream-facing)
 | `owner_type` | enum(PROVIDER, STORE) | who fixes it: PUDO Inc / LMS, or the **M&MP store owner** internally |
 | `raised_by` / `raised_at` | varchar / timestamp | who, when (to the second) |
 | `closed_at` | timestamp NULL | when it reached FIXED |
-| `closed_by` | enum(OPERATOR, AUTO_SYNC) NULL | who closed it; `AUTO_SYNC` is written by the provider run (v3.3.0) |
+| `closed_by` | enum(AUTO_SYNC) NULL | always the provider run (v3.3.0); the v3.4.0 manual close was removed, so `OPERATOR` only appears on rows written before that |
 | `verified_value` | text NULL | the value the run delivered that closed it — the evidence, kept with the issue |
 | `auto_close_run` | varchar NULL | `sync_run.run_id` that closed it |
 | `last_checked_at` | timestamp NULL | last run that re-checked this flag, closed or not |
@@ -336,7 +336,6 @@ for each field f:
 | `is_enable = false` | disable, batch disable, vendor inactive | `oc_location` |
 | `data_issue` row | operator flags a field (F11) | `data_issue` |
 | `data_issue.status` | chased / fixed | `data_issue` |
-| baseline refresh | re-sign after drift (F20) | `oc_field_baseline` |
 | **`data_issue.status = FIXED`** (v3.3.0) | **provider run delivers a valid value** — not a human click | `data_issue` (`closed_by = AUTO_SYNC`) + `change_log` |
 | `last_checked_at` / `check_note` (v3.3.0) | every run that touches the flagged field, whether it closes or not | `data_issue` |
 | audit row | every action above | `change_log` |
@@ -421,7 +420,9 @@ Failure modes the rule deliberately produces:
 | **`/api/oc-locations/{id}/enable`** (v2.6.0, extended) | PATCH | `oc_location` + `oc_field_baseline` + `change_log` | enable now requires the sign-off payload (checklist acknowledged); writes `baseline_at`, `propagated_at`, `ENABLE_SIGNED_OFF` |
 | **`/api/vendor-locations/{id}/issues`** (v3.0.0) | POST | `data_issue` + `change_log` | flag a field: `field_name` + `reason` (both required); never writes a value |
 | **`/api/issues/{id}`** (v3.0.0) | PATCH | `data_issue` + `change_log` | move status OPEN → REPORTED → FIXED; closing requires the provider value to have changed or an explicit confirmation |
-| **`/api/oc-locations/{id}/resign`** (v3.0.0) | POST | `oc_field_baseline` + `change_log` | re-sign after drift: baseline moves to current merged values, `RE_SIGNED_OFF` |
+| **`/api/issues/export`** (v3.4.0) | GET | `data_issue` + `vendor_location` + `vendor_oc_mapping` | CSV of open issues (filterable by type / severity / owner) — the work list handed to the provider |
+| **`/api/oc-locations/export`** (v3.4.0) | GET | `oc_location` + `vendor_location` + `data_issue` | CSV of the current filter, with `open_issues` and `drift_fields` columns |
+| ~~`/api/oc-locations/{id}/resign`~~ | — | — | **retired in v3.4.0**: there is no approval step, so there is nothing to re-sign |
 | **`/api/oc-locations/{id}/resolved`** (v3.0.0) | GET | `vendor_location` + `vendor_oc_mapping` | the merged, per-field view with a `source` per field (F25) — what downstream receives |
 | **`/api/oc-locations/{id}`** (v2.6.0, extended) | PATCH | `oc_location` + `oc_field_baseline` + `field_lock` + `sync_change_set` + `change_log` | operator edit: refresh baseline, lock fields, supersede pending changes, set `propagated_at` if visible |
 | **`/api/sync/runs/{id}/rollback`** (v2.6.0) | POST | `oc_location` + `change_log` | revert a run's OC rows to the stored before-image (7-day window) |

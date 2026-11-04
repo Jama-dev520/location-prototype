@@ -1,9 +1,9 @@
 # Location Management Admin Console — 功能验收标准（通俗版）
 
-> 版本 **v3.3.0** · 对照原型 https://jama-dev520.github.io/location-prototype/
-> 配套文档：PRD v3.3.0（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
+> 版本 **v3.4.0** · 对照原型 https://jama-dev520.github.io/location-prototype/
+> 配套文档：PRD v3.4.0（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
 > 对外（英文，给外国同事）：https://jama-dev520.github.io/location-prototype/feature-overview.html
-> 演示视频（2 分 46 秒，30 条英文字幕，按 v3.3.0 录制）：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
+> 演示视频（2 分 44 秒，30 条英文字幕，按 v3.4.0 录制）：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 
 **怎么用这份文档**：打开原型，照着「怎么做」点一遍，看是否与「应该看到什么」一致。三条都对就算过。不需要懂技术，用页面上的字就能判断。
 
@@ -11,21 +11,21 @@
 
 ---
 
-## 零之一、视频速览（2 分 46 秒）
+## 零之一、视频速览（2 分 44 秒）
 
 | 时间 | 视频里在演什么 | 对应本文档 |
 |---|---|---|
-| 00:00 | 片头：两层模型、三类来源、v3.3.0 | — |
+| 00:00 | 片头：两层模型、三类来源、v3.4.0 | — |
 | 00:04 | 供应商列表：全是只读，sweeper 也随同步进来 | 快检 1 · 2.1 |
 | 00:16 | 整页详情五个标签页；Issues 显示「哪个 run 查过」 | 2.3 |
 | 00:37 | 标记异常：字段 → 子字段 → 类型 → 严重度 → 原因 | 快检 3 · V5 |
 | 00:52 | OC 列表：选 Source=LMS，Type 只剩 packagehub | 快检 12 · O9 |
 | 01:10 | 签收：先看被 Blocked 的，再走一遍正常签收（勾选才能点） | 快检 10 · 2.5 |
 | 01:35 | 重复裁决：确认「同一家店」，列表出现 2:1 | 2.4 · DUP |
-| 01:51 | 跑一次同步：两条自动关闭，一条仍不合格、一条要人、一条没变 | 快检 14 · I8-I10 |
-| 02:11 | 签收后漂移 → 重新签收（值不改，只动基线） | 2.6 · D |
-| 02:32 | 切成 Viewer：同一份数据，所有动作禁用 | 快检 2 · 角色 |
-| 02:41 | 片尾：四条设计地基 | 零 |
+| 01:50 | 跑一次同步：两条自动关闭，一条仍不合格、一条要人、一条没变 | 快检 14 · I8-I10 |
+| 02:09 | 签收后漂移：只说"变了什么"，客户已经看到新值，没有任何要批的动作 | 2.6 · D |
+| 02:30 | 切成 Viewer：同一份数据，所有动作禁用 | 快检 2 · 角色 |
+| 02:39 | 片尾：四条设计地基 | 零 |
 
 > 视频无声，靠底部字幕推进；需要停下核对时按空格暂停即可。
 
@@ -75,7 +75,10 @@
 
 | 14 | 打开 **Data Issues**，点顶部 `Apply next provider sync` | 2 条自动关闭（sweeper 缺失、邮编矛盾）、1 条「变了但仍不合格」保持 open、1 条「需要人工复核」保持 open、1 条「未变化」保持 open；页面下方出现「Closed automatically by a sync」并列出旧值 → 新值 | 全关 / 全不关，或只显示一个总数 |
 
-这 14 条全对，模型就是通的。剩下的条目用来确认细节和边界。
+| 15 | 在 **Data Issues** 点 `Export open issues (CSV)` | 下载 `data-issues-YYYYMMDD-HHMMSS.csv`，每行一条未关闭异常，包含 OC ID、字段·子字段、类型、严重度、原因；筛选了类型就只有该类型 | 只能截图、或导出的是全部历史 |
+| 16 | 在 OC 列表筛 `Issues = Baseline drift` 后点 `Export CSV` | 下载的行数与屏幕上的条数一致，且带 `Open issues` / `Changed since sign-off` 两列 | 导全量、或列里没有异常信息 |
+
+这 16 条全对，模型就是通的。剩下的条目用来确认细节和边界。
 
 ---
 
@@ -155,6 +158,8 @@
 | I8 | 点 `Apply next provider sync` 后看 ISS-0009 / ISS-0011 | 两条变成 fixed，出现在「Closed automatically by a sync」里，写明 `closed_by = AUTO_SYNC`、run id、旧值 → 新值 | 直接消失、没有去向 |
 | I9 | 看 ISS-0013（电话格式） | 仍 open，备注「value changed to "555-0142" but is still invalid」——供应商改了但没改对 | 被当成修好而关闭 |
 | I10 | 看 ISS-0015（名称 INCORRECT） | 仍 open，备注「需要人工复核」——新值只是证据，不是结论 | 名称类问题被自动关闭 |
+| I11 | 看「Changed after sign-off」区 | 卡片写明 `for information only — these values are already downstream`，只有 `Open the location` 和 `Flag as an issue` 两个按钮 | 出现 `Re-sign` / 「接受」按钮 |
+| I12 | 看详情页 Operations | 只有一句黄色提示「N 个字段自签收后变化，客户已看到新值」，没有重签按钮 | 要求确认后才生效 |
 | I3 | 点 Provider fixed it | 状态变 fixed，门店的 `N data` 减少 | 值被本地改掉 |
 | I4 | 看 Changed after sign-off | 列出字段、旧值 → 新值，两个动作：重新签收 / 标记异常 | 只有"接受/拒绝" |
 | I5 | 点重新签收 | 基线刷新、写 `RE_SIGNED_OFF`、漂移消失 | 只改界面数字，没有审计 |
@@ -210,6 +215,9 @@ Duplicate Check 里一组 75% 的疑似重复。运营核对地址与邮编，�
 - ❌ `INCORRECT` / `STALE` / `DUPLICATE` 被自动关闭（这些要人判断，同步只能提供证据）
 - ❌ 自动关闭后 issue 从审计里消失，查不到旧值和验证值
 - ❌ 一个 blocking issue 关了，门店签收还显示被它卡着
+- ❌ 控制台里出现「接受 / 拒绝 / 重新签收」，暗示数据要经这里批准才生效
+- ❌ 有「Owner fixed it」这类手工关闭（只有同步能关）
+- ❌ 异常清单导不出来，或导出的列里没有 OC ID / 原因（供应商看不懂）
 
 ---
 

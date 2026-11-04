@@ -1,10 +1,10 @@
 # Location Management Admin Console — Feature Overview
 
 **Audience:** operations, partner-facing and M&MP teams who work with location data
-**Document version:** 1.3 (covers console v3.3.0) · **Status:** clickable prototype (not in production)
+**Document version:** 1.4 (covers console v3.4.0) · **Status:** clickable prototype (not in production)
 **Prototype:** https://jama-dev520.github.io/location-prototype/
 **One-page version (shareable):** https://jama-dev520.github.io/location-prototype/feature-overview.html
-**Demo video (2:46, English captions):** https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
+**Demo video (2:44, English captions):** https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 
 ---
 
@@ -139,12 +139,12 @@ left to protect. The data also stays trustworthy: what downstream receives can a
 
 ## 4. After go-live
 
-Provider values keep flowing — the data belongs to the provider, so the console does not freeze it. What it keeps is the
-signed-off **baseline**, and it compares the two. Any field that moved since sign-off shows as **drift** on the OC row, in
-the detail page and in Data Issues. The operator has two moves, neither of which edits a value:
+Provider values keep flowing and **always reach downstream** — the console never decides whether a change is applied.
+There is no accept, reject or re-sign step anywhere.
 
-- **Re-sign** — accept the new values as the new baseline (`RE_SIGNED_OFF`).
-- **Flag** — the new values are wrong; raise a data issue and let the owner fix the source.
+What the console keeps is the signed-off **baseline**, purely so it can answer one question: *what moved since we signed
+this off?* That shows as **drift** on the OC row, in the detail page and in Data Issues. There is exactly one action:
+**flag** a move that is wrong.
 
 ---
 
@@ -158,6 +158,7 @@ the detail page and in Data Issues. The operator has two moves, neither of which
 | Everything wrong right now | `Data Issues` — one ledger with three sections: open data issues, baseline drift, failed intake |
 | Which records look like the same store | `Duplicate Check` — fuzzy score, per-field diff, both sides, `Same store (2:1)` / `Not same (1:1)` |
 | What changed last week | `Change Log` — every action, every field, old → new, with second-level timestamps |
+| A work list for a provider | **Export open issues (CSV)** on Data Issues — id, both location ids, field · sub-field, type, severity, reason, who raised it; the OC list export carries `Open issues` / `Changed since sign-off` columns |
 
 All timestamps are shown and exported to the second (`YYYY-MM-DD HH:MM:SS`); the header carries a live clock so the
 audit trail and the screen agree.
@@ -168,7 +169,7 @@ audit trail and the screen agree.
 
 | Role | Can do |
 |---|---|
-| **Location Manager** (operations) | enable / disable, sign off, flag issues, decide duplicates, re-sign, export |
+| **Location Manager** (operations) | enable / disable, sign off, flag issues, decide duplicates, export the issue list |
 | **Viewer** | read and export only; every action control is disabled |
 
 M&MP is not a role — self-operated stores are handled by the same people under the same permissions.
@@ -196,6 +197,7 @@ M&MP is not a role — self-operated stores are handled by the same people under
 
 | Version | Change |
 |---|---|
+| v3.4.0 | No approval step: provider data is always applied; drift is information; issues export to CSV |
 | v3.3.0 | Issues close themselves when a provider run delivers a valid value |
 | v3.2.2 | The self-operated type value is `M&MP` (it used to read “M&MP store”) |
 | v3.2.1 | Documentation only — sharper summary of what the console does and does not do |

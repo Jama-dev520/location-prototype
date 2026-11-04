@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Feature Overview (v3.3.0)</title>
+<title>Location Management Admin Console — Feature Overview (v3.4.0)</title>
 <style>
   :root{
     --text:#0f172a; --muted:#64748b; --faint:#94a3b8;
@@ -103,7 +103,7 @@
   own self-operated stores. It answers four daily questions in seconds, and it never edits the data it shows.</p>
 
   <div class="meta">
-    <span class="pill blue">v3.3.0</span>
+    <span class="pill blue">v3.4.0</span>
     <span class="pill">Clickable prototype — not in production</span>
     <span class="pill teal">Two layers · three sources</span>
     <span class="pill">20 vendor records · 16 OC locations in demo data</span>
@@ -241,13 +241,13 @@
   protect — while every value downstream can still be traced to one source record.</div>
 
   <h2><span class="n">4</span>After go-live</h2>
-  <p>Provider values keep flowing — the data belongs to the provider, so nothing is frozen. What the console keeps is the
-  signed-off <b>baseline</b>, and it compares the two. A field that moved since sign-off shows as <b>drift</b> on the list row,
-  in the detail page and in Data Issues. Two moves, neither of which edits a value:</p>
-  <ul>
-    <li><b>Re-sign</b> — accept the new values as the new baseline (<code>RE_SIGNED_OFF</code>).</li>
-    <li><b>Flag</b> — the new values are wrong; raise a data issue and let the owner fix the source.</li>
-  </ul>
+  <p>Provider values keep flowing and <b>always reach downstream</b> — the console never decides whether a change is
+  applied. There is no accept, reject or re-sign step anywhere. What it keeps is the signed-off <b>baseline</b>, so it can
+  answer one question: <i>what moved since we signed this off?</i> That shows as <b>drift</b> on the list row, in the detail
+  page and in Data Issues. The only action is to <b>flag</b> a move that is wrong.</p>
+  <div class="callout"><b>Hand-off, not workflow.</b> The issue ledger exports to CSV — id, both location ids, field · sub-field,
+  type, severity, reason, who raised it and when — so it can go straight into a ticket with the provider. That is the point of
+  marking something, and it is why the console does not need an approve step.</div>
 
   <h2><span class="n">5</span>Finding things</h2>
   <table>
@@ -259,6 +259,7 @@
       <tr><td>Everything wrong right now</td><td><b>Data Issues</b> — one ledger: open issues, baseline drift, failed intake</td></tr>
       <tr><td>Records that look like the same store</td><td><b>Duplicate Check</b> — fuzzy score, per-field diff, <code>Same store (2:1)</code> / <code>Not same (1:1)</code></td></tr>
       <tr><td>What changed last week</td><td><b>Change Log</b> — every action, every field, old → new</td></tr>
+      <tr><td>A work list for a provider</td><td><b>Export open issues (CSV)</b> on Data Issues — id, both location ids, field · sub-field, type, severity, reason; the OC list export carries <code>Open issues</code> / <code>Changed since sign-off</code> columns</td></tr>
     </tbody>
   </table>
   <p>All timestamps are shown and exported to the second (<code>YYYY-MM-DD HH:MM:SS</code>); the header carries a live clock so the
@@ -268,7 +269,7 @@
   <table>
     <thead><tr><th>Role</th><th>Can do</th></tr></thead>
     <tbody>
-      <tr><td><b>Location Manager</b></td><td>enable / disable, sign off, flag issues, decide duplicates, re-sign, export</td></tr>
+      <tr><td><b>Location Manager</b></td><td>enable / disable, sign off, flag issues, decide duplicates, export the issue list</td></tr>
       <tr><td><b>Viewer</b></td><td>read and export only; every action control is disabled</td></tr>
     </tbody>
   </table>
@@ -309,7 +310,7 @@
   <p>Yes — every action writes an audit row with actor, timestamp to the second, field, old value and new value.</p>
 
   <footer>
-    Location Management Admin Console · v3.3.0 · clickable prototype ·
+    Location Management Admin Console · v3.4.0 · clickable prototype ·
     <a href="https://jama-dev520.github.io/location-prototype/">open the prototype</a> ·
     <a href="https://jama-dev520.github.io/location-prototype/Location-Management-Admin-Feature-Overview-EN.md">full overview</a>
   </footer>
