@@ -1,6 +1,7 @@
-# Location Management Admin Console — Database Field Mapping (v3.2.0)
+# Location Management Admin Console — Database Field Mapping (v3.2.1)
 
-> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.2.0)
+> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.2.1)
+> Feature overview (English, for readers outside the team): `https://jama-dev520.github.io/location-prototype/feature-overview.html`
 >
 > **v3.0.0 model change.** The console no longer writes location fields. `field_lock` is replaced by `data_issue`; `sync_change_set` decisions and `oc_field_baseline` versions used for revert are retired; downstream values are a per-field merge with **LMS first**. The console writes exactly four things: `oc_location.is_enable`, `data_issue` rows, baseline captures, and `change_log`.
 > Purpose: help engineering/data teams understand "front-end filter ↔ API param ↔ DB field" and the table schemas for the **two-layer model**.

@@ -1,6 +1,6 @@
-# Location Management Admin Console — PRD Change Summary (v3.2.0)
+# Location Management Admin Console — PRD Change Summary (v3.2.1)
 
-> Document version v3.2.0 ｜ Change date 2026-11-04 ｜ Status: Draft — pending review
+> Document version v3.2.1 ｜ Change date 2026-11-04 ｜ Status: Draft — pending review
 > 本轮（v3.0.0）是**模型换向**：OC 层不再改数据，只做两件事——**enable** 和 **标记异常**。所有数据以供应商为唯一来源，错的地方标记回去让供应商改；重复对单独成页；下游按字段合并，LMS 优先；M&MP 用同一套规则管同一份数据。
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
 > **验收标准（通俗版）**: `Location-Management-Admin-验收标准-2026-10-29.md`
@@ -386,6 +386,30 @@ v3.0.0 的「标记异常」只有字段 + 一句话，实际用起来有两个�
 - PRD §7.1 还写着 sweeper「由 Location Manager 在小弹框里改」——那是 v2.5.0 的做法，v3.0.0 起 sweeper 随同步进来、只读。
 - PRD §7.2 的交互列表里还留着「店铺信息编辑弹框 → F11」，编辑入口早已删除。
 
+## 二之八、v3.2.1：交付物补齐与对齐
+
+功能零改动，只做三件事。
+
+### 35. 新增英文功能概览（给团队外的读者）
+
+之前所有材料都假设读者知道 F 编号、Review Center、基线这些内部概念。给外国同事时说不通，所以单独写了一份：
+
+- 结构：四件日常事（J1–J4）→ 两层模型 → 三来源 + 来源决定类型 + 逐字段合并 + 可见性 → 两个动作（签收 5 项检查 / issue 四层）→ 上线后漂移 → 查找 → 角色 → 范围。
+- 刻意不出现需求编号与内部黑话；`sweeper` 保留但补一句解释。
+- 把「为什么没有编辑按钮」单独做成提示块——这是外部同事最会反问的一点。
+- 两种形态：在线单页（可直接转发、可打印成 PDF）+ Markdown 全文。
+
+https://jama-dev520.github.io/location-prototype/feature-overview.html
+
+### 36. 需求总览补「交付物清单」
+
+新增第四节：九项交付物 × 文件 / 语言 / 读者 / 说明，并写明「对外分享用哪一份」。此前交付物散落在对话和文件夹里，新人看不出该读哪个。
+
+### 37. 修正一页速览的过期内容
+
+附录「30 秒看懂」还留着 v2 时代的说法：给谁用写着「+sweeper/编辑」、去重写着「未确认不生成 OC」、审计写着「sweeper/编辑/去重都留痕」。已按 v3 重写，并补上三来源、来源决定类型、逐字段合并、签收后漂移四行。
+
+| v3.2.1 | PATCH | 2026-11-04 | **交付物补齐**：新增英文功能概览（单页 + Markdown，给外部同事）· 需求总览加交付物清单 · 重写「一页速览」并修掉 v2 残留 |
 | v3.2.0 | MINOR | 2026-11-04 | **Source 决定 Type**：两个列表的 Type 筛选由 Source 派生（含实时条数、单选项自动选中）；`type ≠ source` 徽章与筛选；接口拒绝不可能组合；修 PRD 两处过期描述 |
 | v3.1.0 | MINOR | 2026-11-04 | **issue 细化**：字段 → 子字段 → 类型（7 类）→ 严重度（blocking/warning）+ 必填原因；10 条示例数据；台账按类型筛选；只有 blocking 阻塞签收 |
 | v3.0.1 | PATCH | 2026-11-04 | **时间精确到秒**：列表 Updated、issue 的 raised-at、审计行全部带秒；头部加一枚走秒的当前时间（本地时区）。无行为变更 |

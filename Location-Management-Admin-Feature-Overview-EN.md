@@ -1,7 +1,7 @@
 # Location Management Admin Console — Feature Overview
 
 **Audience:** operations, partner-facing and M&MP teams who work with location data
-**Product version:** v3.2.0 · **Status:** clickable prototype (not in production)
+**Document version:** 1.1 (covers console v3.2.1) · **Status:** clickable prototype (not in production)
 **Prototype:** https://jama-dev520.github.io/location-prototype/
 **One-page version (shareable):** https://jama-dev520.github.io/location-prototype/feature-overview.html
 
@@ -190,6 +190,7 @@ M&MP is not a role — self-operated stores are handled by the same people under
 
 | Version | Change |
 |---|---|
+| v3.2.1 | Documentation only — sharper summary of what the console does and does not do |
 | **v3.2.0** | Source fixes the type; both lists' Type filter is derived from Source with live counts |
 | v3.1.0 | Data issues split into field → sub-field → type → severity |
 | v3.0.0 | **Model change:** the console stops editing. Two verbs only — enable and flag. Duplicates get their own page; values merge per field by source priority |

@@ -1,7 +1,8 @@
-# Location Management Admin Console — Requirement Overview (v3.2.0)
+# Location Management Admin Console — Requirement Overview (v3.2.1)
 
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
-> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.2.0)
+> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.2.1)
+> 给外部同事看的英文功能概览：https://jama-dev520.github.io/location-prototype/feature-overview.html
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
 > Detail view (v2.4.0): clicking a location ID opens a **full page** with tabs — Basic Info / Operations / Hours & Services / Linked Records / Change History.
 > **v3.0.0 — 供应商之外，自营 M&MP 小店也走同一套。** M&MP = 自营小店（美国叫法），是门店目录里的第三类来源，数据由门店自己维护，异常找门店负责人；规则与供应商门店完全一致。
@@ -266,23 +267,41 @@ sweeper 由供应商随门店一起提供，和其它字段一样只读。发现
 
 原来的「手改即裁决」「字段锁」「字段回退」三条流程（flow9/10/11）在 v3.0.0 全部下线——没有改，就没有锁和回退。
 
+## 四、交付物清单（v3.2.1）
+
+| 交付物 | 文件 | 语言 | 读者 | 说明 |
+|---|---|---|---|---|
+| 需求总览（本文） | `Location-Management-Admin-需求总览-2026-10-29.md` | 中文 | 全员 | 字段字典、需求与优先级、流程图、交付物清单 |
+| 产品需求文档 | `Location-Management-Admin-PRD-2026-10-29.md` | 英文 | 研发 / QA | F01–F26、页面规格、验收标准（§10） |
+| 数据库字段映射 | `Location-Management-Admin-数据库字段映射-2026-10-29.md` | 英文 | 后端 / 数据 | 11 张表、筛选↔API↔字段、来源→类型约束 |
+| 变更摘要 | `Location-Management-Admin-PRD-变更摘要-2026-10-29.md` | 中文 | 全员 | 每一版改了什么、为什么改 |
+| 验收标准（通俗版） | `Location-Management-Admin-验收标准-2026-10-29.md` | 中文 | 业务 / 测试 | 13 条快检、分页面清单、5 个故事、不该发生的事 |
+| **英文功能概览** | `feature-overview-en.html` / `Location-Management-Admin-Feature-Overview-EN.md` | 英文 | **外部同事** | 一页讲清做什么、为什么这样设计；可直接转发或打印 |
+| 交互原型 | `Location-Management-Admin-Prototype-2026-10-29.html` | 英文界面 | 全员 | 单文件高保真，覆盖 6 个菜单 + 详情 5 个标签页 |
+| 流程图 | `diagrams/flow1..11-*.png` | 英文 | 全员 | 11 张，2x 渲染，飞书可直接嵌入 |
+| 演示视频 | `Location-Management-Admin-Demo-2026-10-29.mp4` | 英文字幕 | 全员 | ⚠️ 录制于 v2.7.0，仍演示“改地址”，**不要用于 v3 验收**，待重录 |
+
+**对外分享用哪一个**：给外国同事发 `feature-overview.html`（英文单页），需要展开细节时再给 PRD 和字段映射；中文团队内部用本文件 + 验收标准。
+
 ## 附：一页速览（30 秒看懂）
 
 | Dimension | Content |
 |---|---|
-| **做什么** | 两层模型内部后台：供应商层 + OC 层 |
-| **两个菜单** | Vendor Location List（供应商数据）+ OC Location List（OC 自有门店） |
-| **给谁用** | Viewer（查看/导出）、Location Manager（+sweeper/编辑/启用/去重） |
-| **数据怎么来** | 每日增量同步；新供应商门店非重复则自动生成 OC 门店（默认 disabled） |
-| **核心控制** | OC 层 `is_enable` 开关，决定下游可见性 |
-| **状态联动** | 供应商 inactive → OC 自动 disable + 阻断下游；强制启用报错 |
-| **去重** | 跨供应商地址模糊匹配 ≥75% 疑似重复；未确认不生成 OC |
-| **审计** | 每次 sweeper/编辑/启用/去重/状态变化都留痕 |
-| **上游数据是提案**（v2.6.0） | 已上线门店被上游改动 → 按字段档位判定，敏感字段挂起，客户继续看签收值 |
-| **一个异常台账**（v3.0.0） | Data Issues = 供应商问题 + 签收后漂移 + 入库失败；重复裁决独立成页，不再挤在队列里 |
-| **启用即签收**（v2.6.0） | 核对地址/坐标/营业时间 + 5 项检查 + 必须勾选，同时记录基线 |
-| **只能标、不能改**（v3.0.0） | 错值一律标记给供应商；下游按字段合并，LMS 优先；签收后漂移靠「重新签收」而不是改值 |
-| **人工编辑即生效**（v2.6.0） | 不进 review，立即推下游 + 刷基线 + 锁字段 + 作废同字段待审变更 |
-| **兜底原则**（v2.6.0） | 没人处理 → 不生成 / 不启用 / 保持旧值，绝不自动接受上游错值 |
-| **验收** | 见 `Location-Management-Admin-验收标准-2026-10-29.md`（通俗版，8 条快检 + 6 个故事） |
-| **交付页面** | P01 Vendor List / P02 OC List（含 `Not live yet`）/ **Duplicate Check** / **Data Issues** / Change Log / Sync Status / 详情（5 tab，含 Issues） |
+| **做什么** | 两层模型的内部后台：供应商层（只读镜像）+ OC 层（客户可见记录） |
+| **两个列表** | Vendor Location List + OC Location List（含 `⏳ Not live yet` 签收队列） |
+| **三类来源** | PUDO Inc（PUDOpoint / Locker）· LMS（packagehub）· **M&MP（自营小店）** |
+| **给谁用** | Viewer（只读 + 导出）· Location Manager（+ enable/签收、标记异常、裁决重复、重新签收） |
+| **数据怎么来** | 每日同步；新记录过入库校验与重复校验后生成或关联 OC 记录，默认未启用 |
+| **核心控制** | OC 层只有两个动作：`enable`（签收）和 `flag an issue`；**不改任何值** |
+| **可见性** | `status = active` **且** `is_enable = true`，下游才可见 |
+| **状态联动** | 供应商 inactive → 关联 OC 自动 disable + 阻断下游；强制启用报错 |
+| **取值规则** | 逐字段合并：**M&MP → LMS → PUDO Inc**，先有值者胜，缺的由下一个补 |
+| **来源决定类型**（v3.2.0） | LMS → packagehub · PUDO Inc → PUDOpoint / Locker · M&MP → 自营；筛选器按此级联 |
+| **去重** | 独立 Duplicate Check 页；≥75% 疑似；**未裁决阻塞启用**；确认 2:1 后两条记录喂一条 OC 记录 |
+| **异常** | 四层粒度（字段 → 子字段 → 7 类 → 严重度）；`blocking` 阻塞签收、`warning` 不阻塞；open → reported → fixed |
+| **签收即基线** | 5 项检查 + 核对客户可见值 + 必须勾选；记基线，写 `ENABLE_SIGNED_OFF` |
+| **签收后漂移** | 上游改动照常生效；与基线比对显示 drift；**重新签收**或**标记异常**，都不改值 |
+| **审计** | 每个动作一条：谁、何时（到秒）、字段、旧值 → 新值 |
+| **兜底原则** | 没人处理 → 不启用 / 保持旧值 / 不生成 OC ID，绝不自动接受错值 |
+| **交付页面** | Vendor List · OC List · Duplicate Check · Data Issues · Change Log · Sync Status + 详情（5 tab） |
+| **验收** | 见 `Location-Management-Admin-验收标准-2026-10-29.md`（13 条快检 + 5 个故事） |

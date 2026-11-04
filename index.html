@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v3.2.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v3.2.1)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -287,7 +287,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.2.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.2.1</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -311,7 +311,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.2.0</div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.2.1</div>
       </div>
     </div>
 
@@ -523,7 +523,7 @@ table.wt td{padding:8px 10px;border-bottom:1px solid var(--bg-section);vertical-
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3>Walkthrough — v3.2.0 (source fixes the type)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3>Walkthrough — v3.2.1 (source fixes the type)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -602,8 +602,9 @@ var CHANGELOG=[
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='3.2.0';
+var APP_VERSION='3.2.1';
 var VERSIONS=[
+ {v:'3.2.1',type:'patch',date:'2026-11-04',desc:'<b>Deliverables pass.</b> Added a plain-English feature overview for readers outside the team (shareable page + Markdown), a deliverables list in the requirement overview, and corrected the 30-second summary, which still described sweeper editing and the pre-v3 duplicate rule. No behaviour change.'},
  {v:'3.2.0',type:'minor',date:'2026-11-04',desc:'<b>Source fixes the type.</b> LMS only ever means <b>packagehub</b>, PUDO Inc means <b>PUDOpoint</b> or <b>Locker</b>, M&amp;MP means a self-operated store. Both lists now cascade: pick a Source and the Type filter reduces to what that source can actually be, with live counts per option. A record whose type does not belong to its source is flagged in the list and can be isolated with one filter.'},
  {v:'3.1.0',type:'minor',date:'2026-11-04',desc:'<b>Finer issue granularity.</b> A flag is no longer “field + a sentence”: it now carries an <b>issue type</b> (missing / incorrect / inconsistent / out of range / duplicate / stale / format), an optional <b>sub-field</b> (which address line, which weekday), and a <b>severity</b> that decides whether it blocks enablement.'},
  {v:'3.0.1',type:'patch',date:'2026-11-04',desc:'Every timestamp now carries seconds, and the header shows a live clock. No behaviour change.'},
