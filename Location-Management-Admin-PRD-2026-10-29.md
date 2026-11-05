@@ -615,9 +615,9 @@ The header carries a two-button language switch (`EN` / `Chinese`). It is a pres
 
 ### 13.3 Prototype Link
 
-- `Location-Management-Admin-Prototype-2026-10-29.html` — v3.3.0, hi-fi single-file prototype
+- `Location-Management-Admin-Prototype-2026-10-29.html` — v3.5.0, hi-fi single-file prototype
 - Public: https://jama-dev520.github.io/location-prototype/
-- **Demo video (2:44, no audio, 30 English captions)**: `https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4` — recorded against **v3.4.0** by script on the real prototype (real clicks, not an animation), so every caption can be replayed by hand in the same order. Chapters: two layers → detail → flag an issue → OC list and the source→type filter → sign-off (blocked, then signed) → duplicate decision (2:1) → issue auto-close on a provider run → drift is information → viewer rights.
+- **Demo video (3:13, no audio, 35 English captions)**: `https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4` — recorded against **v3.5.0** by script on the real prototype (real clicks, not an animation), so every caption can be replayed by hand in the same order. Chapters: two layers → detail → flag an issue → OC list and the source→type filter → sign-off (blocked, then signed) → duplicate decision (2:1) → issue auto-close on a provider run → drift is information → viewer rights → the same console in Chinese.
 - Flowcharts (2x PNG, safe to embed in Feishu by absolute URL): `https://jama-dev520.github.io/location-prototype/diagrams/flow{1..9}-*.png`
 - Demo seed data deliberately includes: four live locations whose provider value moved after sign-off (`OC-00102` coordinates, `OC-00103` postal, `OC-00106` name, `OC-00109` hours) · a duplicate pair at 75% waiting for a decision (`LOC-12194` / `LOC-00186`) · five flagged fields, two of which a run can close by itself · one blocked sign-off (`OC-00002`, no active vendor record) and three ready ones (`OC-00089`, `OC-00105`, `OC-00320`) · two intake failures with no OC record (`LOC-00187` / `LOC-00188`)
 

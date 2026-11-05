@@ -3,7 +3,7 @@
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
 > Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.5.0)
 > 给外部同事看的英文功能概览：https://jama-dev520.github.io/location-prototype/feature-overview.html
-> 演示视频（2 分 46 秒，30 条英文字幕，对应 v3.3.0）：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
+> 演示视频（3 分 13 秒，35 条英文字幕，对应 v3.5.0）：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
 > Detail view (v2.4.0): clicking a location ID opens a **full page** with tabs — Basic Info / Operations / Hours & Services / Linked Records / Change History.
 > **v3.0.0 — 供应商之外，自营 M&MP 小店也走同一套。** M&MP = 自营小店（美国叫法），是门店目录里的第三类来源，数据由门店自己维护，异常找门店负责人；规则与供应商门店完全一致。
@@ -282,9 +282,9 @@ sweeper 由供应商随门店一起提供，和其它字段一样只读。发现
 | 变更摘要 | `Location-Management-Admin-PRD-变更摘要-2026-10-29.md` | 中文 | 全员 | 每一版改了什么、为什么改 |
 | 验收标准（通俗版） | `Location-Management-Admin-验收标准-2026-10-29.md` | 中文 | 业务 / 测试 | 13 条快检、分页面清单、5 个故事、不该发生的事 |
 | **英文功能概览** | `feature-overview-en.html` / `Location-Management-Admin-Feature-Overview-EN.md` | 英文 | **外部同事** | 一页讲清做什么、为什么这样设计；可直接转发或打印 |
-| 交互原型 | `Location-Management-Admin-Prototype-2026-10-29.html` | 英文界面 | 全员 | 单文件高保真，覆盖 6 个菜单 + 详情 5 个标签页 |
+| 交互原型 | `Location-Management-Admin-Prototype-2026-10-29.html` | 中英双语（右上角切换） | 全员 | 单文件高保真，覆盖 6 个菜单 + 详情 5 个标签页 |
 | 流程图 | `diagrams/flow1..11-*.png` | 英文 | 全员 | 11 张，2x 渲染，飞书可直接嵌入 |
-| 演示视频 | `Location-Management-Admin-Demo-2026-10-29.mp4` | 英文字幕 | 全员 | 2 分 46 秒、30 条字幕，按 v3.3.0 重录；九段：两层 → 详情 → 标记 → 列表与来源/类型 → 签收 → 重复 → 自动关闭 → 漂移 → 只读角色 |
+| 演示视频 | `Location-Management-Admin-Demo-2026-10-29.mp4` | 英文字幕 | 全员 | 3 分 13 秒、35 条字幕，按 v3.5.0 重录；十段：两层 → 详情 → 标记 → 列表与来源/类型 → 签收 → 重复 → 自动关闭 → 漂移 → 只读角色 → 中英切换 |
 
 **对外分享用哪一个**：给外国同事发 `feature-overview.html`（英文单页），需要展开细节时再给 PRD 和字段映射；中文团队内部用本文件 + 验收标准。
 
