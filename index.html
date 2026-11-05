@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v3.6.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v3.7.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -308,7 +308,7 @@ table.dup-cmp tr.st-near td.a,table.dup-cmp tr.st-near td.b{background:#FFFBEB}
 table.dup-cmp tr.st-near td.m{color:var(--color-warning)}
 table.dup-cmp tr.st-diff td.f,table.dup-cmp tr.st-near td.f{color:var(--text-secondary);font-weight:600}
 .dup-same{font-size:11.5px;color:var(--text-tertiary)}
-.watch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.watch-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
 .watch-tile{display:flex;flex-direction:column;gap:3px;align-items:flex-start;text-align:left;background:var(--bg-card);border:1px solid var(--bg-section);border-radius:var(--radius);padding:11px 13px;cursor:pointer;transition:var(--transition);font-family:inherit}
 .watch-tile:hover{border-color:#C7DFF6;background:var(--bg-hover)}
 .watch-tile.on{border-color:var(--color-primary);background:var(--color-primary-light);box-shadow:var(--shadow-xs)}
@@ -335,7 +335,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.6.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.7.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -360,7 +360,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.6.0</div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.7.0</div>
       </div>
     </div>
 
@@ -468,7 +468,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
 
       <div class="page" id="page-pdi">
         <h2 class="page-title">Data Issues</h2>
-        <p class="page-desc" data-i18n="pdi.desc">Everything that is wrong with the data, in one ledger — <b>no review queues</b>. It opens with the <b>three checks</b> operations chases every day — <b>incomplete address</b>, <b>no postal code</b>, <b>no opening hours</b> — each counted on open issues and one click from filtering the ledger. Below that, three kinds: what we asked the provider to fix, what changed after sign-off (information, not a decision), and what never passed intake. Nothing here decides whether a value is applied — <b>provider values always go downstream</b>. Marking an issue is how we ask for a correction; the next push is how it lands. <b>Export the list</b> to send it to the provider.</p>
+        <p class="page-desc" data-i18n="pdi.desc">Everything that is wrong with the data, in one ledger — <b>no review queues</b>. It opens with the <b>four checks</b> operations chases every day — <b>incomplete address</b>, <b>no postal code</b>, <b>no opening hours</b>, <b>a day open under three hours</b> — each counted on open issues and one click from filtering the ledger. Below that, three kinds: what we asked the provider to fix, what changed after sign-off (information, not a decision), and what never passed intake. Nothing here decides whether a value is applied — <b>provider values always go downstream</b>. Marking an issue is how we ask for a correction; the next push is how it lands. <b>Export the list</b> to send it to the provider.</p>
         <div id="di-body"></div>
       </div>
 
@@ -561,7 +561,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.6.0 (three checks, compare, mark)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.7.0 (four checks, compare, export)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -571,12 +571,13 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
         <tr><td>4</td><td>OC Detail</td><td>Basic Info → each field carries its source</td><td>LMS wins the field when LMS has a value, PUDO fills the rest</td></tr>
         <tr><td>5</td><td>OC List</td><td>Enable a ready location</td><td>Sign-off checklist · baseline captured · no data edited</td></tr>
         <tr><td>6</td><td>Duplicate Check</td><td>Read the pair left to right, then confirm "same store"</td><td>Two columns, one row per field: ✓ same, ≈ one contains the other, ✕ different — then 2:1 mapping and LMS values on the OC row</td></tr>
-        <tr><td>7</td><td>Data Issues</td><td>The three checks at the top, then the three sections</td><td>Incomplete address · no postal code · no opening hours, each counted and filterable · provider issues · drift · intake — no review queues</td></tr>
+        <tr><td>7</td><td>Data Issues</td><td>The four checks at the top, then the three sections</td><td>Incomplete address · no postal code · no opening hours · day under 3 hours, each counted and filterable · then provider issues · drift · intake — no review queues</td></tr>
         <tr><td>8</td><td>Data Issues</td><td>Open a drifted location</td><td>See which fields moved since sign-off; downstream already has the new values — drift is information, not a decision</td></tr>
         <tr><td>9</td><td>OC List</td><td>Filter Source = M&amp;MP</td><td>Self-operated stores follow the same rules: same sign-off, same issue ledger — only the data owner differs</td></tr>
         <tr><td>10</td><td>Both lists</td><td>Set Source = LMS, then open the Type filter</td><td data-i18n="walk.10.exp">Only <b>packagehub</b> is offered and it is selected for you; the hint reads “LMS → packagehub”. Same for PUDO Inc (PUDOpoint / Locker) and M&amp;MP</td></tr>
         <tr><td>11</td><td>Vendor List</td><td>Issues filter → “Type ≠ source”</td><td>Zero rows on clean data; a record whose type cannot belong to its source is tagged in the Type column and isolated here</td></tr>
-        <tr><td>12</td><td>Data Issues</td><td>Click “Apply next provider sync”</td><td data-i18n="walk.12.exp">Two issues close themselves (value changed <b>and</b> valid); one stays open with “changed but still invalid”, one comes back to a human, the rest are untouched — no manual close anywhere</td></tr>
+        <tr><td>13</td><td>Vendor Detail</td><td>Hours &amp; Services on a store with a truncated day</td><td>The Hours tab names the day, the range and the total — and the same day is already an open issue in the ledger</td></tr>
+<tr><td>12</td><td>Data Issues</td><td>Click “Apply next provider sync”</td><td data-i18n="walk.12.exp">Two issues close themselves (value changed <b>and</b> valid); one stays open with “changed but still invalid”, one comes back to a human, the rest are untouched — no manual close anywhere</td></tr>
       </tbody>
     </table>
   </div>
@@ -923,7 +924,9 @@ var I18N_ZH = {
   "blocking":"阻塞",
   "value unchanged":"值未变",
   /* ---- v3.6.0: the three checks ---- */
-  "Three checks we do not let slide":"三个必查项",
+  "The checks we do not let slide":"必查项",
+  "Day under 3 hours":"某天不足 3 小时",
+  "A two-hour day at a staffed counter is a truncated feed, not a rota":"有人值守的柜台一天只开两小时，多半是数据被截断，不是排班",
   "counted on open issues · click one to filter the ledger, click again to clear":"按未关闭异常统计 · 点一个只看这一类，再点取消",
   "Incomplete address":"地址信息不全",
   "No postal code":"缺少邮编",
@@ -991,7 +994,7 @@ var I18N_BLOCK = {
   "p01.desc":"<b>来源决定类型</b> —— LMS 只能是 <b>packagehub</b>，PUDO Inc 只能是 <b>PUDOpoint</b> 或 <b>Locker</b>，M&amp;MP 是自营小店 —— 所以选定来源后，类型筛选会自动收窄。这里是供应商实际推过来的内容，<b>所有字段只读</b>，包括<b>揽收方</b>，它现在随每日同步一起进来。<b>M&amp;MP</b> 是自营店，责任方是门店本身而不是某个供应商。发现值不对，我们不在这一层改：我们<b>带着原因标记它</b>，标记挂在这条记录上，由供应商去修源头。OC 层只决定这家店是否上线。",
   "p02.desc":"<b>来源决定类型：</b>LMS → packagehub · PUDO Inc → PUDOpoint / Locker · M&amp;MP → <b>M&amp;MP</b>，所以选定来源后类型筛选会自动收窄。这是客户实际看到的那条记录。<b>只有两个动作：启用，以及标记异常。</b>这里不能编辑 —— 地址错了不会被改写，而是标记回供应商。值<b>按字段逐个合并</b>：<b>M&amp;MP</b> 自营店是自己的来源，优先级最高，然后是 <b>LMS</b>，最后由 PUDO Inc 补上仍为空的字段。",
   "pdup.desc":"独立页面，只回答一个问题：<b>这两条供应商门店记录是不是同一家店？</b>配对由模糊匹配产生（地址 50 · 邮编 25 · 城市 15 · 州 10，阈值 75%）。判定结果决定映射关系 —— <b>同一家 = 2:1</b>（两条供应商记录对应一个 OC 门店，取值以 LMS 优先），<b>不是同一家 = 1:1</b>（各自有独立的 OC 门店）。两条记录<b>左右并排</b>，每个字段一行，差异那段单独标出来 —— 判定是看出来的，不是读出来的。凡是挂在多条供应商记录下的 OC 门店，都会在 OC 列表里标 <b>2:1</b>。",
-  "pdi.desc":"所有数据问题集中在一个台账里 —— <b>没有审核队列</b>。顶部先给运营每天在追的<b>三个必查项</b> —— <b>地址信息不全</b>、<b>缺少邮编</b>、<b>没有营业时间</b> —— 各自按未关闭异常计数，点一下就能筛出这一类。往下是三类：我们已经请供应商修的、签收之后变了的（只是信息，不是待决策），以及从来没通过入池校验的。这里不决定任何值是否被应用 —— <b>供应商的值永远给到下游</b>。标记异常是我们提要求的方式，下一次推送是它落地的方式。<b>导出清单</b>就可以发给供应商。",
+  "pdi.desc":"所有数据问题集中在一个台账里 —— <b>没有审核队列</b>。顶部先给运营每天在追的<b>四项检查</b> —— <b>地址信息不全</b>、<b>缺少邮编</b>、<b>没有营业时间</b>、<b>某天营业不足 3 小时</b> —— 各自按未关闭异常计数，点一下就能筛出这一类。往下是三类：我们已经请供应商修的、签收之后变了的（只是信息，不是待决策），以及从来没通过入池校验的。这里不决定任何值是否被应用 —— <b>供应商的值永远给到下游</b>。标记异常是我们提要求的方式，下一次推送是它落地的方式。<b>导出清单</b>就可以发给供应商。",
   "p03.desc":"两个层级上的每一次创建、同步写入、标记、判定和签收都在这里。可按层级和类型筛选。",
   "p04.desc":"每一次供应商同步一行。触发熔断的那一次会停止下发，等人工处理。",
   "flag.intro":"这<b>不会</b>改值。它把问题记在源记录上，并要求责任方去改 —— PUDO Inc / LMS 由供应商改，<b>M&amp;MP</b> 自营店由门店自己改。",
@@ -1005,7 +1008,7 @@ var I18N_BLOCK = {
   "btn.notlive":"未上线",
   "sync.info":"一次推送只写供应商的值，从不写 OC 的决定 —— 启用、标记、签收都由人做。自 v3.3.0 起，推送也可以<b>关闭</b>一条异常，但只有它带来的值合法时才关；修是责任方的事，记录是我们的。",
   "dup.vs":"对比",
-  "wt.title":"演示脚本 —— v3.6.0（三个必查项、左右对比、标记）"
+  "wt.title":"演示脚本 —— v3.7.0（四项检查、左右对比、导出）"
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
@@ -1020,6 +1023,7 @@ var I18N_RULES = [
   [/^System · (.+)$/, "系统 · $1"],
   [/^created — fuzzy match (.+) vs (.+) \(pending duplicate, no OC location ID\)$/, "创建 —— 与 $2 模糊匹配 $1（待判定重复，暂不生成 OC 单号）"],
   [/^(\d+) field\(s\) differ$/, "$1 个字段不同"],
+  [/^([A-Z]+) ([\d:,-]+) — under 3 hours \(([\d.]+)h\)$/, "$1 $2 —— 不足 3 小时（$3 小时）"],
   [/^this type cannot come from (.+)$/, "这个类型不可能来自 $1"],
   [/^OC location: (.+) vs (.+)$/, "OC 门店：$1 对 $2"],
   [/^OC Internal Console · v[\d.]+$/, "OC 内部管理控制台 · v3.5.0"],
@@ -1066,6 +1070,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "3.7.0":"<b>两小时的营业日不是排班。</b>必查项多了一条：<b>任何一天合计不足 3 小时</b>都算可疑 —— 由时段算出来，不是人工标上去的，所以数据被截断时它自己会冒出来。Hours 标签页会在营业时间下面点名是哪一天。<br><br>另外，异常导出里带上了<b>门店本身</b>：地址、城市、州、邮编、来源、类型，就挨着单号 —— 发给供应商的 CSV 能看出是哪家店，而不只是一个记录 ID。",
   "3.6.0":"<b>三个必查项有了自己的入口，重复配对改成左右对照。</b>异常台账顶部先给出运营每天真正在追的三个缺口 —— <b>地址信息不全</b>、<b>缺少邮编</b>、<b>营业时间为空</b> —— 各自按未关闭异常计数，点一下就只看这一类；判定靠字段，新标记会自动落到对应格子。重复门店页把原来堆叠的差异行换成<b>左右对照</b>：两条记录并排两列，每个比对字段一行，中间一列给出 ✓ 相同 / ≈ 一个包含另一个 / ✕ 不同，差异整行着色 —— 判定靠看，不靠读。",
   "3.5.0":"<b>这套控制台现在有中文了。</b>顶部右上角多了一个 EN / 中文 切换，整份界面 —— 列表、筛选、弹框、详情页、演示脚本、版本说明 —— 都会跟着换语言，选择会记住。数据本身（门店名、地址、供应商、单号、字段名）保持英文原样：这些是供应商推过来的值，翻译它们反而制造第二个真相来源。",
   "3.4.0":"<b>控制台不再决定「是否应用」。</b>供应商的值永远会到下游 —— 没有接受、拒绝或重签这一步，也没有手工关闭。由此带来两件事：漂移变成了<b>信息</b>（签收之后变了什么），而不是一个待决策项；异常台账可以<b>导出成 CSV</b>，直接发给供应商当工作清单。标记是我们提要求的方式，下一次推送是它被修好的方式。",
@@ -1217,8 +1222,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='3.6.0';
+var APP_VERSION='3.7.0';
 var VERSIONS=[
+ {v:'3.7.0',type:'minor',date:'2026-11-05',desc:'<b>A two-hour day is not a rota.</b> The checks grow a fourth entry: any opening day that totals <b>under three hours</b> is called out — computed from the ranges, not typed in by hand, so a truncated feed shows up on its own. The Hours tab names the offending day under the value. And the issue export now carries the <b>store itself</b>: address, city, state, postal code, source and type next to the location ids, so a CSV sent to a provider says which shop it is instead of only which record.'},
  {v:'3.6.0',type:'minor',date:'2026-11-05',desc:'<b>Three checks get their own gate, and a duplicate pair is read side by side.</b> The issue ledger now opens with the three gaps operations actually chases every day — <b>incomplete address</b>, <b>no postal code</b>, <b>no opening hours</b> — each counted on open issues, each one click away from filtering the ledger to that bucket, and each matched to a field so a new flag lands in the right bucket automatically. The duplicate page replaces the stacked diff lines with a <b>left/right comparison</b>: the two records are two columns, every compared field sits on its own row, and the middle column says ✓ same, ≈ one contains the other, or ✕ different — differences shaded, so the decision is made by looking, not by reading.'},
  {v:'3.5.0',type:'minor',date:'2026-11-04',desc:'<b>The console speaks Chinese now.</b> A EN / 中文 switch sits in the header: lists, filters, dialogs, detail pages, the walkthrough script and this version history all follow it, and the choice is remembered. Data stays as it arrived — store names, addresses, provider names, ids and field names are not translated, because a translated value would be a second source of truth.'},
  {v:'3.4.0',type:'minor',date:'2026-11-04',desc:'<b>The console stops deciding what to apply.</b> Provider values always reach downstream — there is no accept, reject or re-sign step, and no manual close. Two things follow: a drift is now <b>information</b> (what moved since sign-off) rather than a decision, and the issue ledger can be <b>exported to CSV</b> so it can be sent to the provider as a work list. Marking an issue is how we ask; the next push is how it gets fixed.'},
@@ -1262,13 +1268,48 @@ var WATCH=[
    hint:'Customers cannot navigate and the carrier cannot place the pin'},
   {k:'postal',short:'Postal',  label:'No postal code',     fields:['postal'],
    hint:'Sorting and routing fail before the parcel ever moves'},
-  {k:'hours', short:'Hours',   label:'No opening hours',   fields:['hoursText'],
-   hint:'Customers do not know when the door is open'}
+  {k:'hours', short:'Hours',   label:'No opening hours', fields:['hoursText'],
+   hint:'Customers do not know when the door is open'},
+  {k:'short', short:'<3h',     label:'Day under 3 hours', fields:[],
+   hint:'A two-hour day at a staffed counter is a truncated feed, not a rota'}
 ];
 var watchFilter='';
+/* a day the provider says is open, but for less than three hours, is almost
+   never a rota — it is a truncated feed. Computed from the ranges. */
+var MIN_DAY_HOURS=3;
+function hhmm(t){var p=String(t||'0:0').split(':');return (parseInt(p[0],10)||0)*60+(parseInt(p[1],10)||0);}
+function dayRanges(v,day){
+  if(!v||!v.hoursOfOp)return [];
+  var row=v.hoursOfOp.filter(function(x){return x.day===day;})[0];
+  return (row&&row.timeRanges)?row.timeRanges:[];
+}
+function dayMinutes(ranges){
+  return (ranges||[]).reduce(function(a,r){var s=hhmm(r.startTime),e=hhmm(r.endTime);return a+(e>s?e-s:0);},0);
+}
+function shortDaysOf(v){
+  var out=[];
+  ((v&&v.hoursOfOp)||[]).forEach(function(row){
+    var mins=dayMinutes(row.timeRanges);
+    if(mins>0&&mins<MIN_DAY_HOURS*60)out.push({day:row.day,mins:mins,at:row.timeRanges.map(function(r){return r.startTime+'-'+r.endTime;}).join(', ')});
+  });
+  return out;
+}
+function shortDaysOC(o){
+  var seen={},out=[];
+  (o.vendorIds||[]).forEach(function(id){
+    shortDaysOf(findVendor(id)).forEach(function(d){ if(!seen[d.day]){seen[d.day]=1;out.push(d);} });
+  });
+  return out;
+}
 function watchOf(i){
+  if(i.check)return i.check;
   for(var w=0;w<WATCH.length;w++){
     if(WATCH[w].fields.indexOf(i.field)>=0)return WATCH[w].k;
+  }
+  if(i.field==='hoursText'&&i.subField){
+    var v=findVendor(i.vendorId);
+    var hit=shortDaysOf(v).filter(function(d){return d.day===i.subField;})[0];
+    if(hit)return 'short';
   }
   return '';
 }
@@ -1285,7 +1326,7 @@ function watchCard(){
       +'<span class="w-n">'+n+'</span><span class="w-l">'+w.label+'</span><span class="w-h">'+w.hint+'</span></button>';
   }).join('');
   return '<div class="card watch-card" id="di-watch-card" style="margin-bottom:14px">'
-    +'<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><b style="font-size:13px">Three checks we do not let slide</b>'
+    +'<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><b style="font-size:13px">The checks we do not let slide</b>'
     +'<span class="rc-meta" style="margin:0">counted on open issues · click one to filter the ledger, click again to clear</span></div>'
     +'<div class="watch-grid">'+tiles+'</div></div>';
 }
@@ -1316,8 +1357,14 @@ var ISSUES=[
   reason:'postal_code is empty — the carrier cannot route and nobody can check the address against a map',status:'open',raisedBy:'Sarah Lin',raisedAt:'2026-11-04 09:41:12'},
  {id:'ISS-0018',vendorId:'LOC-00187',field:'addr1',subField:'address_line1',type:'MISSING',severity:'blocking',
   reason:'Street line never arrived — city and postal are there, but there is no building to find',status:'open',raisedBy:'Alex Chen',raisedAt:'2026-11-04 10:02:37'},
- {id:'ISS-0019',vendorId:'LOC-12191',field:'hoursText',subField:'',type:'MISSING',severity:'blocking',
-  reason:'No opening hours at all — the store is live, but nobody can say when the door is open',status:'open',raisedBy:'Sarah Lin',raisedAt:'2026-11-04 11:18:05'}
+ {id:'ISS-0019',vendorId:'LOC-00178',field:'hoursText',subField:'',type:'MISSING',severity:'blocking',
+  reason:'No opening hours at all — the store is live, but nobody can say when the door is open',status:'open',raisedBy:'Sarah Lin',raisedAt:'2026-11-04 11:18:05'},
+ {id:'ISS-0020',vendorId:'LOC-12194',field:'hoursText',subField:'SATURDAY',type:'INCORRECT',severity:'warning',check:'short',
+  reason:'Saturday reads 10:00-12:00 — two hours, in a store the feed otherwise says is open 24/7',status:'open',raisedBy:'Hours check',raisedAt:'2026-11-05 02:31:10'},
+ {id:'ISS-0021',vendorId:'LOC-12193',field:'hoursText',subField:'SUNDAY',type:'INCORRECT',severity:'warning',check:'short',
+  reason:'Sunday reads 11:00-13:00 — two hours, while every other day of the same feed is 24 hours',status:'open',raisedBy:'Hours check',raisedAt:'2026-11-05 02:31:12'},
+ {id:'ISS-0022',vendorId:'LOC-10024',field:'hoursText',subField:'WEDNESDAY',type:'INCORRECT',severity:'warning',check:'short',
+  reason:'Wednesday reads 06:00-08:30 — two and a half hours in the middle of a working day',status:'open',raisedBy:'Hours check',raisedAt:'2026-11-05 02:31:14'}
 ];
 var INTAKE=[
  {vid:'LOC-00187',status:'open',detected:'2026-10-30 02:31:44',issues:['address_line1 is empty','opening_hours missing — customer-facing hours cannot be validated']},
@@ -1932,6 +1979,11 @@ function fieldLabel(i){
   var names={name:'Name',addr1:'Street address',city:'City',state:'State',postal:'Postal code',latitude:'Coordinates',sweeper:'Sweeper',hoursText:'Opening hours',phone:'Phone'};
   return tr(names[i.field]||i.field)+(i.subField?' · '+i.subField:'');
 }
+function storeLine(v){
+  if(!v)return '';
+  var tail=[v.city,v.state].filter(Boolean).join(', ');
+  return [v.addr1||'—',tail,v.postal||'—'].filter(Boolean).join(' · ');
+}
 function exportCard(){
   var open=ISSUES.filter(function(i){return i.status!=='fixed';}).length;
   return '<div class="card" style="margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b style="font-size:13px">Send the list to the provider</b>'
@@ -1976,6 +2028,7 @@ function renderIssuesPage(){
         +'<span class="rc-meta" style="margin:0">'+(i.severity==='blocking'?'blocks sign-off':'warning only')+'</span>'
         +'<span class="risk '+(i.status==='reported'?'risk-review':'risk-block')+'">'+esc(i.status==='reported'?'reported to owner':i.status)+'</span></div>'
         +'<div class="rc-meta">'+esc(whyOf(i))+'</div>'
+        +'<div class="rc-meta" style="color:var(--text-secondary)">'+esc(storeLine(v))+'</div>'
         +'<div class="rc-meta">'+esc(i.id)+' · raised by '+esc(i.raisedBy)+' · '+esc(i.raisedAt)+'</div>'
         +(i.checkNote?'<div class="rc-meta"><b>✔ checked '+esc(i.lastChecked||'')+'</b> · '+esc(i.checkNote)+(i.checkRun?' · '+esc(i.checkRun):'')+'</div>':'')
         +'<div class="rc-actions">'
@@ -2127,7 +2180,9 @@ function vendorPanels(v){
       +'</div>'+(isMgr()?'<div style="margin-top:12px"><button class="btn btn-secondary btn-sm" onclick="openFlag(\''+v.id+'\',\'sweeper\')">Flag an issue on this record</button></div>':''));
   }
   if(detailTab==='hours'){
-    return psec('Opening Hours','<div class="p-hours">'+esc(v.hoursText||hoursSummary(v.hoursOfOp)||'—')+'</div>');
+    var sd=shortDaysOf(v);
+    return psec('Opening Hours','<div class="p-hours">'+esc(v.hoursText||hoursSummary(v.hoursOfOp)||'—')+'</div>')
+      +(sd.length?'<div class="warn-line" style="margin-top:10px">'+sd.map(function(d){return '<span>'+d.day+' '+d.at+' — under '+MIN_DAY_HOURS+' hours ('+(d.mins/60).toFixed(1)+'h)</span>';}).join(' · ')+'</div>':'');
   }
   if(detailTab==='issues'){
     var list=issuesOfVendor(v.id);
@@ -2161,7 +2216,9 @@ function ocPanels(o){
   }
   if(detailTab==='hours'){
     var mh=mergedField(o,'hoursText');
-    return psec('Opening Hours','<div class="p-hours">'+esc(mh.value||'—')+'</div> '+srcChip(o,'hoursText'),'');
+    var sod=shortDaysOC(o);
+    return psec('Opening Hours','<div class="p-hours">'+esc(mh.value||'—')+'</div> '+srcChip(o,'hoursText'),'')
+      +(sod.length?'<div class="warn-line" style="margin-top:10px">'+sod.map(function(d){return '<span>'+d.day+' '+d.at+' — under '+MIN_DAY_HOURS+' hours ('+(d.mins/60).toFixed(1)+'h)</span>';}).join(' · ')+'</div>':'');
   }
   if(detailTab==='issues'){
     var oi2=openIssues(o);
@@ -2264,11 +2321,15 @@ function exportCSV(kind){
 }
 function exportIssues(){
   var typeFilter=val('di-f-type')||'';
-  var rows=[['Issue ID','Vendor Location ID','OC Location ID','Store','Field','Sub-field','Type','Severity','Status','Reason','Raised by','Raised at','Last checked','What the run saw','Closed by','Closed at']];
-  ISSUES.filter(function(i){return i.status!=='fixed'&&(!typeFilter||i.type===typeFilter);}).forEach(function(i){
-    var v=findVendor(i.vendorId);
+  var rows=[['Issue ID','Vendor Location ID','OC Location ID','Store','Address','City','State','Postal code','Source','Type',
+    'Field','Sub-field','Issue type','Severity','Status','Reason','Raised by','Raised at','Last checked','What the run saw','Closed by','Closed at']];
+  var pool=ISSUES.filter(function(i){return i.status!=='fixed';});
+  if(watchFilter)pool=pool.filter(function(i){return watchOf(i)===watchFilter;});
+  pool.filter(function(i){return !typeFilter||i.type===typeFilter;}).forEach(function(i){
+    var v=findVendor(i.vendorId)||{};
     var oc=OC_LOCATIONS.filter(function(o){return o.vendorIds.indexOf(i.vendorId)>=0;})[0];
-    rows.push([i.id,i.vendorId,oc?oc.ocId:'',v?v.name:'',fieldLabel(i),i.subField||'',i.type,i.severity,i.status,i.reason,
+    rows.push([i.id,i.vendorId,oc?oc.ocId:'',v.name||'',v.addr1||'',v.city||'',v.state||'',v.postal||'',v.provider||'',v.type||'',
+      fieldLabel(i),i.subField||'',i.type,i.severity,i.status,i.reason,
       i.raisedBy,i.raisedAt,i.lastChecked||'',i.checkNote||'',i.closedBy||'',i.closedAt||'']);
   });
   if(rows.length<2){showToast('Nothing to export','No open issue matches this filter','error');return;}
@@ -2310,6 +2371,20 @@ function exportIssues(){
     if(o.ocId==='OC-00109'){snap.hoursText='Mon - Fri: 09:00am to 05:00pm\nSat: 10:00am to 02:00pm';}
     BASELINE[o.ocId]=snap;
   });
+})();
+(function seedShortDays(){
+  /* three days the provider got wrong in a way a machine can see */
+  function setDay(id,day,start,end){
+    var v=findVendor(id); if(!v)return;
+    v.hoursText='';                                  /* the summary follows the ranges */
+    if(!v.hoursOfOp)v.hoursOfOp=[];
+    var row=v.hoursOfOp.filter(function(x){return x.day===day;})[0];
+    if(row)row.timeRanges=[{startTime:start,endTime:end}];
+    else v.hoursOfOp.push({day:day,timeRanges:[{startTime:start,endTime:end}]});
+  }
+  setDay('LOC-12194','SATURDAY','10:00','12:00');
+  setDay('LOC-12193','SUNDAY','11:00','13:00');
+  setDay('LOC-10024','WEDNESDAY','06:00','08:30');
 })();
 captureIssueBase();switchPage('p01');tickClock();syncTypeFilter('v',true);syncTypeFilter('o',true);applyLang();
 </script>

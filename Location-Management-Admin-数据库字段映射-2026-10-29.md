@@ -1,6 +1,6 @@
-# Location Management Admin Console — Database Field Mapping (v3.6.0)
+# Location Management Admin Console — Database Field Mapping (v3.7.0)
 
-> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.6.0)
+> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.7.0)
 > Feature overview (English, for readers outside the team): `https://jama-dev520.github.io/location-prototype/feature-overview.html`
 >
 > **v3.0.0 model change.** The console no longer writes location fields. `field_lock` is replaced by `data_issue`; `sync_change_set` decisions and `oc_field_baseline` versions used for revert are retired; downstream values are a per-field merge with **LMS first**. The console writes exactly four things: `oc_location.is_enable`, `data_issue` rows, baseline captures, and `change_log`.
@@ -420,6 +420,7 @@ Failure modes the rule deliberately produces:
 | **`/api/oc-locations/{id}/enable`** (v2.6.0, extended) | PATCH | `oc_location` + `oc_field_baseline` + `change_log` | enable now requires the sign-off payload (checklist acknowledged); writes `baseline_at`, `propagated_at`, `ENABLE_SIGNED_OFF` |
 | **`/api/vendor-locations/{id}/issues`** (v3.0.0) | POST | `data_issue` + `change_log` | flag a field: `field_name` + `reason` (both required); never writes a value |
 | **`/api/issues/{id}`** (v3.0.0) | PATCH | `data_issue` + `change_log` | move status OPEN → REPORTED → FIXED; closing requires the provider value to have changed or an explicit confirmation |
+| *(none)* (v3.7.0) | — | — | — | **The short-day check adds nothing to the schema either.** It is `SUM(end - start)` per `opening_hours.day`, compared with a display constant (`3h`). No `short_day` flag, no `check_type` — a stored copy would drift from the ranges it describes, and 3h differs per market, which is configuration rather than data |
 | *(none)* (v3.6.0) | — | — | — | **The three checks add nothing to the schema.** A check is a set of `data_issue.field` values (`addr1/addr2/city/state`, `postal`, `hoursText`), evaluated when the ledger renders. Do not store a `check_type` column — a stored copy can drift from the field it is supposed to describe, and the counter would then disagree with the list it filters |
 | *(none)* (v3.5.0) | — | — | — | **The language switch adds nothing to the schema.** Interface strings live in the client bundle; every displayed value keeps the column, type and casing documented here. Do not translate into new columns — a translated store name or address would be a second source of truth. If a language is ever needed server-side (an email to a provider, say), it belongs in a `locale` on the *recipient*, not on the location |
 | **`/api/issues/export`** (v3.4.0) | GET | `data_issue` + `vendor_location` + `vendor_oc_mapping` | CSV of open issues (filterable by type / severity / owner) — the work list handed to the provider |
