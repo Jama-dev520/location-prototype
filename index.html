@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v3.5.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v3.6.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -290,6 +290,44 @@ table.data td .mono{white-space:nowrap}
 table.data td.val-old,table.data td.val-new,table.data td .val-old,table.data td .val-new{word-break:keep-all}
 .p-kv .k{white-space:nowrap}
 .p-kv .v{word-break:break-word}
+
+/* ===== v3.6.0 — left/right duplicate compare + the three checks ===== */
+.dup-cmp-head{display:grid;grid-template-columns:1fr 58px 1fr;align-items:center;gap:10px;margin:10px 0 2px}
+.dup-cmp-head .side{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:12.5px}
+.dup-cmp-head .side .ab{flex:0 0 auto;width:18px;height:18px;border-radius:5px;background:var(--bg-section);color:var(--text-secondary);font:700 10.5px/18px var(--font-mono);text-align:center}
+.dup-cmp-head .vs{text-align:center;font-size:10.5px;color:var(--text-tertiary);letter-spacing:.04em}
+table.dup-cmp{width:100%;border-collapse:collapse;font-size:12.5px;margin:4px 0 2px}
+table.dup-cmp td{padding:7px 10px;border-bottom:1px solid var(--bg-section);vertical-align:top;line-height:1.45}
+table.dup-cmp td.f{width:92px;color:var(--text-tertiary);font-size:11.5px;white-space:nowrap}
+table.dup-cmp td.m{width:34px;text-align:center;font-weight:700;color:var(--text-tertiary);font-size:12px;white-space:nowrap}
+table.dup-cmp td.a{width:38%}
+table.dup-cmp td.b{width:38%}
+table.dup-cmp tr.st-diff td.a,table.dup-cmp tr.st-diff td.b{background:#FEF2F2}
+table.dup-cmp tr.st-diff td.m{color:var(--color-danger)}
+table.dup-cmp tr.st-near td.a,table.dup-cmp tr.st-near td.b{background:#FFFBEB}
+table.dup-cmp tr.st-near td.m{color:var(--color-warning)}
+table.dup-cmp tr.st-diff td.f,table.dup-cmp tr.st-near td.f{color:var(--text-secondary);font-weight:600}
+.dup-same{font-size:11.5px;color:var(--text-tertiary)}
+.watch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.watch-tile{display:flex;flex-direction:column;gap:3px;align-items:flex-start;text-align:left;background:var(--bg-card);border:1px solid var(--bg-section);border-radius:var(--radius);padding:11px 13px;cursor:pointer;transition:var(--transition);font-family:inherit}
+.watch-tile:hover{border-color:#C7DFF6;background:var(--bg-hover)}
+.watch-tile.on{border-color:var(--color-primary);background:var(--color-primary-light);box-shadow:var(--shadow-xs)}
+.watch-tile .w-n{font-size:19px;font-weight:700;line-height:1;color:var(--text-primary)}
+.watch-tile.on .w-n{color:var(--color-primary)}
+.watch-tile .w-l{font-size:12.5px;font-weight:600;color:var(--text-primary)}
+.watch-tile .w-h{font-size:11px;color:var(--text-tertiary);line-height:1.45}
+.watch-tag{display:inline-block;font-size:9.5px;font-weight:600;padding:1px 6px;border-radius:4px;background:#EEF2F7;color:#475569;margin-right:5px;vertical-align:1px}
+.watch-tile.zero .w-n{color:var(--text-tertiary)}
+/* v3.6.0 — header inside the compare table, and only the differing token is marked */
+table.dup-cmp thead th{padding:0 10px 7px;border-bottom:1px solid var(--bg-section);text-align:left;font-weight:500;font-size:12px}
+table.dup-cmp thead th.a,table.dup-cmp thead th.b{display:table-cell}
+table.dup-cmp thead th.f{width:92px}
+table.dup-cmp thead th.m{width:34px;text-align:center;font-size:10.5px;color:var(--text-tertiary);font-weight:600;letter-spacing:.04em;border-bottom:1px solid var(--bg-section)}
+table.dup-cmp thead th .ab{display:inline-block;width:16px;height:16px;border-radius:4px;background:var(--bg-section);color:var(--text-secondary);font:700 9.5px/16px var(--font-mono);text-align:center;margin-right:6px;vertical-align:1px}
+table.dup-cmp tr.st-diff td.a,table.dup-cmp tr.st-diff td.b{background:#FFFBFB}
+table.dup-cmp tr.st-near td.a,table.dup-cmp tr.st-near td.b{background:#FFFDF5}
+table.dup-cmp mark.df{background:#FDE2E2;color:#B42318;padding:0 2px;border-radius:3px;font-weight:600}
+table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
 </style>
 </head>
 <body>
@@ -297,7 +335,7 @@ table.data td.val-old,table.data td.val-new,table.data td .val-old,table.data td
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.5.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.6.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -322,7 +360,7 @@ table.data td.val-old,table.data td.val-new,table.data td .val-old,table.data td
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.5.0</div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.6.0</div>
       </div>
     </div>
 
@@ -411,7 +449,7 @@ table.data td.val-old,table.data td.val-new,table.data td .val-old,table.data td
 
       <div class="page" id="page-pdup">
         <h2 class="page-title">Duplicate Check</h2>
-        <p class="page-desc" data-i18n="pdup.desc">A standalone page for one question only: <b>are these two vendor locations the same store?</b> Pairs are detected by fuzzy match (address 50 · postal 25 · city 15 · state 10, threshold 75%). The decision decides the mapping — <b>same store = 2:1</b> (two vendor records, one OC location, LMS values win), <b>not the same = 1:1</b> (each gets its own OC location). Every OC location that is fed by more than one vendor record is marked <b>2:1</b> in the OC list.</p>
+        <p class="page-desc" data-i18n="pdup.desc">A standalone page for one question only: <b>are these two vendor locations the same store?</b> Pairs are detected by fuzzy match (address 50 · postal 25 · city 15 · state 10, threshold 75%). The two records are shown <b>side by side</b>, one row per field, with the differing part of each value marked, so the decision is read off the screen. The decision decides the mapping — <b>same store = 2:1</b> (two vendor records, one OC location, LMS values win), <b>not the same = 1:1</b> (each gets its own OC location). Every OC location that is fed by more than one vendor record is marked <b>2:1</b> in the OC list.</p>
 
         <div class="card">
           <div class="filter-grid">
@@ -430,7 +468,7 @@ table.data td.val-old,table.data td.val-new,table.data td .val-old,table.data td
 
       <div class="page" id="page-pdi">
         <h2 class="page-title">Data Issues</h2>
-        <p class="page-desc" data-i18n="pdi.desc">Everything that is wrong with the data, in one ledger — <b>no review queues</b>. Three kinds: what we asked the provider to fix, what changed after sign-off (information, not a decision), and what never passed intake. Nothing here decides whether a value is applied — <b>provider values always go downstream</b>. Marking an issue is how we ask for a correction; the next push is how it lands. <b>Export the list</b> to send it to the provider.</p>
+        <p class="page-desc" data-i18n="pdi.desc">Everything that is wrong with the data, in one ledger — <b>no review queues</b>. It opens with the <b>three checks</b> operations chases every day — <b>incomplete address</b>, <b>no postal code</b>, <b>no opening hours</b> — each counted on open issues and one click from filtering the ledger. Below that, three kinds: what we asked the provider to fix, what changed after sign-off (information, not a decision), and what never passed intake. Nothing here decides whether a value is applied — <b>provider values always go downstream</b>. Marking an issue is how we ask for a correction; the next push is how it lands. <b>Export the list</b> to send it to the provider.</p>
         <div id="di-body"></div>
       </div>
 
@@ -523,7 +561,7 @@ table.data td.val-old,table.data td.val-new,table.data td .val-old,table.data td
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.5.0 (mark, export, let the push land)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.6.0 (three checks, compare, mark)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -532,8 +570,8 @@ table.data td.val-old,table.data td.val-new,table.data td .val-old,table.data td
         <tr><td>3</td><td>OC List</td><td>Read the Source column</td><td>LMS, PUDO or M&amp;MP per record; a 2:1 store shows both</td></tr>
         <tr><td>4</td><td>OC Detail</td><td>Basic Info → each field carries its source</td><td>LMS wins the field when LMS has a value, PUDO fills the rest</td></tr>
         <tr><td>5</td><td>OC List</td><td>Enable a ready location</td><td>Sign-off checklist · baseline captured · no data edited</td></tr>
-        <tr><td>6</td><td>Duplicate Check</td><td>Confirm the pending pair as "same store"</td><td>2:1 mapping · the OC row shows both vendors and switches to LMS values</td></tr>
-        <tr><td>7</td><td>Data Issues</td><td>Read the three sections</td><td>Provider issues · baseline drift · intake failures — no review queues</td></tr>
+        <tr><td>6</td><td>Duplicate Check</td><td>Read the pair left to right, then confirm "same store"</td><td>Two columns, one row per field: ✓ same, ≈ one contains the other, ✕ different — then 2:1 mapping and LMS values on the OC row</td></tr>
+        <tr><td>7</td><td>Data Issues</td><td>The three checks at the top, then the three sections</td><td>Incomplete address · no postal code · no opening hours, each counted and filterable · provider issues · drift · intake — no review queues</td></tr>
         <tr><td>8</td><td>Data Issues</td><td>Open a drifted location</td><td>See which fields moved since sign-off; downstream already has the new values — drift is information, not a decision</td></tr>
         <tr><td>9</td><td>OC List</td><td>Filter Source = M&amp;MP</td><td>Self-operated stores follow the same rules: same sign-off, same issue ledger — only the data owner differs</td></tr>
         <tr><td>10</td><td>Both lists</td><td>Set Source = LMS, then open the Type filter</td><td data-i18n="walk.10.exp">Only <b>packagehub</b> is offered and it is selected for you; the hint reads “LMS → packagehub”. Same for PUDO Inc (PUDOpoint / Locker) and M&amp;MP</td></tr>
@@ -884,6 +922,20 @@ var I18N_ZH = {
   "Exported for the provider":"已导出，可直接发给供应商",
   "blocking":"阻塞",
   "value unchanged":"值未变",
+  /* ---- v3.6.0: the three checks ---- */
+  "Three checks we do not let slide":"三个必查项",
+  "counted on open issues · click one to filter the ledger, click again to clear":"按未关闭异常统计 · 点一个只看这一类，再点取消",
+  "Incomplete address":"地址信息不全",
+  "No postal code":"缺少邮编",
+  "No opening hours":"营业时间为空",
+  "Customers cannot navigate and the carrier cannot place the pin":"客户导航不到，承运商也无法落点",
+  "Sorting and routing fail before the parcel ever moves":"包裹还没动，分拣和路由就已经失败",
+  "Customers do not know when the door is open":"客户不知道门什么时候开",
+  "Address":"地址",
+  "Postal":"邮编",
+  "Hours":"营业时间",
+  "no OC ID":"无 OC 单号",
+  "✓ same · ≈ one contains the other · ✕ different":"✓ 相同 · ≈ 一个包含另一个 · ✕ 不同",
   /* ---- table heads / placeholders / titles ---- */
   "Page":"页面",
   "Action":"操作",
@@ -921,6 +973,10 @@ var I18N_ZH = {
   "Enable a ready location":"启用一家已就绪的门店",
   "Sign-off checklist · baseline captured · no data edited":"签收检查清单 · 记录基线 · 不改任何数据",
   "Confirm the pending pair as \"same store\"":"把待判定的配对确认为“同一门店”",
+  "Read the pair left to right, then confirm \"same store\"":"左右对照着看，然后确认“同一家店”",
+  "Two columns, one row per field: ✓ same, ≈ one contains the other, ✕ different — then 2:1 mapping and LMS values on the OC row":"两列并排、每行一个字段：✓ 相同、≈ 一个包含另一个、✕ 不同 —— 之后是 2:1 映射，OC 行取值切到 LMS",
+  "The three checks at the top, then the three sections":"先看顶部三个必查项，再看三个分区",
+  "Incomplete address · no postal code · no opening hours, each counted and filterable · provider issues · drift · intake — no review queues":"地址不全 · 缺邮编 · 无营业时间，各自计数、可筛 · 供应商异常 · 漂移 · 入池 —— 没有审核队列",
   "2:1 mapping · the OC row shows both vendors and switches to LMS values":"2:1 映射 · OC 行同时显示两个供应商，取值切换为 LMS",
   "Read the three sections":"读三个分区",
   "Provider issues · baseline drift · intake failures — no review queues":"供应商异常 · 基线漂移 · 入池失败 —— 没有审核队列",
@@ -934,8 +990,8 @@ var I18N_ZH = {
 var I18N_BLOCK = {
   "p01.desc":"<b>来源决定类型</b> —— LMS 只能是 <b>packagehub</b>，PUDO Inc 只能是 <b>PUDOpoint</b> 或 <b>Locker</b>，M&amp;MP 是自营小店 —— 所以选定来源后，类型筛选会自动收窄。这里是供应商实际推过来的内容，<b>所有字段只读</b>，包括<b>揽收方</b>，它现在随每日同步一起进来。<b>M&amp;MP</b> 是自营店，责任方是门店本身而不是某个供应商。发现值不对，我们不在这一层改：我们<b>带着原因标记它</b>，标记挂在这条记录上，由供应商去修源头。OC 层只决定这家店是否上线。",
   "p02.desc":"<b>来源决定类型：</b>LMS → packagehub · PUDO Inc → PUDOpoint / Locker · M&amp;MP → <b>M&amp;MP</b>，所以选定来源后类型筛选会自动收窄。这是客户实际看到的那条记录。<b>只有两个动作：启用，以及标记异常。</b>这里不能编辑 —— 地址错了不会被改写，而是标记回供应商。值<b>按字段逐个合并</b>：<b>M&amp;MP</b> 自营店是自己的来源，优先级最高，然后是 <b>LMS</b>，最后由 PUDO Inc 补上仍为空的字段。",
-  "pdup.desc":"独立页面，只回答一个问题：<b>这两条供应商门店记录是不是同一家店？</b>配对由模糊匹配产生（地址 50 · 邮编 25 · 城市 15 · 州 10，阈值 75%）。判定结果决定映射关系 —— <b>同一家 = 2:1</b>（两条供应商记录对应一个 OC 门店，取值以 LMS 优先），<b>不是同一家 = 1:1</b>（各自有独立的 OC 门店）。凡是挂在多条供应商记录下的 OC 门店，都会在 OC 列表里标 <b>2:1</b>。",
-  "pdi.desc":"所有数据问题集中在一个台账里 —— <b>没有审核队列</b>。三类：我们已经请供应商修的、签收之后变了的（只是信息，不是待决策），以及从来没通过入池校验的。这里不决定任何值是否被应用 —— <b>供应商的值永远给到下游</b>。标记异常是我们提要求的方式，下一次推送是它落地的方式。<b>导出清单</b>就可以发给供应商。",
+  "pdup.desc":"独立页面，只回答一个问题：<b>这两条供应商门店记录是不是同一家店？</b>配对由模糊匹配产生（地址 50 · 邮编 25 · 城市 15 · 州 10，阈值 75%）。判定结果决定映射关系 —— <b>同一家 = 2:1</b>（两条供应商记录对应一个 OC 门店，取值以 LMS 优先），<b>不是同一家 = 1:1</b>（各自有独立的 OC 门店）。两条记录<b>左右并排</b>，每个字段一行，差异那段单独标出来 —— 判定是看出来的，不是读出来的。凡是挂在多条供应商记录下的 OC 门店，都会在 OC 列表里标 <b>2:1</b>。",
+  "pdi.desc":"所有数据问题集中在一个台账里 —— <b>没有审核队列</b>。顶部先给运营每天在追的<b>三个必查项</b> —— <b>地址信息不全</b>、<b>缺少邮编</b>、<b>没有营业时间</b> —— 各自按未关闭异常计数，点一下就能筛出这一类。往下是三类：我们已经请供应商修的、签收之后变了的（只是信息，不是待决策），以及从来没通过入池校验的。这里不决定任何值是否被应用 —— <b>供应商的值永远给到下游</b>。标记异常是我们提要求的方式，下一次推送是它落地的方式。<b>导出清单</b>就可以发给供应商。",
   "p03.desc":"两个层级上的每一次创建、同步写入、标记、判定和签收都在这里。可按层级和类型筛选。",
   "p04.desc":"每一次供应商同步一行。触发熔断的那一次会停止下发，等人工处理。",
   "flag.intro":"这<b>不会</b>改值。它把问题记在源记录上，并要求责任方去改 —— PUDO Inc / LMS 由供应商改，<b>M&amp;MP</b> 自营店由门店自己改。",
@@ -948,7 +1004,8 @@ var I18N_BLOCK = {
   "walk.12.exp":"两条异常自己关闭（值变了<b>并且</b>合法）；一条保持未关闭并注明“值变了但仍不合法”，一条回到人工，其余不动 —— 任何地方都没有手工关闭",
   "btn.notlive":"未上线",
   "sync.info":"一次推送只写供应商的值，从不写 OC 的决定 —— 启用、标记、签收都由人做。自 v3.3.0 起，推送也可以<b>关闭</b>一条异常，但只有它带来的值合法时才关；修是责任方的事，记录是我们的。",
-  "wt.title":"演示脚本 —— v3.5.0（标记、导出、等推送落地）"
+  "dup.vs":"对比",
+  "wt.title":"演示脚本 —— v3.6.0（三个必查项、左右对比、标记）"
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
@@ -962,6 +1019,7 @@ var I18N_RULES = [
   [/^warning · (.+) · (.+)$/, "提醒 · $1 · $2"],
   [/^System · (.+)$/, "系统 · $1"],
   [/^created — fuzzy match (.+) vs (.+) \(pending duplicate, no OC location ID\)$/, "创建 —— 与 $2 模糊匹配 $1（待判定重复，暂不生成 OC 单号）"],
+  [/^(\d+) field\(s\) differ$/, "$1 个字段不同"],
   [/^this type cannot come from (.+)$/, "这个类型不可能来自 $1"],
   [/^OC location: (.+) vs (.+)$/, "OC 门店：$1 对 $2"],
   [/^OC Internal Console · v[\d.]+$/, "OC 内部管理控制台 · v3.5.0"],
@@ -1008,6 +1066,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "3.6.0":"<b>三个必查项有了自己的入口，重复配对改成左右对照。</b>异常台账顶部先给出运营每天真正在追的三个缺口 —— <b>地址信息不全</b>、<b>缺少邮编</b>、<b>营业时间为空</b> —— 各自按未关闭异常计数，点一下就只看这一类；判定靠字段，新标记会自动落到对应格子。重复门店页把原来堆叠的差异行换成<b>左右对照</b>：两条记录并排两列，每个比对字段一行，中间一列给出 ✓ 相同 / ≈ 一个包含另一个 / ✕ 不同，差异整行着色 —— 判定靠看，不靠读。",
   "3.5.0":"<b>这套控制台现在有中文了。</b>顶部右上角多了一个 EN / 中文 切换，整份界面 —— 列表、筛选、弹框、详情页、演示脚本、版本说明 —— 都会跟着换语言，选择会记住。数据本身（门店名、地址、供应商、单号、字段名）保持英文原样：这些是供应商推过来的值，翻译它们反而制造第二个真相来源。",
   "3.4.0":"<b>控制台不再决定「是否应用」。</b>供应商的值永远会到下游 —— 没有接受、拒绝或重签这一步，也没有手工关闭。由此带来两件事：漂移变成了<b>信息</b>（签收之后变了什么），而不是一个待决策项；异常台账可以<b>导出成 CSV</b>，直接发给供应商当工作清单。标记是我们提要求的方式，下一次推送是它被修好的方式。",
   "3.3.0":"<b>修好之后异常自己关闭。</b>下一次供应商同步会拿每个被标记字段的值和标记时的值比：如果值变了<i>并且</i>现在合法，异常自动关闭，记 <code>closed_by = AUTO_SYNC</code> 和这次的 run id；如果变了但仍不合法，异常保持未关闭并注明原因；如果没变，什么都不发生。阻塞级异常一关闭就不再阻塞。标记弹框里的严重程度文案也缩短了，只是文案。",
@@ -1158,8 +1217,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='3.5.0';
+var APP_VERSION='3.6.0';
 var VERSIONS=[
+ {v:'3.6.0',type:'minor',date:'2026-11-05',desc:'<b>Three checks get their own gate, and a duplicate pair is read side by side.</b> The issue ledger now opens with the three gaps operations actually chases every day — <b>incomplete address</b>, <b>no postal code</b>, <b>no opening hours</b> — each counted on open issues, each one click away from filtering the ledger to that bucket, and each matched to a field so a new flag lands in the right bucket automatically. The duplicate page replaces the stacked diff lines with a <b>left/right comparison</b>: the two records are two columns, every compared field sits on its own row, and the middle column says ✓ same, ≈ one contains the other, or ✕ different — differences shaded, so the decision is made by looking, not by reading.'},
  {v:'3.5.0',type:'minor',date:'2026-11-04',desc:'<b>The console speaks Chinese now.</b> A EN / 中文 switch sits in the header: lists, filters, dialogs, detail pages, the walkthrough script and this version history all follow it, and the choice is remembered. Data stays as it arrived — store names, addresses, provider names, ids and field names are not translated, because a translated value would be a second source of truth.'},
  {v:'3.4.0',type:'minor',date:'2026-11-04',desc:'<b>The console stops deciding what to apply.</b> Provider values always reach downstream — there is no accept, reject or re-sign step, and no manual close. Two things follow: a drift is now <b>information</b> (what moved since sign-off) rather than a decision, and the issue ledger can be <b>exported to CSV</b> so it can be sent to the provider as a work list. Marking an issue is how we ask; the next push is how it gets fixed.'},
  {v:'3.3.0',type:'minor',date:'2026-11-04',desc:'<b>Issues close themselves when the fix arrives.</b> The next provider sync compares each flagged field with the value that was flagged: if the value changed <i>and</i> is now valid, the issue closes with <code>closed_by = AUTO_SYNC</code> and the run id in the audit trail; if it changed but is still invalid, the issue stays open and says why; if it did not change, nothing happens. Blocking issues stop blocking the moment they close. The flag dialog’s severity labels were also shortened so they fit the dialog — copy only.'},
@@ -1195,6 +1255,42 @@ var SUBFIELDS={
   sweeper:[], phone:[],
   hoursText:['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY','holiday_closures']
 };
+/* v3.6.0 — the three gaps operations chases every day. A flag is bucketed by
+   its field, so a new issue lands in a check without anyone tagging it. */
+var WATCH=[
+  {k:'addr',  short:'Address', label:'Incomplete address', fields:['addr1','addr2','city','state'],
+   hint:'Customers cannot navigate and the carrier cannot place the pin'},
+  {k:'postal',short:'Postal',  label:'No postal code',     fields:['postal'],
+   hint:'Sorting and routing fail before the parcel ever moves'},
+  {k:'hours', short:'Hours',   label:'No opening hours',   fields:['hoursText'],
+   hint:'Customers do not know when the door is open'}
+];
+var watchFilter='';
+function watchOf(i){
+  for(var w=0;w<WATCH.length;w++){
+    if(WATCH[w].fields.indexOf(i.field)>=0)return WATCH[w].k;
+  }
+  return '';
+}
+function watchMeta(k){return WATCH.filter(function(w){return w.k===k;})[0]||null;}
+function watchTag(i){
+  var k=watchOf(i); if(!k)return '';
+  return '<span class="watch-tag" data-watch="'+k+'">'+watchMeta(k).short+'</span>';
+}
+function watchCard(){
+  var open=ISSUES.filter(function(x){return x.status!=='fixed';});
+  var tiles=WATCH.map(function(w){
+    var n=open.filter(function(x){return watchOf(x)===w.k;}).length;
+    return '<button class="watch-tile'+(watchFilter===w.k?' on':'')+(n?'':' zero')+'" data-check="'+w.k+'" onclick="toggleWatch(\''+w.k+'\')">'
+      +'<span class="w-n">'+n+'</span><span class="w-l">'+w.label+'</span><span class="w-h">'+w.hint+'</span></button>';
+  }).join('');
+  return '<div class="card watch-card" id="di-watch-card" style="margin-bottom:14px">'
+    +'<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><b style="font-size:13px">Three checks we do not let slide</b>'
+    +'<span class="rc-meta" style="margin:0">counted on open issues · click one to filter the ledger, click again to clear</span></div>'
+    +'<div class="watch-grid">'+tiles+'</div></div>';
+}
+function toggleWatch(k){watchFilter=(watchFilter===k?'':k);renderIssuesPage();}
+
 var ISSUES=[
  {id:'ISS-0007',vendorId:'LOC-00177',field:'latitude',subField:'latitude',type:'OUT_OF_RANGE',severity:'blocking',
   reason:'Coordinate sits 297 km from the street address — the pin lands in the water',status:'reported',raisedBy:'Sarah Lin',raisedAt:'2026-10-30 09:12:41'},
@@ -1215,7 +1311,13 @@ var ISSUES=[
  {id:'ISS-0015',vendorId:'LOC-12193',field:'name',subField:'',type:'INCORRECT',severity:'warning',
   reason:'Name still carries the old co-op brand — the store was rebranded in 2025, so the customer-facing label is misleading',status:'open',raisedBy:'Sarah Lin',raisedAt:'2026-11-03 15:08:44'},
  {id:'ISS-0016',vendorId:'LOC-00182',field:'sweeper',subField:'',type:'INCORRECT',severity:'blocking',
-  reason:'Sweeper is PUDO Inc, but this is an LMS packagehub with no PUDO agreement — routing sends parcels to a partner who cannot take them',status:'reported',raisedBy:'Alex Chen',raisedAt:'2026-10-29 08:31:19'}
+  reason:'Sweeper is PUDO Inc, but this is an LMS packagehub with no PUDO agreement — routing sends parcels to a partner who cannot take them',status:'reported',raisedBy:'Alex Chen',raisedAt:'2026-10-29 08:31:19'},
+ {id:'ISS-0017',vendorId:'LOC-12193',field:'postal',subField:'postal_code',type:'MISSING',severity:'blocking',
+  reason:'postal_code is empty — the carrier cannot route and nobody can check the address against a map',status:'open',raisedBy:'Sarah Lin',raisedAt:'2026-11-04 09:41:12'},
+ {id:'ISS-0018',vendorId:'LOC-00187',field:'addr1',subField:'address_line1',type:'MISSING',severity:'blocking',
+  reason:'Street line never arrived — city and postal are there, but there is no building to find',status:'open',raisedBy:'Alex Chen',raisedAt:'2026-11-04 10:02:37'},
+ {id:'ISS-0019',vendorId:'LOC-12191',field:'hoursText',subField:'',type:'MISSING',severity:'blocking',
+  reason:'No opening hours at all — the store is live, but nobody can say when the door is open',status:'open',raisedBy:'Sarah Lin',raisedAt:'2026-11-04 11:18:05'}
 ];
 var INTAKE=[
  {vid:'LOC-00187',status:'open',detected:'2026-10-30 02:31:44',issues:['address_line1 is empty','opening_hours missing — customer-facing hours cannot be validated']},
@@ -1724,6 +1826,26 @@ function confirmBatch(){
 }
 
 /* ============ duplicate page ============ */
+function dupNorm(v){return String(v==null?'':v).toLowerCase().replace(/[.,#]/g,' ').replace(/\s+/g,' ').trim();}
+/* same · near (one string contains the other, e.g. a missing unit) · diff */
+function dupState(x,y){
+  var a=dupNorm(x),b=dupNorm(y);
+  if(a===b)return 'same';
+  if(a&&b&&(a.indexOf(b)>=0||b.indexOf(a)>=0))return 'near';
+  return 'diff';
+}
+/* mark only the part that differs, so the eye lands on it instead of on the row */
+function dupMark(x,y){
+  var a=String(x==null?'':x),b=String(y==null?'':y);
+  if(!a||!b)return [esc(a||'—'),esc(b||'—')];
+  var i=0;while(i<a.length&&i<b.length&&a.charAt(i).toLowerCase()===b.charAt(i).toLowerCase())i++;
+  var j=0;while(j<a.length-i&&j<b.length-i&&a.charAt(a.length-1-j).toLowerCase()===b.charAt(b.length-1-j).toLowerCase())j++;
+  var am=a.slice(i,a.length-j),bm=b.slice(i,b.length-j);
+  if(!am&&!bm)return [esc(a),esc(b)];
+  var wrap=function(mid){return mid?('<mark class="df">'+esc(mid)+'</mark>'):'';};
+  return [esc(a.slice(0,i))+wrap(am)+esc(a.slice(a.length-j)),
+          esc(b.slice(0,i))+wrap(bm)+esc(b.slice(b.length-j))];
+}
 function resetDupFilters(){document.getElementById('d-f-id').value='';document.getElementById('d-f-provider').value='';document.getElementById('d-f-status').value='';document.getElementById('d-f-score').value='0';renderDup();}
 function renderDup(){
   var fid=val('d-f-id').toLowerCase(),prov=val('d-f-provider'),st=val('d-f-status'),min=parseInt(val('d-f-score')||'0',10);
@@ -1741,11 +1863,32 @@ function renderDup(){
     var ocB=OC_LOCATIONS.filter(function(o){return o.vendorIds.indexOf(d.locB)>=0;})[0];
     var done=d.status!=='pending';
     var tag=d.status==='confirmed'?'same store · 2:1':d.status==='rejected'?'not same · 1:1':'needs decision';
+    /* v3.6.0 — the pair is read side by side: A on the left, B on the right,
+       one row per field, and the middle column says how the two relate. */
+    var fields=[['Name',a.name,b.name],
+      ['Address',[a.addr1,a.addr2].filter(Boolean).join(' · '),[b.addr1,b.addr2].filter(Boolean).join(' · ')],
+      ['City / State',a.city+', '+a.state,b.city+', '+b.state],
+      ['Postal',a.postal,b.postal],
+      ['Phone',a.phone,b.phone],
+      ['Sweeper',a.sweeper,b.sweeper],
+      ['Opening hours',valOf(a,'hoursText'),valOf(b,'hoursText')]];
+    var differ=0;
+    var cmp=fields.map(function(f){
+      var st=dupState(f[1],f[2]); if(st!=='same')differ++;
+      var pair=(st==='same')?[esc(f[1]||'—'),esc(f[2]||'—')]:dupMark(f[1],f[2]);
+      return '<tr class="st-'+st+'" data-field="'+f[0]+'"><td class="f">'+f[0]+'</td>'
+        +'<td class="a">'+pair[0]+'</td>'
+        +'<td class="m">'+(st==='same'?'✓':st==='near'?'≈':'✕')+'</td>'
+        +'<td class="b">'+pair[1]+'</td></tr>';
+    }).join('');
     return '<div class="rc-item">'
       +'<div class="rc-item-head"><b class="mono">'+esc(d.pairId)+'</b><span class="risk '+(done?'risk-auto':'risk-review')+'">'+tag+'</span><span class="badge badge-orange">'+d.score+'% match</span><span class="rc-meta" style="margin:0">detected '+esc(d.detectedAt)+'</span></div>'
-      +'<div class="rc-sub"><b>'+esc(a.name)+'</b> <span class="mono">('+esc(a.id)+' · '+esc(a.provider)+')</span> ↔ <b>'+esc(b.name)+'</b> <span class="mono">('+esc(b.id)+' · '+esc(b.provider)+')</span></div>'
-      +'<div class="rc-meta">address <span class="mono">'+esc(d.diff.addr1[0])+'</span> vs <span class="mono">'+esc(d.diff.addr1[1])+'</span> · postal <span class="mono">'+esc(d.diff.postal[0])+'</span> vs <span class="mono">'+esc(d.diff.postal[1])+'</span></div>'
-      +'<div class="rc-meta">OC location: '+(ocA?esc(ocA.ocId):'—')+' vs '+(ocB?esc(ocB.ocId):'<b>none</b>')+'</div>'
+      +'<table class="dup-cmp"><thead><tr><th class="f"></th>'
+      +'<th class="a"><span class="ab">A</span><b class="mono">'+esc(a.id)+'</b>'+provBadge(a.provider)+(ocA?'<span class="mono" style="color:var(--text-tertiary)">'+esc(ocA.ocId)+'</span>':'<span class="badge badge-orange">no OC ID</span>')+'</th>'
+      +'<th class="m" data-i18n="dup.vs">vs</th>'
+      +'<th class="b"><span class="ab">B</span><b class="mono">'+esc(b.id)+'</b>'+provBadge(b.provider)+(ocB?'<span class="mono" style="color:var(--text-tertiary)">'+esc(ocB.ocId)+'</span>':'<span class="badge badge-orange">no OC ID</span>')+'</th>'
+      +'</tr></thead><tbody>'+cmp+'</tbody></table>'
+      +'<div class="rc-meta" style="margin:6px 0 0"><span>'+differ+' field(s) differ</span> · <span class="dup-same">✓ same · ≈ one contains the other · ✕ different</span></div>'
       +(done?'<div class="rc-actions"><span class="rc-meta" style="margin:0">Resolved — see Change Log</span></div>'
         :'<div class="rc-actions"><button class="btn btn-primary btn-sm" onclick="resolveDup(\''+d.pairId+'\',\'confirmed\')">Same store (2:1)</button><button class="btn btn-secondary btn-sm" onclick="resolveDup(\''+d.pairId+'\',\'rejected\')">Not same (1:1 each)</button></div>')
       +'</div>';
@@ -1808,7 +1951,7 @@ function syncCard(){
 function renderIssuesPage(){
   var typeFilter=val('di-f-type')||'';
   var open=ISSUES.filter(function(i){return i.status!=='fixed';});
-  var shown=open.filter(function(i){return !typeFilter||i.type===typeFilter;});
+  var shown=open.filter(function(i){return (!typeFilter||i.type===typeFilter)&&(!watchFilter||watchOf(i)===watchFilter);});
   var drift=[];
   OC_LOCATIONS.forEach(function(o){driftOf(o).forEach(function(d){drift.push({oc:o,field:d.field,old:d.old,new:d.new});});});
 
@@ -1818,7 +1961,7 @@ function renderIssuesPage(){
     return '<option value="'+k+'"'+(k===typeFilter?' selected':'')+'>'+tr(ISSUE_TYPES[k].label)+(counts[k]?' ('+counts[k]+')':'')+'</option>';
   }).join('');
 
-  var html=syncCard()+exportCard();
+  var html=watchCard()+syncCard()+exportCard();
   html+='<div class="card" style="margin-bottom:14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">'
     +'<b style="font-size:13px">Filter by issue type</b>'
     +'<select id="di-f-type" onchange="renderIssuesPage()" style="min-width:220px"><option value="">All types ('+open.length+')</option>'+legend+'</select>'
@@ -1829,7 +1972,7 @@ function renderIssuesPage(){
     +(shown.length?shown.map(function(i){
       var v=findVendor(i.vendorId);
       return '<div class="rc-item"><div class="rc-item-head"><b>'+esc(v.name)+'</b><span class="mono" style="font-size:12px">'+esc(i.vendorId)+'</span>'
-        +'<span class="badge badge-gray">'+esc(fieldLabel(i))+'</span>'+typeBadge(i)
+        +watchTag(i)+'<span class="badge badge-gray">'+esc(fieldLabel(i))+'</span>'+typeBadge(i)
         +'<span class="rc-meta" style="margin:0">'+(i.severity==='blocking'?'blocks sign-off':'warning only')+'</span>'
         +'<span class="risk '+(i.status==='reported'?'risk-review':'risk-block')+'">'+esc(i.status==='reported'?'reported to owner':i.status)+'</span></div>'
         +'<div class="rc-meta">'+esc(whyOf(i))+'</div>'
@@ -2155,6 +2298,7 @@ function exportIssues(){
   if(v80){v80.hoursText='Mon - Fri: 08:30am to 06:00pm\nSat: 09:00am to 01:00pm';v80.hoursOfOp=[{day:'MONDAY',timeRanges:[{startTime:'08:30',endTime:'18:00'}]},{day:'TUESDAY',timeRanges:[{startTime:'08:30',endTime:'18:00'}]},{day:'WEDNESDAY',timeRanges:[{startTime:'08:30',endTime:'18:00'}]},{day:'THURSDAY',timeRanges:[{startTime:'08:30',endTime:'18:00'}]},{day:'FRIDAY',timeRanges:[{startTime:'08:30',endTime:'18:00'}]},{day:'SATURDAY',timeRanges:[{startTime:'09:00',endTime:'13:00'}]}];}
   var v6=findVendor('LOC-00181'); if(v6)v6.name='Private Postal Systems LLC';
   var v3=findVendor('LOC-00178'); if(v3)v3.postal='80221';
+  var v93=findVendor('LOC-12193'); if(v93)v93.postal='';
   var v9=findVendor('LOC-00184'); if(v9){v9.hoursText='Mon - Fri: 12:00pm to 04:00pm\nSat: closed';v9.hoursOfOp=[];}
   OC_LOCATIONS.forEach(function(o){ if(o.enable)BASELINE[o.ocId]=null; });
   OC_LOCATIONS.forEach(function(o){

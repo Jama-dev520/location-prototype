@@ -1,9 +1,9 @@
-# Location Management Admin Console — Requirement Overview (v3.5.0)
+# Location Management Admin Console — Requirement Overview (v3.6.0)
 
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
-> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.5.0)
+> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.6.0)
 > 给外部同事看的英文功能概览：https://jama-dev520.github.io/location-prototype/feature-overview.html
-> 演示视频（3 分 13 秒，35 条英文字幕，对应 v3.5.0）：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
+> 演示视频（3 分 20 秒，35 条英文字幕，对应 v3.6.0）：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
 > Detail view (v2.4.0): clicking a location ID opens a **full page** with tabs — Basic Info / Operations / Hours & Services / Linked Records / Change History.
 > **v3.0.0 — 供应商之外，自营 M&MP 小店也走同一套。** M&MP = 自营小店（美国叫法），是门店目录里的第三类来源，数据由门店自己维护，异常找门店负责人；规则与供应商门店完全一致。
@@ -210,6 +210,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | 19 | Duplicate (v3.0.0) | 独立 **Duplicate Check** 页；同一家 → 2:1 并在 OC 列表标出；不是同一家 → 1:1。未裁决的重复对阻塞启用 |
 | 20 | Merge priority (v3.0.0) | 同一条 OC 记录逐字段取源：**M&MP（自营）→ LMS → PUDO Inc 依次取，先有值的赢**。详情页与列表都标出来源 |
 | 21 | Drift (v3.0.0) | 签收后供应商改了值：下游直接用新值，台账显示「与基线不同」，运营可**重新签收**或**标记异常**。基线是参照物，不是冻结器 |
+| 29 | 三个必查项 (v3.6.0) | 运营每天真正在追的只有三个缺口：**地址不全 / 没邮编 / 没营业时间**。它们放在台账最上面按未关闭异常计数，点一下只看这一类，再点取消。归类**靠字段**（addr1/addr2/city/state、postal、hoursText），所以走 F11 标记的任何一条会自动落格，不需要运营再选一个「类别」，也不存在计数和列表对不上的可能 |
 | 28 | 中英双语 (v3.5.0) | 顶部右上角 `EN / 中文` 换的是**界面**：导航、筛选、表头、页面说明、弹框、详情标签页、演示脚本、提示、异常类型名、版本说明，连 `<html lang>` 和浏览器标题一起换。**数据不翻**：门店名、地址、供应商、ID、字段名、事件码、时间戳一律保持供应商推来的原样 —— 翻了就等于造出第二个真相来源。选择存在 `localStorage`，也可以用 `?lang=zh` / `?lang=en` 按链接锁定，方便把英文版直接发给外国同事 |
 | 27 | enable 保留 (v3.4.0) | 控制台只放弃「数据是否应用」这一层，**不放弃「门店是否上线」**。两个决定分属两处：值是否给下游——不由控制台决定，永远给；门店是否对客户可见——由运营 `enable` 决定，走签收（5 项检查 + 勾选 + 记基线）。如果连签收也去掉，入库通过即自动上线，就没有人确认客户会开到的那个地址了 |
 | 26 | 不决定是否应用 (v3.4.0) | 供应商推来的值**永远直接给下游**，控制台里没有「接受 / 拒绝 / 重新签收」。所以「签收后漂移」只是**信息**：告诉你自签收以来哪些字段变了；发现变错了就标记异常。同理，issue 也不该由人点「已修复」——只有同步跑完、值确实变了且合格，才由系统关闭。控制台的出口是**导出**：把异常清单导成 CSV 发给供应商当工单，而不是在这里做流程 |
@@ -284,7 +285,7 @@ sweeper 由供应商随门店一起提供，和其它字段一样只读。发现
 | **英文功能概览** | `feature-overview-en.html` / `Location-Management-Admin-Feature-Overview-EN.md` | 英文 | **外部同事** | 一页讲清做什么、为什么这样设计；可直接转发或打印 |
 | 交互原型 | `Location-Management-Admin-Prototype-2026-10-29.html` | 中英双语（右上角切换） | 全员 | 单文件高保真，覆盖 6 个菜单 + 详情 5 个标签页 |
 | 流程图 | `diagrams/flow1..11-*.png` | 英文 | 全员 | 11 张，2x 渲染，飞书可直接嵌入 |
-| 演示视频 | `Location-Management-Admin-Demo-2026-10-29.mp4` | 英文字幕 | 全员 | 3 分 13 秒、35 条字幕，按 v3.5.0 重录；十段：两层 → 详情 → 标记 → 列表与来源/类型 → 签收 → 重复 → 自动关闭 → 漂移 → 只读角色 → 中英切换 |
+| 演示视频 | `Location-Management-Admin-Demo-2026-10-29.mp4` | 英文字幕 | 全员 | 3 分 20 秒、35 条字幕，按 v3.6.0 重录；十段：两层 → 详情 → 标记 → 列表与来源/类型 → 签收 → 重复 → 自动关闭 → 漂移 → 只读角色 → 中英切换 |
 
 **对外分享用哪一个**：给外国同事发 `feature-overview.html`（英文单页），需要展开细节时再给 PRD 和字段映射；中文团队内部用本文件 + 验收标准。
 
