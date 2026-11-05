@@ -923,6 +923,7 @@ var I18N_ZH = {
   "Exported for the provider":"已导出，可直接发给供应商",
   "blocking":"阻塞",
   "value unchanged":"值未变",
+  "Hours check":"营业时间检查",
   /* ---- v3.6.0: the three checks ---- */
   "The checks we do not let slide":"必查项",
   "Day under 3 hours":"某天不足 3 小时",
@@ -1052,6 +1053,7 @@ var I18N_RULES = [
   [/^(\d+) open data issue\(s\) — the provider has to fix the source\.$/, "有 $1 条未关闭的数据异常 —— 需要供应商去修源头。"],
   [/^(\d+) blocking data issue\(s\) — see Issues$/, "$1 条阻塞级数据异常 —— 见异常页"],
   [/^Blocked: (.+)$/, "阻塞：$1"],
+  [/^(ISS-\d+) · raised by Hours check · (.+)$/, "$1 · 由营业时间检查提出 · $2"],
   [/^(ISS-\d+) · raised by (.+?) · (.+)$/, "$1 · 由 $2 提出 · $3"],
   [/^✔ checked (.+)$/, "✔ 已核对于 $1"],
   [/^value changed to “(.+)” — (.+) needs a human re-check$/, "值变为 “$1” —— $2 需要人工复核"],
@@ -1095,7 +1097,10 @@ var ISS_ZH = {
   "ISS-0013":"电话只有 7 位（“5550142”）—— 区号外无法拨通",
   "ISS-0014":"营业时间自 2024 年未变，已与门店官网冲突（官网 16:00 关门，不是 17:00）",
   "ISS-0015":"名称还挂着旧合作社品牌 —— 门店 2025 年已改名，客户看到的标签是误导",
-  "ISS-0016":"揽收方是 PUDO Inc，但这是一家 LMS 的 packagehub，与 PUDO 没有协议 —— 路由会把包裹送给接不了的合作方"
+  "ISS-0016":"揽收方是 PUDO Inc，但这是一家 LMS 的 packagehub，与 PUDO 没有协议 —— 路由会把包裹送给接不了的合作方",
+  "ISS-0020":"周六写的是 10:00-12:00 —— 只有两小时，而这条记录其余每天都显示 24 小时",
+  "ISS-0021":"周日写的是 11:00-13:00 —— 只有两小时，而同一份数据里其他每天都是 24 小时",
+  "ISS-0022":"周三写的是 06:00-08:30 —— 工作日中间只开两个半小时"
 };
 
 var INTAKE_ZH = {
