@@ -1,6 +1,6 @@
-# Location Management Admin Console — PRD Change Summary (v3.9.0)
+# Location Management Admin Console — PRD Change Summary (v3.10.0)
 
-> Document version v3.9.0 ｜ Change date 2026-11-10 ｜ Status: Draft — pending review
+> Document version v3.10.0 ｜ Change date 2026-11-10 ｜ Status: Draft — pending review
 > 本轮（v3.0.0）是**模型换向**：OC 层不再改数据，只做两件事——**enable** 和 **标记异常**。所有数据以供应商为唯一来源，错的地方标记回去让供应商改；重复对单独成页；下游按字段合并，LMS 优先；M&MP 用同一套规则管同一份数据。
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
 > **验收标准（通俗版）**: `Location-Management-Admin-验收标准-2026-10-29.md`
@@ -464,6 +464,28 @@ https://jama-dev520.github.io/location-prototype/feature-overview.html
 - 片头片尾重做：片头标 `v3.3.0 / two layers · three sources / enable is a sign-off / a fix closes its own issue`；片尾四条地基换成 v3 的版本（数据只有供应商一个来源、没人处理就不变、下线容易上线要签收、修复能自证才自动关闭）。
 - 为了录制可读性，标记弹窗的严重度下拉文案从 `warning — live, but wrong for customers` 缩短为 `warning · live but wrong`（原来在 560px 弹窗里被截断）。纯文案，不改行为。
 
+## 二之十七、v3.10.0：一个 Source，不是两个
+
+### 三处说同一件事
+
+原来 Type 一列、Source 一列、再加一个「两者不一致」的徽章 —— 一个事实用了三个界面元素。可是来源本来只可能产出自己的类型：看到 `packagehub` 就知道是 LMS，看到 LMS 就知道是 `packagehub`。多出来的那一半不是数据，是注释。
+
+### 合起来之后少了什么
+
+- **Type 下拉**：不用再跟着 Source 级联，也不用担心它和 Source 打架；
+- **`type ≠ source` 徽章**：合成一个字段后，已经没有一个「不一致」的位置可以显示 —— 这个失败模式是被**消除**了，不是被**报告**了；
+- **`Issues → Type ≠ source`**：同上。
+
+值仍然两个（记录里还留着 `type` 和 `source_provider`），导出也仍然两列 —— CSV 是给机器读的，列表是给人看的。
+
+### M&MP 的揽收方
+
+自营店是我们自己的店，但揽收不是我们的活：包裹仍由 **LMS** 取。所以 M&MP 记录的 `sweeper` 永远是 `LMS`，揽收方筛选里没有 M&MP 这个选项，数据里也没有这个值。真收到别的值，是数据问题，标出去让对方改 —— 和 §5.9 一个规矩。
+
+### Locker 呢
+
+合法的 PUDO 类型，模型里留着，本版不在列表/筛选里暴露：现在数据里没有 Locker，多一个永远筛出 0 行的选项比没有更糟。以后要加，是 SOURCES 里加一行。
+
 ## 二之十六、v3.9.0：拉取不是决定
 
 ### 缺的不是能力，是触发点
@@ -595,6 +617,7 @@ v3.4.0 删掉的是「数据是否应用」，不是「门店是否上线」。�
 
 如果连签收也拿掉，入库一通过门店就自动上线，等于没有人确认客户会开到的那个地址。验收里也加了一条「不该发生」：把「不决定是否应用」误解成「不用签收」。
 
+| v3.10.0 | MINOR | 2026-11-10 | **一个 Source**：Type 与 Source 合并为单列/单筛选，值写作 `PUDOpoint (PUDO)`、`packagehub (LMS)`、`M&MP`；删掉 Type 下拉与级联、`type ≠ source` 徽章与筛选项、Sweeper 表头的 `synced` 小标。`Locker` 本版不暴露（两条演示记录改为 PUDOpoint）。**M&MP 的揽收方固定 LMS**，揽收方筛选去掉 M&MP 选项 |
 | v3.9.0 | MINOR | 2026-11-10 | **供应商改完再拉一次**：供应商列表新增 `Refresh from providers`（F30、§5.14），补上 §5.9 闭环缺的触发点。拉取只写供应商推来的值、只按「标记时的值」重判、只自动关闭变合法的异常；不动 enable/签收/基线，因此仅 Manager 可点。工具栏下加「上次拉取 · run 号 · 关闭/更新/待人工」回执，空拉显示「没有新数据」。演示没有新增数据、没有新增表 |
 | v3.8.0 | MINOR | 2026-11-10 | **QR 回到列表 + 类型带来源 + 异常按性质分组**：供应商列表恢复 `QR` 列（F18 从 v2.3.0 就有，v3 重建列表时丢了）；Provider 并入 Type 写成 `packagehub (LMS)`，Source 筛选保留；台账拆成「关键字段缺失 / 数据不准确」两组并加 `?` 说明弹框 |
 | v3.7.0 | MINOR | 2026-11-05 | **营业不足 3 小时 + 导出带门店信息**：必查项从三项变四项，新增「某天营业不足 3 小时」（按 `hoursOfOp` 逐天算，不需要先标记），Hours 标签页点名是哪天、几点到几点、合计多久；异常 CSV 增加店名/地址/城市/州/邮编/来源/类型六列。补 3 条演示数据（12194 周六 10:00-12:00、12193 周日 11:00-13:00、10024 周三 06:00-08:30），并修掉上一版的一条数据矛盾：ISS-0019 原挂 LOC-12191，但那条记录明明有 7 天时段，已改挂 LOC-00178（真正没有营业时间的那家）|

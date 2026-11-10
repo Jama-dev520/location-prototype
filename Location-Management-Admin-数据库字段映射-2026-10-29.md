@@ -1,6 +1,6 @@
-# Location Management Admin Console — Database Field Mapping (v3.9.0)
+# Location Management Admin Console — Database Field Mapping (v3.10.0)
 
-> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.9.0)
+> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.10.0)
 > Feature overview (English, for readers outside the team): `https://jama-dev520.github.io/location-prototype/feature-overview.html`
 >
 > **v3.0.0 model change.** The console no longer writes location fields. `field_lock` is replaced by `data_issue`; `sync_change_set` decisions and `oc_field_baseline` versions used for revert are retired; downstream values are a per-field merge with **LMS first**. The console writes exactly four things: `oc_location.is_enable`, `data_issue` rows, baseline captures, and `change_log`.
@@ -342,23 +342,32 @@ for each field f:
 
 Retired in v3.0.0: `STORE_DETAIL_EDIT`, `SWEEPER_CHANGE`, `FIELD_UNLOCKED`, `FIELD_REVERTED`, `SYNC_CHANGE_ACCEPTED`, `SYNC_CHANGE_REJECTED`, and the `field_lock` / `sync_change_set` decision columns. `oc_field_baseline` keeps one row per sign-off (no 5-version stack — nothing is reverted any more).
 
-### 3.4 Source → type constraint (v3.2.0)
+### 3.4 Type and source are one value in the UI (v3.10.0, supersedes the v3.2.0 filter cascade)
 
-`location_type` is not a free field: it is determined by `source_provider`. The console never offers a combination the provider cannot produce, and it reports one if the data ever contains it.
+`location_type` is not a free field: it is determined by `source_provider`. Because the mapping is 1:1, the console prints the pair as **one value** — `packagehub (LMS)`, `PUDOpoint (PUDO)`, `M&MP` — in the list and in the filter.
 
-| `source_provider` | Allowed `location_type` | UI behaviour when selected |
-|---|---|---|
-| `LMS` | `packagehub` | Type shows the single option and selects it automatically |
-| `PUDO Inc` | `PUDOpoint`, `Locker` | Type offers both; operator may narrow further |
-| `M&MP` | `M&MP` | Type shows the single option and selects it automatically |
+| `source_provider` | `location_type` | Shown as | In the Source filter |
+|---|---|---|---|
+| `LMS` | `packagehub` | `packagehub (LMS)` | yes |
+| `PUDO Inc` | `PUDOpoint` | `PUDOpoint (PUDO)` | yes |
+| `PUDO Inc` | `Locker` | `Locker (PUDO)` | **not in this release** |
+| `M&MP` | `M&MP` | `M&MP` (printed once — both halves are the same word) | yes |
 
 Rules:
 
-1. The Type filter's options are **built from the selected Source**, each with a live count computed from the current result set (same page, minus the type filter itself). Clearing the Source clears the Type.
-2. The Type column is never edited. A mismatch means the source sent something it should not be able to send.
-3. **Mismatch detection**: `location_type NOT IN allowed(source_provider)` → the row carries a `type ≠ source` badge in the Type column, and the list filter `Issues → Type ≠ source` isolates those rows. Producing this list is a monitoring signal for the provider feed, not a window to fix values here — the record is flagged (F11) so the provider corrects it.
-4. On the OC list the type is the **merged** type (source-priority: M&amp;MP → LMS → PUDO Inc), so a 2:1 location shows the type of the source that wins the merge.
-5. Server side: `location_type=<value>` is accepted only together with (or compatible with) `provider`; a request pairing `provider=LMS` with `location_type=Locker` returns `400 INVALID_TYPE_FOR_PROVIDER` instead of an empty page.
+1. **One filter, three values.** The Source filter is the type, annotated with its owner; there is no separate Type filter and therefore no cascade to keep in step. Selecting `packagehub (LMS)` compiles to `location_type=packagehub`.
+2. **The columns stay two.** `location_type` and `source_provider` remain separate in `vendor_location`; the merged string is a rendering, not a stored value (see the no-new-column note above).
+3. **No mismatch badge.** With one field there is no place for `type ≠ source` to show, and the `Issues → Type ≠ source` filter is gone. Detection, if the feed ever contradicts itself, happens in the ingest job (§3.5) and surfaces as a `data_issue` on the record.
+4. **`Locker` is modelled, not surfaced.** `PUDO Inc` can still deliver a `Locker`; the console simply does not offer it as a Source this release, because a value that always filters to zero rows is worse than an absent one. Adding it is one entry in the front-end source table.
+5. **On the OC list** the type is the **merged** type (source priority M&amp;MP → LMS → PUDO Inc), and a 2:1 location prints both owners in the same order: `packagehub (LMS / PUDO)`.
+6. **Server side**: `location_type=<value>` is still validated against `provider`; a request pairing `provider=LMS` with `location_type=Locker` returns `400 INVALID_TYPE_FOR_PROVIDER` instead of an empty page. The UI cannot build such a request, but the API still refuses one.
+
+### 3.4a Sweeper on a self-operated store (v3.10.0)
+
+`M&MP` stores are our own shops, but the pickup is not: `sweeper` on an `M&MP` record is **always `LMS`**.
+
+- The Sweeper filter has no `M&MP` option, and no row carries that value.
+- It is **not** a CHECK constraint: the provider still owns the field, and an `M&MP` record that arrives with another sweeper is a data issue to flag back (§3.5), not a value the console rejects at write time — rejecting it would silently drop the record instead of surfacing the problem.
 
 ### 3.5 Issue auto-close rule (v3.3.0)
 
@@ -420,6 +429,7 @@ Failure modes the rule deliberately produces:
 | **`/api/oc-locations/{id}/enable`** (v2.6.0, extended) | PATCH | `oc_location` + `oc_field_baseline` + `change_log` | enable now requires the sign-off payload (checklist acknowledged); writes `baseline_at`, `propagated_at`, `ENABLE_SIGNED_OFF` |
 | **`/api/vendor-locations/{id}/issues`** (v3.0.0) | POST | `data_issue` + `change_log` | flag a field: `field_name` + `reason` (both required); never writes a value |
 | **`/api/issues/{id}`** (v3.0.0) | PATCH | `data_issue` + `change_log` | move status OPEN → REPORTED → FIXED; closing requires the provider value to have changed or an explicit confirmation |
+| *(none)* (v3.10.0) | — | — | — | **Merging type and source adds nothing either — and must not.** `vendor_location` keeps `location_type` and `source_provider` as two columns: the UI prints them as one string because they are one fact, but the fact still has two owners in the feed and the export still writes both. Do **not** add a `source_label` column: it would be a third copy of two existing values, and it would have to be recomputed whenever either changes |
 | *(none)* (v3.9.0) | — | — | — | **Refresh adds nothing to the schema.** A manual pull writes the same `vendor_location` columns a nightly run writes, logs the same `change_log` rows and inserts the same `sync_run` row — it is the same job, triggered by a person rather than by cron. Do **not** add `last_pulled_by` or `pull_source` to `vendor_location`: who pressed the button is already `change_log.actor`, and a column on the record would need maintaining on every write for no reader |
 | *(none)* (v3.8.0) | — | — | — | **QR and the merged type column add nothing to the schema.** `qr_dropoff` was already on `vendor_location` (v2.3.0); `packagehub (LMS)` is `type` plus `source` rendered together. Do not create a `type_with_source` column — it would duplicate two fields that already have owners |
 | *(none)* (v3.7.0) | — | — | — | **The short-day check adds nothing to the schema either.** It is `SUM(end - start)` per `opening_hours.day`, compared with a display constant (`3h`). No `short_day` flag, no `check_type` — a stored copy would drift from the ranges it describes, and 3h differs per market, which is configuration rather than data |

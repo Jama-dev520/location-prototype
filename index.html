@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v3.9.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v3.10.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -374,7 +374,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.9.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.10.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -399,7 +399,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v3.9.0</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v3.10.0</span></div>
       </div>
     </div>
 
@@ -407,18 +407,17 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
 
       <div class="page active" id="page-p01">
         <h2 class="page-title">Vendor Location List</h2>
-        <p class="page-desc" data-i18n="p01.desc"><b>Source fixes the type</b> — LMS can only be a <b>packagehub</b>, PUDO Inc a <b>PUDOpoint</b> or <b>Locker</b>, M&amp;MP a self-operated store — so picking a Source narrows the Type filter automatically. What the providers actually sent us — <b>every field is read-only</b>, including <b>sweeper</b>, which now arrives with the daily sync. <b>M&amp;MP</b> stores are self-operated, so their owner is the store itself rather than a provider. When a value is wrong, we do not correct it here: we <b>flag it with a reason</b>, the flag travels on this record, and the provider fixes the source. The OC layer only decides whether the location goes live.</p>
+        <p class="page-desc" data-i18n="p01.desc"><b>One Source, not two</b> — the type and its owner travel together: <b>PUDOpoint (PUDO)</b>, <b>packagehub (LMS)</b>, <b>M&amp;MP</b>. Because the pair is a single field, an impossible type/source combination is not a filter you can build. What the providers actually sent us — <b>every field is read-only</b>, including <b>sweeper</b>, which now arrives with the daily sync. <b>M&amp;MP</b> stores are self-operated, so their owner is the store itself rather than a provider — and <b>LMS</b> is who picks up for them. When a value is wrong, we do not correct it here: we <b>flag it with a reason</b>, the flag travels on this record, and the provider fixes the source. The OC layer only decides whether the location goes live.</p>
 
         <div class="card">
           <div class="filter-grid">
             <div><label class="f-label">Location ID</label><input id="v-f-id" placeholder="e.g. LOC-10024" oninput="applyVendorFilters()"></div>
             <div><label class="f-label">OC Location ID</label><input id="v-f-ocid" placeholder="e.g. OC-00001" oninput="applyVendorFilters()"></div>
             <div><label class="f-label">Name</label><input id="v-f-name" placeholder="keyword" oninput="applyVendorFilters()"></div>
-            <div><label class="f-label">Source</label><select id="v-f-provider" onchange="onSourceChange('v')"><option value="">All</option><option>PUDO Inc</option><option>LMS</option><option>M&MP</option></select></div>
+            <div><label class="f-label">Source</label><select id="v-f-source" onchange="applyVendorFilters()"></select></div>
             <div><label class="f-label">Status</label><select id="v-f-status" onchange="applyVendorFilters()"><option value="">All</option><option value="active">active</option><option value="inactive">inactive</option><option value="removed">removed</option></select></div>
-            <div><label class="f-label">Type <span id="v-f-type-hint" class="f-hint"></span></label><select id="v-f-type" onchange="applyVendorFilters()"><option value="">All</option></select></div>
-            <div><label class="f-label">Sweeper</label><select id="v-f-sweeper" onchange="applyVendorFilters()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option><option>M&amp;MP</option></select></div>
-            <div><label class="f-label">Issues</label><select id="v-f-issues" onchange="applyVendorFilters()"><option value="">All</option><option value="open">Has open issue</option><option value="none">No issue</option><option value="mismatch">Type ≠ source</option></select></div>
+            <div><label class="f-label">Sweeper</label><select id="v-f-sweeper" onchange="applyVendorFilters()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
+            <div><label class="f-label">Issues</label><select id="v-f-issues" onchange="applyVendorFilters()"><option value="">All</option><option value="open">Has open issue</option><option value="none">No issue</option></select></div>
           </div>
           <div class="filter-actions">
             <button class="btn btn-secondary" onclick="resetVendorFilters()">Reset</button>
@@ -441,8 +440,8 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
             <table class="data">
               <thead><tr>
                 <th>Location ID</th><th>Name</th><th>Address</th><th>City</th>
-                <th>Type <span style="font-weight:400;color:var(--text-tertiary)">(source)</span></th><th>QR</th>
-                <th>Sweeper <span class="badge badge-gray" style="font-size:9px">synced</span></th><th>Status</th>
+                <th>Source</th><th>QR</th>
+                <th>Sweeper</th><th>Status</th>
                 <th>Issues <span class="help-dot" onclick="openHelp()" title="What counts as an issue">?</span></th><th>OC Location</th><th>Updated</th>
               </tr></thead>
               <tbody id="v-tbody"></tbody>
@@ -453,15 +452,14 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
 
       <div class="page" id="page-p02">
         <h2 class="page-title">OC Location List</h2>
-        <p class="page-desc" data-i18n="p02.desc"><b>Source fixes the type:</b> LMS → packagehub · PUDO Inc → PUDOpoint / Locker · M&amp;MP → <b>M&amp;MP</b>, so picking a Source narrows the Type filter. The record customers see. <b>Two actions only: enable, and flag an anomaly.</b> There is no editing here — a wrong address does not get typed over, it gets flagged back to the provider. Values are <b>merged per field</b>: an <b>M&amp;MP</b> self-operated store is its own source and wins first, then <b>LMS</b>, then PUDO Inc fills whatever is still empty.</p>
+        <p class="page-desc" data-i18n="p02.desc"><b>One Source:</b> <b>packagehub (LMS)</b> · <b>PUDOpoint (PUDO)</b> · <b>M&amp;MP</b> — what it is and who owns it in one field. The record customers see. <b>Two actions only: enable, and flag an anomaly.</b> There is no editing here — a wrong address does not get typed over, it gets flagged back to the provider. Values are <b>merged per field</b>: an <b>M&amp;MP</b> self-operated store is its own source and wins first, then <b>LMS</b>, then PUDO Inc fills whatever is still empty.</p>
 
         <div class="card">
           <div class="filter-grid">
             <div><label class="f-label">OC Location ID</label><input id="o-f-id" placeholder="e.g. OC-00001" oninput="applyOCFilters()"></div>
             <div><label class="f-label">Vendor Location ID</label><input id="o-f-vendorid" placeholder="e.g. LOC-10024" oninput="applyOCFilters()"></div>
             <div><label class="f-label">Name</label><input id="o-f-name" placeholder="keyword" oninput="applyOCFilters()"></div>
-            <div><label class="f-label">Source</label><select id="o-f-provider" onchange="onSourceChange('o')"><option value="">All</option><option>PUDO Inc</option><option>LMS</option><option>M&MP</option></select></div>
-            <div><label class="f-label">Type <span id="o-f-type-hint" class="f-hint"></span></label><select id="o-f-type" onchange="applyOCFilters()"><option value="">All</option></select></div>
+            <div><label class="f-label">Source</label><select id="o-f-source" onchange="applyOCFilters()"></select></div>
             <div><label class="f-label">Status</label><select id="o-f-status" onchange="applyOCFilters()"><option value="">All</option><option value="active">active</option><option value="inactive">inactive</option></select></div>
             <div><label class="f-label">Downstream</label><select id="o-f-live" onchange="applyOCFilters()"><option value="">All</option><option value="no">Not live yet</option><option value="yes">Live</option></select></div>
             <div><label class="f-label">Issues</label><select id="o-f-issues" onchange="applyOCFilters()"><option value="">All</option><option value="any">Has any issue</option><option value="drift">Baseline drift</option><option value="dup">Duplicate 2:1</option><option value="open">Open provider issue</option></select></div>
@@ -487,7 +485,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
             <table class="data">
               <thead><tr>
                 <th><input type="checkbox" onclick="toggleAllOC(this)"></th><th>OC Location ID</th><th>Name</th><th>Address</th><th>City / State</th>
-                <th>Type <span style="font-weight:400;color:var(--text-tertiary)">(source)</span></th><th>Sweeper</th><th>Status</th>
+                <th>Source</th><th>Sweeper</th><th>Status</th>
                 <th>Issues <span class="help-dot" onclick="openHelp()" title="What counts as an issue">?</span></th><th>Enable</th><th>Linked Vendors</th><th>Updated</th>
               </tr></thead>
               <tbody id="o-tbody"></tbody>
@@ -634,21 +632,21 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.9.0 (refresh after the provider fixes)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.10.0 (one Source, refresh, checks)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
-        <tr><td>1</td><td>Vendor List</td><td>Look at the Type and QR columns</td><td>Type reads <b>packagehub (LMS)</b> — what it is and who owns it; QR marks the counters that can scan, LMS only</td></tr>
+        <tr><td>1</td><td>Vendor List</td><td>Look at the Source and QR columns</td><td data-i18n="walk.1.exp">Source reads <b>packagehub (LMS)</b> — what it is and who owns it, in one value; QR marks the counters that can scan, LMS only</td></tr>
         <tr><td>2</td><td>Vendor Detail</td><td>Report a data issue on an empty sweeper</td><td>Reason required · flag recorded on the vendor record · no value changed</td></tr>
-        <tr><td>3</td><td>OC List</td><td>Read the Source column</td><td>LMS, PUDO or M&amp;MP per record; a 2:1 store shows both</td></tr>
+        <tr><td>3</td><td>OC List</td><td>Read the Source column</td><td data-i18n="walk.3.exp">One value per record — <b>packagehub (LMS)</b>, <b>PUDOpoint (PUDO)</b>, <b>M&amp;MP</b>; a 2:1 store shows both owners, merge order first</td></tr>
         <tr><td>4</td><td>OC Detail</td><td>Basic Info → each field carries its source</td><td>LMS wins the field when LMS has a value, PUDO fills the rest</td></tr>
         <tr><td>5</td><td>OC List</td><td>Enable a ready location</td><td>Sign-off checklist · baseline captured · no data edited</td></tr>
         <tr><td>6</td><td>Duplicate Check</td><td>Read the pair left to right, then confirm "same store"</td><td>Two columns, one row per field: ✓ same, ≈ one contains the other, ✕ different — then 2:1 mapping and LMS values on the OC row</td></tr>
         <tr><td>7</td><td>Data Issues</td><td>The four checks, then the issues split by nature; click the ?</td><td>Missing critical fields (nothing arrived) above Inaccurate data (a value is wrong) · the ? explains what blocks and what closes itself</td></tr>
         <tr><td>8</td><td>Data Issues</td><td>Open a drifted location</td><td>See which fields moved since sign-off; downstream already has the new values — drift is information, not a decision</td></tr>
         <tr><td>9</td><td>OC List</td><td>Filter Source = M&amp;MP</td><td>Self-operated stores follow the same rules: same sign-off, same issue ledger — only the data owner differs</td></tr>
-        <tr><td>10</td><td>Both lists</td><td>Set Source = LMS, then open the Type filter</td><td data-i18n="walk.10.exp">Only <b>packagehub</b> is offered and it is selected for you; the hint reads “LMS → packagehub”. Same for PUDO Inc (PUDOpoint / Locker) and M&amp;MP</td></tr>
-        <tr><td>11</td><td>Vendor List</td><td>Issues filter → “Type ≠ source”</td><td>Zero rows on clean data; a record whose type cannot belong to its source is tagged in the Type column and isolated here</td></tr>
+        <tr><td>10</td><td>Both lists</td><td>Open the Source filter</td><td data-i18n="walk.10.exp">Three values, each one a type <b>and</b> its owner: <b>PUDOpoint (PUDO)</b>, <b>packagehub (LMS)</b>, <b>M&amp;MP</b> — with the row count next to each. There is no Type dropdown to keep in sync, because the pair is one field</td></tr>
+        <tr><td>11</td><td>Vendor List</td><td>Source = M&amp;MP, then look at Sweeper</td><td>Both self-operated stores are swept by <b>LMS</b> — the shop is ours, the pickup is not. Sweeper has no M&amp;MP option at all</td></tr>
         <tr><td>12</td><td>Data Issues</td><td>Click “Apply next provider sync”</td><td data-i18n="walk.12.exp">Two issues close themselves (value changed <b>and</b> valid); one stays open with “changed but still invalid”, one comes back to a human, the rest are untouched — no manual close anywhere</td></tr>
         <tr><td>13</td><td>Vendor Detail</td><td>Hours &amp; Services on a store with a truncated day</td><td>The Hours tab names the day, the range and the total — and the same day is already an open issue in the ledger</td></tr>
         <tr><td>14</td><td>Vendor List</td><td>Export CSV, then click “Refresh from providers”</td><td>Two issues close on the spot (the value changed <b>and</b> is valid), one stays open as “changed but still invalid”, one goes back to a human, one is untouched — and the last-pull line keeps the time, the run id and the three counts</td></tr>
@@ -662,8 +660,8 @@ var VENDORS=[
  {id:'LOC-10024',name:'Time Square News',provider:'PUDO Inc',sweeper:'LMS',type:'PUDOpoint',typeId:1,ref:'dealerNo 10024',addr1:'360 W 42nd St',addr2:'',city:'New York',state:'NY',country:'United States',postal:'10036',status:'active',phone:'8443008533',lat:40.7580804,lng:-73.9923783,timezone:'America/New_York',open24:false,supports:['FX','CP','TB'],hoursText:'Mon - Fri: 6:00am to 2:00am\nSat: 6:00am to 2:00am\nSun: 6:00am to 12:00am',hoursOfOp:[['MONDAY','06:00','23:59'],['TUESDAY','06:00','23:59'],['WEDNESDAY','06:00','23:59'],['THURSDAY','06:00','23:59'],['FRIDAY','06:00','23:59'],['SATURDAY','06:00','23:59'],['SUNDAY','06:00','23:59']],directions:'',created:'2016-06-16 12:22:42',updated:'2026-05-14 12:33:08',activated:'2016-07-18 12:50:14'},
  {id:'LOC-12194',name:'Postal Annex 20018',provider:'PUDO Inc',sweeper:'PUDO Inc',type:'PUDOpoint',typeId:1,ref:'dealerNo 12194',addr1:'2918 Avenue I',addr2:'',city:'Brooklyn',state:'NY',country:'United States',postal:'11210',status:'active',phone:'8443008533',lat:40.628878,lng:-73.947678,timezone:'America/New_York',open24:true,supports:[],hoursText:'',hoursOfOp:[['MONDAY','00:00','23:59'],['TUESDAY','00:00','23:59'],['WEDNESDAY','00:00','23:59'],['THURSDAY','00:00','23:59'],['FRIDAY','00:00','23:59'],['SATURDAY','00:00','23:59'],['SUNDAY','00:00','23:59']],directions:'',created:'2025-09-19 15:25:03',updated:'2025-09-19 15:26:01',activated:'2025-09-19 15:26:01'},
  {id:'LOC-10023',name:'Reach Fast Shipping',provider:'PUDO Inc',sweeper:'PUDO Inc',type:'PUDOpoint',typeId:1,ref:'dealerNo 10023',addr1:'35 W 31st St',addr2:'Unit #1',city:'New York',state:'NY',country:'United States',postal:'10001',status:'inactive',phone:'8443008533',lat:40.7474262,lng:-73.9875328,timezone:'America/New_York',open24:false,supports:['FX','CP'],hoursText:'MON - FRI: 07:30am to 08:00pm SAT: 09:00am to 07:30pm SUN: 09:30am to 06:30pm',hoursOfOp:[['MONDAY','07:30','20:00'],['TUESDAY','07:30','20:00'],['WEDNESDAY','07:30','20:00'],['THURSDAY','07:30','20:00'],['FRIDAY','07:30','20:00'],['SATURDAY','09:00','19:30'],['SUNDAY','09:30','18:30']],directions:'',created:'2016-06-15 13:08:40',updated:'2026-10-28 08:15:22',activated:'2019-11-04 17:59:30'},
- {id:'LOC-12193',name:'Ideal Food Basket - Lafayette Ave',provider:'PUDO Inc',sweeper:'PUDO Inc',type:'Locker',typeId:2,ref:'dealerNo 12193',addr1:'830 Lafayette Ave',addr2:'',city:'Brooklyn',state:'NY',country:'United States',postal:'11221',status:'active',phone:'8443008533',lat:40.6910629,lng:-73.9393812,timezone:'America/New_York',open24:true,supports:[],hoursText:'',hoursOfOp:[['MONDAY','00:00','23:59'],['TUESDAY','00:00','23:59'],['WEDNESDAY','00:00','23:59'],['THURSDAY','00:00','23:59'],['FRIDAY','00:00','23:59'],['SATURDAY','00:00','23:59'],['SUNDAY','00:00','23:59']],directions:'',created:'2025-08-22 13:25:38',updated:'2026-10-27 16:41:09',activated:'2025-08-22 13:32:02'},
- {id:'LOC-12191',name:'Ideal Food Basket - Brooklyn Ave',provider:'PUDO Inc',sweeper:'PUDO Inc',type:'Locker',typeId:2,ref:'dealerNo 12191',addr1:'1086 Brooklyn Ave',addr2:'',city:'Brooklyn',state:'NY',country:'United States',postal:'11203',status:'active',phone:'8443008533',lat:40.6473186,lng:-73.9437891,timezone:'America/New_York',open24:true,supports:[],hoursText:'',hoursOfOp:[['MONDAY','00:00','23:59'],['TUESDAY','00:00','23:59'],['WEDNESDAY','00:00','23:59'],['THURSDAY','00:00','23:59'],['FRIDAY','00:00','23:59'],['SATURDAY','00:00','23:59'],['SUNDAY','00:00','23:59']],directions:'',created:'2025-08-22 13:22:59',updated:'2026-10-05 14:22:08',activated:'2025-08-22 13:28:18'},
+ {id:'LOC-12193',name:'Ideal Food Basket - Lafayette Ave',provider:'PUDO Inc',sweeper:'PUDO Inc',type:'PUDOpoint',typeId:2,ref:'dealerNo 12193',addr1:'830 Lafayette Ave',addr2:'',city:'Brooklyn',state:'NY',country:'United States',postal:'11221',status:'active',phone:'8443008533',lat:40.6910629,lng:-73.9393812,timezone:'America/New_York',open24:true,supports:[],hoursText:'',hoursOfOp:[['MONDAY','00:00','23:59'],['TUESDAY','00:00','23:59'],['WEDNESDAY','00:00','23:59'],['THURSDAY','00:00','23:59'],['FRIDAY','00:00','23:59'],['SATURDAY','00:00','23:59'],['SUNDAY','00:00','23:59']],directions:'',created:'2025-08-22 13:25:38',updated:'2026-10-27 16:41:09',activated:'2025-08-22 13:32:02'},
+ {id:'LOC-12191',name:'Ideal Food Basket - Brooklyn Ave',provider:'PUDO Inc',sweeper:'PUDO Inc',type:'PUDOpoint',typeId:2,ref:'dealerNo 12191',addr1:'1086 Brooklyn Ave',addr2:'',city:'Brooklyn',state:'NY',country:'United States',postal:'11203',status:'active',phone:'8443008533',lat:40.6473186,lng:-73.9437891,timezone:'America/New_York',open24:true,supports:[],hoursText:'',hoursOfOp:[['MONDAY','00:00','23:59'],['TUESDAY','00:00','23:59'],['WEDNESDAY','00:00','23:59'],['THURSDAY','00:00','23:59'],['FRIDAY','00:00','23:59'],['SATURDAY','00:00','23:59'],['SUNDAY','00:00','23:59']],directions:'',created:'2025-08-22 13:22:59',updated:'2026-10-05 14:22:08',activated:'2025-08-22 13:28:18'},
  {id:'LOC-00176',name:'Pdq Mail Plus',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_176',locationCode:'AA0010',storeCode:'AA0010',addr1:'2005 Palmer Ave',addr2:'',city:'Larchmont',state:'NY',country:'US',postal:'10538',status:'active',phone:'',lat:40.930514,lng:-73.762192,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:11:44',updated:'2026-10-05 09:40:17'},
  {id:'LOC-00177',name:'Super Postal Center',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_177',locationCode:'AA0013',storeCode:'AA0013',addr1:'160 W Camino Real',addr2:'',city:'Boca Raton',state:'FL',country:'US',postal:'33432',status:'active',phone:'',lat:27.984120,lng:-82.401883,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'Mon - Fri: 09:00am to 12:00pm, 01:00pm to 06:00pm\nSat: 10:00am to 03:00pm\nSun: 10:00am to 02:00pm',hoursOfOp:[{day:'MONDAY',timeRanges:[{startTime:'09:00',endTime:'12:00'},{startTime:'13:00',endTime:'18:00'}]},{day:'TUESDAY',timeRanges:[{startTime:'09:00',endTime:'12:00'},{startTime:'13:00',endTime:'18:00'}]},{day:'WEDNESDAY',timeRanges:[{startTime:'09:00',endTime:'12:00'},{startTime:'13:00',endTime:'18:00'}]},{day:'THURSDAY',timeRanges:[{startTime:'09:00',endTime:'12:00'},{startTime:'13:00',endTime:'18:00'}]},{day:'FRIDAY',timeRanges:[{startTime:'09:00',endTime:'12:00'},{startTime:'13:00',endTime:'18:00'}]},{day:'SATURDAY',timeRanges:[{startTime:'10:00',endTime:'15:00'}]},{day:'SUNDAY',timeRanges:[{startTime:'10:00',endTime:'14:00'}]}],created:'2024-03-02 08:12:03',updated:'2026-08-19 10:02:51'},
  {id:'LOC-00178',name:'Pack & Ship North',provider:'LMS',sweeper:'LMS',type:'packagehub',ref:'loc_178',locationCode:'AA0014',storeCode:'AA0014',addr1:'9477 W 104th Ave',addr2:'',city:'Westminster',state:'CO',country:'US',postal:'80021',status:'active',phone:'',lat:39.886107,lng:-105.103101,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],created:'2024-03-02 08:12:21',updated:'2026-07-11 11:14:36'},
@@ -683,8 +681,8 @@ var OC_LOCATIONS=[
  {ocId:'OC-00001',name:'Time Square News',addr1:'360 W 42nd St',addr2:'',city:'New York',state:'NY',country:'United States',postal:'10036',provider:'PUDO Inc',type:'PUDOpoint',sweeper:'LMS',phone:'8443008533',lat:40.7580804,lng:-73.9923783,timezone:'America/New_York',hoursText:'Mon - Fri: 6:00am to 2:00am\nSat: 6:00am to 2:00am\nSun: 6:00am to 12:00am',hoursOfOp:[['MONDAY','06:00','23:59'],['TUESDAY','06:00','23:59'],['WEDNESDAY','06:00','23:59'],['THURSDAY','06:00','23:59'],['FRIDAY','06:00','23:59'],['SATURDAY','06:00','23:59'],['SUNDAY','06:00','23:59']],enable:true,vendorIds:['LOC-10024'],created:'2016-06-16 12:22:42',updated:'2026-05-14 12:33:08'},
  {ocId:'OC-00088',name:'Postal Annex 20018',addr1:'2918 Avenue I',addr2:'',city:'Brooklyn',state:'NY',country:'United States',postal:'11210',provider:'PUDO Inc',type:'PUDOpoint',sweeper:'PUDO Inc',phone:'8443008533',lat:40.628878,lng:-73.947678,timezone:'America/New_York',hoursText:'',hoursOfOp:[['MONDAY','00:00','23:59'],['TUESDAY','00:00','23:59'],['WEDNESDAY','00:00','23:59'],['THURSDAY','00:00','23:59'],['FRIDAY','00:00','23:59'],['SATURDAY','00:00','23:59'],['SUNDAY','00:00','23:59']],enable:true,vendorIds:['LOC-12194'],created:'2025-09-19 15:25:03',updated:'2025-09-19 15:26:01'},
  {ocId:'OC-00002',name:'Reach Fast Shipping',addr1:'35 W 31st St',addr2:'Unit #1',city:'New York',state:'NY',country:'United States',postal:'10001',provider:'PUDO Inc',type:'PUDOpoint',sweeper:'PUDO Inc',phone:'8443008533',lat:40.7474262,lng:-73.9875328,timezone:'America/New_York',hoursText:'MON - FRI: 07:30am to 08:00pm SAT: 09:00am to 07:30pm SUN: 09:30am to 06:30pm',hoursOfOp:[['MONDAY','07:30','20:00'],['TUESDAY','07:30','20:00'],['WEDNESDAY','07:30','20:00'],['THURSDAY','07:30','20:00'],['FRIDAY','07:30','20:00'],['SATURDAY','09:00','19:30'],['SUNDAY','09:30','18:30']],enable:false,vendorIds:['LOC-10023'],created:'2016-06-15 13:08:40',updated:'2026-10-28 08:15:22'},
- {ocId:'OC-00089',name:'Ideal Food Basket - Lafayette Ave',addr1:'830 Lafayette Ave',addr2:'',city:'Brooklyn',state:'NY',country:'United States',postal:'11221',provider:'PUDO Inc',type:'Locker',sweeper:'PUDO Inc',phone:'8443008533',lat:40.6910629,lng:-73.9393812,timezone:'America/New_York',hoursText:'',hoursOfOp:[['MONDAY','00:00','23:59'],['TUESDAY','00:00','23:59'],['WEDNESDAY','00:00','23:59'],['THURSDAY','00:00','23:59'],['FRIDAY','00:00','23:59'],['SATURDAY','00:00','23:59'],['SUNDAY','00:00','23:59']],enable:false,vendorIds:['LOC-12193'],created:'2025-08-22 13:25:38',updated:'2026-10-27 16:41:09'},
- {ocId:'OC-00090',name:'Ideal Food Basket - Brooklyn Ave',addr1:'1086 Brooklyn Ave',addr2:'',city:'Brooklyn',state:'NY',country:'United States',postal:'11203',provider:'PUDO Inc',type:'Locker',sweeper:'PUDO Inc',phone:'8443008533',lat:40.6473186,lng:-73.9437891,timezone:'America/New_York',hoursText:'',hoursOfOp:[['MONDAY','00:00','23:59'],['TUESDAY','00:00','23:59'],['WEDNESDAY','00:00','23:59'],['THURSDAY','00:00','23:59'],['FRIDAY','00:00','23:59'],['SATURDAY','00:00','23:59'],['SUNDAY','00:00','23:59']],enable:true,vendorIds:['LOC-12191'],created:'2025-08-22 13:22:59',updated:'2026-10-05 14:22:08'},
+ {ocId:'OC-00089',name:'Ideal Food Basket - Lafayette Ave',addr1:'830 Lafayette Ave',addr2:'',city:'Brooklyn',state:'NY',country:'United States',postal:'11221',provider:'PUDO Inc',type:'PUDOpoint',sweeper:'PUDO Inc',phone:'8443008533',lat:40.6910629,lng:-73.9393812,timezone:'America/New_York',hoursText:'',hoursOfOp:[['MONDAY','00:00','23:59'],['TUESDAY','00:00','23:59'],['WEDNESDAY','00:00','23:59'],['THURSDAY','00:00','23:59'],['FRIDAY','00:00','23:59'],['SATURDAY','00:00','23:59'],['SUNDAY','00:00','23:59']],enable:false,vendorIds:['LOC-12193'],created:'2025-08-22 13:25:38',updated:'2026-10-27 16:41:09'},
+ {ocId:'OC-00090',name:'Ideal Food Basket - Brooklyn Ave',addr1:'1086 Brooklyn Ave',addr2:'',city:'Brooklyn',state:'NY',country:'United States',postal:'11203',provider:'PUDO Inc',type:'PUDOpoint',sweeper:'PUDO Inc',phone:'8443008533',lat:40.6473186,lng:-73.9437891,timezone:'America/New_York',hoursText:'',hoursOfOp:[['MONDAY','00:00','23:59'],['TUESDAY','00:00','23:59'],['WEDNESDAY','00:00','23:59'],['THURSDAY','00:00','23:59'],['FRIDAY','00:00','23:59'],['SATURDAY','00:00','23:59'],['SUNDAY','00:00','23:59']],enable:true,vendorIds:['LOC-12191'],created:'2025-08-22 13:22:59',updated:'2026-10-05 14:22:08'},
  {ocId:'OC-00101',name:'Pdq Mail Plus',addr1:'2005 Palmer Ave',addr2:'',city:'Larchmont',state:'NY',country:'US',postal:'10538',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:40.930514,lng:-73.762192,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00176'],created:'2024-03-02 08:11:44',updated:'2026-10-05 09:40:17'},
  {ocId:'OC-00102',name:'Super Postal Center',addr1:'160 W Camino Real',addr2:'',city:'Boca Raton',state:'FL',country:'US',postal:'33432',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:26.340229,lng:-80.090332,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00177'],created:'2024-03-02 08:12:03',updated:'2026-08-19 10:02:51'},
  {ocId:'OC-00103',name:'Pack & Ship North',addr1:'9477 W 104th Ave',addr2:'',city:'Westminster',state:'CO',country:'US',postal:'80021',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:39.886107,lng:-105.103101,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00178'],created:'2024-03-02 08:12:21',updated:'2026-07-11 11:14:36'},
@@ -820,7 +818,6 @@ var I18N_ZH = {
   "Open provider issue":"未关闭的供应商异常",
   "Has open issue":"有未关闭异常",
   "No issue":"无异常",
-  "Type ≠ source":"类型 ≠ 来源",
 
   /* ---- badges ---- */
   "missing":"缺失",
@@ -963,7 +960,7 @@ var I18N_ZH = {
   "A run writes provider values. It never writes an OC decision — enable, flags and sign-offs stay human. Since v3.3.0 a run may also close an issue, but only when the value it delivered is valid; the fix is the owner’s, the record of it is ours.":"一次推送只写供应商的值，从不写 OC 的决定 —— 启用、标记、签收都由人做。自 v3.3.0 起，推送也可以关闭异常，但只有它带来的值合法时才关；修是责任方的事，记录是我们的。",
 
 
-  "LMS, PUDO or M&MP per record; a 2:1 store shows both":"每条记录是 LMS、PUDO 或 M&MP；2:1 的门店两个都显示",
+  "One value per record — <b>packagehub (LMS)</b>, <b>PUDOpoint (PUDO)</b>, <b>M&MP</b>; a 2:1 store shows both owners, merge order first":"每条记录一个值 —— <b>packagehub (LMS)</b>、<b>PUDOpoint (PUDO)</b>、<b>M&amp;MP</b>；2:1 的门店两个归属都显示，按合并优先级排序",
   "Flag an issue on this record":"在这条记录上标记异常",
   "Flag an issue on the source record":"在源记录上标记异常",
   "Batch enable still records a baseline per row and cannot bypass the checks.":"批量启用依然逐条记录基线，也无法绕过检查。",
@@ -1043,7 +1040,6 @@ var I18N_ZH = {
   "Page":"页面",
   "Action":"操作",
   "Expected":"预期",
-  "LMS, PUDO or M&amp;MP per record; a 2:1 store shows both":"每条记录是 LMS、PUDO 或 M&amp;MP；2:1 的门店两个都显示",
   "Click “Apply next provider sync”":"点“执行下一次供应商同步”",
   "e.g. LOC-10024":"例如 LOC-10024",
   "e.g. OC-00001":"例如 OC-00001",
@@ -1067,9 +1063,15 @@ var I18N_ZH = {
   "Report a data issue on an empty sweeper":"给为空的揽收方标记一条数据异常",
   "Reason required · flag recorded on the vendor record · no value changed":"必须填原因 · 标记记在供应商记录上 · 值不变",
   "Read the Source column":"看来源这一列",
+  "Look at the Source and QR columns":"看来源列和 QR 列",
+  "Source reads <b>packagehub (LMS)</b> — what it is and who owns it, in one value; QR marks the counters that can scan, LMS only":"来源显示 <b>packagehub (LMS)</b> —— 它是什么、谁拥有，一个值说完；QR 标出能扫码的柜台，只有 LMS",
   "Set Source = LMS, then open the Type filter":"来源选 LMS，再打开类型筛选",
   "Data Issues":"数据异常",
-  "Issues filter → “Type ≠ source”":"异常筛选 →“类型 ≠ 来源”",
+  "Issues filter → “Has open issue”":"异常筛选 →“有未关闭异常”",
+  "Open the Source filter":"打开来源筛选",
+  "Source = M&MP, then look at Sweeper":"来源选 M&MP，再看揽收方",
+  "Both self-operated stores are swept by":"两家自营店都由",
+  "— the shop is ours, the pickup is not. Sweeper has no M&MP option at all":"揽收 —— 店是我们的，揽收不是。揽收方筛选里根本没有 M&MP 这个选项",
   "Zero rows on clean data; a record whose type cannot belong to its source is tagged in the Type column and isolated here":"干净数据下是零行；类型不可能属于其来源的记录会在类型列打标，并在这里被单独筛出",
   "Basic Info → each field carries its source":"基本信息 → 每个字段都带来源",
   "LMS wins the field when LMS has a value, PUDO fills the rest":"LMS 有值时该字段归 LMS，其余由 PUDO 补",
@@ -1091,8 +1093,8 @@ var I18N_ZH = {
 
 /* ---- whole blocks (inline markup inside the sentence) ---- */
 var I18N_BLOCK = {
-  "p01.desc":"<b>来源决定类型</b> —— LMS 只能是 <b>packagehub</b>，PUDO Inc 只能是 <b>PUDOpoint</b> 或 <b>Locker</b>，M&amp;MP 是自营小店 —— 所以选定来源后，类型筛选会自动收窄。这里是供应商实际推过来的内容，<b>所有字段只读</b>，包括<b>揽收方</b>，它现在随每日同步一起进来。<b>M&amp;MP</b> 是自营店，责任方是门店本身而不是某个供应商。发现值不对，我们不在这一层改：我们<b>带着原因标记它</b>，标记挂在这条记录上，由供应商去修源头。OC 层只决定这家店是否上线。",
-  "p02.desc":"<b>来源决定类型：</b>LMS → packagehub · PUDO Inc → PUDOpoint / Locker · M&amp;MP → <b>M&amp;MP</b>，所以选定来源后类型筛选会自动收窄。这是客户实际看到的那条记录。<b>只有两个动作：启用，以及标记异常。</b>这里不能编辑 —— 地址错了不会被改写，而是标记回供应商。值<b>按字段逐个合并</b>：<b>M&amp;MP</b> 自营店是自己的来源，优先级最高，然后是 <b>LMS</b>，最后由 PUDO Inc 补上仍为空的字段。",
+  "p01.desc":"<b>只有一个来源，不是两个</b> —— 类型和归属一起写在同一个字段：<b>PUDOpoint (PUDO)</b>、<b>packagehub (LMS)</b>、<b>M&amp;MP</b>。既然两者合成一个字段，“不可能的组合”就不再是筛选能搭出来的东西。这里是供应商实际推过来的内容，<b>所有字段只读</b>，包括<b>揽收方</b>，它现在随每日同步一起进来。<b>M&amp;MP</b> 是自营店，责任方是门店本身而不是某个供应商 —— 揽收方固定是 <b>LMS</b>。发现值不对，我们不在这一层改：我们<b>带着原因标记它</b>，标记挂在这条记录上，由供应商去修源头。OC 层只决定这家店是否上线。",
+  "p02.desc":"<b>只有一个来源：</b><b>packagehub (LMS)</b> · <b>PUDOpoint (PUDO)</b> · <b>M&amp;MP</b> —— 它是什么、谁拥有，一个字段说完。这是客户实际看到的那条记录。<b>只有两个动作：启用，以及标记异常。</b>这里不能编辑 —— 地址错了不会被改写，而是标记回供应商。值<b>按字段逐个合并</b>：<b>M&amp;MP</b> 自营店是自己的来源，优先级最高，然后是 <b>LMS</b>，最后由 PUDO Inc 补上仍为空的字段。",
   "pdup.desc":"独立页面，只回答一个问题：<b>这两条供应商门店记录是不是同一家店？</b>配对由模糊匹配产生（地址 50 · 邮编 25 · 城市 15 · 州 10，阈值 75%）。判定结果决定映射关系 —— <b>同一家 = 2:1</b>（两条供应商记录对应一个 OC 门店，取值以 LMS 优先），<b>不是同一家 = 1:1</b>（各自有独立的 OC 门店）。两条记录<b>左右并排</b>，每个字段一行，差异那段单独标出来 —— 判定是看出来的，不是读出来的。凡是挂在多条供应商记录下的 OC 门店，都会在 OC 列表里标 <b>2:1</b>。",
   "pdi.desc":"所有数据问题集中在一个台账里 —— <b>没有审核队列</b>。顶部先给运营每天在追的<b>四项检查</b> —— <b>地址信息不全</b>、<b>缺少邮编</b>、<b>没有营业时间</b>、<b>某天营业不足 3 小时</b> —— 各自按未关闭异常计数，点一下就能筛出这一类。往下是三类：我们已经请供应商修的、签收之后变了的（只是信息，不是待决策），以及从来没通过入池校验的。这里不决定任何值是否被应用 —— <b>供应商的值永远给到下游</b>。标记异常是我们提要求的方式，下一次推送是它落地的方式。<b>导出清单</b>就可以发给供应商。",
   "p03.desc":"两个层级上的每一次创建、同步写入、标记、判定和签收都在这里。可按层级和类型筛选。",
@@ -1103,7 +1105,9 @@ var I18N_BLOCK = {
   "sync.pending":"缺失、格式错、自相矛盾、不可能的数字 —— 只要值合法地到了，就自己关闭；<b>错误 / 过期 / 重复</b>永远回到人工。",
   "drift.note":"客户已经拿到<b>新</b>值 —— 没有什么需要批准。基线只是记录签收时是什么样，好让你看出供应商改了什么。",
   "oc.assemble":"每个字段都独立地从关联的源记录里取：<b>M&amp;MP</b>（自营店）优先，然后是 <b>LMS</b>，最后由 PUDO Inc 补空。两条记录（2:1）依然只产出客户看到的一行。",
-  "walk.10.exp":"只提供 <b>packagehub</b>，并已自动选中；提示显示“LMS → packagehub”。PUDO Inc（PUDOpoint / Locker）和 M&amp;MP 同理",
+  "walk.1.exp":"来源显示 <b>packagehub (LMS)</b> —— 它是什么、谁拥有，一个值说完；QR 标出能扫码的柜台，只有 LMS",
+  "walk.3.exp":"每条记录一个值 —— <b>packagehub (LMS)</b>、<b>PUDOpoint (PUDO)</b>、<b>M&amp;MP</b>；2:1 的门店两个归属都显示，按合并优先级排序",
+  "walk.10.exp":"三个值，每个都是「类型 + 归属」：<b>PUDOpoint (PUDO)</b>、<b>packagehub (LMS)</b>、<b>M&amp;MP</b>，后面跟着各自的条数。没有需要同步的类型下拉了，因为两者就是一个字段",
   "walk.12.exp":"两条异常自己关闭（值变了<b>并且</b>合法）；一条保持未关闭并注明“值变了但仍不合法”，一条回到人工，其余不动 —— 任何地方都没有手工关闭",
   "btn.notlive":"未上线",
   "sync.info":"一次推送只写供应商的值，从不写 OC 的决定 —— 启用、标记、签收都由人做。自 v3.3.0 起，推送也可以<b>关闭</b>一条异常，但只有它带来的值合法时才关；修是责任方的事，记录是我们的。",
@@ -1115,13 +1119,12 @@ var I18N_BLOCK = {
   "help.checks":"顶部那几个格子只是把同一份清单按字段切开，方便每天干活 —— 一条异常属于哪一格由字段决定，不靠人手选。",
   "dup.vs":"对比",
   "pull.hint":"标记 → 导出 → 供应商修正 → 再拉一次",
-  "wt.title":"演示脚本 —— v3.9.0（供应商改完再拉一次）"
+  "wt.title":"演示脚本 —— v3.10.0（一个来源、重新拉取、必查项）"
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
 var I18N_RULES = [
   [/^(\d+) flagged field\(s\) are covered by this run\.$/, "本次推送覆盖 $1 个已标记字段。"],
-  [/^A source can only produce its own type, so the Type filter is now limited to (.+)\.$/, "来源只可能产出自己的类型，所以类型筛选现在只保留 $1。"],
   [/^No OC location exists for (.+)$/, "$1 还没有 OC 门店"],
   [/^OC location (OC-\d+) auto-disabled$/, "OC 门店 $1 已自动停用"],
   [/^OC location: (.+) vs$/, "OC 门店：$1 对 —"],
@@ -1183,6 +1186,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "3.10.0":"<b>一个来源，不是两个。</b>类型和归属从来不是独立的 —— LMS 只发 packagehub，PUDO Inc 只发 PUDOpoint，M&amp;MP 是我们自己的店 —— 所以列表和筛选都只保留一个 <b>Source</b>：<b>PUDOpoint (PUDO)</b>、<b>packagehub (LMS)</b>、<b>M&amp;MP</b>。单独的 Type 列、跟着它级联的 Type 下拉、以及“类型 ≠ 来源”那个徽章一起下线：不可能的组合不再是一个筛选选项。M&amp;MP 的店是我们的，揽收不是 —— 它的揽收方固定是 <b>LMS</b>，也只可能是这个值。",
   "3.9.0":"<b>拉取不是决定。</b>供应商列表新增 <b>Refresh from providers</b>：把异常清单导出给供应商、对方补推之后，直接再拉一次，不必等夜间同步。拉取只写入供应商这次推来的值（沿用 v3.4.0 的规则），逐字段拿「标记那一刻的值」做参照重新判定，<b>只有真正变合法</b>的异常才会自动关闭；其余保持未关闭并写明原因。<b>上次拉取</b>那行留下到秒的时间、run 号和这次改变了什么 —— 「我们又问了一次、对方回了什么」是页面上的一行事实，不需要凭记忆。",
   "3.8.0":"<b>两列并成一列，异常自己会解释。</b>供应商列表加上了 LMS 会推的 <b>QR code dropoff</b> —— 能扫码的柜台一眼可见，不用点进详情。<b>来源和类型合并成一列</b>：`packagehub (LMS)` 一句话说清「它是什么」和「谁拥有这份数据」，而来源筛选保留 —— 因为筛选才驱动类型级联和合并优先级。异常台账按<b>性质</b>分成两组：<b>关键字段缺失</b>（该有的没给，默认阻塞）与<b>数据不准确</b>（值有，但是错的）。每个 Issues 标题旁有个 <b>?</b>，讲清什么算异常、什么会阻塞、什么会自己关闭。",
   "3.7.0":"<b>两小时的营业日不是排班。</b>必查项多了一条：<b>任何一天合计不足 3 小时</b>都算可疑 —— 由时段算出来，不是人工标上去的，所以数据被截断时它自己会冒出来。Hours 标签页会在营业时间下面点名是哪一天。<br><br>另外，异常导出里带上了<b>门店本身</b>：地址、城市、州、邮编、来源、类型，就挨着单号 —— 发给供应商的 CSV 能看出是哪家店，而不只是一个记录 ID。",
@@ -1343,8 +1347,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='3.9.0';
+var APP_VERSION='3.10.0';
 var VERSIONS=[
+ {v:'3.10.0',type:'minor',date:'2026-11-10',desc:'<b>One Source, not two.</b> The type and the owner were never independent — LMS only ships package hubs, PUDO Inc only ships points, M&amp;MP is our own store — so the list and the filters now carry a single <b>Source</b>: <b>PUDOpoint (PUDO)</b>, <b>packagehub (LMS)</b>, <b>M&amp;MP</b>. The separate Type column, the Type dropdown that cascaded off it, and the “type ≠ source” badge all go with it: a pair that cannot exist is not a filter option any more. M&amp;MP stores are ours, the pickup is not — their sweeper is <b>LMS</b>, and that is the only value it can take.'},
  {v:'3.9.0',type:'minor',date:'2026-11-10',desc:'<b>A pull is not a decision.</b> The vendor list gains <b>Refresh from providers</b>: after you export the issue list and the provider pushes corrected values, pull again instead of waiting for the nightly run. The pull writes what the provider sent (the v3.4.0 rule), re-checks every flagged field against the value it had when it was flagged, and closes only the issues whose new value is <b>valid</b> — everything else stays open with a note saying why. A <b>last pull</b> line keeps the timestamp to the second, the run id and what that pull changed, so &ldquo;we asked again and here is what came back&rdquo; is a fact on the page rather than a memory.'},
  {v:'3.8.0',type:'minor',date:'2026-11-10',desc:'<b>One column instead of two, and an issue that explains itself.</b> The vendor list now shows the <b>QR code dropoff</b> capability LMS sends, so a counter that can scan is visible without opening the record. <b>Source and type merged into one column</b> — `packagehub (LMS)` says what it is and who owns the data in the same breath, while the Source filter stays, because the filter is what drives the type cascade and the merge priority. And the ledger splits by <b>nature</b>: <b>missing critical fields</b> (nothing arrived, blocking by default) versus <b>inaccurate data</b> (a value is there and it is wrong). A <b>?</b> next to every Issues heading explains what counts, what blocks and what closes itself.'},
  {v:'3.7.0',type:'minor',date:'2026-11-05',desc:'<b>A two-hour day is not a rota.</b> The checks grow a fourth entry: any opening day that totals <b>under three hours</b> is called out — computed from the ranges, not typed in by hand, so a truncated feed shows up on its own. The Hours tab names the offending day under the value. And the issue export now carries the <b>store itself</b>: address, city, state, postal code, source and type next to the location ids, so a CSV sent to a provider says which shop it is instead of only which record.'},
@@ -1735,32 +1740,39 @@ function provBadge(p){return '<span class="badge '+(p==='M&MP'?'badge-green':p==
 /* v3.8.0 — type and source are both read from the feed, but they answer different
    questions: "what is this" and "who owns the value". One column, both answers. */
 function srcShort(x){return x==='PUDO Inc'?'PUDO':x;}
-function typeChip(t,src){
-  var ty=esc(t||'—');
-  if(!src)return ty;
-  /* left to right in merge order, so (LMS / PUDO) also says which one wins */
-  var pri={'M&MP':0,'LMS':1};
-  var one=String(src).split(' / ').filter(Boolean)
-    .sort(function(a,b){return (pri[a]===undefined?2:pri[a])-(pri[b]===undefined?2:pri[b]);})
-    .map(srcShort).join(' / ');
-  return '<span class="type-cell">'+ty+' <span class="src-tag">('+esc(one)+')</span></span>';
-}
 function qrCell(v){
   return v.qrDropoff
     ? '<span class="qr-badge" title="QR code dropoff — the customer scans a code at the counter">QR</span>'
     : '<span style="color:var(--text-tertiary)">—</span>';
 }
 
-/* v3.2.0 — a source can only produce certain types. LMS ships package hubs only;
-   PUDO Inc ships points and lockers; M&MP is our own shop. The filter and the list
-   both read this map, so the UI can never offer an impossible combination. */
-var SOURCE_TYPES={'PUDO Inc':['PUDOpoint','Locker'],'LMS':['packagehub'],'M&MP':['M&MP']};
-var ALL_TYPES=['PUDOpoint','Locker','packagehub','M&MP'];
-function typesForSource(p){return (p&&SOURCE_TYPES[p])?SOURCE_TYPES[p]:ALL_TYPES;}
-function typeMatches(v){
-  var allowed=SOURCE_TYPES[v.provider];
-  if(!allowed||!v.type)return true;          /* an empty type is a MISSING issue, not a mismatch */
-  return allowed.indexOf(v.type)>=0;
+/* v3.10.0 — one Source. Type and owner were never independent: LMS only ships
+   package hubs, PUDO Inc only ships points, M&MP is our own store. Two columns
+   said the same thing twice, and the "type ≠ source" badge existed only to
+   explain the overlap — so the pair is now one field, in the list and in the
+   filters. Locker is a real PUDO type but this release does not surface it;
+   adding it back is one entry here, no model change. */
+var SOURCES=[
+  {type:'PUDOpoint', src:'PUDO Inc', short:'PUDO'},
+  {type:'packagehub', src:'LMS',      short:'LMS'},
+  {type:'M&MP',      src:'M&MP',      short:'M&MP'}
+];
+function srcDef(t){for(var i=0;i<SOURCES.length;i++)if(SOURCES[i].type===t)return SOURCES[i];return null;}
+/* "packagehub (LMS)" — the type is the value, the owner is the annotation, and a
+   self-operated store prints once because both halves are the same word */
+function srcLabel(t,srcs){
+  var d=srcDef(t),ty=esc(t||'—');
+  var parts=String(srcs==null?(d?d.src:''):srcs).split(' / ').filter(Boolean);
+  if(!parts.length)return ty;
+  var pri={'M&MP':0,'LMS':1};
+  parts.sort(function(a,b){return (pri[a]===undefined?2:pri[a])-(pri[b]===undefined?2:pri[b]);});
+  var sh=parts.map(srcShort);
+  if(sh.length===1&&sh[0]===String(t))return ty;
+  return '<span class="type-cell">'+ty+' <span class="src-tag">('+esc(sh.join(' / '))+')</span></span>';
+}
+function srcsOf(o){
+  var m={};o.vendorIds.forEach(function(id){var v=findVendor(id);if(v)m[v.provider]=1;});
+  return Object.keys(m).join(' / ');
 }
 function val(id){var el=document.getElementById(id);return el?el.value.trim():'';}
 function openModal(id){document.getElementById(id).classList.add('open');}
@@ -1809,9 +1821,9 @@ function updateBadges(){
 }
 
 /* ============ vendor list ============ */
-function vendorFilters(skipType){
+function vendorFilters(skipSource){
   var f={id:val('v-f-id').toLowerCase(),ocid:val('v-f-ocid').toLowerCase(),name:val('v-f-name').toLowerCase(),
-    provider:val('v-f-provider'),status:val('v-f-status'),type:skipType?'':val('v-f-type'),sweeper:val('v-f-sweeper'),issues:val('v-f-issues')};
+    source:skipSource?'':val('v-f-source'),status:val('v-f-status'),sweeper:val('v-f-sweeper'),issues:val('v-f-issues')};
   return VENDORS.filter(function(v){
     if(f.id&&v.id.toLowerCase().indexOf(f.id)<0)return false;
     if(f.ocid){
@@ -1819,19 +1831,17 @@ function vendorFilters(skipType){
       if(!oc||oc.ocId.toLowerCase().indexOf(f.ocid)<0)return false;
     }
     if(f.name&&v.name.toLowerCase().indexOf(f.name)<0)return false;
-    if(f.provider&&v.provider!==f.provider)return false;
+    if(f.source&&v.type!==f.source)return false;
     if(f.status&&v.status!==f.status)return false;
-    if(f.type&&v.type!==f.type)return false;
     if(f.sweeper&&v.sweeper!==f.sweeper)return false;
     var oi=issuesOfVendor(v.id).filter(function(i){return i.status!=='fixed';}).length;
     if(f.issues==='open'&&!oi)return false;
     if(f.issues==='none'&&oi)return false;
-    if(f.issues==='mismatch'&&typeMatches(v))return false;
     return true;
   });
 }
 function applyVendorFilters(){renderVendor();}
-function typeCounts(kind){
+function sourceCounts(kind){
   var rows=kind==='v'?vendorFilters(true):ocFilters(true),c={};
   rows.forEach(function(r){
     var ty=kind==='v'?(r.type||''):mergedField(r,'type').value;
@@ -1839,37 +1849,17 @@ function typeCounts(kind){
   });
   return c;
 }
-/* rebuild the Type dropdown from the chosen Source, keeping counts truthful */
-function syncTypeFilter(kind,applyRules){
-  var get=function(n){return document.getElementById(kind+'-f-'+n);};
-  var sel=get('provider'),t=get('type'),h=get('type-hint');
-  if(!sel||!t)return;
-  var src=sel.value,list=typesForSource(src),counts=typeCounts(kind),cur=t.value;
-  t.innerHTML='<option value="">All</option>'+list.map(function(x){
-    var n=counts[x]||0;
-    return '<option value="'+esc(x)+'">'+esc(x)+' ('+n+')</option>';
+/* one dropdown, three values, each with the count it would return */
+function renderSourceFilter(kind){
+  var sel=document.getElementById(kind+'-f-source'); if(!sel)return;
+  var counts=sourceCounts(kind),cur=sel.value,total=kind==='v'?vendorFilters(true).length:ocFilters(true).length;
+  sel.innerHTML='<option value="">'+tr('All')+' ('+total+')</option>'+SOURCES.map(function(x){
+    var n=counts[x.type]||0;
+    return '<option value="'+esc(x.type)+'"'+(x.type===cur?' selected':'')+'>'+esc(x.type)+(x.short===x.type?'':' ('+esc(x.short)+')')+' · '+n+'</option>';
   }).join('');
-  if(applyRules){
-    if(!src){t.value='';}                       /* clearing the source clears the type */
-    else if(list.length===1){t.value=list[0];}   /* a source with one type selects it */
-    else if(list.indexOf(cur)>=0){t.value=cur;}  /* keep a still-valid manual choice */
-    else {t.value='';}
-  } else {                                       /* re-render: keep the operator's choice */
-    t.value=(list.indexOf(cur)>=0)?cur:'';
-  }
-  if(h){
-    h.textContent=src?('· '+src+' → '+list.join(' / ')):'';
-    h.style.display=src?'inline':'none';
-  }
+  sel.value=SOURCES.some(function(x){return x.type===cur;})?cur:'';
 }
-function onSourceChange(kind){
-  syncTypeFilter(kind,true);
-  if(kind==='v')renderVendor();else renderOC();
-  var src=document.getElementById(kind+'-f-provider').value;
-  var list=typesForSource(src);
-  if(src)showToast(src+' → '+list.join(' / '),'A source can only produce its own type, so the Type filter is now limited to '+list.join(' / ')+'.');
-}
-function resetVendorFilters(){['v-f-id','v-f-ocid','v-f-name','v-f-sweeper','v-f-status'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('v-f-provider').value='';document.getElementById('v-f-issues').value='';syncTypeFilter('v',true);renderVendor();}
+function resetVendorFilters(){['v-f-id','v-f-ocid','v-f-name','v-f-sweeper','v-f-status'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('v-f-source').value='';document.getElementById('v-f-issues').value='';renderSourceFilter('v');renderVendor();}
 function renderVendor(){
   var rows=vendorFilters();
   document.getElementById('v-tbody').innerHTML=rows.map(function(v){
@@ -1880,7 +1870,7 @@ function renderVendor(){
       +'<td>'+esc(v.name)+'</td>'
       +'<td>'+esc(v.addr1||'—')+'</td>'
       +'<td>'+esc(v.city)+'</td>'
-      +'<td>'+typeChip(v.type,v.provider)+(typeMatches(v)?'':' <span class="badge badge-red" title="this type cannot come from '+esc(v.provider)+'">type ≠ source</span>')+'</td>'
+      +'<td>'+srcLabel(v.type,v.provider)+'</td>'
       +'<td>'+qrCell(v)+'</td>'
       +'<td>'+(v.sweeper?provBadge(v.sweeper):'<span class="badge badge-orange">missing</span>')+'</td>'
       +'<td>'+statusBadge(v.status)+'</td>'
@@ -1891,21 +1881,20 @@ function renderVendor(){
   }).join('');
   document.getElementById('v-result-meta').textContent=rows.length+' vendor location(s)';
   var pn=document.getElementById('v-pull-note'); if(pn)pn.innerHTML=pullNote();
-  syncTypeFilter('v');
+  renderSourceFilter('v');
   updateBadges();applyLang();
 }
 
 /* ============ OC list ============ */
-function ocFilters(skipType){
+function ocFilters(skipSource){
   var f={id:val('o-f-id').toLowerCase(),vid:val('o-f-vendorid').toLowerCase(),name:val('o-f-name').toLowerCase(),
-    provider:val('o-f-provider'),status:val('o-f-status'),type:skipType?'':val('o-f-type'),live:val('o-f-live'),issues:val('o-f-issues')};
+    source:skipSource?'':val('o-f-source'),status:val('o-f-status'),live:val('o-f-live'),issues:val('o-f-issues')};
   return OC_LOCATIONS.filter(function(o){
     if(f.id&&o.ocId.toLowerCase().indexOf(f.id)<0)return false;
     if(f.vid&&!o.vendorIds.some(function(v){return v.toLowerCase().indexOf(f.vid)>=0;}))return false;
     if(f.name&&mergedField(o,'name').value.toLowerCase().indexOf(f.name)<0)return false;
-    if(f.provider&&!o.vendorIds.some(function(id){var v=findVendor(id);return v&&v.provider===f.provider;}))return false;
     if(f.status&&statusOf(o)!==f.status)return false;
-    if(f.type&&mergedField(o,'type').value!==f.type)return false;
+    if(f.source&&mergedField(o,'type').value!==f.source)return false;
     if(f.live==='no'&&o.enable)return false;
     if(f.live==='yes'&&!o.enable)return false;
     if(f.issues==='any'&&!(openIssues(o).length||driftOf(o).length||o.dup||o.intake==='overridden'))return false;
@@ -1916,11 +1905,11 @@ function ocFilters(skipType){
   });
 }
 function applyOCFilters(){renderOC();}
-function resetOCFilters(){['o-f-id','o-f-vendorid','o-f-name'].forEach(function(i){document.getElementById(i).value='';});['o-f-provider','o-f-status','o-f-live','o-f-issues'].forEach(function(i){document.getElementById(i).value='';});syncTypeFilter('o',true);renderOC();}
+function resetOCFilters(){['o-f-id','o-f-vendorid','o-f-name'].forEach(function(i){document.getElementById(i).value='';});['o-f-source','o-f-status','o-f-live','o-f-issues'].forEach(function(i){document.getElementById(i).value='';});renderSourceFilter('o');renderOC();}
 function filterNotLive(){
   /* a preset wins over leftover filters, otherwise the count in the toast and the
      count on the menu badge would disagree with what is on screen */
-  document.getElementById('o-f-provider').value='';syncTypeFilter('o',true);
+  document.getElementById('o-f-source').value='';renderSourceFilter('o');
   document.getElementById('o-f-issues').value='';
   document.getElementById('o-f-live').value='no';renderOC();
   var n=OC_LOCATIONS.filter(function(o){return !o.enable;}).length;
@@ -1941,7 +1930,7 @@ function renderOC(){
     var name=mergedField(o,'name'), addr=mergedField(o,'addr1'), city=mergedField(o,'city');
     var sweeper=mergedField(o,'sweeper');
     var srcs={};o.vendorIds.forEach(function(id){var v=findVendor(id);if(v)srcs[v.provider]=1;});
-    var srcBadges=Object.keys(srcs).map(function(p){return '<span class="badge '+(p==='M&MP'?'badge-green':p==='LMS'?'badge-blue':'badge-teal')+'">'+esc(p==='PUDO Inc'?'PUDO':p)+'</span>';}).join(' ');
+    var srcList=Object.keys(srcs).join(' / ');
     var sw=(o.enable&&st!=='active')?'<span class="switch disabled" title="no active vendor location"></span>'
       :(!isMgr()?'<span class="switch '+(o.enable?'on':'')+' disabled" title="requires the Location Manager role"></span>'
       :'<span class="switch '+(o.enable?'on':'')+'" onclick="toggleEnable(\''+o.ocId+'\')"></span>');
@@ -1951,7 +1940,7 @@ function renderOC(){
       +'<td>'+esc(name.value)+'</td>'
       +'<td>'+esc(addr.value||'—')+' <span class="badge '+(addr.src==='LMS'?'badge-blue':'badge-teal')+'" style="font-size:9px">'+esc(addr.src==='PUDO Inc'?'PUDO':addr.src)+'</span></td>'
       +'<td>'+esc(city.value)+', '+esc(mergedField(o,'state').value)+'</td>'
-      +'<td>'+typeChip(mergedField(o,'type').value,Object.keys(srcs).join(' / '))+'</td>'
+      +'<td>'+srcLabel(mergedField(o,'type').value,srcList)+'</td>'
       +'<td>'+(sweeper.value?esc(sweeper.value==='PUDO Inc'?'PUDO':sweeper.value):'<span class="badge badge-orange">missing</span>')+'</td>'
       +'<td>'+statusBadge(st)+'</td>'
       +'<td>'+issueBadges(o)+'</td>'
@@ -1961,7 +1950,7 @@ function renderOC(){
       +'</tr>';
   }).join('');
   document.getElementById('o-result-meta').textContent=rows.length+' OC location(s)';
-  syncTypeFilter('o');
+  renderSourceFilter('o');
   updateOCSelection();updateBadges();applyLang();
 }
 function updateOCSelection(){
@@ -2371,10 +2360,11 @@ function srcChip(o,f){
 }
 function vendorPanels(v){
   if(detailTab==='overview'){
-    var rows=[['Name','name'],['Address','addr1'],['City','city'],['State','state'],['Postal code','postal'],['Coordinates','lat'],['Phone','phone'],['Provider','provider'],['Type','type'],['Status','status'],['QR dropoff','qr'],['Updated','updated']];
+    var rows=[['Name','name'],['Address','addr1'],['City','city'],['State','state'],['Postal code','postal'],['Coordinates','lat'],['Phone','phone'],['Source','type'],['Status','status'],['QR dropoff','qr'],['Updated','updated']];
     return psec('Basic Info','<div class="dp-kv-grid">'+rows.map(function(r){
       var x=v[r[1]];
       if(r[1]==='lat')x=v.lat+', '+v.lng;
+      if(r[1]==='type')return kv('Source',srcLabel(v.type,v.provider));
       if(r[1]==='status')return kv(r[0],statusBadge(v.status));
       if(r[1]==='qr')return kv(r[0],v.qrDropoff?'<span class="qr-badge">QR</span> <span style="font-size:11.5px;color:var(--text-tertiary)">the customer scans a code at the counter</span>':'<span style="color:var(--text-tertiary)">not supported by this source</span>');
       return kv(r[0],esc(x==null||x===''?'—':x));
@@ -2408,7 +2398,7 @@ function ocPanels(o){
       var m=mergedField(o,mapF(r[1]));
       return kv(r[0],(m.value?esc(m.value):'—')+(r[1]==='sweeper'?'':' '+srcChip(o,r[1])));
     }).join('')+kv('Coordinates',esc(mergedField(o,'lat').value+', '+mergedField(o,'lng').value)+' '+srcChip(o,'lat'))
-      +kv('Type',esc(mergedField(o,'type').value))+'</div>','')
+      +kv('Source',srcLabel(mergedField(o,'type').value,srcsOf(o)))+'</div>','')
       +psec('How this record is assembled','<div data-i18n="oc.assemble" style="font-size:12.5px;line-height:1.7;color:var(--text-secondary)">Each field is taken from the linked source records independently: <b>M&amp;MP</b> (our own store) wins first, then <b>LMS</b>, then PUDO Inc fills the gaps. Two records (2:1) still produce one customer-facing row.</div>');
   }
   if(detailTab==='operations'){
@@ -2551,14 +2541,14 @@ function exportIssues(){
 ['ISS-0007','ISS-0008','ISS-0009','ISS-0010'].forEach(function(){}); 
 (function seedMmp(){
   var mmp=[
-    {id:'LOC-MMP-201',name:'M&MP — Downtown Austin',addr1:'600 Congress Ave',city:'Austin',state:'TX',postal:'78701',status:'active',sweeper:'M&MP',type:'M&MP',lat:30.2686,lng:-97.7429,phone:'5125550142',timezone:'America/Chicago',hoursText:'Mon - Sat: 09:00am to 07:00pm',hoursOfOp:[{day:'MONDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'TUESDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'WEDNESDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'THURSDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'FRIDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'SATURDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]}],created:'2026-02-11 10:00:00',updated:'2026-10-30 18:20:00'},
-    {id:'LOC-MMP-202',name:'M&MP — Nashville Gulch',addr1:'1000 Broadway',city:'Nashville',state:'TN',postal:'37203',status:'active',sweeper:'M&MP',type:'M&MP',lat:36.1566,lng:-86.7901,phone:'6155550188',timezone:'America/Chicago',hoursText:'Mon - Sat: 08:00am to 08:00pm',hoursOfOp:[{day:'MONDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'TUESDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'WEDNESDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'THURSDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'FRIDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'SATURDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]}],created:'2026-03-04 09:30:00',updated:'2026-11-01 12:05:00'}
+    {id:'LOC-MMP-201',name:'M&MP — Downtown Austin',addr1:'600 Congress Ave',city:'Austin',state:'TX',postal:'78701',status:'active',sweeper:'LMS',type:'M&MP',lat:30.2686,lng:-97.7429,phone:'5125550142',timezone:'America/Chicago',hoursText:'Mon - Sat: 09:00am to 07:00pm',hoursOfOp:[{day:'MONDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'TUESDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'WEDNESDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'THURSDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'FRIDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'SATURDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]}],created:'2026-02-11 10:00:00',updated:'2026-10-30 18:20:00'},
+    {id:'LOC-MMP-202',name:'M&MP — Nashville Gulch',addr1:'1000 Broadway',city:'Nashville',state:'TN',postal:'37203',status:'active',sweeper:'LMS',type:'M&MP',lat:36.1566,lng:-86.7901,phone:'6155550188',timezone:'America/Chicago',hoursText:'Mon - Sat: 08:00am to 08:00pm',hoursOfOp:[{day:'MONDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'TUESDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'WEDNESDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'THURSDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'FRIDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'SATURDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]}],created:'2026-03-04 09:30:00',updated:'2026-11-01 12:05:00'}
   ];
   mmp.forEach(function(v){
     v.provider='M&MP';v.country='US';v.qrDropoff=false;v.supports=[];
     VENDORS.push(v);
     OC_LOCATIONS.push({ocId:'OC-'+String(300+VENDORS.length).padStart(5,'0'),name:v.name,addr1:v.addr1,addr2:'',city:v.city,state:v.state,country:'US',postal:v.postal,
-      provider:'M&MP',type:v.type,sweeper:'M&MP',phone:v.phone,lat:v.lat,lng:v.lng,timezone:v.timezone,
+      provider:'M&MP',type:v.type,sweeper:'LMS',phone:v.phone,lat:v.lat,lng:v.lng,timezone:v.timezone,
       hoursText:v.hoursText,hoursOfOp:v.hoursOfOp,enable:false,vendorIds:[v.id],created:v.created,updated:v.updated});
   });
   var first=OC_LOCATIONS[OC_LOCATIONS.length-2]; first.enable=true;
@@ -2598,7 +2588,7 @@ function exportIssues(){
 /* the header badge reads from APP_VERSION — a hardcoded copy is how v3.8.0
    survived a release once. Never write the number in the markup again. */
 var vc=document.getElementById('ver-chip-no'); if(vc)vc.textContent='v'+APP_VERSION;
-captureIssueBase();switchPage('p01');tickClock();syncTypeFilter('v',true);syncTypeFilter('o',true);applyLang();
+captureIssueBase();switchPage('p01');tickClock();renderSourceFilter('v');renderSourceFilter('o');applyLang();
 </script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 # Location Management Admin Console — 功能验收标准（通俗版）
 
-> 版本 **v3.9.0** · 对照原型 https://jama-dev520.github.io/location-prototype/
-> 配套文档：PRD v3.9.0（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
+> 版本 **v3.10.0** · 对照原型 https://jama-dev520.github.io/location-prototype/
+> 配套文档：PRD v3.10.0（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
 > 对外（英文，给外国同事）：https://jama-dev520.github.io/location-prototype/feature-overview.html
 > 演示视频（3 分 25 秒，36 条英文字幕，按 v3.8.0 录制）：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 
@@ -55,7 +55,7 @@
 
 ---
 
-## 一、十分钟快检（只有 10 分钟就跑这 26 条）
+## 一、十分钟快检（只有 10 分钟就跑这 28 条）
 
 | # | 怎么做 | 应该看到 |
 |---|---|---|
@@ -85,6 +85,8 @@
 | 24 | 打开 **Data Issues**，点标题旁的 **?**，再看列表 | 弹框讲清两类异常与关闭规则；列表分成「关键字段缺失 5」和「数据不准确 11」两组，各自带说明 |
 | 25 | 供应商列表点 **Refresh from providers** | 按钮进入拉取态 → 一行回执出现「上次拉取 + 到秒的时间 + run 号 + 2 条已关闭 / 7 行已更新 / 2 条待人工确认」；Data Issues 少掉 2 条，Sync Status 多一个 run |
 | 26 | 再点一次 Refresh | 回执变成「没有新数据」，toast 说明三家供应商返回的是同一批 —— 不会假装又关了什么东西；切成 Viewer 再点，按钮拒绝并提示需要管理员 |
+| 27 | 看两个列表的列与筛选 | 只有一个 **Source** 列：`PUDOpoint (PUDO)`、`packagehub (LMS)`、`M&amp;MP`（M&amp;MP 不带括号重复）；没有 Type 列、没有 `synced` 小标、没有 `type ≠ source` 徽章；Source 下拉就是这三个值 + 计数 |
+| 28 | Source 选 M&amp;MP，再看揽收方 | 两家自营店的揽收方都是 **LMS**；揽收方筛选里没有 M&amp;MP 选项 |
 
 这 16 条全对，模型就是通的。剩下的条目用来确认细节和边界。
 

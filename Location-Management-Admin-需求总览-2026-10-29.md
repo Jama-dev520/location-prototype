@@ -1,7 +1,7 @@
-# Location Management Admin Console — Requirement Overview (v3.9.0)
+# Location Management Admin Console — Requirement Overview (v3.10.0)
 
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
-> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.9.0)
+> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.10.0)
 > 给外部同事看的英文功能概览：https://jama-dev520.github.io/location-prototype/feature-overview.html
 > 演示视频（3 分 25 秒，36 条英文字幕，录的是 v3.8.0 —— 还没演 refresh，需要时再重录：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
@@ -210,6 +210,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | 19 | Duplicate (v3.0.0) | 独立 **Duplicate Check** 页；同一家 → 2:1 并在 OC 列表标出；不是同一家 → 1:1。未裁决的重复对阻塞启用 |
 | 20 | Merge priority (v3.0.0) | 同一条 OC 记录逐字段取源：**M&MP（自营）→ LMS → PUDO Inc 依次取，先有值的赢**。详情页与列表都标出来源 |
 | 21 | Drift (v3.0.0) | 签收后供应商改了值：下游直接用新值，台账显示「与基线不同」，运营可**重新签收**或**标记异常**。基线是参照物，不是冻结器 |
+| 34 | 一个 Source，不是两个 (v3.10.0) | 列表和筛选都只留一个 **Source**：`PUDOpoint (PUDO)`、`packagehub (LMS)`、`M&MP`（M&MP 不重复写两遍）。Type 列、Type 下拉级联、`type ≠ source` 徽章与筛选项一起下线 —— 不可能的组合不再是「被标出来」，而是拼不出来。`Locker` 仍是合法 PUDO 类型但本版不暴露（加回来只是 SOURCES 里一行）。**M&MP 的揽收方固定是 LMS**：店是我们的，揽收不是 —— 数据里没有 M&MP 这个揽收方，筛选里也没有这个选项 |
 | 33 | 供应商改完再拉一次 (v3.9.0) | 供应商列表加 **Refresh from providers**，补上闭环缺的那一脚：**标异常 → 导出 → 供应商改 → 我们拉一次**，不用等夜间同步。拉取只写供应商这次推来的值（沿用 v3.4.0：没有接受/拒绝），逐字段拿「标记那一刻的值」重判，**只有变合法**才自动关闭；不动 enable、不动签收、不动基线（所以 Viewer 不能点 —— 写值是操作员动作）。工具栏下留一行 **上次拉取 + run 号 + 关闭/更新/待人工 三个数**，空拉就明说「没有新数据」 |
 | 31 | 类型带来源 (v3.8.0) | 供应商列表原来的 Provider 列并进 Type，写成 `packagehub (LMS)` —— 一句话说清「是什么」和「谁的数」。**Source 筛选保留**：它驱动类型级联（选 LMS 只剩 packagehub）和合并优先级（2:1 时 LMS 优先），删了筛选就断了两条规则。2:1 门店显示 `(LMS / PUDO)`，顺序就是合并优先级 |
 | 30 | 营业不足 3 小时 (v3.7.0) | 一条「明显不对」但语法完全合法的数据：某天只开两小时。它不需要人先标 —— 系统按 `hoursOfOp` 逐天累加，**不足 3 小时**就进必查项，并在 Hours 标签页点名是哪一天、几点到几点、合计多久。3 小时是展示常量，不是字段；要按市场区分就变成配置，绝不落库成数据 |
@@ -219,7 +220,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | 27 | enable 保留 (v3.4.0) | 控制台只放弃「数据是否应用」这一层，**不放弃「门店是否上线」**。两个决定分属两处：值是否给下游——不由控制台决定，永远给；门店是否对客户可见——由运营 `enable` 决定，走签收（5 项检查 + 勾选 + 记基线）。如果连签收也去掉，入库通过即自动上线，就没有人确认客户会开到的那个地址了 |
 | 26 | 不决定是否应用 (v3.4.0) | 供应商推来的值**永远直接给下游**，控制台里没有「接受 / 拒绝 / 重新签收」。所以「签收后漂移」只是**信息**：告诉你自签收以来哪些字段变了；发现变错了就标记异常。同理，issue 也不该由人点「已修复」——只有同步跑完、值确实变了且合格，才由系统关闭。控制台的出口是**导出**：把异常清单导成 CSV 发给供应商当工单，而不是在这里做流程 |
 | 25 | 修复后自动关闭 (v3.3.0) | 供应商下一次同步带来新值时，系统自动比对「标记时的值」：**变了且合格** → 自动关闭（`closed_by = AUTO_SYNC`，记 run id 与验证值）；**变了但仍不合格** → 保持 open 并写明原因；**没变** → 保持 open，记为「未变化」。只有**机器可判定**的类型能自动关闭（缺失 / 格式 / 不一致 / 越界）；`INCORRECT` / `STALE` / `DUPLICATE` 永远回到人——同步能带来新值，但证明不了它是对的 |
-| 24 | Source 决定 Type (v3.2.0) | 一个来源只可能产生它自己的类型：**LMS → packagehub；PUDO Inc → PUDOpoint / Locker；M&MP → 自营门店**。所以筛选不能把 Source 和 Type 当两个独立条件：选 Source 后 Type 只列该来源能产生的值（带条数），只有一个选项时自动选中；清空 Source 也清空 Type。列表里若出现「来源不可能产生的类型」，标 `type ≠ source` 并可用 `Issues → Type ≠ source` 一键筛出——这是发现供应商传错的手段，不是在这里改值 |
+| 24 | Source 决定 Type (v3.2.0 → v3.10.0 合并) | 一个来源只可能产生它自己的类型：**LMS → packagehub；PUDO Inc → PUDOpoint；M&MP → 自营门店**。v3.10.0 起两者直接合成一个 **Source** 字段：`packagehub (LMS)`、`PUDOpoint (PUDO)`、`M&MP` —— 列表和筛选都只有这一个值，所以「不存在的组合」不是被拦下来，而是**根本拼不出来**。原来的 Type 下拉、级联、`type ≠ source` 徽章与筛选项一并下线 |
 | 23 | Issue 粒度 (v3.1.0) | 一个 issue 必须说清四层：哪个**字段**（address_line1）→ 哪个**子字段**（address_line2 / SATURDAY / latitude）→ 哪类**问题**（缺失 / 错误 / 不一致 / 越界 / 重复 / 过期 / 格式）→ 多**严重**（blocking 阻止签收 / warning 只提示）。子字段是让 issue 可执行的关键：「营业时间不对」供应商没法改，「周六没有时间段」可以 |
 | 22 | M&MP (v3.0.0) | **M&MP = 自营小店**（美国叫法），是第三类数据来源，与 PUDO Inc / LMS 并列，不是角色或团队。同样的目录、同样的 enable 与签收、同样的异常台账；差别是 M&MP 的数据由门店自己维护，标记异常找**门店负责人（内部）**而不是供应商 |
 
@@ -306,7 +307,7 @@ sweeper 由供应商随门店一起提供，和其它字段一样只读。发现
 | **可见性** | `status = active` **且** `is_enable = true`，下游才可见 |
 | **状态联动** | 供应商 inactive → 关联 OC 自动 disable + 阻断下游；强制启用报错 |
 | **取值规则** | 逐字段合并：**M&MP → LMS → PUDO Inc**，先有值者胜，缺的由下一个补 |
-| **来源决定类型**（v3.2.0） | LMS → packagehub · PUDO Inc → PUDOpoint / Locker · M&MP → `M&MP`；筛选器按此级联 |
+| **一个来源**（v3.10.0，原「来源决定类型」v3.2.0） | `packagehub (LMS)` · `PUDOpoint (PUDO)` · `M&MP` —— 类型是值、归属是括号，列表一列、筛选一项，没有需要同步的第二个下拉 |
 | **去重** | 独立 Duplicate Check 页；≥75% 疑似；**未裁决阻塞启用**；确认 2:1 后两条记录喂一条 OC 记录 |
 | **异常** | 四层粒度（字段 → 子字段 → 7 类 → 严重度）；`blocking` 阻塞签收、`warning` 不阻塞；open → reported → fixed |
 | **签收即基线** | 5 项检查 + 核对客户可见值 + 必须勾选；记基线，写 `ENABLE_SIGNED_OFF` |
