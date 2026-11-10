@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v3.10.1)</title>
+<title>Location Management Admin Console — Interactive Prototype (v3.11.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -376,7 +376,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.10.1</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.11.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -401,7 +401,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v3.10.1</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v3.11.0</span></div>
       </div>
     </div>
 
@@ -464,7 +464,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
             <div><label class="f-label">Source</label><select id="o-f-source" onchange="applyOCFilters()"></select></div>
             <div><label class="f-label">Status</label><select id="o-f-status" onchange="applyOCFilters()"><option value="">All</option><option value="active">active</option><option value="inactive">inactive</option></select></div>
             <div><label class="f-label">Downstream</label><select id="o-f-live" onchange="applyOCFilters()"><option value="">All</option><option value="no">Not live yet</option><option value="yes">Live</option></select></div>
-            <div><label class="f-label">Issues <span class="help-dot" onclick="openHelp()" title="What counts as an issue">?</span></label><select id="o-f-issues" onchange="applyOCFilters()"><option value="">All</option><option value="any">Has any issue</option><option value="drift">Baseline drift</option><option value="dup">Duplicate 2:1</option><option value="open">Open provider issue</option></select></div>
+            <div><label class="f-label">Issues <span class="help-dot" onclick="openHelp()" title="What counts as an issue">?</span></label><select id="o-f-issues" onchange="applyOCFilters()"><option value="">All</option><option value="blocking">Blocking data issue</option><option value="drift">Changed since sign-off</option><option value="dup">Duplicate 2:1</option></select></div>
           </div>
           <div class="filter-actions">
             <button class="btn btn-secondary" onclick="resetOCFilters()">Reset</button>
@@ -618,6 +618,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
         <div><b>Severity</b><span data-i18n="help.sev">Blocking stops a <b>new</b> sign-off. Warning does not. Neither takes a live store offline — going down is always one click, going up is a check.</span></div>
         <div><b>Closing</b><span data-i18n="help.close">An issue closes by itself when the next provider run delivers a value that changed <i>and</i> is valid — but only for missing / format / inconsistent / out of range. Incorrect, stale and duplicate always come back to a human.</span></div>
         <div><b>The four checks</b><span data-i18n="help.checks">The tiles at the top slice the same list for daily work: an issue belongs to a check by its field, never by hand.</span></div>
+        <div><b>On the OC list</b><span data-i18n="help.oc">That filter mixes two kinds of fact: <b>blocking data issues</b> borrowed from the source records, and <b>states of the store record</b> — changed since sign-off, duplicate 2:1, intake overridden. Only the blocking count is carried onto the row. Warnings are the provider's work list, not an enable decision.</span></div>
       </div>
     </div>
   </div>
@@ -634,7 +635,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.10.1 (one Source, refresh, checks)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.11.0 (one Source, refresh, checks)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -814,10 +815,10 @@ var I18N_ZH = {
   "Same store (2:1)":"同一门店 (2:1)",
   "Not same (1:1)":"非同一门店 (1:1)",
   "Live":"已上线",
-  "Has any issue":"有任意异常",
-  "Baseline drift":"基线漂移",
+  "Blocking data issue":"阻塞级数据异常",
+  "On the OC list":"在 OC 列表上",
+  "Changed since sign-off":"签收后发生变化",
   "Duplicate 2:1":"重复 2:1",
-  "Open provider issue":"未关闭的供应商异常",
   "Has open issue":"有未关闭异常",
   "No issue":"无异常",
 
@@ -1049,7 +1050,8 @@ var I18N_ZH = {
   "e.g. DUP-001":"例如 DUP-001",
   "e.g. postal 92058 belongs to Oceanside but the street line is in 92054":"例如：邮编 92058 属于 Oceanside，但街道地址落在 92054",
   "Console time (local)":"控制台时间（本地）",
-  "open provider issue":"未关闭的供应商异常",
+  "blocking data issue — sign-off stays locked until the source is fixed":"阻塞级数据异常 —— 源头修好之前，签收一直锁着",
+  "values changed since sign-off — the customer already has the new ones":"签收之后值变了 —— 客户已经拿到新值",
   "values changed since sign-off":"签收之后变更的值",
   "requires the Location Manager role":"需要门店管理员权限",
   "two vendor records feed this store":"两条供应商记录供养这家店",
@@ -1118,10 +1120,11 @@ var I18N_BLOCK = {
   "help.wrong":"值给了，但是错的：错误、前后矛盾、超出范围、重复、过期、格式不对。有的阻塞签收，有的只是提醒 —— 看严重程度。",
   "help.sev":"阻塞只会挡住<b>新的</b>签收，提醒不会。两者都不会把已上线门店下线 —— 下线永远一键，上线才要检查。",
   "help.close":"下一次供应商推送带来的值<b>变了且合法</b>时，异常会自己关闭 —— 但只限缺失 / 格式 / 前后矛盾 / 超出范围。错误、过期、重复永远回到人工。",
+  "help.oc":"OC 列表那个筛选混了两类东西：从供应商记录借来的<b>阻塞级数据异常</b>，以及<b>门店记录自身的状态</b> —— 签收后变化、重复 2:1（入池覆盖只作为徽章出现，不进筛选）。只有阻塞级会被带到行上：提醒级是供应商的活儿，不是启用的判据。",
   "help.checks":"顶部那几个格子只是把同一份清单按字段切开，方便每天干活 —— 一条异常属于哪一格由字段决定，不靠人手选。",
   "dup.vs":"对比",
   "pull.hint":"标记 → 导出 → 供应商修正 → 再拉一次",
-  "wt.title":"演示脚本 —— v3.10.1（一个来源、重新拉取、必查项）"
+  "wt.title":"演示脚本 —— v3.11.0（一个来源、重新拉取、必查项）"
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
@@ -1136,6 +1139,7 @@ var I18N_RULES = [
   [/^created — fuzzy match (.+) vs (.+) \(pending duplicate, no OC location ID\)$/, "创建 —— 与 $2 模糊匹配 $1（待判定重复，暂不生成 OC 单号）"],
   [/^(\d+) issue\(s\) closed · (\d+) changed but still open · (\d+) unchanged$/, "$1 条已自动关闭 · $2 条变了但仍未关闭 · $3 条没变"],
   [/^No new data — the three feeds returned the same (\d+) records$/, "没有新数据 —— 三个数据源返回的还是那 $1 条"],
+  [/^(\d+) blocking$/, "$1 条阻塞"],
   [/^(\d+) closed$/, "$1 条已关闭"],
   [/^(\d+) rows updated$/, "$1 行已更新"],
   [/^(\d+) changed but still open$/, "$1 条待人工确认"],
@@ -1188,6 +1192,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "3.11.0":"<b>OC 列表数的是「挡路的」，不是「有多少」。</b>它的 Issues 列原来复制供应商那边的异常总数（提醒级也算），那个数本来就写在供应商行上、2:1 的店还要把两条加起来，而且几乎从来不是让人改变决定的那个数。现在只带 <b>阻塞级</b>，并按后果命名；旁边三个才是 OC 自己的事实：<b>签收后变化</b>、<b>2:1</b>、<b>入池已覆盖</b>。筛选跟着改：三个选项，每个回答「为什么没上线 / 为什么要看一眼」，不再是那个和供应商视图重复的「有没有异常」。（入池覆盖只留徽章 —— 现在的数据里没有这种记录，一个永远筛出 0 行的选项比没有更糟。）异常本身仍然只写在供应商记录上 —— OC 只是借用，不留副本。",
   "3.10.1":"<b>问号该跟着筛选，不跟着列。</b>解释「什么算一条异常」的那个 <b>?</b> 现在放在 Issues <b>筛选</b>标签旁边 —— 选择是在那里做的 —— 而不是列头上，放在列头上容易被当成对数据的注释。弹框内容不变，两个列表都有。",
   "3.10.0":"<b>一个来源，不是两个。</b>类型和归属从来不是独立的 —— LMS 只发 packagehub，PUDO Inc 只发 PUDOpoint，M&amp;MP 是我们自己的店 —— 所以列表和筛选都只保留一个 <b>Source</b>：<b>PUDOpoint (PUDO)</b>、<b>packagehub (LMS)</b>、<b>M&amp;MP</b>。单独的 Type 列、跟着它级联的 Type 下拉、以及“类型 ≠ 来源”那个徽章一起下线：不可能的组合不再是一个筛选选项。M&amp;MP 的店是我们的，揽收不是 —— 它的揽收方固定是 <b>LMS</b>，也只可能是这个值。",
   "3.9.0":"<b>拉取不是决定。</b>供应商列表新增 <b>Refresh from providers</b>：把异常清单导出给供应商、对方补推之后，直接再拉一次，不必等夜间同步。拉取只写入供应商这次推来的值（沿用 v3.4.0 的规则），逐字段拿「标记那一刻的值」做参照重新判定，<b>只有真正变合法</b>的异常才会自动关闭；其余保持未关闭并写明原因。<b>上次拉取</b>那行留下到秒的时间、run 号和这次改变了什么 —— 「我们又问了一次、对方回了什么」是页面上的一行事实，不需要凭记忆。",
@@ -1350,8 +1355,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='3.10.1';
+var APP_VERSION='3.11.0';
 var VERSIONS=[
+ {v:'3.11.0',type:'minor',date:'2026-11-10',desc:'<b>The OC list counts what blocks, not the inventory.</b> Its Issues column used to repeat the provider issue count, warnings included — a number that already lived on the vendor row, summed over up to two records, and almost never the number that changes a decision. It now carries only <b>blocking</b> issues, named by their effect, next to the three facts that are genuinely OC-level: <b>drift</b> since sign-off, <b>2:1</b> mapping, <b>intake overridden</b>. The filter follows: three options that each answer “why is this not live / why look at it”, instead of one “has any issue” that duplicated the vendor view. (An overridden intake stays a badge on the row; no store in the feed carries one, and an option that always returns zero rows is worse than an absent one.) The flags themselves still live on the source records — the OC layer borrows them, it does not keep a copy.'},
  {v:'3.10.1',type:'patch',date:'2026-11-10',desc:'<b>The help mark belongs to the filter, not to the column.</b> The <b>?</b> that explains what counts as an issue now sits beside the Issues <i>filter</i> — where the choice is actually made — instead of the Issues column header, where it read as a comment on the data. Same popup, both lists.'},
  {v:'3.10.0',type:'minor',date:'2026-11-10',desc:'<b>One Source, not two.</b> The type and the owner were never independent — LMS only ships package hubs, PUDO Inc only ships points, M&amp;MP is our own store — so the list and the filters now carry a single <b>Source</b>: <b>PUDOpoint (PUDO)</b>, <b>packagehub (LMS)</b>, <b>M&amp;MP</b>. The separate Type column, the Type dropdown that cascaded off it, and the “type ≠ source” badge all go with it: a pair that cannot exist is not a filter option any more. M&amp;MP stores are ours, the pickup is not — their sweeper is <b>LMS</b>, and that is the only value it can take.'},
  {v:'3.9.0',type:'minor',date:'2026-11-10',desc:'<b>A pull is not a decision.</b> The vendor list gains <b>Refresh from providers</b>: after you export the issue list and the provider pushes corrected values, pull again instead of waiting for the nightly run. The pull writes what the provider sent (the v3.4.0 rule), re-checks every flagged field against the value it had when it was flagged, and closes only the issues whose new value is <b>valid</b> — everything else stays open with a note saying why. A <b>last pull</b> line keeps the timestamp to the second, the run id and what that pull changed, so &ldquo;we asked again and here is what came back&rdquo; is a fact on the page rather than a memory.'},
@@ -1901,10 +1907,9 @@ function ocFilters(skipSource){
     if(f.source&&mergedField(o,'type').value!==f.source)return false;
     if(f.live==='no'&&o.enable)return false;
     if(f.live==='yes'&&!o.enable)return false;
-    if(f.issues==='any'&&!(openIssues(o).length||driftOf(o).length||o.dup||o.intake==='overridden'))return false;
+    if(f.issues==='blocking'&&!openIssues(o).some(function(i){return i.severity==='blocking';}))return false;
     if(f.issues==='drift'&&!driftOf(o).length)return false;
     if(f.issues==='dup'&&!o.dup)return false;
-    if(f.issues==='open'&&!openIssues(o).length)return false;
     return true;
   });
 }
@@ -1919,10 +1924,14 @@ function filterNotLive(){
   var n=OC_LOCATIONS.filter(function(o){return !o.enable;}).length;
   showToast('Waiting for sign-off',n+' location(s) not live yet');
 }
+/* v3.11.0 — an OC row answers "can this go live, and if not why". The provider's
+   full issue count is the vendor list's job; copying it here meant two numbers to
+   keep in step, warnings included, for a decision warnings never change. */
 function issueBadges(o){
   var b=[];
-  var oi=openIssues(o).length; if(oi)b.push('<span class="badge badge-orange" title="open provider issue">'+oi+' data</span>');
-  var dr=driftOf(o).length; if(dr)b.push('<span class="badge badge-red" title="values changed since sign-off">'+dr+' drift</span>');
+  var bl=openIssues(o).filter(function(i){return i.severity==='blocking';}).length;
+  if(bl)b.push('<span class="badge badge-red" title="blocking data issue — sign-off stays locked until the source is fixed">'+bl+' blocking</span>');
+  var dr=driftOf(o).length; if(dr)b.push('<span class="badge badge-orange" title="values changed since sign-off — the customer already has the new ones">'+dr+' drift</span>');
   if(o.dup)b.push('<span class="badge badge-blue" title="two vendor records feed this store">2:1</span>');
   if(o.intake==='overridden')b.push('<span class="badge badge-gray">intake</span>');
   return b.length?b.join(' '):'<span style="color:var(--text-tertiary)">—</span>';
@@ -2497,13 +2506,15 @@ function exportCSV(kind){
     });
     name='vendor-locations-'+stamp()+'.csv';
   } else if(kind==='oc'){
-    rows.push(['OC Location ID','Name','Address','City','State','Postal','Source','Type','Sweeper','Status','Enabled','Visible downstream','Open issues','Changed since sign-off','Mapping','Linked vendors','Updated']);
+    rows.push(['OC Location ID','Name','Address','City','State','Postal','Source','Type','Sweeper','Status','Enabled','Visible downstream','Blocking issues','Other open issues','Changed since sign-off','Mapping','Linked vendors','Updated']);
     ocFilters().forEach(function(o){
       var srcs={};o.vendorIds.forEach(function(id){var v=findVendor(id);if(v)srcs[v.provider]=1;});
       rows.push([o.ocId,mergedField(o,'name').value,mergedField(o,'addr1').value,mergedField(o,'city').value,
         mergedField(o,'state').value,mergedField(o,'postal').value,Object.keys(srcs).join(' / '),mergedField(o,'type').value,
         mergedField(o,'sweeper').value||'missing',statusOf(o),o.enable?'true':'false',
-        (o.enable&&statusOf(o)==='active')?'yes':'no',openIssues(o).length,driftOf(o).length,
+        (o.enable&&statusOf(o)==='active')?'yes':'no',
+        openIssues(o).filter(function(i){return i.severity==='blocking';}).length,
+        openIssues(o).filter(function(i){return i.severity!=='blocking';}).length,driftOf(o).length,
         o.vendorIds.length>1?'2:1':'1:1',o.vendorIds.join(' '),o.updated]);
     });
     name='oc-locations-'+stamp()+'.csv';
