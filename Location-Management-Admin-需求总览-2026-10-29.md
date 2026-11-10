@@ -1,9 +1,9 @@
-# Location Management Admin Console — Requirement Overview (v3.8.0)
+# Location Management Admin Console — Requirement Overview (v3.9.0)
 
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
-> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.8.0)
+> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.9.0)
 > 给外部同事看的英文功能概览：https://jama-dev520.github.io/location-prototype/feature-overview.html
-> 演示视频（3 分 25 秒，36 条英文字幕，对应 v3.8.0）：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
+> 演示视频（3 分 25 秒，36 条英文字幕，录的是 v3.8.0 —— 还没演 refresh，需要时再重录：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
 > Detail view (v2.4.0): clicking a location ID opens a **full page** with tabs — Basic Info / Operations / Hours & Services / Linked Records / Change History.
 > **v3.0.0 — 供应商之外，自营 M&MP 小店也走同一套。** M&MP = 自营小店（美国叫法），是门店目录里的第三类来源，数据由门店自己维护，异常找门店负责人；规则与供应商门店完全一致。
@@ -210,6 +210,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | 19 | Duplicate (v3.0.0) | 独立 **Duplicate Check** 页；同一家 → 2:1 并在 OC 列表标出；不是同一家 → 1:1。未裁决的重复对阻塞启用 |
 | 20 | Merge priority (v3.0.0) | 同一条 OC 记录逐字段取源：**M&MP（自营）→ LMS → PUDO Inc 依次取，先有值的赢**。详情页与列表都标出来源 |
 | 21 | Drift (v3.0.0) | 签收后供应商改了值：下游直接用新值，台账显示「与基线不同」，运营可**重新签收**或**标记异常**。基线是参照物，不是冻结器 |
+| 33 | 供应商改完再拉一次 (v3.9.0) | 供应商列表加 **Refresh from providers**，补上闭环缺的那一脚：**标异常 → 导出 → 供应商改 → 我们拉一次**，不用等夜间同步。拉取只写供应商这次推来的值（沿用 v3.4.0：没有接受/拒绝），逐字段拿「标记那一刻的值」重判，**只有变合法**才自动关闭；不动 enable、不动签收、不动基线（所以 Viewer 不能点 —— 写值是操作员动作）。工具栏下留一行 **上次拉取 + run 号 + 关闭/更新/待人工 三个数**，空拉就明说「没有新数据」 |
 | 31 | 类型带来源 (v3.8.0) | 供应商列表原来的 Provider 列并进 Type，写成 `packagehub (LMS)` —— 一句话说清「是什么」和「谁的数」。**Source 筛选保留**：它驱动类型级联（选 LMS 只剩 packagehub）和合并优先级（2:1 时 LMS 优先），删了筛选就断了两条规则。2:1 门店显示 `(LMS / PUDO)`，顺序就是合并优先级 |
 | 30 | 营业不足 3 小时 (v3.7.0) | 一条「明显不对」但语法完全合法的数据：某天只开两小时。它不需要人先标 —— 系统按 `hoursOfOp` 逐天累加，**不足 3 小时**就进必查项，并在 Hours 标签页点名是哪一天、几点到几点、合计多久。3 小时是展示常量，不是字段；要按市场区分就变成配置，绝不落库成数据 |
 | 32 | 异常按性质分组 + 说明 (v3.8.0) | 台账按**性质**分两组：**关键字段缺失**（该有的没给，`MISSING`，默认阻塞）与**数据不准确**（值有但是错的）。两组要的责任方不同、关闭规则也不同，混在一起会让人以为「都等供应商补一下」。每个 Issues 标题旁一个 **?**，点开讲清：什么算异常、什么阻塞、什么会自己关闭 |

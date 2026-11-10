@@ -1,6 +1,6 @@
-# Location Management Admin Console — Database Field Mapping (v3.7.0)
+# Location Management Admin Console — Database Field Mapping (v3.9.0)
 
-> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.7.0)
+> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.9.0)
 > Feature overview (English, for readers outside the team): `https://jama-dev520.github.io/location-prototype/feature-overview.html`
 >
 > **v3.0.0 model change.** The console no longer writes location fields. `field_lock` is replaced by `data_issue`; `sync_change_set` decisions and `oc_field_baseline` versions used for revert are retired; downstream values are a per-field merge with **LMS first**. The console writes exactly four things: `oc_location.is_enable`, `data_issue` rows, baseline captures, and `change_log`.
@@ -420,6 +420,8 @@ Failure modes the rule deliberately produces:
 | **`/api/oc-locations/{id}/enable`** (v2.6.0, extended) | PATCH | `oc_location` + `oc_field_baseline` + `change_log` | enable now requires the sign-off payload (checklist acknowledged); writes `baseline_at`, `propagated_at`, `ENABLE_SIGNED_OFF` |
 | **`/api/vendor-locations/{id}/issues`** (v3.0.0) | POST | `data_issue` + `change_log` | flag a field: `field_name` + `reason` (both required); never writes a value |
 | **`/api/issues/{id}`** (v3.0.0) | PATCH | `data_issue` + `change_log` | move status OPEN → REPORTED → FIXED; closing requires the provider value to have changed or an explicit confirmation |
+| *(none)* (v3.9.0) | — | — | — | **Refresh adds nothing to the schema.** A manual pull writes the same `vendor_location` columns a nightly run writes, logs the same `change_log` rows and inserts the same `sync_run` row — it is the same job, triggered by a person rather than by cron. Do **not** add `last_pulled_by` or `pull_source` to `vendor_location`: who pressed the button is already `change_log.actor`, and a column on the record would need maintaining on every write for no reader |
+| *(none)* (v3.8.0) | — | — | — | **QR and the merged type column add nothing to the schema.** `qr_dropoff` was already on `vendor_location` (v2.3.0); `packagehub (LMS)` is `type` plus `source` rendered together. Do not create a `type_with_source` column — it would duplicate two fields that already have owners |
 | *(none)* (v3.7.0) | — | — | — | **The short-day check adds nothing to the schema either.** It is `SUM(end - start)` per `opening_hours.day`, compared with a display constant (`3h`). No `short_day` flag, no `check_type` — a stored copy would drift from the ranges it describes, and 3h differs per market, which is configuration rather than data |
 | *(none)* (v3.6.0) | — | — | — | **The three checks add nothing to the schema.** A check is a set of `data_issue.field` values (`addr1/addr2/city/state`, `postal`, `hoursText`), evaluated when the ledger renders. Do not store a `check_type` column — a stored copy can drift from the field it is supposed to describe, and the counter would then disagree with the list it filters |
 | *(none)* (v3.5.0) | — | — | — | **The language switch adds nothing to the schema.** Interface strings live in the client bundle; every displayed value keeps the column, type and casing documented here. Do not translate into new columns — a translated store name or address would be a second source of truth. If a language is ever needed server-side (an email to a provider, say), it belongs in a `locale` on the *recipient*, not on the location |

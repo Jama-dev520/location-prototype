@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v3.8.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v3.9.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -351,6 +351,22 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
 .help-rows>div{display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--bg-section);font-size:12.5px;line-height:1.65}
 .help-rows>div b{flex:0 0 88px;color:var(--text-primary)}
 .help-rows>div span{color:var(--text-secondary)}
+
+/* ===== v3.9.0 — a pull is not a decision ===== */
+.pull-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-10px 0 var(--space-4);padding-top:9px;border-top:1px dashed #E2E8F0}
+.pull-row .spacer{flex:1}
+.pull-note{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11.5px;color:var(--text-secondary)}
+.pull-note b{font-weight:600;color:var(--text-primary)}
+.pull-note .mono{font-family:var(--font-mono);font-size:11px;color:var(--text-secondary)}
+.pn-sep{color:#CBD5E1}
+.pn-run{font-family:var(--font-mono);font-size:10.5px;color:var(--text-tertiary)}
+.pn-ok{color:var(--color-success);font-weight:600}
+.pn-warn{color:var(--color-warning);font-weight:600}
+.pn-busy{font-size:11.5px;color:var(--color-primary);font-weight:600}
+.pull-hint{font-size:11px;color:var(--text-tertiary);white-space:nowrap}
+.btn.is-busy{opacity:.75;cursor:progress;pointer-events:none}
+.btn.is-busy::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:7px;vertical-align:1px;animation:pn-pulse .9s ease-in-out infinite}
+@keyframes pn-pulse{0%,100%{opacity:.2}50%{opacity:1}}
 </style>
 </head>
 <body>
@@ -358,7 +374,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.8.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.9.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -411,8 +427,15 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
           <div class="filter-chips" id="v-chips"></div>
           <div class="toolbar">
             <button class="btn btn-secondary btn-sm" onclick="exportCSV('vendor')">Export CSV</button>
+            <button class="btn btn-primary btn-sm" id="btn-refresh" onclick="refreshProviders()"
+              title="Pull the latest snapshot from all three sources. A pull writes provider values; it never changes a decision.">Refresh from providers</button>
             <span class="spacer"></span>
             <span class="result-meta" id="v-result-meta"></span>
+          </div>
+          <div class="pull-row">
+            <span class="pull-note" id="v-pull-note"></span>
+            <span class="spacer"></span>
+            <span class="pull-hint" data-i18n="pull.hint">flag → export → the provider fixes it → pull again</span>
           </div>
           <div class="table-wrap">
             <table class="data">
@@ -611,7 +634,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.8.0 (QR, one type column, issues by nature)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.9.0 (refresh after the provider fixes)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -626,8 +649,9 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
         <tr><td>9</td><td>OC List</td><td>Filter Source = M&amp;MP</td><td>Self-operated stores follow the same rules: same sign-off, same issue ledger — only the data owner differs</td></tr>
         <tr><td>10</td><td>Both lists</td><td>Set Source = LMS, then open the Type filter</td><td data-i18n="walk.10.exp">Only <b>packagehub</b> is offered and it is selected for you; the hint reads “LMS → packagehub”. Same for PUDO Inc (PUDOpoint / Locker) and M&amp;MP</td></tr>
         <tr><td>11</td><td>Vendor List</td><td>Issues filter → “Type ≠ source”</td><td>Zero rows on clean data; a record whose type cannot belong to its source is tagged in the Type column and isolated here</td></tr>
+        <tr><td>12</td><td>Data Issues</td><td>Click “Apply next provider sync”</td><td data-i18n="walk.12.exp">Two issues close themselves (value changed <b>and</b> valid); one stays open with “changed but still invalid”, one comes back to a human, the rest are untouched — no manual close anywhere</td></tr>
         <tr><td>13</td><td>Vendor Detail</td><td>Hours &amp; Services on a store with a truncated day</td><td>The Hours tab names the day, the range and the total — and the same day is already an open issue in the ledger</td></tr>
-<tr><td>12</td><td>Data Issues</td><td>Click “Apply next provider sync”</td><td data-i18n="walk.12.exp">Two issues close themselves (value changed <b>and</b> valid); one stays open with “changed but still invalid”, one comes back to a human, the rest are untouched — no manual close anywhere</td></tr>
+        <tr><td>14</td><td>Vendor List</td><td>Export CSV, then click “Refresh from providers”</td><td>Two issues close on the spot (the value changed <b>and</b> is valid), one stays open as “changed but still invalid”, one goes back to a human, one is untouched — and the last-pull line keeps the time, the run id and the three counts</td></tr>
       </tbody>
     </table>
   </div>
@@ -1004,6 +1028,17 @@ var I18N_ZH = {
   "Severity":"严重程度",
   "Closing":"怎么关闭",
   "The four checks":"四项检查",
+  /* ---- v3.9.0: refresh ---- */
+  "Refresh from providers":"从供应商重新拉取",
+  "Refresh":"刷新",
+  "Pulling…":"正在拉取…",
+  "Last pull":"上次拉取",
+  "nothing new":"没有新数据",
+  "Pull the latest snapshot from all three sources. A pull writes provider values; it never changes a decision.":"从三个来源重新拉取最新快照。拉取会写入供应商的值，但从不改变任何决定。",
+  "Refreshed":"已刷新",
+  "A pull writes provider values — that needs the Location Manager role.":"拉取会写入供应商的值 —— 这需要门店管理员角色。",
+  "Export CSV, then click “Refresh from providers”":"先导出 CSV，再点“从供应商重新拉取”",
+  "Two issues close on the spot (the value changed <b>and</b> is valid), one stays open as “changed but still invalid”, one goes back to a human, one is untouched — and the last-pull line keeps the time, the run id and the three counts":"两条当场自动关闭（值变了<b>并且</b>合法），一条保持未关闭并注明“值变了但仍不合法”，一条回到人工，一条没动 —— 而上次拉取那行留下了时间、run 号和三个计数",
   /* ---- table heads / placeholders / titles ---- */
   "Page":"页面",
   "Action":"操作",
@@ -1079,7 +1114,8 @@ var I18N_BLOCK = {
   "help.close":"下一次供应商推送带来的值<b>变了且合法</b>时，异常会自己关闭 —— 但只限缺失 / 格式 / 前后矛盾 / 超出范围。错误、过期、重复永远回到人工。",
   "help.checks":"顶部那几个格子只是把同一份清单按字段切开，方便每天干活 —— 一条异常属于哪一格由字段决定，不靠人手选。",
   "dup.vs":"对比",
-  "wt.title":"演示脚本 —— v3.8.0（QR、类型一列、异常按性质分）"
+  "pull.hint":"标记 → 导出 → 供应商修正 → 再拉一次",
+  "wt.title":"演示脚本 —— v3.9.0（供应商改完再拉一次）"
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
@@ -1093,6 +1129,11 @@ var I18N_RULES = [
   [/^warning · (.+) · (.+)$/, "提醒 · $1 · $2"],
   [/^System · (.+)$/, "系统 · $1"],
   [/^created — fuzzy match (.+) vs (.+) \(pending duplicate, no OC location ID\)$/, "创建 —— 与 $2 模糊匹配 $1（待判定重复，暂不生成 OC 单号）"],
+  [/^(\d+) issue\(s\) closed · (\d+) changed but still open · (\d+) unchanged$/, "$1 条已自动关闭 · $2 条变了但仍未关闭 · $3 条没变"],
+  [/^No new data — the three feeds returned the same (\d+) records$/, "没有新数据 —— 三个数据源返回的还是那 $1 条"],
+  [/^(\d+) closed$/, "$1 条已关闭"],
+  [/^(\d+) rows updated$/, "$1 行已更新"],
+  [/^(\d+) changed but still open$/, "$1 条待人工确认"],
   [/^(\d+) field\(s\) differ$/, "$1 个字段不同"],
   [/^([A-Z]+) ([\d:,-]+) — under 3 hours \(([\d.]+)h\)$/, "$1 $2 —— 不足 3 小时（$3 小时）"],
   [/^this type cannot come from (.+)$/, "这个类型不可能来自 $1"],
@@ -1142,6 +1183,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "3.9.0":"<b>拉取不是决定。</b>供应商列表新增 <b>Refresh from providers</b>：把异常清单导出给供应商、对方补推之后，直接再拉一次，不必等夜间同步。拉取只写入供应商这次推来的值（沿用 v3.4.0 的规则），逐字段拿「标记那一刻的值」做参照重新判定，<b>只有真正变合法</b>的异常才会自动关闭；其余保持未关闭并写明原因。<b>上次拉取</b>那行留下到秒的时间、run 号和这次改变了什么 —— 「我们又问了一次、对方回了什么」是页面上的一行事实，不需要凭记忆。",
   "3.8.0":"<b>两列并成一列，异常自己会解释。</b>供应商列表加上了 LMS 会推的 <b>QR code dropoff</b> —— 能扫码的柜台一眼可见，不用点进详情。<b>来源和类型合并成一列</b>：`packagehub (LMS)` 一句话说清「它是什么」和「谁拥有这份数据」，而来源筛选保留 —— 因为筛选才驱动类型级联和合并优先级。异常台账按<b>性质</b>分成两组：<b>关键字段缺失</b>（该有的没给，默认阻塞）与<b>数据不准确</b>（值有，但是错的）。每个 Issues 标题旁有个 <b>?</b>，讲清什么算异常、什么会阻塞、什么会自己关闭。",
   "3.7.0":"<b>两小时的营业日不是排班。</b>必查项多了一条：<b>任何一天合计不足 3 小时</b>都算可疑 —— 由时段算出来，不是人工标上去的，所以数据被截断时它自己会冒出来。Hours 标签页会在营业时间下面点名是哪一天。<br><br>另外，异常导出里带上了<b>门店本身</b>：地址、城市、州、邮编、来源、类型，就挨着单号 —— 发给供应商的 CSV 能看出是哪家店，而不只是一个记录 ID。",
   "3.6.0":"<b>三个必查项有了自己的入口，重复配对改成左右对照。</b>异常台账顶部先给出运营每天真正在追的三个缺口 —— <b>地址信息不全</b>、<b>缺少邮编</b>、<b>营业时间为空</b> —— 各自按未关闭异常计数，点一下就只看这一类；判定靠字段，新标记会自动落到对应格子。重复门店页把原来堆叠的差异行换成<b>左右对照</b>：两条记录并排两列，每个比对字段一行，中间一列给出 ✓ 相同 / ≈ 一个包含另一个 / ✕ 不同，差异整行着色 —— 判定靠看，不靠读。",
@@ -1301,8 +1343,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='3.8.0';
+var APP_VERSION='3.9.0';
 var VERSIONS=[
+ {v:'3.9.0',type:'minor',date:'2026-11-10',desc:'<b>A pull is not a decision.</b> The vendor list gains <b>Refresh from providers</b>: after you export the issue list and the provider pushes corrected values, pull again instead of waiting for the nightly run. The pull writes what the provider sent (the v3.4.0 rule), re-checks every flagged field against the value it had when it was flagged, and closes only the issues whose new value is <b>valid</b> — everything else stays open with a note saying why. A <b>last pull</b> line keeps the timestamp to the second, the run id and what that pull changed, so &ldquo;we asked again and here is what came back&rdquo; is a fact on the page rather than a memory.'},
  {v:'3.8.0',type:'minor',date:'2026-11-10',desc:'<b>One column instead of two, and an issue that explains itself.</b> The vendor list now shows the <b>QR code dropoff</b> capability LMS sends, so a counter that can scan is visible without opening the record. <b>Source and type merged into one column</b> — `packagehub (LMS)` says what it is and who owns the data in the same breath, while the Source filter stays, because the filter is what drives the type cascade and the merge priority. And the ledger splits by <b>nature</b>: <b>missing critical fields</b> (nothing arrived, blocking by default) versus <b>inaccurate data</b> (a value is there and it is wrong). A <b>?</b> next to every Issues heading explains what counts, what blocks and what closes itself.'},
  {v:'3.7.0',type:'minor',date:'2026-11-05',desc:'<b>A two-hour day is not a rota.</b> The checks grow a fourth entry: any opening day that totals <b>under three hours</b> is called out — computed from the ranges, not typed in by hand, so a truncated feed shows up on its own. The Hours tab names the offending day under the value. And the issue export now carries the <b>store itself</b>: address, city, state, postal code, source and type next to the location ids, so a CSV sent to a provider says which shop it is instead of only which record.'},
  {v:'3.6.0',type:'minor',date:'2026-11-05',desc:'<b>Three checks get their own gate, and a duplicate pair is read side by side.</b> The issue ledger now opens with the three gaps operations actually chases every day — <b>incomplete address</b>, <b>no postal code</b>, <b>no opening hours</b> — each counted on open issues, each one click away from filtering the ledger to that bucket, and each matched to a field so a new flag lands in the right bucket automatically. The duplicate page replaces the stacked diff lines with a <b>left/right comparison</b>: the two records are two columns, every compared field sits on its own row, and the middle column says ✓ same, ≈ one contains the other, or ✕ different — differences shaded, so the decision is made by looking, not by reading.'},
@@ -1468,6 +1511,12 @@ var NEXT_SYNC={
   ]
 };
 var SYNC_DONE=false, SYNC_SUMMARY=null, ISSUE_BASE={};
+/* v3.9.0 — the loop is flag → export → the provider fixes it → pull again.
+   A pull only fetches. It writes the provider's values (that is what a run does) and
+   it may close an issue whose new value arrived valid, but it never changes a decision:
+   no enable, no flag, no mapping, no sign-off. "Last pull" is the receipt. */
+var LAST_PULL={at:'2026-11-03 02:33:58',run:'RUN-20261103-0230',rows:42,closed:4,updated:9};
+var PULLING=false;
 /* A run can verify a missing value, a format, a contradiction or an impossible
    number. It cannot verify a judgement: "incorrect", "stale" and "duplicate"
    always come back to a human, even when the value did change. */
@@ -1501,8 +1550,9 @@ function pendingChecks(){
     return NEXT_SYNC.changes.some(function(c){return c.vendorId===i.vendorId&&c.field===i.field;});
   }).length;
 }
-function runProviderSync(){
-  if(SYNC_DONE){showToast('Already applied','This demo has one pending run — reload the page to replay it.','error');return null;}
+function runProviderSync(opts){
+  opts=opts||{};
+  if(SYNC_DONE){if(!opts.quiet)showToast('Already applied','This demo has one pending run — reload the page to replay it.','error');return null;}
   var closed=0,stillInvalid=0,unchanged=0,needsHuman=0;
   NEXT_SYNC.changes.forEach(function(c){
     var v=findVendor(c.vendorId); if(!v)return;
@@ -1538,10 +1588,50 @@ function runProviderSync(){
   SYNC_RUNS.unshift({runId:NEXT_SYNC.runId,provider:'Multiple',startedAt:NEXT_SYNC.at,finishedAt:NEXT_SYNC.finished,
     pulled:NEXT_SYNC.pulled,created:NEXT_SYNC.created,updated:NEXT_SYNC.updated,flagged:NEXT_SYNC.flagged,
     breaker:'normal',autoClosed:closed});
+  LAST_PULL={at:nowStr(),run:SYNC_SUMMARY.runId,rows:NEXT_SYNC.pulled,closed:closed,
+    updated:NEXT_SYNC.updated,needsHuman:needsHuman,stillInvalid:stillInvalid};
   renderIssuesPage();renderSync();renderVendor();renderOC();updateBadges();
   if(document.getElementById('page-pd').classList.contains('active'))renderProfile();
-  showToast('Sync applied',closed+' closed automatically · '+needsHuman+' need a human · '+stillInvalid+' still invalid · '+unchanged+' unchanged','success');
+  if(!opts.quiet)showToast('Sync applied',closed+' closed automatically · '+needsHuman+' need a human · '+stillInvalid+' still invalid · '+unchanged+' unchanged','success');
   return SYNC_SUMMARY;
+}
+
+/* ===== v3.9.0 — refresh: ask again, do not decide again ===== */
+function pullNote(){
+  var p=LAST_PULL;
+  var parts=['<b>Last pull</b>','<span class="mono">'+esc(p.at)+'</span>'];
+  if(p.run)parts.push('<span class="pn-run">'+esc(p.run)+'</span>');
+  if(p.none){
+    parts.push('<span class="pn-warn">nothing new</span>');
+  }else{
+    if(p.closed)parts.push('<span class="pn-ok">'+p.closed+' closed</span>');
+    parts.push(p.updated+' rows updated');
+    if(p.needsHuman||p.stillInvalid)parts.push((p.needsHuman+p.stillInvalid)+' changed but still open');
+  }
+  return parts.join('<span class="pn-sep">·</span>');
+}
+function refreshProviders(){
+  if(PULLING)return;
+  /* a pull writes the provider's values, so it is an operator action — checking the
+     feed does not require a decision, but writing does */
+  if(!isMgr()){showToast('Permission required','A pull writes provider values — that needs the Location Manager role.','error');return;}
+  PULLING=true;
+  var btn=document.getElementById('btn-refresh');
+  if(btn){btn.disabled=true;btn.classList.add('is-busy');}
+  var pn=document.getElementById('v-pull-note');
+  if(pn)pn.innerHTML='<span class="pn-busy">Pulling…</span>';
+  setTimeout(function(){
+    var res=SYNC_DONE?null:runProviderSync({quiet:true});
+    if(!res)LAST_PULL={at:nowStr(),run:LAST_PULL.run,rows:LAST_PULL.rows,closed:0,updated:0,none:true};
+    PULLING=false;
+    if(btn){btn.disabled=false;btn.classList.remove('is-busy');}
+    renderVendor();
+    if(res){
+      showToast('Refreshed',res.closed+' issue(s) closed · '+(res.needsHuman+res.stillInvalid)+' changed but still open · '+res.unchanged+' unchanged','success');
+    }else{
+      showToast('Refreshed','No new data — the three feeds returned the same '+LAST_PULL.rows+' records','info');
+    }
+  },1200);
 }
 
 /* baseline = the merged values signed off when the location went live */
@@ -1800,6 +1890,7 @@ function renderVendor(){
       +'</tr>';
   }).join('');
   document.getElementById('v-result-meta').textContent=rows.length+' vendor location(s)';
+  var pn=document.getElementById('v-pull-note'); if(pn)pn.innerHTML=pullNote();
   syncTypeFilter('v');
   updateBadges();applyLang();
 }
