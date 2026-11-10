@@ -1,11 +1,11 @@
 # Location Management Admin Console — Feature Overview
 
 **Audience:** operations, partner-facing and M&MP teams who work with location data
-**Document version:** 1.7 (covers console v3.7.0) · **Status:** clickable prototype (not in production)
+**Document version:** 1.8 (covers console v3.8.0) · **Status:** clickable prototype (not in production)
 **Prototype:** https://jama-dev520.github.io/location-prototype/
 **One-page version (shareable):** https://jama-dev520.github.io/location-prototype/feature-overview.html
 **Languages:** the console itself switches between English and Chinese in the header (v3.5.0); interface only — data stays as delivered  
-**Demo video (3:16, English captions):** https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
+**Demo video (3:25, English captions):** https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 
 ---
 
@@ -194,7 +194,7 @@ M&MP is not a role — self-operated stores are handled by the same people under
 
 - Overview dashboard (P07) — specified, P2, out of scope for this round
 - Batch upload (Excel) — specified in the PRD, not in the prototype
-- The demo video at `/demo/location-admin-demo.mp4` (3:16, English captions) is current as of v3.7.0
+- The demo video at `/demo/location-admin-demo.mp4` (3:25, English captions) is current as of v3.8.0
 
 ---
 

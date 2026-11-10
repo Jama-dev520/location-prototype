@@ -1,9 +1,9 @@
-# Location Management Admin Console — Requirement Overview (v3.7.0)
+# Location Management Admin Console — Requirement Overview (v3.8.0)
 
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
-> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.7.0)
+> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.8.0)
 > 给外部同事看的英文功能概览：https://jama-dev520.github.io/location-prototype/feature-overview.html
-> 演示视频（3 分 16 秒，35 条英文字幕，对应 v3.7.0）：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
+> 演示视频（3 分 25 秒，36 条英文字幕，对应 v3.8.0）：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
 > Detail view (v2.4.0): clicking a location ID opens a **full page** with tabs — Basic Info / Operations / Hours & Services / Linked Records / Change History.
 > **v3.0.0 — 供应商之外，自营 M&MP 小店也走同一套。** M&MP = 自营小店（美国叫法），是门店目录里的第三类来源，数据由门店自己维护，异常找门店负责人；规则与供应商门店完全一致。
@@ -210,7 +210,9 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | 19 | Duplicate (v3.0.0) | 独立 **Duplicate Check** 页；同一家 → 2:1 并在 OC 列表标出；不是同一家 → 1:1。未裁决的重复对阻塞启用 |
 | 20 | Merge priority (v3.0.0) | 同一条 OC 记录逐字段取源：**M&MP（自营）→ LMS → PUDO Inc 依次取，先有值的赢**。详情页与列表都标出来源 |
 | 21 | Drift (v3.0.0) | 签收后供应商改了值：下游直接用新值，台账显示「与基线不同」，运营可**重新签收**或**标记异常**。基线是参照物，不是冻结器 |
+| 31 | 类型带来源 (v3.8.0) | 供应商列表原来的 Provider 列并进 Type，写成 `packagehub (LMS)` —— 一句话说清「是什么」和「谁的数」。**Source 筛选保留**：它驱动类型级联（选 LMS 只剩 packagehub）和合并优先级（2:1 时 LMS 优先），删了筛选就断了两条规则。2:1 门店显示 `(LMS / PUDO)`，顺序就是合并优先级 |
 | 30 | 营业不足 3 小时 (v3.7.0) | 一条「明显不对」但语法完全合法的数据：某天只开两小时。它不需要人先标 —— 系统按 `hoursOfOp` 逐天累加，**不足 3 小时**就进必查项，并在 Hours 标签页点名是哪一天、几点到几点、合计多久。3 小时是展示常量，不是字段；要按市场区分就变成配置，绝不落库成数据 |
+| 32 | 异常按性质分组 + 说明 (v3.8.0) | 台账按**性质**分两组：**关键字段缺失**（该有的没给，`MISSING`，默认阻塞）与**数据不准确**（值有但是错的）。两组要的责任方不同、关闭规则也不同，混在一起会让人以为「都等供应商补一下」。每个 Issues 标题旁一个 **?**，点开讲清：什么算异常、什么阻塞、什么会自己关闭 |
 | 29 | 三个必查项 (v3.6.0) | 运营每天真正在追的只有三个缺口：**地址不全 / 没邮编 / 没营业时间**。它们放在台账最上面按未关闭异常计数，点一下只看这一类，再点取消。归类**靠字段**（addr1/addr2/city/state、postal、hoursText），所以走 F11 标记的任何一条会自动落格，不需要运营再选一个「类别」，也不存在计数和列表对不上的可能 |
 | 28 | 中英双语 (v3.5.0) | 顶部右上角 `EN / 中文` 换的是**界面**：导航、筛选、表头、页面说明、弹框、详情标签页、演示脚本、提示、异常类型名、版本说明，连 `<html lang>` 和浏览器标题一起换。**数据不翻**：门店名、地址、供应商、ID、字段名、事件码、时间戳一律保持供应商推来的原样 —— 翻了就等于造出第二个真相来源。选择存在 `localStorage`，也可以用 `?lang=zh` / `?lang=en` 按链接锁定，方便把英文版直接发给外国同事 |
 | 27 | enable 保留 (v3.4.0) | 控制台只放弃「数据是否应用」这一层，**不放弃「门店是否上线」**。两个决定分属两处：值是否给下游——不由控制台决定，永远给；门店是否对客户可见——由运营 `enable` 决定，走签收（5 项检查 + 勾选 + 记基线）。如果连签收也去掉，入库通过即自动上线，就没有人确认客户会开到的那个地址了 |
@@ -286,7 +288,7 @@ sweeper 由供应商随门店一起提供，和其它字段一样只读。发现
 | **英文功能概览** | `feature-overview-en.html` / `Location-Management-Admin-Feature-Overview-EN.md` | 英文 | **外部同事** | 一页讲清做什么、为什么这样设计；可直接转发或打印 |
 | 交互原型 | `Location-Management-Admin-Prototype-2026-10-29.html` | 中英双语（右上角切换） | 全员 | 单文件高保真，覆盖 6 个菜单 + 详情 5 个标签页 |
 | 流程图 | `diagrams/flow1..11-*.png` | 英文 | 全员 | 11 张，2x 渲染，飞书可直接嵌入 |
-| 演示视频 | `Location-Management-Admin-Demo-2026-10-29.mp4` | 英文字幕 | 全员 | 3 分 16 秒、35 条字幕，按 v3.7.0 重录；十段：两层 → 详情 → 标记 → 列表与来源/类型 → 签收 → 重复 → 自动关闭 → 漂移 → 只读角色 → 中英切换 |
+| 演示视频 | `Location-Management-Admin-Demo-2026-10-29.mp4` | 英文字幕 | 全员 | 3 分 25 秒、36 条字幕，按 v3.8.0 重录；十段：两层 → 详情 → 标记 → 列表与来源/类型 → 签收 → 重复 → 自动关闭 → 漂移 → 只读角色 → 中英切换 |
 
 **对外分享用哪一个**：给外国同事发 `feature-overview.html`（英文单页），需要展开细节时再给 PRD 和字段映射；中文团队内部用本文件 + 验收标准。
 
@@ -309,6 +311,7 @@ sweeper 由供应商随门店一起提供，和其它字段一样只读。发现
 | **签收即基线** | 5 项检查 + 核对客户可见值 + 必须勾选；记基线，写 `ENABLE_SIGNED_OFF` |
 | **签收后漂移** | 上游改动照常生效；与基线比对显示 drift；**重新签收**或**标记异常**，都不改值 |
 | **修复后自动关闭**（v3.3.0） | 同步带来「变了且合格」的值 → issue 自动 fixed；变了但还不合格 → 保持 open 并记下尝试值 |
+| **QR code dropoff**（v3.8.0 恢复） | 供应商列表加 `QR` 列：LMS 且支持扫码投递的显示徽章，其余显示 `—`；详情页 Basic Info 也有这一项。只会出现在 LMS（PUDO 不暴露这个能力） |
 | **异常清单可导出**（v3.4.0） | Data Issues 顶部 `Export open issues (CSV)`：字段·子字段·类型·严重度·原因，直接贴进给供应商的工单；OC 列表导出带「未关闭异常数 / 签收后变化数」两列。**v3.7.0 起每行还带门店本身**：店名、地址、城市、州、邮编、来源、类型 —— 供应商拿到 CSV 就知道是哪家店，不用再回查单号 |
 | **审计** | 每个动作一条：谁、何时（到秒）、字段、旧值 → 新值 |
 | **兜底原则** | 没人处理 → 不启用 / 保持旧值 / 不生成 OC ID，绝不自动接受错值 |

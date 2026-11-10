@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v3.7.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v3.8.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -328,6 +328,29 @@ table.dup-cmp tr.st-diff td.a,table.dup-cmp tr.st-diff td.b{background:#FFFBFB}
 table.dup-cmp tr.st-near td.a,table.dup-cmp tr.st-near td.b{background:#FFFDF5}
 table.dup-cmp mark.df{background:#FDE2E2;color:#B42318;padding:0 2px;border-radius:3px;font-weight:600}
 table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
+
+/* ===== v3.8.0 — one type column, QR badge, issues by nature ===== */
+.src-tag{color:var(--text-tertiary);font-size:11px;white-space:nowrap}
+.type-cell{white-space:nowrap}
+.qr-badge{display:inline-flex;align-items:center;font-size:9.5px;font-weight:700;letter-spacing:.05em;color:#0E7490;
+  background:#ECFEFF;border:1px solid #CFFAFE;border-radius:4px;padding:2px 5px;cursor:default}
+.help-dot{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;
+  background:var(--bg-section);color:var(--text-tertiary);font:700 9.5px/1 var(--font-mono);cursor:pointer;
+  margin-left:4px;vertical-align:1px;transition:var(--transition)}
+.help-dot:hover{background:var(--color-primary-light);color:var(--color-primary)}
+.iss-group+.iss-group{margin-top:16px;padding-top:14px;border-top:1px dashed #E2E8F0}
+.iss-group-head{display:flex;align-items:center;gap:8px;margin:2px 0 8px;flex-wrap:wrap}
+.iss-group-head b{font-size:12.5px}
+.iss-dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto}
+.iss-dot.missing{background:var(--color-warning)}
+.iss-dot.wrong{background:var(--color-danger)}
+.help-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+.help-card{background:var(--bg-section);border-radius:var(--radius);padding:12px 14px}
+.help-title{display:flex;align-items:center;gap:7px;margin-bottom:6px;font-size:12.5px}
+.help-card p{font-size:12px;line-height:1.65;color:var(--text-secondary)}
+.help-rows>div{display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--bg-section);font-size:12.5px;line-height:1.65}
+.help-rows>div b{flex:0 0 88px;color:var(--text-primary)}
+.help-rows>div span{color:var(--text-secondary)}
 </style>
 </head>
 <body>
@@ -335,7 +358,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.7.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.8.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -360,7 +383,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.7.0</div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.8.0</div>
       </div>
     </div>
 
@@ -394,8 +417,10 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
           <div class="table-wrap">
             <table class="data">
               <thead><tr>
-                <th>Location ID</th><th>Name</th><th>Address</th><th>City</th><th>Provider</th><th>Type</th>
-                <th>Sweeper <span class="badge badge-gray" style="font-size:9px">synced</span></th><th>Status</th><th>Issues</th><th>OC Location</th><th>Updated</th>
+                <th>Location ID</th><th>Name</th><th>Address</th><th>City</th>
+                <th>Type <span style="font-weight:400;color:var(--text-tertiary)">(source)</span></th><th>QR</th>
+                <th>Sweeper <span class="badge badge-gray" style="font-size:9px">synced</span></th><th>Status</th>
+                <th>Issues <span class="help-dot" onclick="openHelp()" title="What counts as an issue">?</span></th><th>OC Location</th><th>Updated</th>
               </tr></thead>
               <tbody id="v-tbody"></tbody>
             </table>
@@ -439,7 +464,8 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
             <table class="data">
               <thead><tr>
                 <th><input type="checkbox" onclick="toggleAllOC(this)"></th><th>OC Location ID</th><th>Name</th><th>Address</th><th>City / State</th>
-                <th>Source</th><th>Type</th><th>Sweeper</th><th>Status</th><th>Issues</th><th>Enable</th><th>Linked Vendors</th><th>Updated</th>
+                <th>Type <span style="font-weight:400;color:var(--text-tertiary)">(source)</span></th><th>Sweeper</th><th>Status</th>
+                <th>Issues <span class="help-dot" onclick="openHelp()" title="What counts as an issue">?</span></th><th>Enable</th><th>Linked Vendors</th><th>Updated</th>
               </tr></thead>
               <tbody id="o-tbody"></tbody>
             </table>
@@ -550,6 +576,30 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
   </div>
 </div>
 
+<div class="modal-mask" id="modal-help">
+  <div class="modal" style="width:620px">
+    <div class="modal-header">What counts as an issue<span class="close" onclick="closeModal('modal-help')">✕</span></div>
+    <div class="modal-body">
+      <div class="info-line" data-i18n="help.intro">An issue is a fault in the data <b>at its source</b>. The console records it and asks the owner to fix it — the value itself never changes here.</div>
+      <div class="help-grid">
+        <div class="help-card">
+          <div class="help-title"><span class="iss-dot missing"></span><b>Missing critical fields</b></div>
+          <p data-i18n="help.missing">Nothing arrived where a customer-facing field must exist: street address, postal code, opening hours, sweeper. <b>Blocking by default</b> — a store cannot go live on a guess.</p>
+        </div>
+        <div class="help-card">
+          <div class="help-title"><span class="iss-dot wrong"></span><b>Inaccurate data</b></div>
+          <p data-i18n="help.wrong">A value exists and it is wrong: incorrect, inconsistent, out of range, duplicate, stale, or badly formatted. Some block a sign-off, some only warn — the severity says which.</p>
+        </div>
+      </div>
+      <div class="help-rows">
+        <div><b>Severity</b><span data-i18n="help.sev">Blocking stops a <b>new</b> sign-off. Warning does not. Neither takes a live store offline — going down is always one click, going up is a check.</span></div>
+        <div><b>Closing</b><span data-i18n="help.close">An issue closes by itself when the next provider run delivers a value that changed <i>and</i> is valid — but only for missing / format / inconsistent / out of range. Incorrect, stale and duplicate always come back to a human.</span></div>
+        <div><b>The four checks</b><span data-i18n="help.checks">The tiles at the top slice the same list for daily work: an issue belongs to a check by its field, never by hand.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-mask" id="modal-ver">
   <div class="modal" style="width:560px">
     <div class="modal-header">Version history<span class="close" onclick="closeModal('modal-ver')">✕</span></div>
@@ -561,17 +611,17 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.7.0 (four checks, compare, export)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.8.0 (QR, one type column, issues by nature)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
-        <tr><td>1</td><td>Vendor List</td><td>Look at the Sweeper column</td><td>Every sweeper comes with the sync — no edit affordance anywhere</td></tr>
+        <tr><td>1</td><td>Vendor List</td><td>Look at the Type and QR columns</td><td>Type reads <b>packagehub (LMS)</b> — what it is and who owns it; QR marks the counters that can scan, LMS only</td></tr>
         <tr><td>2</td><td>Vendor Detail</td><td>Report a data issue on an empty sweeper</td><td>Reason required · flag recorded on the vendor record · no value changed</td></tr>
         <tr><td>3</td><td>OC List</td><td>Read the Source column</td><td>LMS, PUDO or M&amp;MP per record; a 2:1 store shows both</td></tr>
         <tr><td>4</td><td>OC Detail</td><td>Basic Info → each field carries its source</td><td>LMS wins the field when LMS has a value, PUDO fills the rest</td></tr>
         <tr><td>5</td><td>OC List</td><td>Enable a ready location</td><td>Sign-off checklist · baseline captured · no data edited</td></tr>
         <tr><td>6</td><td>Duplicate Check</td><td>Read the pair left to right, then confirm "same store"</td><td>Two columns, one row per field: ✓ same, ≈ one contains the other, ✕ different — then 2:1 mapping and LMS values on the OC row</td></tr>
-        <tr><td>7</td><td>Data Issues</td><td>The four checks at the top, then the three sections</td><td>Incomplete address · no postal code · no opening hours · day under 3 hours, each counted and filterable · then provider issues · drift · intake — no review queues</td></tr>
+        <tr><td>7</td><td>Data Issues</td><td>The four checks, then the issues split by nature; click the ?</td><td>Missing critical fields (nothing arrived) above Inaccurate data (a value is wrong) · the ? explains what blocks and what closes itself</td></tr>
         <tr><td>8</td><td>Data Issues</td><td>Open a drifted location</td><td>See which fields moved since sign-off; downstream already has the new values — drift is information, not a decision</td></tr>
         <tr><td>9</td><td>OC List</td><td>Filter Source = M&amp;MP</td><td>Self-operated stores follow the same rules: same sign-off, same issue ledger — only the data owner differs</td></tr>
         <tr><td>10</td><td>Both lists</td><td>Set Source = LMS, then open the Type filter</td><td data-i18n="walk.10.exp">Only <b>packagehub</b> is offered and it is selected for you; the hint reads “LMS → packagehub”. Same for PUDO Inc (PUDOpoint / Locker) and M&amp;MP</td></tr>
@@ -940,6 +990,20 @@ var I18N_ZH = {
   "Hours":"营业时间",
   "no OC ID":"无 OC 单号",
   "✓ same · ≈ one contains the other · ✕ different":"✓ 相同 · ≈ 一个包含另一个 · ✕ 不同",
+  /* ---- v3.8.0: QR, one type column, issues by nature ---- */
+  "(source)":"（来源）",
+  "QR dropoff":"支持扫码投递",
+  "the customer scans a code at the counter":"客户在柜台扫码即可投递",
+  "not supported by this source":"这类来源不支持",
+  "What counts as an issue":"什么算一条异常",
+  "Missing critical fields":"关键字段缺失",
+  "Inaccurate data":"数据不准确",
+  "nothing arrived where a customer-facing field must exist — blocking by default":"该有的字段供应商没有给 —— 默认阻塞",
+  "a value is there and it is wrong — needs a human judgement":"值给了，但是错的 —— 需要人来判断",
+  "Nothing in this group for the current filter.":"当前筛选下这一组没有内容。",
+  "Severity":"严重程度",
+  "Closing":"怎么关闭",
+  "The four checks":"四项检查",
   /* ---- table heads / placeholders / titles ---- */
   "Page":"页面",
   "Action":"操作",
@@ -1008,8 +1072,14 @@ var I18N_BLOCK = {
   "walk.12.exp":"两条异常自己关闭（值变了<b>并且</b>合法）；一条保持未关闭并注明“值变了但仍不合法”，一条回到人工，其余不动 —— 任何地方都没有手工关闭",
   "btn.notlive":"未上线",
   "sync.info":"一次推送只写供应商的值，从不写 OC 的决定 —— 启用、标记、签收都由人做。自 v3.3.0 起，推送也可以<b>关闭</b>一条异常，但只有它带来的值合法时才关；修是责任方的事，记录是我们的。",
+  "help.intro":"一条异常指的是<b>源头数据</b>出了问题。控制台把它记下来、要求责任方去改 —— 这里永远不改值本身。",
+  "help.missing":"该有的客户可见字段，供应商什么也没给：街道地址、邮编、营业时间、揽收方。<b>默认阻塞</b> —— 门店不能靠猜上线。",
+  "help.wrong":"值给了，但是错的：错误、前后矛盾、超出范围、重复、过期、格式不对。有的阻塞签收，有的只是提醒 —— 看严重程度。",
+  "help.sev":"阻塞只会挡住<b>新的</b>签收，提醒不会。两者都不会把已上线门店下线 —— 下线永远一键，上线才要检查。",
+  "help.close":"下一次供应商推送带来的值<b>变了且合法</b>时，异常会自己关闭 —— 但只限缺失 / 格式 / 前后矛盾 / 超出范围。错误、过期、重复永远回到人工。",
+  "help.checks":"顶部那几个格子只是把同一份清单按字段切开，方便每天干活 —— 一条异常属于哪一格由字段决定，不靠人手选。",
   "dup.vs":"对比",
-  "wt.title":"演示脚本 —— v3.7.0（四项检查、左右对比、导出）"
+  "wt.title":"演示脚本 —— v3.8.0（QR、类型一列、异常按性质分）"
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
@@ -1072,6 +1142,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "3.8.0":"<b>两列并成一列，异常自己会解释。</b>供应商列表加上了 LMS 会推的 <b>QR code dropoff</b> —— 能扫码的柜台一眼可见，不用点进详情。<b>来源和类型合并成一列</b>：`packagehub (LMS)` 一句话说清「它是什么」和「谁拥有这份数据」，而来源筛选保留 —— 因为筛选才驱动类型级联和合并优先级。异常台账按<b>性质</b>分成两组：<b>关键字段缺失</b>（该有的没给，默认阻塞）与<b>数据不准确</b>（值有，但是错的）。每个 Issues 标题旁有个 <b>?</b>，讲清什么算异常、什么会阻塞、什么会自己关闭。",
   "3.7.0":"<b>两小时的营业日不是排班。</b>必查项多了一条：<b>任何一天合计不足 3 小时</b>都算可疑 —— 由时段算出来，不是人工标上去的，所以数据被截断时它自己会冒出来。Hours 标签页会在营业时间下面点名是哪一天。<br><br>另外，异常导出里带上了<b>门店本身</b>：地址、城市、州、邮编、来源、类型，就挨着单号 —— 发给供应商的 CSV 能看出是哪家店，而不只是一个记录 ID。",
   "3.6.0":"<b>三个必查项有了自己的入口，重复配对改成左右对照。</b>异常台账顶部先给出运营每天真正在追的三个缺口 —— <b>地址信息不全</b>、<b>缺少邮编</b>、<b>营业时间为空</b> —— 各自按未关闭异常计数，点一下就只看这一类；判定靠字段，新标记会自动落到对应格子。重复门店页把原来堆叠的差异行换成<b>左右对照</b>：两条记录并排两列，每个比对字段一行，中间一列给出 ✓ 相同 / ≈ 一个包含另一个 / ✕ 不同，差异整行着色 —— 判定靠看，不靠读。",
   "3.5.0":"<b>这套控制台现在有中文了。</b>顶部右上角多了一个 EN / 中文 切换，整份界面 —— 列表、筛选、弹框、详情页、演示脚本、版本说明 —— 都会跟着换语言，选择会记住。数据本身（门店名、地址、供应商、单号、字段名）保持英文原样：这些是供应商推过来的值，翻译它们反而制造第二个真相来源。",
@@ -1227,8 +1298,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='3.7.0';
+var APP_VERSION='3.8.0';
 var VERSIONS=[
+ {v:'3.8.0',type:'minor',date:'2026-11-10',desc:'<b>One column instead of two, and an issue that explains itself.</b> The vendor list now shows the <b>QR code dropoff</b> capability LMS sends, so a counter that can scan is visible without opening the record. <b>Source and type merged into one column</b> — `packagehub (LMS)` says what it is and who owns the data in the same breath, while the Source filter stays, because the filter is what drives the type cascade and the merge priority. And the ledger splits by <b>nature</b>: <b>missing critical fields</b> (nothing arrived, blocking by default) versus <b>inaccurate data</b> (a value is there and it is wrong). A <b>?</b> next to every Issues heading explains what counts, what blocks and what closes itself.'},
  {v:'3.7.0',type:'minor',date:'2026-11-05',desc:'<b>A two-hour day is not a rota.</b> The checks grow a fourth entry: any opening day that totals <b>under three hours</b> is called out — computed from the ranges, not typed in by hand, so a truncated feed shows up on its own. The Hours tab names the offending day under the value. And the issue export now carries the <b>store itself</b>: address, city, state, postal code, source and type next to the location ids, so a CSV sent to a provider says which shop it is instead of only which record.'},
  {v:'3.6.0',type:'minor',date:'2026-11-05',desc:'<b>Three checks get their own gate, and a duplicate pair is read side by side.</b> The issue ledger now opens with the three gaps operations actually chases every day — <b>incomplete address</b>, <b>no postal code</b>, <b>no opening hours</b> — each counted on open issues, each one click away from filtering the ledger to that bucket, and each matched to a field so a new flag lands in the right bucket automatically. The duplicate page replaces the stacked diff lines with a <b>left/right comparison</b>: the two records are two columns, every compared field sits on its own row, and the middle column says ✓ same, ≈ one contains the other, or ✕ different — differences shaded, so the decision is made by looking, not by reading.'},
  {v:'3.5.0',type:'minor',date:'2026-11-04',desc:'<b>The console speaks Chinese now.</b> A EN / 中文 switch sits in the header: lists, filters, dialogs, detail pages, the walkthrough script and this version history all follow it, and the choice is remembered. Data stays as it arrived — store names, addresses, provider names, ids and field names are not translated, because a translated value would be a second source of truth.'},
@@ -1567,6 +1639,24 @@ function tickClock(){var el=document.getElementById('clock');if(!el)return;el.te
 setInterval(tickClock,1000);
 function statusBadge(st){if(st==='active')return '<span class="badge badge-green">active</span>';if(st==='removed')return '<span class="badge badge-gray">removed</span>';return '<span class="badge badge-red">inactive</span>';}
 function provBadge(p){return '<span class="badge '+(p==='M&MP'?'badge-green':p==='PUDO Inc'?'badge-teal':'badge-blue')+'">'+esc(p)+'</span>';}
+/* v3.8.0 — type and source are both read from the feed, but they answer different
+   questions: "what is this" and "who owns the value". One column, both answers. */
+function srcShort(x){return x==='PUDO Inc'?'PUDO':x;}
+function typeChip(t,src){
+  var ty=esc(t||'—');
+  if(!src)return ty;
+  /* left to right in merge order, so (LMS / PUDO) also says which one wins */
+  var pri={'M&MP':0,'LMS':1};
+  var one=String(src).split(' / ').filter(Boolean)
+    .sort(function(a,b){return (pri[a]===undefined?2:pri[a])-(pri[b]===undefined?2:pri[b]);})
+    .map(srcShort).join(' / ');
+  return '<span class="type-cell">'+ty+' <span class="src-tag">('+esc(one)+')</span></span>';
+}
+function qrCell(v){
+  return v.qrDropoff
+    ? '<span class="qr-badge" title="QR code dropoff — the customer scans a code at the counter">QR</span>'
+    : '<span style="color:var(--text-tertiary)">—</span>';
+}
 
 /* v3.2.0 — a source can only produce certain types. LMS ships package hubs only;
    PUDO Inc ships points and lockers; M&MP is our own shop. The filter and the list
@@ -1584,6 +1674,7 @@ function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 function showToast(t,m,kind){var w=document.getElementById('toast-wrap'),d=document.createElement('div');d.className='toast '+(kind||'');d.innerHTML='<div class="t-title">'+esc(tr(t))+'</div><div class="t-msg">'+esc(tr(m))+'</div>';w.appendChild(d);setTimeout(function(){d.remove();},5200);}
 function toggleWalkthrough(){document.getElementById('walkthrough').classList.toggle('open');}
+function openHelp(){openModal('modal-help');applyLang();}
 function openVersionModal(){
   document.getElementById('ver-body').innerHTML='<div class="ver-list">'+VERSIONS.map(function(v){
     var d=(LANG==='zh'&&VER_ZH[v.v])?VER_ZH[v.v]:v.desc;
@@ -1696,8 +1787,8 @@ function renderVendor(){
       +'<td>'+esc(v.name)+'</td>'
       +'<td>'+esc(v.addr1||'—')+'</td>'
       +'<td>'+esc(v.city)+'</td>'
-      +'<td>'+provBadge(v.provider)+'</td>'
-      +'<td>'+esc(v.type||'—')+(typeMatches(v)?'':' <span class="badge badge-red" title="this type cannot come from '+esc(v.provider)+'">type ≠ source</span>')+'</td>'
+      +'<td>'+typeChip(v.type,v.provider)+(typeMatches(v)?'':' <span class="badge badge-red" title="this type cannot come from '+esc(v.provider)+'">type ≠ source</span>')+'</td>'
+      +'<td>'+qrCell(v)+'</td>'
       +'<td>'+(v.sweeper?provBadge(v.sweeper):'<span class="badge badge-orange">missing</span>')+'</td>'
       +'<td>'+statusBadge(v.status)+'</td>'
       +'<td>'+(oi.length?'<span class="pending-badge" onclick="openIssuesFor(\''+v.id+'\')">'+oi.length+' flagged</span>':'<span style="color:var(--text-tertiary)">—</span>')+'</td>'
@@ -1766,8 +1857,7 @@ function renderOC(){
       +'<td>'+esc(name.value)+'</td>'
       +'<td>'+esc(addr.value||'—')+' <span class="badge '+(addr.src==='LMS'?'badge-blue':'badge-teal')+'" style="font-size:9px">'+esc(addr.src==='PUDO Inc'?'PUDO':addr.src)+'</span></td>'
       +'<td>'+esc(city.value)+', '+esc(mergedField(o,'state').value)+'</td>'
-      +'<td>'+srcBadges+'</td>'
-      +'<td>'+esc(mergedField(o,'type').value)+'</td>'
+      +'<td>'+typeChip(mergedField(o,'type').value,Object.keys(srcs).join(' / '))+'</td>'
       +'<td>'+(sweeper.value?esc(sweeper.value==='PUDO Inc'?'PUDO':sweeper.value):'<span class="badge badge-orange">missing</span>')+'</td>'
       +'<td>'+statusBadge(st)+'</td>'
       +'<td>'+issueBadges(o)+'</td>'
@@ -1980,6 +2070,25 @@ function typeBadge(i){
   var cls=i.severity==='blocking'?'badge-orange':'badge-gray';
   return '<span class="badge '+cls+'" title="'+esc(meta.hint||'')+'">'+esc(meta.label)+'</span>';
 }
+/* v3.8.0 — every issue belongs to one of two natures, and the split is not
+   cosmetic: a missing value and a wrong value need different owners and
+   different closing rules. */
+function famOf(i){return i.type==='MISSING'?'missing':'wrong';}
+function issueRow(i){
+  var v=findVendor(i.vendorId);
+  return '<div class="rc-item" data-fam="'+famOf(i)+'"><div class="rc-item-head"><b>'+esc(v.name)+'</b><span class="mono" style="font-size:12px">'+esc(i.vendorId)+'</span>'
+    +watchTag(i)+'<span class="badge badge-gray">'+esc(fieldLabel(i))+'</span>'+typeBadge(i)
+    +'<span class="rc-meta" style="margin:0">'+(i.severity==='blocking'?'blocks sign-off':'warning only')+'</span>'
+    +'<span class="risk '+(i.status==='reported'?'risk-review':'risk-block')+'">'+esc(i.status==='reported'?'reported to owner':i.status)+'</span></div>'
+    +'<div class="rc-meta" style="color:var(--text-secondary)">'+esc(storeLine(v))+'</div>'
+    +'<div class="rc-meta">'+esc(whyOf(i))+'</div>'
+    +'<div class="rc-meta">'+esc(i.id)+' · raised by '+esc(i.raisedBy)+' · '+esc(i.raisedAt)+'</div>'
+    +(i.checkNote?'<div class="rc-meta"><b>✔ checked '+esc(i.lastChecked||'')+'</b> · '+esc(i.checkNote)+(i.checkRun?' · '+esc(i.checkRun):'')+'</div>':'')
+    +'<div class="rc-actions">'
+    +(i.status==='open'?'<button class="btn btn-secondary btn-sm" onclick="markReported(\''+i.id+'\')">Mark chased</button>':'')
+    +'<span class="rc-meta" style="margin:0">The value never changes here, and nobody closes it by hand — the next push either fixes it or it stays open.</span>'
+    +'</div></div>';
+}
 function fieldLabel(i){
   var names={name:'Name',addr1:'Street address',city:'City',state:'State',postal:'Postal code',latitude:'Coordinates',sweeper:'Sweeper',hoursText:'Opening hours',phone:'Phone'};
   return tr(names[i.field]||i.field)+(i.subField?' · '+i.subField:'');
@@ -2025,22 +2134,22 @@ function renderIssuesPage(){
     +'<span class="rc-meta" style="margin:0">Granularity: field → sub-field → type → severity. Blocking stops new sign-offs; warnings do not.</span>'
     +'</div>';
 
-  html+='<div class="card" id="di-issues-card" style="margin-bottom:14px"><div style="display:flex;align-items:center;gap:10px"><b style="font-size:13px">Data issues — provider and self-operated</b><span class="badge badge-orange">'+shown.length+'</span><span class="rc-meta" style="margin:0">flagged by us · the owner fixes the source</span></div>'
-    +(shown.length?shown.map(function(i){
-      var v=findVendor(i.vendorId);
-      return '<div class="rc-item"><div class="rc-item-head"><b>'+esc(v.name)+'</b><span class="mono" style="font-size:12px">'+esc(i.vendorId)+'</span>'
-        +watchTag(i)+'<span class="badge badge-gray">'+esc(fieldLabel(i))+'</span>'+typeBadge(i)
-        +'<span class="rc-meta" style="margin:0">'+(i.severity==='blocking'?'blocks sign-off':'warning only')+'</span>'
-        +'<span class="risk '+(i.status==='reported'?'risk-review':'risk-block')+'">'+esc(i.status==='reported'?'reported to owner':i.status)+'</span></div>'
-        +'<div class="rc-meta">'+esc(whyOf(i))+'</div>'
-        +'<div class="rc-meta" style="color:var(--text-secondary)">'+esc(storeLine(v))+'</div>'
-        +'<div class="rc-meta">'+esc(i.id)+' · raised by '+esc(i.raisedBy)+' · '+esc(i.raisedAt)+'</div>'
-        +(i.checkNote?'<div class="rc-meta"><b>✔ checked '+esc(i.lastChecked||'')+'</b> · '+esc(i.checkNote)+(i.checkRun?' · '+esc(i.checkRun):'')+'</div>':'')
-        +'<div class="rc-actions">'
-        +(i.status==='open'?'<button class="btn btn-secondary btn-sm" onclick="markReported(\''+i.id+'\')">Mark chased</button>':'')
-        +'<span class="rc-meta" style="margin:0">The value never changes here, and nobody closes it by hand — the next push either fixes it or it stays open.</span>'
-        +'</div></div>';
-    }).join(''):'<div class="rc-meta" style="margin-top:8px">Nothing outstanding for this filter.</div>')+'</div>';
+  var missing=shown.filter(function(i){return famOf(i)==='missing';});
+  var wrong=shown.filter(function(i){return famOf(i)==='wrong';});
+  function group(kind,title,hint,rows){
+    return '<div class="iss-group" data-group="'+kind+'">'
+      +'<div class="iss-group-head"><span class="iss-dot '+kind+'"></span><b>'+title+'</b>'
+      +'<span class="badge '+(kind==='missing'?'badge-orange':'badge-red')+'">'+rows.length+'</span>'
+      +'<span class="rc-meta" style="margin:0">'+hint+'</span></div>'
+      +(rows.length?rows.map(issueRow).join(''):'<div class="rc-meta" style="margin:6px 0 2px">Nothing in this group for the current filter.</div>')
+      +'</div>';
+  }
+  html+='<div class="card" id="di-issues-card" style="margin-bottom:14px"><div style="display:flex;align-items:center;gap:10px"><b style="font-size:13px">Data issues — provider and self-operated</b>'
+    +'<span class="help-dot" onclick="openHelp()" title="What counts as an issue">?</span>'
+    +'<span class="badge badge-orange">'+shown.length+'</span><span class="rc-meta" style="margin:0">flagged by us · the owner fixes the source</span></div>'
+    +group('missing','Missing critical fields','nothing arrived where a customer-facing field must exist — blocking by default',missing)
+    +group('wrong','Inaccurate data','a value is there and it is wrong — needs a human judgement',wrong)
+    +'</div>';
 
   html+='<div class="card" style="margin-bottom:14px"><div style="display:flex;align-items:center;gap:10px"><b style="font-size:13px">Changed after sign-off</b><span class="badge badge-red">'+drift.length+'</span><span class="rc-meta" style="margin:0">for information only — these values are already downstream</span></div>'
     +(drift.length?drift.map(function(d){
@@ -2168,11 +2277,12 @@ function srcChip(o,f){
 }
 function vendorPanels(v){
   if(detailTab==='overview'){
-    var rows=[['Name','name'],['Address','addr1'],['City','city'],['State','state'],['Postal code','postal'],['Coordinates','lat'],['Phone','phone'],['Provider','provider'],['Type','type'],['Status','status'],['Updated','updated']];
+    var rows=[['Name','name'],['Address','addr1'],['City','city'],['State','state'],['Postal code','postal'],['Coordinates','lat'],['Phone','phone'],['Provider','provider'],['Type','type'],['Status','status'],['QR dropoff','qr'],['Updated','updated']];
     return psec('Basic Info','<div class="dp-kv-grid">'+rows.map(function(r){
       var x=v[r[1]];
       if(r[1]==='lat')x=v.lat+', '+v.lng;
       if(r[1]==='status')return kv(r[0],statusBadge(v.status));
+      if(r[1]==='qr')return kv(r[0],v.qrDropoff?'<span class="qr-badge">QR</span> <span style="font-size:11.5px;color:var(--text-tertiary)">the customer scans a code at the counter</span>':'<span style="color:var(--text-tertiary)">not supported by this source</span>');
       return kv(r[0],esc(x==null||x===''?'—':x));
     }).join('')+'</div>');
   }
