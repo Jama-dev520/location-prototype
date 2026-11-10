@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v3.10.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v3.10.1)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -367,6 +367,8 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
 .btn.is-busy{opacity:.75;cursor:progress;pointer-events:none}
 .btn.is-busy::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:7px;vertical-align:1px;animation:pn-pulse .9s ease-in-out infinite}
 @keyframes pn-pulse{0%,100%{opacity:.2}50%{opacity:1}}
+/* the help mark belongs to the filter, so it has to sit inside an 11px label */
+.f-label .help-dot{width:12px;height:12px;font-size:9px;line-height:12px;margin-left:5px;vertical-align:-2px}
 </style>
 </head>
 <body>
@@ -374,7 +376,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.10.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.10.1</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -399,7 +401,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v3.10.0</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v3.10.1</span></div>
       </div>
     </div>
 
@@ -417,7 +419,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
             <div><label class="f-label">Source</label><select id="v-f-source" onchange="applyVendorFilters()"></select></div>
             <div><label class="f-label">Status</label><select id="v-f-status" onchange="applyVendorFilters()"><option value="">All</option><option value="active">active</option><option value="inactive">inactive</option><option value="removed">removed</option></select></div>
             <div><label class="f-label">Sweeper</label><select id="v-f-sweeper" onchange="applyVendorFilters()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
-            <div><label class="f-label">Issues</label><select id="v-f-issues" onchange="applyVendorFilters()"><option value="">All</option><option value="open">Has open issue</option><option value="none">No issue</option></select></div>
+            <div><label class="f-label">Issues <span class="help-dot" onclick="openHelp()" title="What counts as an issue">?</span></label><select id="v-f-issues" onchange="applyVendorFilters()"><option value="">All</option><option value="open">Has open issue</option><option value="none">No issue</option></select></div>
           </div>
           <div class="filter-actions">
             <button class="btn btn-secondary" onclick="resetVendorFilters()">Reset</button>
@@ -442,7 +444,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
                 <th>Location ID</th><th>Name</th><th>Address</th><th>City</th>
                 <th>Source</th><th>QR</th>
                 <th>Sweeper</th><th>Status</th>
-                <th>Issues <span class="help-dot" onclick="openHelp()" title="What counts as an issue">?</span></th><th>OC Location</th><th>Updated</th>
+                <th>Issues</th><th>OC Location</th><th>Updated</th>
               </tr></thead>
               <tbody id="v-tbody"></tbody>
             </table>
@@ -462,7 +464,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
             <div><label class="f-label">Source</label><select id="o-f-source" onchange="applyOCFilters()"></select></div>
             <div><label class="f-label">Status</label><select id="o-f-status" onchange="applyOCFilters()"><option value="">All</option><option value="active">active</option><option value="inactive">inactive</option></select></div>
             <div><label class="f-label">Downstream</label><select id="o-f-live" onchange="applyOCFilters()"><option value="">All</option><option value="no">Not live yet</option><option value="yes">Live</option></select></div>
-            <div><label class="f-label">Issues</label><select id="o-f-issues" onchange="applyOCFilters()"><option value="">All</option><option value="any">Has any issue</option><option value="drift">Baseline drift</option><option value="dup">Duplicate 2:1</option><option value="open">Open provider issue</option></select></div>
+            <div><label class="f-label">Issues <span class="help-dot" onclick="openHelp()" title="What counts as an issue">?</span></label><select id="o-f-issues" onchange="applyOCFilters()"><option value="">All</option><option value="any">Has any issue</option><option value="drift">Baseline drift</option><option value="dup">Duplicate 2:1</option><option value="open">Open provider issue</option></select></div>
           </div>
           <div class="filter-actions">
             <button class="btn btn-secondary" onclick="resetOCFilters()">Reset</button>
@@ -486,7 +488,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
               <thead><tr>
                 <th><input type="checkbox" onclick="toggleAllOC(this)"></th><th>OC Location ID</th><th>Name</th><th>Address</th><th>City / State</th>
                 <th>Source</th><th>Sweeper</th><th>Status</th>
-                <th>Issues <span class="help-dot" onclick="openHelp()" title="What counts as an issue">?</span></th><th>Enable</th><th>Linked Vendors</th><th>Updated</th>
+                <th>Issues</th><th>Enable</th><th>Linked Vendors</th><th>Updated</th>
               </tr></thead>
               <tbody id="o-tbody"></tbody>
             </table>
@@ -632,7 +634,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.10.0 (one Source, refresh, checks)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.10.1 (one Source, refresh, checks)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -1119,7 +1121,7 @@ var I18N_BLOCK = {
   "help.checks":"顶部那几个格子只是把同一份清单按字段切开，方便每天干活 —— 一条异常属于哪一格由字段决定，不靠人手选。",
   "dup.vs":"对比",
   "pull.hint":"标记 → 导出 → 供应商修正 → 再拉一次",
-  "wt.title":"演示脚本 —— v3.10.0（一个来源、重新拉取、必查项）"
+  "wt.title":"演示脚本 —— v3.10.1（一个来源、重新拉取、必查项）"
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
@@ -1186,6 +1188,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "3.10.1":"<b>问号该跟着筛选，不跟着列。</b>解释「什么算一条异常」的那个 <b>?</b> 现在放在 Issues <b>筛选</b>标签旁边 —— 选择是在那里做的 —— 而不是列头上，放在列头上容易被当成对数据的注释。弹框内容不变，两个列表都有。",
   "3.10.0":"<b>一个来源，不是两个。</b>类型和归属从来不是独立的 —— LMS 只发 packagehub，PUDO Inc 只发 PUDOpoint，M&amp;MP 是我们自己的店 —— 所以列表和筛选都只保留一个 <b>Source</b>：<b>PUDOpoint (PUDO)</b>、<b>packagehub (LMS)</b>、<b>M&amp;MP</b>。单独的 Type 列、跟着它级联的 Type 下拉、以及“类型 ≠ 来源”那个徽章一起下线：不可能的组合不再是一个筛选选项。M&amp;MP 的店是我们的，揽收不是 —— 它的揽收方固定是 <b>LMS</b>，也只可能是这个值。",
   "3.9.0":"<b>拉取不是决定。</b>供应商列表新增 <b>Refresh from providers</b>：把异常清单导出给供应商、对方补推之后，直接再拉一次，不必等夜间同步。拉取只写入供应商这次推来的值（沿用 v3.4.0 的规则），逐字段拿「标记那一刻的值」做参照重新判定，<b>只有真正变合法</b>的异常才会自动关闭；其余保持未关闭并写明原因。<b>上次拉取</b>那行留下到秒的时间、run 号和这次改变了什么 —— 「我们又问了一次、对方回了什么」是页面上的一行事实，不需要凭记忆。",
   "3.8.0":"<b>两列并成一列，异常自己会解释。</b>供应商列表加上了 LMS 会推的 <b>QR code dropoff</b> —— 能扫码的柜台一眼可见，不用点进详情。<b>来源和类型合并成一列</b>：`packagehub (LMS)` 一句话说清「它是什么」和「谁拥有这份数据」，而来源筛选保留 —— 因为筛选才驱动类型级联和合并优先级。异常台账按<b>性质</b>分成两组：<b>关键字段缺失</b>（该有的没给，默认阻塞）与<b>数据不准确</b>（值有，但是错的）。每个 Issues 标题旁有个 <b>?</b>，讲清什么算异常、什么会阻塞、什么会自己关闭。",
@@ -1347,8 +1350,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='3.10.0';
+var APP_VERSION='3.10.1';
 var VERSIONS=[
+ {v:'3.10.1',type:'patch',date:'2026-11-10',desc:'<b>The help mark belongs to the filter, not to the column.</b> The <b>?</b> that explains what counts as an issue now sits beside the Issues <i>filter</i> — where the choice is actually made — instead of the Issues column header, where it read as a comment on the data. Same popup, both lists.'},
  {v:'3.10.0',type:'minor',date:'2026-11-10',desc:'<b>One Source, not two.</b> The type and the owner were never independent — LMS only ships package hubs, PUDO Inc only ships points, M&amp;MP is our own store — so the list and the filters now carry a single <b>Source</b>: <b>PUDOpoint (PUDO)</b>, <b>packagehub (LMS)</b>, <b>M&amp;MP</b>. The separate Type column, the Type dropdown that cascaded off it, and the “type ≠ source” badge all go with it: a pair that cannot exist is not a filter option any more. M&amp;MP stores are ours, the pickup is not — their sweeper is <b>LMS</b>, and that is the only value it can take.'},
  {v:'3.9.0',type:'minor',date:'2026-11-10',desc:'<b>A pull is not a decision.</b> The vendor list gains <b>Refresh from providers</b>: after you export the issue list and the provider pushes corrected values, pull again instead of waiting for the nightly run. The pull writes what the provider sent (the v3.4.0 rule), re-checks every flagged field against the value it had when it was flagged, and closes only the issues whose new value is <b>valid</b> — everything else stays open with a note saying why. A <b>last pull</b> line keeps the timestamp to the second, the run id and what that pull changed, so &ldquo;we asked again and here is what came back&rdquo; is a fact on the page rather than a memory.'},
  {v:'3.8.0',type:'minor',date:'2026-11-10',desc:'<b>One column instead of two, and an issue that explains itself.</b> The vendor list now shows the <b>QR code dropoff</b> capability LMS sends, so a counter that can scan is visible without opening the record. <b>Source and type merged into one column</b> — `packagehub (LMS)` says what it is and who owns the data in the same breath, while the Source filter stays, because the filter is what drives the type cascade and the merge priority. And the ledger splits by <b>nature</b>: <b>missing critical fields</b> (nothing arrived, blocking by default) versus <b>inaccurate data</b> (a value is there and it is wrong). A <b>?</b> next to every Issues heading explains what counts, what blocks and what closes itself.'},

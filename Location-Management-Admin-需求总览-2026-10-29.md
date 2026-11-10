@@ -1,7 +1,7 @@
-# Location Management Admin Console — Requirement Overview (v3.10.0)
+# Location Management Admin Console — Requirement Overview (v3.10.1)
 
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
-> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.10.0)
+> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.10.1)
 > 给外部同事看的英文功能概览：https://jama-dev520.github.io/location-prototype/feature-overview.html
 > 演示视频（3 分 25 秒，36 条英文字幕，录的是 v3.8.0 —— 还没演 refresh，需要时再重录：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
@@ -214,7 +214,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | 33 | 供应商改完再拉一次 (v3.9.0) | 供应商列表加 **Refresh from providers**，补上闭环缺的那一脚：**标异常 → 导出 → 供应商改 → 我们拉一次**，不用等夜间同步。拉取只写供应商这次推来的值（沿用 v3.4.0：没有接受/拒绝），逐字段拿「标记那一刻的值」重判，**只有变合法**才自动关闭；不动 enable、不动签收、不动基线（所以 Viewer 不能点 —— 写值是操作员动作）。工具栏下留一行 **上次拉取 + run 号 + 关闭/更新/待人工 三个数**，空拉就明说「没有新数据」 |
 | 31 | 类型带来源 (v3.8.0) | 供应商列表原来的 Provider 列并进 Type，写成 `packagehub (LMS)` —— 一句话说清「是什么」和「谁的数」。**Source 筛选保留**：它驱动类型级联（选 LMS 只剩 packagehub）和合并优先级（2:1 时 LMS 优先），删了筛选就断了两条规则。2:1 门店显示 `(LMS / PUDO)`，顺序就是合并优先级 |
 | 30 | 营业不足 3 小时 (v3.7.0) | 一条「明显不对」但语法完全合法的数据：某天只开两小时。它不需要人先标 —— 系统按 `hoursOfOp` 逐天累加，**不足 3 小时**就进必查项，并在 Hours 标签页点名是哪一天、几点到几点、合计多久。3 小时是展示常量，不是字段；要按市场区分就变成配置，绝不落库成数据 |
-| 32 | 异常按性质分组 + 说明 (v3.8.0) | 台账按**性质**分两组：**关键字段缺失**（该有的没给，`MISSING`，默认阻塞）与**数据不准确**（值有但是错的）。两组要的责任方不同、关闭规则也不同，混在一起会让人以为「都等供应商补一下」。每个 Issues 标题旁一个 **?**，点开讲清：什么算异常、什么阻塞、什么会自己关闭 |
+| 32 | 异常按性质分组 + 说明 (v3.8.0) | 台账按**性质**分两组：**关键字段缺失**（该有的没给，`MISSING`，默认阻塞）与**数据不准确**（值有但是错的）。两组要的责任方不同、关闭规则也不同，混在一起会让人以为「都等供应商补一下」。Issues **筛选标签**旁一个 **?**（v3.10.1 从列头移过来），点开讲清：什么算异常、什么阻塞、什么会自己关闭 |
 | 29 | 三个必查项 (v3.6.0) | 运营每天真正在追的只有三个缺口：**地址不全 / 没邮编 / 没营业时间**。它们放在台账最上面按未关闭异常计数，点一下只看这一类，再点取消。归类**靠字段**（addr1/addr2/city/state、postal、hoursText），所以走 F11 标记的任何一条会自动落格，不需要运营再选一个「类别」，也不存在计数和列表对不上的可能 |
 | 28 | 中英双语 (v3.5.0) | 顶部右上角 `EN / 中文` 换的是**界面**：导航、筛选、表头、页面说明、弹框、详情标签页、演示脚本、提示、异常类型名、版本说明，连 `<html lang>` 和浏览器标题一起换。**数据不翻**：门店名、地址、供应商、ID、字段名、事件码、时间戳一律保持供应商推来的原样 —— 翻了就等于造出第二个真相来源。选择存在 `localStorage`，也可以用 `?lang=zh` / `?lang=en` 按链接锁定，方便把英文版直接发给外国同事 |
 | 27 | enable 保留 (v3.4.0) | 控制台只放弃「数据是否应用」这一层，**不放弃「门店是否上线」**。两个决定分属两处：值是否给下游——不由控制台决定，永远给；门店是否对客户可见——由运营 `enable` 决定，走签收（5 项检查 + 勾选 + 记基线）。如果连签收也去掉，入库通过即自动上线，就没有人确认客户会开到的那个地址了 |

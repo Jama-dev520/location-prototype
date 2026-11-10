@@ -1,6 +1,6 @@
-# Location Management Admin Console — PRD Change Summary (v3.10.0)
+# Location Management Admin Console — PRD Change Summary (v3.10.1)
 
-> Document version v3.10.0 ｜ Change date 2026-11-10 ｜ Status: Draft — pending review
+> Document version v3.10.1 ｜ Change date 2026-11-10 ｜ Status: Draft — pending review
 > 本轮（v3.0.0）是**模型换向**：OC 层不再改数据，只做两件事——**enable** 和 **标记异常**。所有数据以供应商为唯一来源，错的地方标记回去让供应商改；重复对单独成页；下游按字段合并，LMS 优先；M&MP 用同一套规则管同一份数据。
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
 > **验收标准（通俗版）**: `Location-Management-Admin-验收标准-2026-10-29.md`
@@ -617,6 +617,7 @@ v3.4.0 删掉的是「数据是否应用」，不是「门店是否上线」。�
 
 如果连签收也拿掉，入库一通过门店就自动上线，等于没有人确认客户会开到的那个地址。验收里也加了一条「不该发生」：把「不决定是否应用」误解成「不用签收」。
 
+| v3.10.1 | PATCH | 2026-11-10 | **问号挪位置**：解释「什么算异常」的 `?` 从 Issues **列头**移到 Issues **筛选标签**旁（两个列表都改）。列头上像是给数据加注释，筛选旁边才是做选择的地方。弹框内容不变 |
 | v3.10.0 | MINOR | 2026-11-10 | **一个 Source**：Type 与 Source 合并为单列/单筛选，值写作 `PUDOpoint (PUDO)`、`packagehub (LMS)`、`M&MP`；删掉 Type 下拉与级联、`type ≠ source` 徽章与筛选项、Sweeper 表头的 `synced` 小标。`Locker` 本版不暴露（两条演示记录改为 PUDOpoint）。**M&MP 的揽收方固定 LMS**，揽收方筛选去掉 M&MP 选项 |
 | v3.9.0 | MINOR | 2026-11-10 | **供应商改完再拉一次**：供应商列表新增 `Refresh from providers`（F30、§5.14），补上 §5.9 闭环缺的触发点。拉取只写供应商推来的值、只按「标记时的值」重判、只自动关闭变合法的异常；不动 enable/签收/基线，因此仅 Manager 可点。工具栏下加「上次拉取 · run 号 · 关闭/更新/待人工」回执，空拉显示「没有新数据」。演示没有新增数据、没有新增表 |
 | v3.8.0 | MINOR | 2026-11-10 | **QR 回到列表 + 类型带来源 + 异常按性质分组**：供应商列表恢复 `QR` 列（F18 从 v2.3.0 就有，v3 重建列表时丢了）；Provider 并入 Type 写成 `packagehub (LMS)`，Source 筛选保留；台账拆成「关键字段缺失 / 数据不准确」两组并加 `?` 说明弹框 |
