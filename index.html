@@ -399,7 +399,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span>v3.8.0</div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v3.9.0</span></div>
       </div>
     </div>
 
@@ -2595,6 +2595,9 @@ function exportIssues(){
   setDay('LOC-12193','SUNDAY','11:00','13:00');
   setDay('LOC-10024','WEDNESDAY','06:00','08:30');
 })();
+/* the header badge reads from APP_VERSION — a hardcoded copy is how v3.8.0
+   survived a release once. Never write the number in the markup again. */
+var vc=document.getElementById('ver-chip-no'); if(vc)vc.textContent='v'+APP_VERSION;
 captureIssueBase();switchPage('p01');tickClock();syncTypeFilter('v',true);syncTypeFilter('o',true);applyLang();
 </script>
 </body>
