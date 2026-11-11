@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v3.11.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v3.12.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -376,7 +376,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.11.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.12.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -401,7 +401,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v3.11.0</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v3.12.0</span></div>
       </div>
     </div>
 
@@ -416,6 +416,8 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
             <div><label class="f-label">Location ID</label><input id="v-f-id" placeholder="e.g. LOC-10024" oninput="applyVendorFilters()"></div>
             <div><label class="f-label">OC Location ID</label><input id="v-f-ocid" placeholder="e.g. OC-00001" oninput="applyVendorFilters()"></div>
             <div><label class="f-label">Name</label><input id="v-f-name" placeholder="keyword" oninput="applyVendorFilters()"></div>
+            <div><label class="f-label">Province</label><select id="v-f-prov" onchange="onProvinceChange('v')"></select></div>
+            <div><label class="f-label">City</label><select id="v-f-city" onchange="applyVendorFilters()"></select></div>
             <div><label class="f-label">Source</label><select id="v-f-source" onchange="applyVendorFilters()"></select></div>
             <div><label class="f-label">Status</label><select id="v-f-status" onchange="applyVendorFilters()"><option value="">All</option><option value="active">active</option><option value="inactive">inactive</option><option value="removed">removed</option></select></div>
             <div><label class="f-label">Sweeper</label><select id="v-f-sweeper" onchange="applyVendorFilters()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
@@ -441,7 +443,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
           <div class="table-wrap">
             <table class="data">
               <thead><tr>
-                <th>Location ID</th><th>Name</th><th>Address</th><th>City</th>
+                <th>Location ID</th><th>Name</th><th>Address</th><th>City / Province</th>
                 <th>Source</th><th>QR</th>
                 <th>Sweeper</th><th>Status</th>
                 <th>Issues</th><th>OC Location</th><th>Updated</th>
@@ -461,6 +463,8 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
             <div><label class="f-label">OC Location ID</label><input id="o-f-id" placeholder="e.g. OC-00001" oninput="applyOCFilters()"></div>
             <div><label class="f-label">Vendor Location ID</label><input id="o-f-vendorid" placeholder="e.g. LOC-10024" oninput="applyOCFilters()"></div>
             <div><label class="f-label">Name</label><input id="o-f-name" placeholder="keyword" oninput="applyOCFilters()"></div>
+            <div><label class="f-label">Province</label><select id="o-f-prov" onchange="onProvinceChange('o')"></select></div>
+            <div><label class="f-label">City</label><select id="o-f-city" onchange="applyOCFilters()"></select></div>
             <div><label class="f-label">Source</label><select id="o-f-source" onchange="applyOCFilters()"></select></div>
             <div><label class="f-label">Status</label><select id="o-f-status" onchange="applyOCFilters()"><option value="">All</option><option value="active">active</option><option value="inactive">inactive</option></select></div>
             <div><label class="f-label">Downstream</label><select id="o-f-live" onchange="applyOCFilters()"><option value="">All</option><option value="no">Not live yet</option><option value="yes">Live</option></select></div>
@@ -486,7 +490,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
           <div class="table-wrap">
             <table class="data">
               <thead><tr>
-                <th><input type="checkbox" onclick="toggleAllOC(this)"></th><th>OC Location ID</th><th>Name</th><th>Address</th><th>City / State</th>
+                <th><input type="checkbox" onclick="toggleAllOC(this)"></th><th>OC Location ID</th><th>Name</th><th>Address</th><th>City / Province</th>
                 <th>Source</th><th>Sweeper</th><th>Status</th>
                 <th>Issues</th><th>Enable</th><th>Linked Vendors</th><th>Updated</th>
               </tr></thead>
@@ -635,7 +639,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.11.0 (one Source, refresh, checks)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.12.0 (one Source, province, refresh)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -760,6 +764,8 @@ var I18N_ZH = {
   "Min score":"最低相似度",
   "Address":"地址",
   "City":"城市",
+  "Province":"州 / 省",
+  "City / Province":"城市 / 州",
   "City / State":"城市 / 州",
   "OC Location":"OC 门店",
   "Updated":"更新时间",
@@ -1124,7 +1130,7 @@ var I18N_BLOCK = {
   "help.checks":"顶部那几个格子只是把同一份清单按字段切开，方便每天干活 —— 一条异常属于哪一格由字段决定，不靠人手选。",
   "dup.vs":"对比",
   "pull.hint":"标记 → 导出 → 供应商修正 → 再拉一次",
-  "wt.title":"演示脚本 —— v3.11.0（一个来源、重新拉取、必查项）"
+  "wt.title":"演示脚本 —— v3.12.0（一个来源、省市筛选、重新拉取）"
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
@@ -1192,6 +1198,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "3.12.0":"<b>先按州 / 省，再按城市。</b>两个列表都加了 <b>Province</b> 与 <b>City</b> 两个筛选，每个选项后面带实时条数。城市跟着州走 —— 选了 NY，城市只剩纽约那三个 —— 因为 14 个城市还会继续长，不做收窄的城市下拉就是一堵名字墙。供应商列表的城市列也补上了州（`Brooklyn, NY`）：你能筛的东西，得能在列表上看见。两个字段在 CSV 里各自成列。",
   "3.11.0":"<b>OC 列表数的是「挡路的」，不是「有多少」。</b>它的 Issues 列原来复制供应商那边的异常总数（提醒级也算），那个数本来就写在供应商行上、2:1 的店还要把两条加起来，而且几乎从来不是让人改变决定的那个数。现在只带 <b>阻塞级</b>，并按后果命名；旁边三个才是 OC 自己的事实：<b>签收后变化</b>、<b>2:1</b>、<b>入池已覆盖</b>。筛选跟着改：三个选项，每个回答「为什么没上线 / 为什么要看一眼」，不再是那个和供应商视图重复的「有没有异常」。（入池覆盖只留徽章 —— 现在的数据里没有这种记录，一个永远筛出 0 行的选项比没有更糟。）异常本身仍然只写在供应商记录上 —— OC 只是借用，不留副本。",
   "3.10.1":"<b>问号该跟着筛选，不跟着列。</b>解释「什么算一条异常」的那个 <b>?</b> 现在放在 Issues <b>筛选</b>标签旁边 —— 选择是在那里做的 —— 而不是列头上，放在列头上容易被当成对数据的注释。弹框内容不变，两个列表都有。",
   "3.10.0":"<b>一个来源，不是两个。</b>类型和归属从来不是独立的 —— LMS 只发 packagehub，PUDO Inc 只发 PUDOpoint，M&amp;MP 是我们自己的店 —— 所以列表和筛选都只保留一个 <b>Source</b>：<b>PUDOpoint (PUDO)</b>、<b>packagehub (LMS)</b>、<b>M&amp;MP</b>。单独的 Type 列、跟着它级联的 Type 下拉、以及“类型 ≠ 来源”那个徽章一起下线：不可能的组合不再是一个筛选选项。M&amp;MP 的店是我们的，揽收不是 —— 它的揽收方固定是 <b>LMS</b>，也只可能是这个值。",
@@ -1355,8 +1362,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='3.11.0';
+var APP_VERSION='3.12.0';
 var VERSIONS=[
+ {v:'3.12.0',type:'minor',date:'2026-11-11',desc:'<b>Filter by province, then by city.</b> Both lists gain a <b>Province</b> and a <b>City</b> filter, with a live count on every option. City follows province — pick NY and the list collapses to the three New York cities — because with 14 cities and growing, an unfiltered city dropdown is a wall of names. The City column now prints the province next to it (`Brooklyn, NY`) on the vendor list too, so the thing you filter by is the thing you can see. Both landscape fields land in the CSV exports under their own names.'},
  {v:'3.11.0',type:'minor',date:'2026-11-10',desc:'<b>The OC list counts what blocks, not the inventory.</b> Its Issues column used to repeat the provider issue count, warnings included — a number that already lived on the vendor row, summed over up to two records, and almost never the number that changes a decision. It now carries only <b>blocking</b> issues, named by their effect, next to the three facts that are genuinely OC-level: <b>drift</b> since sign-off, <b>2:1</b> mapping, <b>intake overridden</b>. The filter follows: three options that each answer “why is this not live / why look at it”, instead of one “has any issue” that duplicated the vendor view. (An overridden intake stays a badge on the row; no store in the feed carries one, and an option that always returns zero rows is worse than an absent one.) The flags themselves still live on the source records — the OC layer borrows them, it does not keep a copy.'},
  {v:'3.10.1',type:'patch',date:'2026-11-10',desc:'<b>The help mark belongs to the filter, not to the column.</b> The <b>?</b> that explains what counts as an issue now sits beside the Issues <i>filter</i> — where the choice is actually made — instead of the Issues column header, where it read as a comment on the data. Same popup, both lists.'},
  {v:'3.10.0',type:'minor',date:'2026-11-10',desc:'<b>One Source, not two.</b> The type and the owner were never independent — LMS only ships package hubs, PUDO Inc only ships points, M&amp;MP is our own store — so the list and the filters now carry a single <b>Source</b>: <b>PUDOpoint (PUDO)</b>, <b>packagehub (LMS)</b>, <b>M&amp;MP</b>. The separate Type column, the Type dropdown that cascaded off it, and the “type ≠ source” badge all go with it: a pair that cannot exist is not a filter option any more. M&amp;MP stores are ours, the pickup is not — their sweeper is <b>LMS</b>, and that is the only value it can take.'},
@@ -1831,8 +1839,9 @@ function updateBadges(){
 }
 
 /* ============ vendor list ============ */
-function vendorFilters(skipSource){
+function vendorFilters(skipSource,skipGeo,skipCity){
   var f={id:val('v-f-id').toLowerCase(),ocid:val('v-f-ocid').toLowerCase(),name:val('v-f-name').toLowerCase(),
+    prov:val('v-f-prov'),city:val('v-f-city'),
     source:skipSource?'':val('v-f-source'),status:val('v-f-status'),sweeper:val('v-f-sweeper'),issues:val('v-f-issues')};
   return VENDORS.filter(function(v){
     if(f.id&&v.id.toLowerCase().indexOf(f.id)<0)return false;
@@ -1841,6 +1850,8 @@ function vendorFilters(skipSource){
       if(!oc||oc.ocId.toLowerCase().indexOf(f.ocid)<0)return false;
     }
     if(f.name&&v.name.toLowerCase().indexOf(f.name)<0)return false;
+    if(!skipGeo&&f.prov&&v.state!==f.prov)return false;
+    if(!skipCity&&f.city&&v.city!==f.city)return false;
     if(f.source&&v.type!==f.source)return false;
     if(f.status&&v.status!==f.status)return false;
     if(f.sweeper&&v.sweeper!==f.sweeper)return false;
@@ -1851,6 +1862,41 @@ function vendorFilters(skipSource){
   });
 }
 function applyVendorFilters(){renderVendor();}
+/* v3.12.0 — province, then city. Both are derived from the rows the *other*
+   filters left, so a count never lies about what clicking it would return. */
+function geoRows(kind,skipProv,skipCity){
+  return kind==='v'?vendorFilters(false,skipProv,skipCity):ocFilters(false,skipProv,skipCity);
+}
+function geoValue(kind,row,field){
+  return kind==='v'?row[field]:mergedField(row,field).value;
+}
+/* a city that does not exist in the newly picked province must go before the
+   table is rebuilt — otherwise one render shows 0 rows while the UI says "All" */
+function onProvinceChange(kind){
+  var c=document.getElementById(kind+'-f-city');
+  if(c&&c.value){
+    var allowed=geoRows(kind,false,true).map(function(r){return geoValue(kind,r,'city');});
+    if(allowed.indexOf(c.value)<0)c.value='';
+  }
+  if(kind==='v')renderVendor();else renderOC();
+}
+function renderGeoFilters(kind){
+  var pSel=document.getElementById(kind+'-f-prov'),cSel=document.getElementById(kind+'-f-city');
+  if(!pSel||!cSel)return;
+  var curP=pSel.value,curC=cSel.value;
+  var all=geoRows(kind,true,true),inProv=geoRows(kind,false,true);
+  var pc={},cc={};
+  all.forEach(function(r){var v=geoValue(kind,r,'state');if(v)pc[v]=(pc[v]||0)+1;});
+  inProv.forEach(function(r){var v=geoValue(kind,r,'city');if(v)cc[v]=(cc[v]||0)+1;});
+  pSel.innerHTML='<option value="">'+tr('All')+' ('+all.length+')</option>'+Object.keys(pc).sort().map(function(v){
+    return '<option value="'+esc(v)+'"'+(v===curP?' selected':'')+'>'+esc(v)+' · '+pc[v]+'</option>';
+  }).join('');
+  cSel.innerHTML='<option value="">'+tr('All')+' ('+inProv.length+')</option>'+Object.keys(cc).sort().map(function(v){
+    return '<option value="'+esc(v)+'"'+(v===curC?' selected':'')+'>'+esc(v)+' · '+cc[v]+'</option>';
+  }).join('');
+  pSel.value=pc[curP]?curP:'';
+  cSel.value=cc[curC]?curC:'';        /* a city outside the chosen province drops out */
+}
 function sourceCounts(kind){
   var rows=kind==='v'?vendorFilters(true):ocFilters(true),c={};
   rows.forEach(function(r){
@@ -1869,7 +1915,7 @@ function renderSourceFilter(kind){
   }).join('');
   sel.value=SOURCES.some(function(x){return x.type===cur;})?cur:'';
 }
-function resetVendorFilters(){['v-f-id','v-f-ocid','v-f-name','v-f-sweeper','v-f-status'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('v-f-source').value='';document.getElementById('v-f-issues').value='';renderSourceFilter('v');renderVendor();}
+function resetVendorFilters(){['v-f-id','v-f-ocid','v-f-name','v-f-prov','v-f-city','v-f-sweeper','v-f-status'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('v-f-source').value='';document.getElementById('v-f-issues').value='';renderSourceFilter('v');renderVendor();}
 function renderVendor(){
   var rows=vendorFilters();
   document.getElementById('v-tbody').innerHTML=rows.map(function(v){
@@ -1879,7 +1925,7 @@ function renderVendor(){
       +'<td class="mono link" onclick="openVendorDetail(\''+v.id+'\')">'+esc(v.id)+'</td>'
       +'<td>'+esc(v.name)+'</td>'
       +'<td>'+esc(v.addr1||'—')+'</td>'
-      +'<td>'+esc(v.city)+'</td>'
+      +'<td>'+esc(v.city)+(v.state?', '+esc(v.state):'')+'</td>'
       +'<td>'+srcLabel(v.type,v.provider)+'</td>'
       +'<td>'+qrCell(v)+'</td>'
       +'<td>'+(v.sweeper?provBadge(v.sweeper):'<span class="badge badge-orange">missing</span>')+'</td>'
@@ -1891,18 +1937,21 @@ function renderVendor(){
   }).join('');
   document.getElementById('v-result-meta').textContent=rows.length+' vendor location(s)';
   var pn=document.getElementById('v-pull-note'); if(pn)pn.innerHTML=pullNote();
-  renderSourceFilter('v');
+  renderGeoFilters('v');renderSourceFilter('v');
   updateBadges();applyLang();
 }
 
 /* ============ OC list ============ */
-function ocFilters(skipSource){
+function ocFilters(skipSource,skipGeo,skipCity){
   var f={id:val('o-f-id').toLowerCase(),vid:val('o-f-vendorid').toLowerCase(),name:val('o-f-name').toLowerCase(),
+    prov:val('o-f-prov'),city:val('o-f-city'),
     source:skipSource?'':val('o-f-source'),status:val('o-f-status'),live:val('o-f-live'),issues:val('o-f-issues')};
   return OC_LOCATIONS.filter(function(o){
     if(f.id&&o.ocId.toLowerCase().indexOf(f.id)<0)return false;
     if(f.vid&&!o.vendorIds.some(function(v){return v.toLowerCase().indexOf(f.vid)>=0;}))return false;
     if(f.name&&mergedField(o,'name').value.toLowerCase().indexOf(f.name)<0)return false;
+    if(!skipGeo&&f.prov&&mergedField(o,'state').value!==f.prov)return false;
+    if(!skipCity&&f.city&&mergedField(o,'city').value!==f.city)return false;
     if(f.status&&statusOf(o)!==f.status)return false;
     if(f.source&&mergedField(o,'type').value!==f.source)return false;
     if(f.live==='no'&&o.enable)return false;
@@ -1914,7 +1963,7 @@ function ocFilters(skipSource){
   });
 }
 function applyOCFilters(){renderOC();}
-function resetOCFilters(){['o-f-id','o-f-vendorid','o-f-name'].forEach(function(i){document.getElementById(i).value='';});['o-f-source','o-f-status','o-f-live','o-f-issues'].forEach(function(i){document.getElementById(i).value='';});renderSourceFilter('o');renderOC();}
+function resetOCFilters(){['o-f-id','o-f-vendorid','o-f-name','o-f-prov','o-f-city'].forEach(function(i){document.getElementById(i).value='';});['o-f-source','o-f-status','o-f-live','o-f-issues'].forEach(function(i){document.getElementById(i).value='';});renderSourceFilter('o');renderOC();}
 function filterNotLive(){
   /* a preset wins over leftover filters, otherwise the count in the toast and the
      count on the menu badge would disagree with what is on screen */
@@ -1963,7 +2012,7 @@ function renderOC(){
       +'</tr>';
   }).join('');
   document.getElementById('o-result-meta').textContent=rows.length+' OC location(s)';
-  renderSourceFilter('o');
+  renderGeoFilters('o');renderSourceFilter('o');
   updateOCSelection();updateBadges();applyLang();
 }
 function updateOCSelection(){
@@ -2498,7 +2547,7 @@ function stamp(){var d=new Date(),p=function(n){return (n<10?'0':'')+n;};
 function exportCSV(kind){
   var rows=[],name='';
   if(kind==='vendor'){
-    rows.push(['Location ID','Name','Address','City','State','Postal','Source','Type','Sweeper','Status','Open issues','OC Location ID','Updated']);
+    rows.push(['Location ID','Name','Address','City','Province','Postal','Source','Type','Sweeper','Status','Open issues','OC Location ID','Updated']);
     vendorFilters().forEach(function(v){
       var oc=OC_LOCATIONS.filter(function(o){return o.vendorIds.indexOf(v.id)>=0;})[0];
       rows.push([v.id,v.name,v.addr1,v.city,v.state,v.postal,v.provider,v.type,v.sweeper||'missing',v.status,
@@ -2506,7 +2555,7 @@ function exportCSV(kind){
     });
     name='vendor-locations-'+stamp()+'.csv';
   } else if(kind==='oc'){
-    rows.push(['OC Location ID','Name','Address','City','State','Postal','Source','Type','Sweeper','Status','Enabled','Visible downstream','Blocking issues','Other open issues','Changed since sign-off','Mapping','Linked vendors','Updated']);
+    rows.push(['OC Location ID','Name','Address','City','Province','Postal','Source','Type','Sweeper','Status','Enabled','Visible downstream','Blocking issues','Other open issues','Changed since sign-off','Mapping','Linked vendors','Updated']);
     ocFilters().forEach(function(o){
       var srcs={};o.vendorIds.forEach(function(id){var v=findVendor(id);if(v)srcs[v.provider]=1;});
       rows.push([o.ocId,mergedField(o,'name').value,mergedField(o,'addr1').value,mergedField(o,'city').value,
@@ -2535,7 +2584,7 @@ function exportCSV(kind){
 }
 function exportIssues(){
   var typeFilter=val('di-f-type')||'';
-  var rows=[['Issue ID','Vendor Location ID','OC Location ID','Store','Address','City','State','Postal code','Source','Type',
+  var rows=[['Issue ID','Vendor Location ID','OC Location ID','Store','Address','City','Province','Postal code','Source','Type',
     'Field','Sub-field','Issue type','Severity','Status','Reason','Raised by','Raised at','Last checked','What the run saw','Closed by','Closed at']];
   var pool=ISSUES.filter(function(i){return i.status!=='fixed';});
   if(watchFilter)pool=pool.filter(function(i){return watchOf(i)===watchFilter;});
@@ -2603,7 +2652,7 @@ function exportIssues(){
 /* the header badge reads from APP_VERSION — a hardcoded copy is how v3.8.0
    survived a release once. Never write the number in the markup again. */
 var vc=document.getElementById('ver-chip-no'); if(vc)vc.textContent='v'+APP_VERSION;
-captureIssueBase();switchPage('p01');tickClock();renderSourceFilter('v');renderSourceFilter('o');applyLang();
+captureIssueBase();switchPage('p01');tickClock();renderGeoFilters('v');renderGeoFilters('o');renderSourceFilter('v');renderSourceFilter('o');applyLang();
 </script>
 </body>
 </html>

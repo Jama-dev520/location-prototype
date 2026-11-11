@@ -1,7 +1,7 @@
 # Location Management Admin Console — 功能验收标准（通俗版）
 
-> 版本 **v3.11.0** · 对照原型 https://jama-dev520.github.io/location-prototype/
-> 配套文档：PRD v3.11.0（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
+> 版本 **v3.12.0** · 对照原型 https://jama-dev520.github.io/location-prototype/
+> 配套文档：PRD v3.12.0（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
 > 对外（英文，给外国同事）：https://jama-dev520.github.io/location-prototype/feature-overview.html
 > 演示视频（3 分 25 秒，36 条英文字幕，按 v3.8.0 录制）：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 
@@ -55,7 +55,7 @@
 
 ---
 
-## 一、十分钟快检（只有 10 分钟就跑这 30 条）
+## 一、十分钟快检（只有 10 分钟就跑这 32 条）
 
 | # | 怎么做 | 应该看到 |
 |---|---|---|
@@ -89,6 +89,8 @@
 | 28 | Source 选 M&amp;MP，再看揽收方 | 两家自营店的揽收方都是 **LMS**；揽收方筛选里没有 M&amp;MP 选项 |
 | 29 | OC 列表随便看几个 Issues 单元格 | 只出现 `n blocking` / `n drift` / `2:1` / `intake`，**不再有 `n data`**；OC-00089 有 3 条未关闭异常，但格子只写 `1 blocking`（另两条是提醒级） |
 | 30 | Issues 筛选依次选三项，再导出 CSV | 三个选项各返回对应行（阻塞 6 行 / 签收后变化 6 行 / 2:1 需先在重复页确认）；导出表头是 `Blocking issues` + `Other open issues` 两列，相加等于该行的未关闭总数 |
+| 31 | 供应商列表 Province 选 NY | 列表剩 7 条；City 只剩 Brooklyn / Larchmont / New York（各带条数），不再是 16 个城市 |
+| 32 | 已选 Brooklyn，再把 Province 改成 TX | 城市自动清空、列表变成 TX 的 4 条 —— 不能出现「表里 0 行、下拉写着全部」；导出的表头是 `…,City,Province,Postal,…` |
 
 这 16 条全对，模型就是通的。剩下的条目用来确认细节和边界。
 

@@ -1,6 +1,6 @@
-# Location Management Admin Console — PRD Change Summary (v3.11.0)
+# Location Management Admin Console — PRD Change Summary (v3.12.0)
 
-> Document version v3.11.0 ｜ Change date 2026-11-11 ｜ Status: Draft — pending review
+> Document version v3.12.0 ｜ Change date 2026-11-11 ｜ Status: Draft — pending review
 > 本轮（v3.0.0）是**模型换向**：OC 层不再改数据，只做两件事——**enable** 和 **标记异常**。所有数据以供应商为唯一来源，错的地方标记回去让供应商改；重复对单独成页；下游按字段合并，LMS 优先；M&MP 用同一套规则管同一份数据。
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
 > **验收标准（通俗版）**: `Location-Management-Admin-验收标准-2026-10-29.md`
@@ -464,6 +464,26 @@ https://jama-dev520.github.io/location-prototype/feature-overview.html
 - 片头片尾重做：片头标 `v3.3.0 / two layers · three sources / enable is a sign-off / a fix closes its own issue`；片尾四条地基换成 v3 的版本（数据只有供应商一个来源、没人处理就不变、下线容易上线要签收、修复能自证才自动关闭）。
 - 为了录制可读性，标记弹窗的严重度下拉文案从 `warning — live, but wrong for customers` 缩短为 `warning · live but wrong`（原来在 560px 弹窗里被截断）。纯文案，不改行为。
 
+## 二之二十、v3.12.0：先按州，再按市
+
+### 一个字段装不下的问题
+
+门店是按位置找的，但「位置」是两个字段，而且只有一个小到能列出来。现在数据里是 **8 个州、16 个城市** —— 城市随市场增长，州随地区增长。把所有城市平铺在一个下拉里，第一次用还行，第十个市场就成了名字墙。
+
+所以拆两级：**Province 先选，City 只列这个州里存在的城市**。选 NY，城市只剩 Brooklyn / Larchmont / New York。
+
+### 计数必须说真话
+
+两个下拉的每个选项都带条数，算法是「应用其它筛选、跳过自己」—— 所以选项上的数字就是点下去会返回的行数。这条规则和必查项、Source 筛选是同一个：**屏幕上的数、点进去的列表、导出的行，必须永远一致**。
+
+### 一个容易被忽略的边角
+
+从 NY 切到 TX 时，之前选的 Brooklyn 不再属于新范围。如果不处理，会出现「表里 0 行、城市下拉写着全部」这种自相矛盾的画面 —— 而它只在切换的一瞬间存在，代码评审看不出来，用户一眼就看到。现在切州时**先把失效的城市清掉，再重算表格**，并且写进了验收快检。
+
+### 命名
+
+界面、筛选、CSV 表头都叫 **Province**；背后那一列仍然叫 `state`。美式的 state 就是我们的省，为了一个词做一次列改名迁移不值得 —— 所以写进字段映射，而不是改库。
+
 ## 二之十九、v3.11.0：OC 只数挡路的
 
 ### 那个数字为什么不对
@@ -656,6 +676,7 @@ v3.4.0 删掉的是「数据是否应用」，不是「门店是否上线」。�
 
 如果连签收也拿掉，入库一通过门店就自动上线，等于没有人确认客户会开到的那个地址。验收里也加了一条「不该发生」：把「不决定是否应用」误解成「不用签收」。
 
+| v3.12.0 | MINOR | 2026-11-11 | **省市筛选**：两个列表各加 Province / City 两个筛选，带实时条数，城市跟着州级联；切州时先清掉失效城市再重算。供应商列表城市列补上州。CSV 表头 `State` → `Province`（三处导出）。数据模型不变，`state` 列名不动 |
 | v3.11.0 | MINOR | 2026-11-10 | **OC 只数挡路的**：Issues 列由「供应商异常总数」改成「阻塞级 + OC 自身状态」（`n blocking` / `n drift` / `2:1` / `intake`）；颜色按语义重排（红=挡路，橙=看一眼）。筛选改成 `Blocking data issue` / `Changed since sign-off` / `Duplicate 2:1`，删掉「有没有异常」；`Intake overridden` 只留徽章。OC 导出拆成 `Blocking issues` + `Other open issues`。**数据模型零改动** |
 | v3.10.1 | PATCH | 2026-11-10 | **问号挪位置**：解释「什么算异常」的 `?` 从 Issues **列头**移到 Issues **筛选标签**旁（两个列表都改）。列头上像是给数据加注释，筛选旁边才是做选择的地方。弹框内容不变 |
 | v3.10.0 | MINOR | 2026-11-10 | **一个 Source**：Type 与 Source 合并为单列/单筛选，值写作 `PUDOpoint (PUDO)`、`packagehub (LMS)`、`M&MP`；删掉 Type 下拉与级联、`type ≠ source` 徽章与筛选项、Sweeper 表头的 `synced` 小标。`Locker` 本版不暴露（两条演示记录改为 PUDOpoint）。**M&MP 的揽收方固定 LMS**，揽收方筛选去掉 M&MP 选项 |

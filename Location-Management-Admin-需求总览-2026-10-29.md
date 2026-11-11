@@ -1,7 +1,7 @@
-# Location Management Admin Console — Requirement Overview (v3.11.0)
+# Location Management Admin Console — Requirement Overview (v3.12.0)
 
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
-> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.11.0)
+> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.12.0)
 > 给外部同事看的英文功能概览：https://jama-dev520.github.io/location-prototype/feature-overview.html
 > 演示视频（3 分 25 秒，36 条英文字幕，录的是 v3.8.0 —— 还没演 refresh，需要时再重录：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
@@ -210,6 +210,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | 19 | Duplicate (v3.0.0) | 独立 **Duplicate Check** 页；同一家 → 2:1 并在 OC 列表标出；不是同一家 → 1:1。未裁决的重复对阻塞启用 |
 | 20 | Merge priority (v3.0.0) | 同一条 OC 记录逐字段取源：**M&MP（自营）→ LMS → PUDO Inc 依次取，先有值的赢**。详情页与列表都标出来源 |
 | 21 | Drift (v3.0.0) | 签收后供应商改了值：下游直接用新值，台账显示「与基线不同」，运营可**重新签收**或**标记异常**。基线是参照物，不是冻结器 |
+| 36 | 省市筛选 (v3.12.0) | 两个列表都加 **Province** / **City** 两个筛选，每个选项带实时条数。城市跟着州走：选 NY 只剩纽约那三个 —— 不做收窄的城市下拉就是一堵只会变长的名字墙。**切换州时会先清掉不属于新城范围的市**，否则表里会显示 0 行而下拉写着「全部」。供应商列表的城市列补上州（`Brooklyn, NY`）：能筛的东西得能在行上看见。CSV 表头统一叫 `Province`，背后仍是 `state` 列 |
 | 35 | OC 只数挡路的 (v3.11.0) | OC 行的 Issues 列原来复制供应商那边的异常总数（提醒级也算），2:1 的店还要把两条记录加起来 —— 那是**供应商列表的问题**，而且几乎从来不是让人改变决定的那个数。现在只带 **blocking**，按后果命名；旁边三个 `drift` / `2:1` / `intake` 才是 OC 独有的。颜色也跟着语义走：**红=挡路，橙=要看一眼**（原来漂移是红的、阻塞是橙的，正好反了）。筛选从「有没有异常」变成三个理由：`Blocking data issue` / `Changed since sign-off` / `Duplicate 2:1`；`Intake overridden` 只留徽章 —— 数据里没有这种记录，一个永远筛出 0 行的选项比没有更糟 |
 | 34 | 一个 Source，不是两个 (v3.10.0) | 列表和筛选都只留一个 **Source**：`PUDOpoint (PUDO)`、`packagehub (LMS)`、`M&MP`（M&MP 不重复写两遍）。Type 列、Type 下拉级联、`type ≠ source` 徽章与筛选项一起下线 —— 不可能的组合不再是「被标出来」，而是拼不出来。`Locker` 仍是合法 PUDO 类型但本版不暴露（加回来只是 SOURCES 里一行）。**M&MP 的揽收方固定是 LMS**：店是我们的，揽收不是 —— 数据里没有 M&MP 这个揽收方，筛选里也没有这个选项 |
 | 33 | 供应商改完再拉一次 (v3.9.0) | 供应商列表加 **Refresh from providers**，补上闭环缺的那一脚：**标异常 → 导出 → 供应商改 → 我们拉一次**，不用等夜间同步。拉取只写供应商这次推来的值（沿用 v3.4.0：没有接受/拒绝），逐字段拿「标记那一刻的值」重判，**只有变合法**才自动关闭；不动 enable、不动签收、不动基线（所以 Viewer 不能点 —— 写值是操作员动作）。工具栏下留一行 **上次拉取 + run 号 + 关闭/更新/待人工 三个数**，空拉就明说「没有新数据」 |
