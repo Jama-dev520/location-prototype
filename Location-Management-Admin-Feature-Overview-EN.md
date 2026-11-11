@@ -1,7 +1,7 @@
 # Location Management Admin Console — Feature Overview
 
 **Audience:** operations, partner-facing and M&MP teams who work with location data
-**Document version:** 2.3 (covers console v3.12.0) · **Status:** clickable prototype (not in production)
+**Document version:** 2.4 (covers console v3.13.0) · **Status:** clickable prototype (not in production)
 **Prototype:** https://jama-dev520.github.io/location-prototype/
 **One-page version (shareable):** https://jama-dev520.github.io/location-prototype/feature-overview.html
 **Languages:** the console itself switches between English and Chinese in the header (v3.5.0); interface only — data stays as delivered  
@@ -225,8 +225,9 @@ locations keep serving their current values. Nothing silently changes.
 **What about a store that genuinely moved?** The provider updates the record; the next sync brings the new address, it
 shows as drift against the baseline, and the operator re-signs. Two clicks, full trace.
 
-**Why LMS first, and M&MP before that?** M&MP is our own data; LMS is the more complete partner feed for hubs. The rule is
-per field, so an empty LMS phone never blanks a working PUDO phone.
+**Why LMS first, and M&MP before that?** M&MP is our own data; LMS is the more complete partner feed for hubs. The rule runs
+on the whole record: whichever source wins supplies every field, empty ones included. An empty LMS phone stays empty — that
+is how the gap stays visible, and how LMS stays the one being asked to fill it.
 
 **Can we see who did what?** Yes — every action above writes an audit row with actor, timestamp (to the second), field,
 old value and new value.

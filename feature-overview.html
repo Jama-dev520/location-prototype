@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Feature Overview (v3.5.0)</title>
+<title>Location Management Admin Console — Feature Overview (v3.13.0)</title>
 <style>
   :root{
     --text:#0f172a; --muted:#64748b; --faint:#94a3b8;
@@ -103,7 +103,7 @@
   own self-operated stores. It answers four daily questions in seconds, and it never edits the data it shows.</p>
 
   <div class="meta">
-    <span class="pill blue">v3.5.0</span>
+    <span class="pill blue">v3.13.0</span>
     <span class="pill">English / 中文 switch</span>
     <span class="pill">Clickable prototype — not in production</span>
     <span class="pill teal">Two layers · three sources</span>
@@ -197,9 +197,11 @@
 
   <h3>One store, several vendor records</h3>
   <p>When a duplicate pair is confirmed as the same physical store, two vendor records feed one OC location (mapping
-  <code>2:1</code>). Each <b>field</b> is resolved independently:</p>
-  <div class="callout"><b>M&amp;MP (self-operated) → LMS → PUDO Inc.</b> The first source with a value wins; the next fills the
-  gaps. Every field in the detail page shows its source, so “why does this say X?” is answerable without asking anyone.</div>
+  <code>2:1</code>). <b>One record supplies every field</b> — the merge is by record, not by field:</p>
+  <div class="callout"><b>M&amp;MP (self-operated) → LMS → PUDO Inc.</b> The winner is picked among active records, and it
+  supplies the whole store, <b>empty fields included</b>. A blank phone on the winning record stays blank: borrowing it from the
+  other record would hide the gap, and the gap is what tells the provider what to fix. Every field in the detail page shows its
+  source, so “why does this say X?” is answerable without asking anyone.</div>
 
   <h3>One visibility rule</h3>
   <div class="callout">A location is visible to customers <b>iff</b> its vendor record is <code>active</code> <b>and</b> the
@@ -294,7 +296,7 @@
       <ul>
         <li>Overview dashboard — specified, out of scope for this round</li>
         <li>Batch upload (Excel) — in the PRD, not in the prototype</li>
-        <li>The demo video was recorded at v2.7.0 and still shows store editing; superseded by v3.0.0 — do not use it for acceptance</li>
+        <li>The demo video was recorded at v3.8.0; newer releases (v3.9.0–v3.13.0) are not in it — check the prototype itself</li>
       </ul>
     </div>
   </div>
@@ -313,7 +315,7 @@
   <p>Yes — every action writes an audit row with actor, timestamp to the second, field, old value and new value.</p>
 
   <footer>
-    Location Management Admin Console · v3.5.0 · clickable prototype ·
+    Location Management Admin Console · v3.13.0 · clickable prototype ·
     <a href="https://jama-dev520.github.io/location-prototype/">open the prototype</a> ·
     <a href="https://jama-dev520.github.io/location-prototype/Location-Management-Admin-Feature-Overview-EN.md">full overview</a>
   </footer>

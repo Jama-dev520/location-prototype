@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v3.12.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v3.13.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -376,7 +376,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.12.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.13.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -401,7 +401,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v3.12.0</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v3.13.0</span></div>
       </div>
     </div>
 
@@ -456,7 +456,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
 
       <div class="page" id="page-p02">
         <h2 class="page-title">OC Location List</h2>
-        <p class="page-desc" data-i18n="p02.desc"><b>One Source:</b> <b>packagehub (LMS)</b> · <b>PUDOpoint (PUDO)</b> · <b>M&amp;MP</b> — what it is and who owns it in one field. The record customers see. <b>Two actions only: enable, and flag an anomaly.</b> There is no editing here — a wrong address does not get typed over, it gets flagged back to the provider. Values are <b>merged per field</b>: an <b>M&amp;MP</b> self-operated store is its own source and wins first, then <b>LMS</b>, then PUDO Inc fills whatever is still empty.</p>
+        <p class="page-desc" data-i18n="p02.desc"><b>One Source:</b> <b>packagehub (LMS)</b> · <b>PUDOpoint (PUDO)</b> · <b>M&amp;MP</b> — what it is and who owns it in one field. The record customers see. <b>Two actions only: enable, and flag an anomaly.</b> There is no editing here — a wrong address does not get typed over, it gets flagged back to the provider. Values come from <b>one record, not one value per field</b>: an <b>M&amp;MP</b> self-operated store wins first, then <b>LMS</b>, and whichever record wins supplies <b>every</b> field — including the empty ones. A blank phone on the winning record stays blank: borrowing it from the other record would hide the gap, and the gap is what tells the provider what to fix.</p>
 
         <div class="card">
           <div class="filter-grid">
@@ -639,7 +639,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.12.0 (one Source, province, refresh)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.13.0 (one record supplies the store)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -648,7 +648,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
         <tr><td>3</td><td>OC List</td><td>Read the Source column</td><td data-i18n="walk.3.exp">One value per record — <b>packagehub (LMS)</b>, <b>PUDOpoint (PUDO)</b>, <b>M&amp;MP</b>; a 2:1 store shows both owners, merge order first</td></tr>
         <tr><td>4</td><td>OC Detail</td><td>Basic Info → each field carries its source</td><td>LMS wins the field when LMS has a value, PUDO fills the rest</td></tr>
         <tr><td>5</td><td>OC List</td><td>Enable a ready location</td><td>Sign-off checklist · baseline captured · no data edited</td></tr>
-        <tr><td>6</td><td>Duplicate Check</td><td>Read the pair left to right, then confirm "same store"</td><td>Two columns, one row per field: ✓ same, ≈ one contains the other, ✕ different — then 2:1 mapping and LMS values on the OC row</td></tr>
+        <tr><td>6</td><td>Duplicate Check</td><td>Read the pair left to right, then confirm "same store"</td><td>Two columns, one row per field: ✓ same, ≈ one contains the other, ✕ different — then 2:1, and one record becomes the single source of every value</td></tr>
         <tr><td>7</td><td>Data Issues</td><td>The four checks, then the issues split by nature; click the ?</td><td>Missing critical fields (nothing arrived) above Inaccurate data (a value is wrong) · the ? explains what blocks and what closes itself</td></tr>
         <tr><td>8</td><td>Data Issues</td><td>Open a drifted location</td><td>See which fields moved since sign-off; downstream already has the new values — drift is information, not a decision</td></tr>
         <tr><td>9</td><td>OC List</td><td>Filter Source = M&amp;MP</td><td>Self-operated stores follow the same rules: same sign-off, same issue ledger — only the data owner differs</td></tr>
@@ -1104,7 +1104,7 @@ var I18N_ZH = {
 /* ---- whole blocks (inline markup inside the sentence) ---- */
 var I18N_BLOCK = {
   "p01.desc":"<b>只有一个来源，不是两个</b> —— 类型和归属一起写在同一个字段：<b>PUDOpoint (PUDO)</b>、<b>packagehub (LMS)</b>、<b>M&amp;MP</b>。既然两者合成一个字段，“不可能的组合”就不再是筛选能搭出来的东西。这里是供应商实际推过来的内容，<b>所有字段只读</b>，包括<b>揽收方</b>，它现在随每日同步一起进来。<b>M&amp;MP</b> 是自营店，责任方是门店本身而不是某个供应商 —— 揽收方固定是 <b>LMS</b>。发现值不对，我们不在这一层改：我们<b>带着原因标记它</b>，标记挂在这条记录上，由供应商去修源头。OC 层只决定这家店是否上线。",
-  "p02.desc":"<b>只有一个来源：</b><b>packagehub (LMS)</b> · <b>PUDOpoint (PUDO)</b> · <b>M&amp;MP</b> —— 它是什么、谁拥有，一个字段说完。这是客户实际看到的那条记录。<b>只有两个动作：启用，以及标记异常。</b>这里不能编辑 —— 地址错了不会被改写，而是标记回供应商。值<b>按字段逐个合并</b>：<b>M&amp;MP</b> 自营店是自己的来源，优先级最高，然后是 <b>LMS</b>，最后由 PUDO Inc 补上仍为空的字段。",
+  "p02.desc":"<b>只有一个来源：</b><b>packagehub (LMS)</b> · <b>PUDOpoint (PUDO)</b> · <b>M&amp;MP</b> —— 它是什么、谁拥有，一个字段说完。客户看到的就是这条记录。<b>只有两个动作：启用、标记异常。</b>这里不能改数据 —— 地址错了不是拿键盘盖掉，是标给供应商去改。值<b>按记录整条取，不是逐字段拼</b>：<b>M&amp;MP</b>（自营）优先，其次 <b>LMS</b>；谁赢，这条店就整条由谁供数，<b>包括它空着的字段</b>。赢的那条没有电话，电话就是空的 —— 拿另一家补上，等于把「该催谁」这件事藏起来了。",
   "pdup.desc":"独立页面，只回答一个问题：<b>这两条供应商门店记录是不是同一家店？</b>配对由模糊匹配产生（地址 50 · 邮编 25 · 城市 15 · 州 10，阈值 75%）。判定结果决定映射关系 —— <b>同一家 = 2:1</b>（两条供应商记录对应一个 OC 门店，取值以 LMS 优先），<b>不是同一家 = 1:1</b>（各自有独立的 OC 门店）。两条记录<b>左右并排</b>，每个字段一行，差异那段单独标出来 —— 判定是看出来的，不是读出来的。凡是挂在多条供应商记录下的 OC 门店，都会在 OC 列表里标 <b>2:1</b>。",
   "pdi.desc":"所有数据问题集中在一个台账里 —— <b>没有审核队列</b>。顶部先给运营每天在追的<b>四项检查</b> —— <b>地址信息不全</b>、<b>缺少邮编</b>、<b>没有营业时间</b>、<b>某天营业不足 3 小时</b> —— 各自按未关闭异常计数，点一下就能筛出这一类。往下是三类：我们已经请供应商修的、签收之后变了的（只是信息，不是待决策），以及从来没通过入池校验的。这里不决定任何值是否被应用 —— <b>供应商的值永远给到下游</b>。标记异常是我们提要求的方式，下一次推送是它落地的方式。<b>导出清单</b>就可以发给供应商。",
   "p03.desc":"两个层级上的每一次创建、同步写入、标记、判定和签收都在这里。可按层级和类型筛选。",
@@ -1114,7 +1114,7 @@ var I18N_BLOCK = {
   "signoff.intro":"启用是 OC 层<b>唯一</b>决定的事。它把下面的值冻结为签收基线 —— 之后供应商的变更都以它为参照。",
   "sync.pending":"缺失、格式错、自相矛盾、不可能的数字 —— 只要值合法地到了，就自己关闭；<b>错误 / 过期 / 重复</b>永远回到人工。",
   "drift.note":"客户已经拿到<b>新</b>值 —— 没有什么需要批准。基线只是记录签收时是什么样，好让你看出供应商改了什么。",
-  "oc.assemble":"每个字段都独立地从关联的源记录里取：<b>M&amp;MP</b>（自营店）优先，然后是 <b>LMS</b>，最后由 PUDO Inc 补空。两条记录（2:1）依然只产出客户看到的一行。",
+  "oc.assemble":"整条记录由<b>一个</b>来源供数：<b>M&amp;MP</b>（自营）→ <b>LMS</b> → PUDO Inc，先在 <b>active</b> 里按优先级挑一条，这条记录的<b>所有</b>字段都用它，空的也算 —— 缺的字段就显示缺，不拿另一家补，因为只有看得见缺口，才知道该让谁补。两条记录（2:1）仍然只产出一行对客数据。",
   "walk.1.exp":"来源显示 <b>packagehub (LMS)</b> —— 它是什么、谁拥有，一个值说完；QR 标出能扫码的柜台，只有 LMS",
   "walk.3.exp":"每条记录一个值 —— <b>packagehub (LMS)</b>、<b>PUDOpoint (PUDO)</b>、<b>M&amp;MP</b>；2:1 的门店两个归属都显示，按合并优先级排序",
   "walk.10.exp":"三个值，每个都是「类型 + 归属」：<b>PUDOpoint (PUDO)</b>、<b>packagehub (LMS)</b>、<b>M&amp;MP</b>，后面跟着各自的条数。没有需要同步的类型下拉了，因为两者就是一个字段",
@@ -1130,7 +1130,7 @@ var I18N_BLOCK = {
   "help.checks":"顶部那几个格子只是把同一份清单按字段切开，方便每天干活 —— 一条异常属于哪一格由字段决定，不靠人手选。",
   "dup.vs":"对比",
   "pull.hint":"标记 → 导出 → 供应商修正 → 再拉一次",
-  "wt.title":"演示脚本 —— v3.12.0（一个来源、省市筛选、重新拉取）"
+  "wt.title":"演示脚本 —— v3.13.0（一条记录供整店）"
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
@@ -1198,6 +1198,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "3.13.0":"<b>一条记录供整店。</b>2:1 的店原来是<b>逐字段</b>拼出来的 —— LMS 有值的字段用 LMS，剩下的拿 PUDO Inc 补。结果是「LMS 没填电话，谁来补？」被悄悄回答成「不用补，已经有值了」。现在改成<b>整条记录</b>：赢的那条供全部字段，<b>它空着的也算空的</b>。电话没填就是没填，缺口留在那儿，该补的人是拥有这家店的那家供应商。赢家先在 <b>active</b> 里挑（M&amp;MP → LMS → PUDO Inc）—— 所以某一家下架，是<b>整店</b>交给下一家，而不是交一半。",
   "3.12.0":"<b>先按州 / 省，再按城市。</b>两个列表都加了 <b>Province</b> 与 <b>City</b> 两个筛选，每个选项后面带实时条数。城市跟着州走 —— 选了 NY，城市只剩纽约那三个 —— 因为 14 个城市还会继续长，不做收窄的城市下拉就是一堵名字墙。供应商列表的城市列也补上了州（`Brooklyn, NY`）：你能筛的东西，得能在列表上看见。两个字段在 CSV 里各自成列。",
   "3.11.0":"<b>OC 列表数的是「挡路的」，不是「有多少」。</b>它的 Issues 列原来复制供应商那边的异常总数（提醒级也算），那个数本来就写在供应商行上、2:1 的店还要把两条加起来，而且几乎从来不是让人改变决定的那个数。现在只带 <b>阻塞级</b>，并按后果命名；旁边三个才是 OC 自己的事实：<b>签收后变化</b>、<b>2:1</b>、<b>入池已覆盖</b>。筛选跟着改：三个选项，每个回答「为什么没上线 / 为什么要看一眼」，不再是那个和供应商视图重复的「有没有异常」。（入池覆盖只留徽章 —— 现在的数据里没有这种记录，一个永远筛出 0 行的选项比没有更糟。）异常本身仍然只写在供应商记录上 —— OC 只是借用，不留副本。",
   "3.10.1":"<b>问号该跟着筛选，不跟着列。</b>解释「什么算一条异常」的那个 <b>?</b> 现在放在 Issues <b>筛选</b>标签旁边 —— 选择是在那里做的 —— 而不是列头上，放在列头上容易被当成对数据的注释。弹框内容不变，两个列表都有。",
@@ -1362,8 +1363,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='3.12.0';
+var APP_VERSION='3.13.0';
 var VERSIONS=[
+ {v:'3.13.0',type:'minor',date:'2026-11-11',desc:'<b>One record supplies the whole store.</b> A 2:1 location used to be assembled field by field — LMS won the fields it had and PUDO Inc filled the rest. That answered "who fixes the empty LMS phone?" with "nobody, it is already filled". Now the winning record supplies <b>every</b> field, empty ones included: a blank phone stays blank, so the gap is visible and the provider who owns the store is the one asked to close it. The winning record is chosen among <b>active</b> ones first (M&amp;MP → LMS → PUDO Inc), so a deactivated source hands the whole store to the next one rather than half of it.'},
  {v:'3.12.0',type:'minor',date:'2026-11-11',desc:'<b>Filter by province, then by city.</b> Both lists gain a <b>Province</b> and a <b>City</b> filter, with a live count on every option. City follows province — pick NY and the list collapses to the three New York cities — because with 14 cities and growing, an unfiltered city dropdown is a wall of names. The City column now prints the province next to it (`Brooklyn, NY`) on the vendor list too, so the thing you filter by is the thing you can see. Both landscape fields land in the CSV exports under their own names.'},
  {v:'3.11.0',type:'minor',date:'2026-11-10',desc:'<b>The OC list counts what blocks, not the inventory.</b> Its Issues column used to repeat the provider issue count, warnings included — a number that already lived on the vendor row, summed over up to two records, and almost never the number that changes a decision. It now carries only <b>blocking</b> issues, named by their effect, next to the three facts that are genuinely OC-level: <b>drift</b> since sign-off, <b>2:1</b> mapping, <b>intake overridden</b>. The filter follows: three options that each answer “why is this not live / why look at it”, instead of one “has any issue” that duplicated the vendor view. (An overridden intake stays a badge on the row; no store in the feed carries one, and an option that always returns zero rows is worse than an absent one.) The flags themselves still live on the source records — the OC layer borrows them, it does not keep a copy.'},
  {v:'3.10.1',type:'patch',date:'2026-11-10',desc:'<b>The help mark belongs to the filter, not to the column.</b> The <b>?</b> that explains what counts as an issue now sits beside the Issues <i>filter</i> — where the choice is actually made — instead of the Issues column header, where it read as a comment on the data. Same popup, both lists.'},
@@ -1659,22 +1661,29 @@ function refreshProviders(){
 
 /* baseline = the merged values signed off when the location went live */
 var BASELINE={};
-function mergedField(o,f){
-  var vs=(o.vendorIds||[]).map(findVendor).filter(function(v){return v&&v.status==='active';});
-  var own=vs.filter(function(v){return v.provider==='M&MP'&&hasVal(v,f);});
-  if(own.length)return {value:valOf(own[0],f),src:'M&MP',vendor:own[0]};
-  var lms=vs.filter(function(v){return v.provider==='LMS'&&hasVal(v,f);});
-  if(lms.length)return {value:valOf(lms[0],f),src:'LMS',vendor:lms[0]};
-  var any=vs.filter(function(v){return hasVal(v,f);});
-  if(any.length)return {value:valOf(any[0],f),src:any[0].provider,vendor:any[0]};
-  var all=(o.vendorIds||[]).map(findVendor).filter(function(v){return v&&hasVal(v,f);});
-  if(all.length)return {value:valOf(all[0],f),src:all[0].provider,vendor:all[0],inactive:true};
-  return {value:valOf(o,f),src:'OC',vendor:null};
+/* v3.13.0 — a merge picks ONE record, not one value per field.
+   If LMS owns the store it supplies every field, including the ones it leaves
+   empty: a blank phone stays blank, and the gap lands on the provider that has
+   to fix it. Filling it from PUDO would hide exactly the thing we need to chase
+   — and would mean the console quietly answered "who fixes this?" with "nobody,
+   it is already filled". */
+function winnerOf(o){
+  var vs=(o.vendorIds||[]).map(findVendor).filter(Boolean);
+  var rank=function(list){
+    return list.filter(function(v){return v.provider==='M&MP';})[0]
+      || list.filter(function(v){return v.provider==='LMS';})[0]
+      || list[0] || null;
+  };
+  var act=rank(vs.filter(function(v){return v.status==='active';}));
+  if(act)return {vendor:act,src:act.provider,inactive:false};
+  var any=rank(vs);
+  if(any)return {vendor:any,src:any.provider,inactive:true};
+  return null;
 }
-function hasVal(v,f){
-  if(f==='hoursText')return !!(v.hoursText||(v.hoursOfOp&&v.hoursOfOp.length));
-  if(f==='sweeper')return !!v.sweeper;
-  var x=v[f];return x!==undefined&&x!==null&&String(x).trim()!==''&&String(x)!=='—';
+function mergedField(o,f){
+  var w=winnerOf(o);
+  if(w)return {value:valOf(w.vendor,f),src:w.src,vendor:w.vendor,inactive:w.inactive};
+  return {value:valOf(o,f),src:'OC',vendor:null};
 }
 function valOf(r,f){
   if(f==='hoursText'){
@@ -2192,7 +2201,7 @@ function resolveDup(pairId,res){
     if(ocA){if(ocA.vendorIds.indexOf(d.locB)<0)ocA.vendorIds.push(d.locB);ocA.dup=true;ocA.updated=nowStr();}
     else{showToast('Cannot merge','No OC location exists for '+d.locA,'error');return;}
     log('OC',currentUser.name,'OC_LINK_CONFIRMED',pairId,'vendor_oc_mapping','pending','2:1',d.locA+' + '+d.locB+' → '+ocA.ocId);
-    showToast('Mapped 2:1',d.locB+' now feeds '+ocA.ocId+' · LMS values take precedence per field');
+    showToast('Mapped 2:1',d.locB+' now feeds '+ocA.ocId+' · one record supplies every field, empty ones included');
   }else{
     d.status='rejected';
     var oc=OC_LOCATIONS.filter(function(o){return o.vendorIds.indexOf(d.locB)>=0;})[0];
@@ -2461,7 +2470,7 @@ function ocPanels(o){
       return kv(r[0],(m.value?esc(m.value):'—')+(r[1]==='sweeper'?'':' '+srcChip(o,r[1])));
     }).join('')+kv('Coordinates',esc(mergedField(o,'lat').value+', '+mergedField(o,'lng').value)+' '+srcChip(o,'lat'))
       +kv('Source',srcLabel(mergedField(o,'type').value,srcsOf(o)))+'</div>','')
-      +psec('How this record is assembled','<div data-i18n="oc.assemble" style="font-size:12.5px;line-height:1.7;color:var(--text-secondary)">Each field is taken from the linked source records independently: <b>M&amp;MP</b> (our own store) wins first, then <b>LMS</b>, then PUDO Inc fills the gaps. Two records (2:1) still produce one customer-facing row.</div>');
+      +psec('How this record is assembled','<div data-i18n="oc.assemble" style="font-size:12.5px;line-height:1.7;color:var(--text-secondary)">The whole record comes from <b>one</b> source: <b>M&amp;MP</b> (our own store) → <b>LMS</b> → PUDO Inc, chosen among <b>active</b> records first. The winning record supplies <b>every</b> field, empty ones included — a missing field is shown as missing rather than borrowed, because the gap is what makes it clear who has to fix it. Two records (2:1) still produce one customer-facing row.</div>');
   }
   if(detailTab==='operations'){
     var dr=driftOf(o),oi=openIssues(o);

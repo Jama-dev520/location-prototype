@@ -1,6 +1,6 @@
-# Location Management Admin Console — Database Field Mapping (v3.12.0)
+# Location Management Admin Console — Database Field Mapping (v3.13.0)
 
-> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.12.0)
+> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.13.0)
 > Feature overview (English, for readers outside the team): `https://jama-dev520.github.io/location-prototype/feature-overview.html`
 >
 > **v3.0.0 model change.** The console no longer writes location fields. `field_lock` is replaced by `data_issue`; `sync_change_set` decisions and `oc_field_baseline` versions used for revert are retired; downstream values are a per-field merge with **LMS first**. The console writes exactly four things: `oc_location.is_enable`, `data_issue` rows, baseline captures, and `change_log`.
@@ -306,27 +306,28 @@ oc_location (OC-owned, downstream-facing)
 | `oc_location` | `is_enable` only | the operator (sign-off, F21) | yes, and that is the only OC write |
 | derived (not stored) | name / address / hours / coordinates / sweeper as shown downstream | computed from the linked vendor records | no |
 
-### 3.2 Downstream merge rule — source priority M&MP → LMS → PUDO Inc (F25)
+### 3.2 Downstream merge rule — one record supplies the store (F25, v3.13.0)
 
-When one OC location is fed by several vendor records (2:1), each field is resolved independently:
+When one OC location is fed by several vendor records (2:1), the console picks **one** record and takes every field from it:
 
 ```
-for each field f:
-    candidates = linked source records with status = active and a non-empty f
-    pick by priority: M&MP (self-operated) > LMS > PUDO Inc
-    if the highest priority with a value has one -> take it, else fall through
-    if nothing has a value -> last known value, flagged as stale
+1. candidates = linked vendor records with status = 'active'
+2. winner     = first by priority: M&MP (self-operated) > LMS > PUDO Inc
+3. if no candidate is active -> same priority applied to all linked records,
+   and the row is flagged as sourced from an inactive record
+4. row.f      = winner.f   for every field f   (an empty winner field stays empty)
+5. only when the OC has no linked record at all -> the value stored on oc_location
 ```
 
 | Situation | Result |
 |---|---|
-| M&MP (self-operated) active with a value, LMS active with a different value | **M&MP value wins** — first-party data outranks a partner's |
-| LMS active with a value, PUDO active with a different value | **LMS value wins** |
-| LMS active but the field is empty, PUDO has a value | PUDO value fills the gap |
-| LMS inactive, PUDO active | PUDO value |
-| Both inactive | last known value, surfaced as a data-quality problem |
+| M&MP active, LMS active | every field from **M&MP** — first-party data outranks a partner's |
+| LMS active, PUDO active | every field from **LMS** |
+| LMS active but `phone` is empty, PUDO has one | **`phone` stays empty** — the gap belongs to LMS and is shown as one |
+| LMS inactive, PUDO active | every field from **PUDO** — the whole record, not the half LMS was missing |
+| all linked records inactive | the same priority still applies; the row is flagged as sourced from an inactive record |
 
-> The rule is field-level on purpose. A record-level rule ("use the top source entirely") would blank every field that source happens not to supply — phone and coordinates are the usual gaps. Type is not merged loosely: it follows the constraint in 3.4.
+> **Record-level on purpose (changed in v3.13.0).** The earlier rule resolved each field independently and let the next source fill the gap. That is convenient for whoever reads the row and wrong for the process: an empty LMS `phone` was filled from PUDO, so nothing ever reached LMS as something to fix, and "who owns this field" had no answer. Whole-record merging makes the owner of the store the owner of its gaps. The cost is explicit and accepted: a live row can show `—` for a field its owner never sent. Do **not** "fix" that by reintroducing a per-field fallback in the read model — surface the gap instead.
 
 ### 3.3 What the console writes (and what it no longer writes)
 
@@ -440,7 +441,7 @@ Failure modes the rule deliberately produces:
 | **`/api/issues/export`** (v3.4.0) | GET | `data_issue` + `vendor_location` + `vendor_oc_mapping` | CSV of open issues (filterable by type / severity / owner) — the work list handed to the provider |
 | **`/api/oc-locations/export`** (v3.4.0) | GET | `oc_location` + `vendor_location` + `data_issue` | CSV of the current filter, with `open_issues` and `drift_fields` columns |
 | ~~`/api/oc-locations/{id}/resign`~~ | — | — | **retired in v3.4.0**: there is no approval step, so there is nothing to re-sign |
-| **`/api/oc-locations/{id}/resolved`** (v3.0.0) | GET | `vendor_location` + `vendor_oc_mapping` | the merged, per-field view with a `source` per field (F25) — what downstream receives |
+| **`/api/oc-locations/{id}/resolved`** (v3.0.0) | GET | `vendor_location` + `vendor_oc_mapping` | the merged, one-record view with a `source` per field (F25) — what downstream receives |
 | **`/api/oc-locations/{id}`** (v2.6.0, extended) | PATCH | `oc_location` + `oc_field_baseline` + `field_lock` + `sync_change_set` + `change_log` | operator edit: refresh baseline, lock fields, supersede pending changes, set `propagated_at` if visible |
 | **`/api/sync/runs/{id}/rollback`** (v2.6.0) | POST | `oc_location` + `change_log` | revert a run's OC rows to the stored before-image (7-day window) |
 | **`/api/sync/safe-mode`** (v2.6.0) | PATCH | `sync_run` (flag) | freeze / unfreeze all propagation |

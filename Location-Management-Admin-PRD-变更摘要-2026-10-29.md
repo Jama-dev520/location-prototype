@@ -1,6 +1,6 @@
-# Location Management Admin Console — PRD Change Summary (v3.12.0)
+# Location Management Admin Console — PRD Change Summary (v3.13.0)
 
-> Document version v3.12.0 ｜ Change date 2026-11-11 ｜ Status: Draft — pending review
+> Document version v3.13.0 ｜ Change date 2026-11-11 ｜ Status: Draft — pending review
 > 本轮（v3.0.0）是**模型换向**：OC 层不再改数据，只做两件事——**enable** 和 **标记异常**。所有数据以供应商为唯一来源，错的地方标记回去让供应商改；重复对单独成页；下游按字段合并，LMS 优先；M&MP 用同一套规则管同一份数据。
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
 > **验收标准（通俗版）**: `Location-Management-Admin-验收标准-2026-10-29.md`
@@ -464,6 +464,28 @@ https://jama-dev520.github.io/location-prototype/feature-overview.html
 - 片头片尾重做：片头标 `v3.3.0 / two layers · three sources / enable is a sign-off / a fix closes its own issue`；片尾四条地基换成 v3 的版本（数据只有供应商一个来源、没人处理就不变、下线容易上线要签收、修复能自证才自动关闭）。
 - 为了录制可读性，标记弹窗的严重度下拉文案从 `warning — live, but wrong for customers` 缩短为 `warning · live but wrong`（原来在 560px 弹窗里被截断）。纯文案，不改行为。
 
+## 二之二十一、v3.13.0：一条记录供整店
+
+### 逐字段补值，补掉的是责任
+
+原来 2:1 的店是这么拼的：LMS 有值的字段用 LMS，LMS 没值的拿 PUDO Inc 补。听起来稳妥 —— 界面永远完整，客户不会看到空。
+
+但它顺手回答了一个不该由它回答的问题：**「LMS 没填电话，谁去补？」** 系统答的是「不用补，已经有值了」。于是没人标记、导出里没有这一条、LMS 也永远不会知道它少了什么。一条永远被填满的记录，等于一条永远不会被要求补齐的记录。
+
+### 现在
+
+挑一条记录（active 里按 M&MP → LMS → PUDO 排），**它的所有字段就是这家店的字段**，空的也算空的。LMS 没电话，OC 上就是 `—`，来源标 LMS。
+
+选赢家仍然先看 active：LMS 下架，**整店**交给 PUDO，不是交一半。这是「店换了手」和「店变成拼的」的区别。
+
+### 代价，说清楚
+
+已上线的店可能出现 `—`。这确实是客户体验的下降，也是这次改动**故意**换来的东西：宁可露出缺口，也不要一家看着完整、实际没人负责的店。缺口该落到必查项和异常台账里 —— 标记、导出、供应商修，这条闭环才有起点。
+
+### 演示数据里的真实效果
+
+`LOC-00186`（LMS）本来就没有 `phone` 和营业时间，`LOC-12194`（PUDO）两样都有。确认那对 75% 的重复之后：OC 的地址换成 LMS 的 `2918 Avenue I Ste 2 / 11210-2214`，**电话 `—`、营业时间空**。这三件事同时在屏幕上，正好说明这条规则在做什么。
+
 ## 二之二十、v3.12.0：先按州，再按市
 
 ### 一个字段装不下的问题
@@ -676,6 +698,7 @@ v3.4.0 删掉的是「数据是否应用」，不是「门店是否上线」。�
 
 如果连签收也拿掉，入库一通过门店就自动上线，等于没有人确认客户会开到的那个地址。验收里也加了一条「不该发生」：把「不决定是否应用」误解成「不用签收」。
 
+| v3.13.0 | MINOR | 2026-11-11 | **整条记录供数**：2:1 的店铺由「逐字段取源」改成「挑一条记录，供全部字段」，赢家空着的字段保持为空，不再由另一家补。优先级与 active 过滤不变（M&MP → LMS → PUDO Inc）。演示数据里 LMS 那条没有电话和营业时间，确认 2:1 后这两项在 OC 上就是空的 —— 这正是要暴露的缺口 |
 | v3.12.0 | MINOR | 2026-11-11 | **省市筛选**：两个列表各加 Province / City 两个筛选，带实时条数，城市跟着州级联；切州时先清掉失效城市再重算。供应商列表城市列补上州。CSV 表头 `State` → `Province`（三处导出）。数据模型不变，`state` 列名不动 |
 | v3.11.0 | MINOR | 2026-11-10 | **OC 只数挡路的**：Issues 列由「供应商异常总数」改成「阻塞级 + OC 自身状态」（`n blocking` / `n drift` / `2:1` / `intake`）；颜色按语义重排（红=挡路，橙=看一眼）。筛选改成 `Blocking data issue` / `Changed since sign-off` / `Duplicate 2:1`，删掉「有没有异常」；`Intake overridden` 只留徽章。OC 导出拆成 `Blocking issues` + `Other open issues`。**数据模型零改动** |
 | v3.10.1 | PATCH | 2026-11-10 | **问号挪位置**：解释「什么算异常」的 `?` 从 Issues **列头**移到 Issues **筛选标签**旁（两个列表都改）。列头上像是给数据加注释，筛选旁边才是做选择的地方。弹框内容不变 |
