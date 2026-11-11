@@ -1,0 +1,20 @@
+flowchart TD
+    A([Provider pushes a record<br/>new, or an existing one changed]) --> B[Score against every other active record<br/>addr1 50 · postal 25 · city 15 · state 10]
+    B --> C{Score >= 75}
+    C -->|No| D[One record, one OC location<br/>1:1]
+    C -->|Yes| E[Pending pair<br/>no OC location yet]
+
+    E --> F{Operator: same store}
+    F -->|No| G[Each keeps its own OC location<br/>1:1, closed]
+    F -->|Yes| H[2:1: both records feed one OC<br/>higher-priority record supplies every field<br/>snapshot score + both identities]
+
+    H --> J{Every later sync:<br/>did a paired record<br/>change identity}
+    D --> J
+    J -->|No| S[Normal provider update<br/>value flows, drift only]
+    J -->|Yes| M{Re-scored pair<br/>still >= 75}
+
+    M -->|Yes| R[Stays 2:1<br/>nothing to decide]
+    M -->|No| N[Split: the record that moved<br/>leaves the OC location]
+
+    N --> P[The other record keeps the OC<br/>and its signed-off identity]
+    N --> O[It gets its own OC location<br/>off by default, needs sign-off<br/>then re-scored against everyone]

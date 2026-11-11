@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v3.13.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v3.14.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -376,7 +376,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.13.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.14.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -401,7 +401,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v3.13.0</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v3.14.0</span></div>
       </div>
     </div>
 
@@ -502,13 +502,13 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
 
       <div class="page" id="page-pdup">
         <h2 class="page-title">Duplicate Check</h2>
-        <p class="page-desc" data-i18n="pdup.desc">A standalone page for one question only: <b>are these two vendor locations the same store?</b> Pairs are detected by fuzzy match (address 50 · postal 25 · city 15 · state 10, threshold 75%). The two records are shown <b>side by side</b>, one row per field, with the differing part of each value marked, so the decision is read off the screen. The decision decides the mapping — <b>same store = 2:1</b> (two vendor records, one OC location, LMS values win), <b>not the same = 1:1</b> (each gets its own OC location). Every OC location that is fed by more than one vendor record is marked <b>2:1</b> in the OC list.</p>
+        <p class="page-desc" data-i18n="pdup.desc">A standalone page for one question only: <b>are these two vendor locations the same store?</b> Pairs are detected by fuzzy match (address 50 · postal 25 · city 15 · state 10, threshold 75%). The two records are shown <b>side by side</b>, one row per field, with the differing part of each value marked, so the decision is read off the screen. The decision decides the mapping — <b>same store = 2:1</b> (two vendor records, one OC location, the higher-priority record supplies every field), <b>not the same = 1:1</b> (each gets its own OC location). And the decision is <b>re-read on every sync</b>: if one side&rsquo;s identity moves so that the pair no longer scores, that record leaves, gets its own OC location (off by default), and the other keeps the original one. Every OC location that is fed by more than one vendor record is marked <b>2:1</b> in the OC list.</p>
 
         <div class="card">
           <div class="filter-grid">
             <div><label class="f-label">Pair ID</label><input id="d-f-id" placeholder="e.g. DUP-001" oninput="renderDup()"></div>
             <div><label class="f-label">Provider</label><select id="d-f-provider" onchange="renderDup()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
-            <div><label class="f-label">Status</label><select id="d-f-status" onchange="renderDup()"><option value="">All</option><option value="pending">Pending</option><option value="confirmed">Same store (2:1)</option><option value="rejected">Not same (1:1)</option></select></div>
+            <div><label class="f-label">Status</label><select id="d-f-status" onchange="renderDup()"><option value="">All</option><option value="pending">Pending</option><option value="confirmed">Same store (2:1)</option><option value="rejected">Not same (1:1)</option><option value="split">Split after a change</option></select></div>
             <div><label class="f-label">Min score</label><select id="d-f-score" onchange="renderDup()"><option value="0">All</option><option value="75">75%+</option><option value="85">85%+</option></select></div>
           </div>
           <div class="filter-actions">
@@ -639,7 +639,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.13.0 (one record supplies the store)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.14.0 (one record, and a pair that can split)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -822,6 +822,8 @@ var I18N_ZH = {
   "Not same (1:1)":"非同一门店 (1:1)",
   "Live":"已上线",
   "Blocking data issue":"阻塞级数据异常",
+  "Split after a change":"变更后已拆分",
+  "different store · split":"不同门店 · 已拆分",
   "On the OC list":"在 OC 列表上",
   "Changed since sign-off":"签收后发生变化",
   "Duplicate 2:1":"重复 2:1",
@@ -1105,7 +1107,7 @@ var I18N_ZH = {
 var I18N_BLOCK = {
   "p01.desc":"<b>只有一个来源，不是两个</b> —— 类型和归属一起写在同一个字段：<b>PUDOpoint (PUDO)</b>、<b>packagehub (LMS)</b>、<b>M&amp;MP</b>。既然两者合成一个字段，“不可能的组合”就不再是筛选能搭出来的东西。这里是供应商实际推过来的内容，<b>所有字段只读</b>，包括<b>揽收方</b>，它现在随每日同步一起进来。<b>M&amp;MP</b> 是自营店，责任方是门店本身而不是某个供应商 —— 揽收方固定是 <b>LMS</b>。发现值不对，我们不在这一层改：我们<b>带着原因标记它</b>，标记挂在这条记录上，由供应商去修源头。OC 层只决定这家店是否上线。",
   "p02.desc":"<b>只有一个来源：</b><b>packagehub (LMS)</b> · <b>PUDOpoint (PUDO)</b> · <b>M&amp;MP</b> —— 它是什么、谁拥有，一个字段说完。客户看到的就是这条记录。<b>只有两个动作：启用、标记异常。</b>这里不能改数据 —— 地址错了不是拿键盘盖掉，是标给供应商去改。值<b>按记录整条取，不是逐字段拼</b>：<b>M&amp;MP</b>（自营）优先，其次 <b>LMS</b>；谁赢，这条店就整条由谁供数，<b>包括它空着的字段</b>。赢的那条没有电话，电话就是空的 —— 拿另一家补上，等于把「该催谁」这件事藏起来了。",
-  "pdup.desc":"独立页面，只回答一个问题：<b>这两条供应商门店记录是不是同一家店？</b>配对由模糊匹配产生（地址 50 · 邮编 25 · 城市 15 · 州 10，阈值 75%）。判定结果决定映射关系 —— <b>同一家 = 2:1</b>（两条供应商记录对应一个 OC 门店，取值以 LMS 优先），<b>不是同一家 = 1:1</b>（各自有独立的 OC 门店）。两条记录<b>左右并排</b>，每个字段一行，差异那段单独标出来 —— 判定是看出来的，不是读出来的。凡是挂在多条供应商记录下的 OC 门店，都会在 OC 列表里标 <b>2:1</b>。",
+  "pdup.desc":"只问一个问题 —— <b>这两条供应商门店是不是同一家</b>？重复对由模糊匹配找出（地址 50 · 邮编 25 · 城市 15 · 州 10，阈值 75%），两条记录<b>左右并排</b>、一个字段一行，只标出不一样的那段文字，判定是把眼睛放在屏幕上读出来的。判定决定映射 —— <b>同一家 = 2:1</b>（两条记录喂一个 OC，由优先级高的那条供全部字段），<b>不是同一家 = 1:1</b>（各得一个 OC）。而且这个判定<b>每次同步都会重读一遍</b>：只要一方的身份变了、配对分掉到 75% 以下，变的那条就退出去、单独拿一个 OC（默认不启用），另一条留着原来的。凡是挂了两条以上供应商记录的 OC，列表里都标 <b>2:1</b>。",
   "pdi.desc":"所有数据问题集中在一个台账里 —— <b>没有审核队列</b>。顶部先给运营每天在追的<b>四项检查</b> —— <b>地址信息不全</b>、<b>缺少邮编</b>、<b>没有营业时间</b>、<b>某天营业不足 3 小时</b> —— 各自按未关闭异常计数，点一下就能筛出这一类。往下是三类：我们已经请供应商修的、签收之后变了的（只是信息，不是待决策），以及从来没通过入池校验的。这里不决定任何值是否被应用 —— <b>供应商的值永远给到下游</b>。标记异常是我们提要求的方式，下一次推送是它落地的方式。<b>导出清单</b>就可以发给供应商。",
   "p03.desc":"两个层级上的每一次创建、同步写入、标记、判定和签收都在这里。可按层级和类型筛选。",
   "p04.desc":"每一次供应商同步一行。触发熔断的那一次会停止下发，等人工处理。",
@@ -1130,7 +1132,7 @@ var I18N_BLOCK = {
   "help.checks":"顶部那几个格子只是把同一份清单按字段切开，方便每天干活 —— 一条异常属于哪一格由字段决定，不靠人手选。",
   "dup.vs":"对比",
   "pull.hint":"标记 → 导出 → 供应商修正 → 再拉一次",
-  "wt.title":"演示脚本 —— v3.13.0（一条记录供整店）"
+  "wt.title":"演示脚本 —— v3.14.0（一条记录供整店、配对可拆）"
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
@@ -1198,6 +1200,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "3.14.0":"<b>确认过的配对可以重新打开。</b>2:1 是「这两条记录在那一刻是同一家店」的判断，但以前没人再读过它 —— 于是一个映射会比它依据的证据活得更久，线上门店慢慢变成两家店拼出来的。<br>现在每次同步只要改动了某条记录的身份（地址、城市、州、邮编），就会重算它所在配对的分：**低于 75%，动的那条退出**，还给它一个自己的 OC（默认不启用），另一条留在原来的 OC。`2:1` 徽章会消失，因为支撑它的理由已经没了。",
   "3.13.0":"<b>一条记录供整店。</b>2:1 的店原来是<b>逐字段</b>拼出来的 —— LMS 有值的字段用 LMS，剩下的拿 PUDO Inc 补。结果是「LMS 没填电话，谁来补？」被悄悄回答成「不用补，已经有值了」。现在改成<b>整条记录</b>：赢的那条供全部字段，<b>它空着的也算空的</b>。电话没填就是没填，缺口留在那儿，该补的人是拥有这家店的那家供应商。赢家先在 <b>active</b> 里挑（M&amp;MP → LMS → PUDO Inc）—— 所以某一家下架，是<b>整店</b>交给下一家，而不是交一半。",
   "3.12.0":"<b>先按州 / 省，再按城市。</b>两个列表都加了 <b>Province</b> 与 <b>City</b> 两个筛选，每个选项后面带实时条数。城市跟着州走 —— 选了 NY，城市只剩纽约那三个 —— 因为 14 个城市还会继续长，不做收窄的城市下拉就是一堵名字墙。供应商列表的城市列也补上了州（`Brooklyn, NY`）：你能筛的东西，得能在列表上看见。两个字段在 CSV 里各自成列。",
   "3.11.0":"<b>OC 列表数的是「挡路的」，不是「有多少」。</b>它的 Issues 列原来复制供应商那边的异常总数（提醒级也算），那个数本来就写在供应商行上、2:1 的店还要把两条加起来，而且几乎从来不是让人改变决定的那个数。现在只带 <b>阻塞级</b>，并按后果命名；旁边三个才是 OC 自己的事实：<b>签收后变化</b>、<b>2:1</b>、<b>入池已覆盖</b>。筛选跟着改：三个选项，每个回答「为什么没上线 / 为什么要看一眼」，不再是那个和供应商视图重复的「有没有异常」。（入池覆盖只留徽章 —— 现在的数据里没有这种记录，一个永远筛出 0 行的选项比没有更糟。）异常本身仍然只写在供应商记录上 —— OC 只是借用，不留副本。",
@@ -1363,8 +1366,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='3.13.0';
+var APP_VERSION='3.14.0';
 var VERSIONS=[
+ {v:'3.14.0',type:'minor',date:'2026-11-11',desc:'<b>A confirmed pair can be re-opened.</b> 2:1 was a statement about two records at one moment; nothing ever re-read it, so a mapping outlived the evidence for it. Now every sync that changes a record\'s identity re-scores the pair it belongs to: below 75% the record that moved leaves, keeps its own new OC location (off by default), and the other record keeps the original one. The 2:1 badge disappears because the reason for it did.'},
  {v:'3.13.0',type:'minor',date:'2026-11-11',desc:'<b>One record supplies the whole store.</b> A 2:1 location used to be assembled field by field — LMS won the fields it had and PUDO Inc filled the rest. That answered "who fixes the empty LMS phone?" with "nobody, it is already filled". Now the winning record supplies <b>every</b> field, empty ones included: a blank phone stays blank, so the gap is visible and the provider who owns the store is the one asked to close it. The winning record is chosen among <b>active</b> ones first (M&amp;MP → LMS → PUDO Inc), so a deactivated source hands the whole store to the next one rather than half of it.'},
  {v:'3.12.0',type:'minor',date:'2026-11-11',desc:'<b>Filter by province, then by city.</b> Both lists gain a <b>Province</b> and a <b>City</b> filter, with a live count on every option. City follows province — pick NY and the list collapses to the three New York cities — because with 14 cities and growing, an unfiltered city dropdown is a wall of names. The City column now prints the province next to it (`Brooklyn, NY`) on the vendor list too, so the thing you filter by is the thing you can see. Both landscape fields land in the CSV exports under their own names.'},
  {v:'3.11.0',type:'minor',date:'2026-11-10',desc:'<b>The OC list counts what blocks, not the inventory.</b> Its Issues column used to repeat the provider issue count, warnings included — a number that already lived on the vendor row, summed over up to two records, and almost never the number that changes a decision. It now carries only <b>blocking</b> issues, named by their effect, next to the three facts that are genuinely OC-level: <b>drift</b> since sign-off, <b>2:1</b> mapping, <b>intake overridden</b>. The filter follows: three options that each answer “why is this not live / why look at it”, instead of one “has any issue” that duplicated the vendor view. (An overridden intake stays a badge on the row; no store in the feed carries one, and an option that always returns zero rows is worse than an absent one.) The flags themselves still live on the source records — the OC layer borrows them, it does not keep a copy.'},
@@ -1532,7 +1536,14 @@ var NEXT_SYNC={
     {vendorId:'LOC-00183',field:'postal',value:'92054'},
     {vendorId:'LOC-00179',field:'phone',value:'555-0142'},
     {vendorId:'LOC-00182',field:'sweeper',value:'PUDO Inc'},   /* re-sent unchanged — the provider did nothing */
-    {vendorId:'LOC-12193',field:'name',value:'Ideal Food Basket'}
+    {vendorId:'LOC-12193',field:'name',value:'Ideal Food Basket'},
+    /* the PUDO record of the demo duplicate pair moves to a different shop —
+       this is what turns "confirmed 2:1" into "two stores" on the next run */
+    {vendorId:'LOC-12194',field:'addr1',value:'45 Main St'},
+    {vendorId:'LOC-12194',field:'city',value:'Poughkeepsie'},
+    {vendorId:'LOC-12194',field:'postal',value:'12601'},
+    {vendorId:'LOC-12194',field:'lat',value:41.7004},
+    {vendorId:'LOC-12194',field:'lng',value:-73.9210}
   ]
 };
 var SYNC_DONE=false, SYNC_SUMMARY=null, ISSUE_BASE={};
@@ -1608,16 +1619,21 @@ function runProviderSync(opts){
     log('VENDOR','Provider sync','DATA_ISSUE_AUTO_CLOSED',i.vendorId,i.field+(i.subField?' · '+i.subField:''),'open','fixed','run '+NEXT_SYNC.runId+' · '+base+' → '+nowVal);
     closed++;
   });
+  /* identity moved? re-judge every pair the changed records belong to */
+  var touched=NEXT_SYNC.changes.map(function(c){return c.vendorId;}).filter(function(x,i,a){return a.indexOf(x)===i;});
+  var rc=recheckDuplicates(touched);
   SYNC_DONE=true;
-  SYNC_SUMMARY={closed:closed,stillInvalid:stillInvalid,unchanged:unchanged,needsHuman:needsHuman,runId:NEXT_SYNC.runId};
+  SYNC_SUMMARY={closed:closed,stillInvalid:stillInvalid,unchanged:unchanged,needsHuman:needsHuman,
+    runId:NEXT_SYNC.runId,split:rc.split.length,newPairs:rc.pairs.length};
   SYNC_RUNS.unshift({runId:NEXT_SYNC.runId,provider:'Multiple',startedAt:NEXT_SYNC.at,finishedAt:NEXT_SYNC.finished,
     pulled:NEXT_SYNC.pulled,created:NEXT_SYNC.created,updated:NEXT_SYNC.updated,flagged:NEXT_SYNC.flagged,
     breaker:'normal',autoClosed:closed});
   LAST_PULL={at:nowStr(),run:SYNC_SUMMARY.runId,rows:NEXT_SYNC.pulled,closed:closed,
     updated:NEXT_SYNC.updated,needsHuman:needsHuman,stillInvalid:stillInvalid};
-  renderIssuesPage();renderSync();renderVendor();renderOC();updateBadges();
+  renderIssuesPage();renderSync();renderVendor();renderOC();renderDup();updateBadges();
   if(document.getElementById('page-pd').classList.contains('active'))renderProfile();
-  if(!opts.quiet)showToast('Sync applied',closed+' closed automatically · '+needsHuman+' need a human · '+stillInvalid+' still invalid · '+unchanged+' unchanged','success');
+  if(!opts.quiet)showToast('Sync applied',closed+' closed automatically · '+needsHuman+' need a human · '+stillInvalid+' still invalid · '+unchanged+' unchanged'
+    +(rc.split.length?' · '+rc.split.length+' duplicate pair split — a record no longer matches its store':''),'success');
   return SYNC_SUMMARY;
 }
 
@@ -2123,6 +2139,77 @@ function confirmBatch(){
 
 /* ============ duplicate page ============ */
 function dupNorm(v){return String(v==null?'':v).toLowerCase().replace(/[.,#]/g,' ').replace(/\s+/g,' ').trim();}
+/* v3.14.0 — the score is computed from live values, not read from a stored copy,
+   because a confirmed pair has to be re-judged when one side's identity moves.
+   addr1 token overlap 50 · postal 25 (a shared first five digits counts 0.8) ·
+   city 15 · state 10. The demo pair lands on exactly 75. */
+var DUP_MIN=75;
+function pairScore(a,b){
+  if(!a||!b)return 0;
+  var tok=function(x){return dupNorm(x).split(' ').filter(Boolean);};
+  var A=tok(a.addr1),B=tok(b.addr1);
+  var inter=0;
+  A.forEach(function(x){if(B.indexOf(x)>=0)inter++;});
+  var union={};A.concat(B).forEach(function(x){union[x]=1;});
+  var n=Object.keys(union).length;
+  var addr=n?inter/n:0;
+  var pa=dupNorm(a.postal),pb=dupNorm(b.postal);
+  var postal=(pa&&pb)?(pa===pb?1:(pa.slice(0,5)===pb.slice(0,5)?0.8:0)):0;
+  var same=function(x,y){return (x&&y&&dupNorm(x)===dupNorm(y))?1:0;};
+  return Math.round(addr*50+postal*25+same(a.city,b.city)*15+same(a.state,b.state)*10);
+}
+function idSnap(v){return {addr1:v.addr1,postal:v.postal,city:v.city,state:v.state};}
+/* ============ identity re-check ============
+   A confirmed pair is a statement about two records at a moment in time. It has
+   to be re-opened when the moment is gone — otherwise a 2:1 mapping outlives the
+   evidence for it, and a live store quietly becomes a blend of two shops. */
+function whoMoved(d){
+  var a=findVendor(d.locA),b=findVendor(d.locB);
+  if(!a)return b; if(!b)return a;
+  if(!d.atDecision)return b;
+  var sa=pairScore(d.atDecision.a,idSnap(a)), sb=pairScore(d.atDecision.b,idSnap(b));
+  return sa<=sb?a:b;                    /* the side that drifted away leaves */
+}
+function splitPair(d,leaver){
+  var oc=OC_LOCATIONS.filter(function(o){return o.vendorIds.indexOf(leaver.id)>=0;})[0];
+  if(!oc)return null;
+  var keeper=(leaver.id===d.locA)?findVendor(d.locB):findVendor(d.locA);
+  oc.vendorIds=oc.vendorIds.filter(function(x){return x!==leaver.id;});
+  oc.dup=oc.vendorIds.length>1;
+  oc.updated=nowStr();
+  var fresh=makeOC(leaver); fresh.intake='new'; OC_LOCATIONS.push(fresh);
+  d.status='split'; d.splitAt=nowStr(); d.newOc=fresh.ocId; d.splitScore=d.score; d.splitVendor=leaver.id;
+  log('OC','System · identity re-check','OC_DUPLICATE_SPLIT',d.pairId,'vendor_oc_mapping','2:1','1:1 · '+fresh.ocId,
+      d.score+'% match — '+leaver.id+' is no longer the same store as '+(keeper?keeper.id:'')+' · '+oc.ocId+' keeps '+(keeper?keeper.id:''));
+  return {oc:oc,fresh:fresh};
+}
+function recheckDuplicates(ids){
+  var out={split:[],pairs:[]};
+  DUPLICATES.filter(function(d){return d.status==='confirmed';}).forEach(function(d){
+    var a=findVendor(d.locA),b=findVendor(d.locB);
+    if(!a||!b)return;
+    d.score=pairScore(a,b);
+    if(d.score>=DUP_MIN)return;
+    var res=splitPair(d,whoMoved(d));
+    if(res)out.split.push(d.pairId);
+  });
+  (ids||[]).forEach(function(id){
+    var v=findVendor(id);
+    if(!v||v.status!=='active')return;
+    if(DUPLICATES.some(function(d){return (d.locA===id||d.locB===id)&&d.status!=='split';}))return;
+    var best=null;
+    VENDORS.forEach(function(o){
+      if(o.id===id||o.status!=='active')return;
+      var sc=pairScore(v,o);
+      if(sc>=DUP_MIN&&(!best||sc>best.score))best={o:o,score:sc};
+    });
+    if(!best)return;
+    DUPLICATES.push({pairId:'DUP-'+String(DUPLICATES.length+1).padStart(3,'0'),
+      locA:id,locB:best.o.id,status:'pending',score:best.score,diff:{},detectedAt:nowStr()});
+    out.pairs.push(id+' + '+best.o.id);
+  });
+  return out;
+}
 /* same · near (one string contains the other, e.g. a missing unit) · diff */
 function dupState(x,y){
   var a=dupNorm(x),b=dupNorm(y);
@@ -2148,8 +2235,11 @@ function renderDup(){
   var rows=DUPLICATES.filter(function(d){
     if(fid&&d.pairId.toLowerCase().indexOf(fid)<0)return false;
     if(st&&d.status!==st)return false;
+    var _a=findVendor(d.locA),_b=findVendor(d.locB);
+    if(!_a||!_b)return false;
+    d.score=pairScore(_a,_b);
     if(d.score<min)return false;
-    if(prov){var a=findVendor(d.locA),b=findVendor(d.locB);if(!(a.provider===prov||b.provider===prov))return false;}
+    if(prov&&!(_a.provider===prov||_b.provider===prov))return false;
     return true;
   });
   document.getElementById('d-result-meta').textContent=rows.length+' pair(s)';
@@ -2158,7 +2248,7 @@ function renderDup(){
     var ocA=OC_LOCATIONS.filter(function(o){return o.vendorIds.indexOf(d.locA)>=0;})[0];
     var ocB=OC_LOCATIONS.filter(function(o){return o.vendorIds.indexOf(d.locB)>=0;})[0];
     var done=d.status!=='pending';
-    var tag=d.status==='confirmed'?'same store · 2:1':d.status==='rejected'?'not same · 1:1':'needs decision';
+    var tag=d.status==='confirmed'?'same store · 2:1':d.status==='rejected'?'not same · 1:1':d.status==='split'?'different store · split':'needs decision';
     /* v3.6.0 — the pair is read side by side: A on the left, B on the right,
        one row per field, and the middle column says how the two relate. */
     var fields=[['Name',a.name,b.name],
@@ -2185,7 +2275,7 @@ function renderDup(){
       +'<th class="b"><span class="ab">B</span><b class="mono">'+esc(b.id)+'</b>'+provBadge(b.provider)+(ocB?'<span class="mono" style="color:var(--text-tertiary)">'+esc(ocB.ocId)+'</span>':'<span class="badge badge-orange">no OC ID</span>')+'</th>'
       +'</tr></thead><tbody>'+cmp+'</tbody></table>'
       +'<div class="rc-meta" style="margin:6px 0 0"><span>'+differ+' field(s) differ</span> · <span class="dup-same">✓ same · ≈ one contains the other · ✕ different</span></div>'
-      +(done?'<div class="rc-actions"><span class="rc-meta" style="margin:0">Resolved — see Change Log</span></div>'
+      +(done?'<div class="rc-actions"><span class="rc-meta" style="margin:0">'+(d.status==='split'?'Split — '+esc(d.splitVendor||'')+' moved to its own OC location '+esc(d.newOc||'')+' ('+d.splitScore+'% match at the re-check); '+esc(d.locA===d.splitVendor?d.locB:d.locA)+' kept this one':'Resolved — see Change Log')+'</span></div>'
         :'<div class="rc-actions"><button class="btn btn-primary btn-sm" onclick="resolveDup(\''+d.pairId+'\',\'confirmed\')">Same store (2:1)</button><button class="btn btn-secondary btn-sm" onclick="resolveDup(\''+d.pairId+'\',\'rejected\')">Not same (1:1 each)</button></div>')
       +'</div>';
   }).join(''):'<div class="card"><div style="font-size:13px">No pair matches these filters.</div></div>';
@@ -2198,6 +2288,10 @@ function resolveDup(pairId,res){
   var ocA=OC_LOCATIONS.filter(function(o){return o.vendorIds.indexOf(d.locA)>=0;})[0];
   if(res==='confirmed'){
     d.status='confirmed';
+    /* remember what "the same store" looked like, so a later change can be judged
+       against the evidence rather than against a stale score */
+    d.atDecision={score:pairScore(a,b),a:idSnap(a),b:idSnap(b),at:nowStr()};
+    d.score=d.atDecision.score;
     if(ocA){if(ocA.vendorIds.indexOf(d.locB)<0)ocA.vendorIds.push(d.locB);ocA.dup=true;ocA.updated=nowStr();}
     else{showToast('Cannot merge','No OC location exists for '+d.locA,'error');return;}
     log('OC',currentUser.name,'OC_LINK_CONFIRMED',pairId,'vendor_oc_mapping','pending','2:1',d.locA+' + '+d.locB+' → '+ocA.ocId);

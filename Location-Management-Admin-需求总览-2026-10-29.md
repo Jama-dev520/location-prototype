@@ -1,7 +1,7 @@
-# Location Management Admin Console — Requirement Overview (v3.13.0)
+# Location Management Admin Console — Requirement Overview (v3.14.0)
 
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
-> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.13.0)
+> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.14.0)
 > 给外部同事看的英文功能概览：https://jama-dev520.github.io/location-prototype/feature-overview.html
 > 演示视频（3 分 25 秒，36 条英文字幕，录的是 v3.8.0 —— 还没演 refresh，需要时再重录：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
@@ -210,7 +210,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | 19 | Duplicate (v3.0.0) | 独立 **Duplicate Check** 页；同一家 → 2:1 并在 OC 列表标出；不是同一家 → 1:1。未裁决的重复对阻塞启用 |
 | 20 | Merge priority (v3.0.0 → v3.13.0 改为整条记录) | 来源优先级 **M&MP（自营）→ LMS → PUDO Inc**。取值单位由「字段」改成「记录」，见决策 37 |
 | 21 | Drift (v3.0.0) | 签收后供应商改了值：下游直接用新值，台账显示「与基线不同」，运营可**重新签收**或**标记异常**。基线是参照物，不是冻结器 |
-| 37 | 整条记录供数 (v3.13.0) | 2:1 的店不再「逐字段拼」：**挑一条记录，它供全部字段**。以前 LMS 没填电话，就拿 PUDO 的补上 —— 界面看着完整，但「LMS 缺电话，谁去催」这个问题被系统自己回答成了「不用催，已经有值了」，于是 LMS 永远不会被要求补齐。<br>现在没填就是没填：OC 那一行显示 `—`，来源标 LMS，缺口留在能被看见、也就能被标出去的地方。选赢家仍然先看 **active**：LMS 下架，是**整店**交给 PUDO，而不是交一半。代价要说清：已上线的店可能出现 `—`，这是故意的 —— 宁可露缺口，也不要一家看起来完整、实际没人负责的店 |\n| 36 | 省市筛选 (v3.12.0) | 两个列表都加 **Province** / **City** 两个筛选，每个选项带实时条数。城市跟着州走：选 NY 只剩纽约那三个 —— 不做收窄的城市下拉就是一堵只会变长的名字墙。**切换州时会先清掉不属于新城范围的市**，否则表里会显示 0 行而下拉写着「全部」。供应商列表的城市列补上州（`Brooklyn, NY`）：能筛的东西得能在行上看见。CSV 表头统一叫 `Province`，背后仍是 `state` 列 |
+| 38 | 配对会被重读 (v3.14.0) | 2:1 是「这两条记录**在那一刻**是同一家店」的判断，但以前没人再读过它：分数是入池时存下的，决定是终态。现在分数**按现值算**，判定时**留一份快照**（分数 + 两条身份）；之后每次同步只要改了某条的身份（地址/城市/州/邮编），就重算它所在的配对：<br>· 仍 ≥75 → 保持 2:1，无需动作<br>· 掉到 75 以下 → **拆分**：**变的那条**退出去，另给一个 OC（默认不启用、要签收），另一条留着原 OC 和它签收时的身份<br>· 这条不在配对里 → 就是一次普通更新，值与漂移照旧<br>「变的那条走」而不是「优先级低的那条走」—— 因为失效的是它的主张。**注意**：OC 不因此改 ID；新 OC 建好后会立刻跟其他记录再判一次重，免得它一出生就是半个重复 |\n| 37 | 整条记录供数 (v3.13.0) | 2:1 的店不再「逐字段拼」：**挑一条记录，它供全部字段**。以前 LMS 没填电话，就拿 PUDO 的补上 —— 界面看着完整，但「LMS 缺电话，谁去催」这个问题被系统自己回答成了「不用催，已经有值了」，于是 LMS 永远不会被要求补齐。<br>现在没填就是没填：OC 那一行显示 `—`，来源标 LMS，缺口留在能被看见、也就能被标出去的地方。选赢家仍然先看 **active**：LMS 下架，是**整店**交给 PUDO，而不是交一半。代价要说清：已上线的店可能出现 `—`，这是故意的 —— 宁可露缺口，也不要一家看起来完整、实际没人负责的店 |\n| 36 | 省市筛选 (v3.12.0) | 两个列表都加 **Province** / **City** 两个筛选，每个选项带实时条数。城市跟着州走：选 NY 只剩纽约那三个 —— 不做收窄的城市下拉就是一堵只会变长的名字墙。**切换州时会先清掉不属于新城范围的市**，否则表里会显示 0 行而下拉写着「全部」。供应商列表的城市列补上州（`Brooklyn, NY`）：能筛的东西得能在行上看见。CSV 表头统一叫 `Province`，背后仍是 `state` 列 |
 | 35 | OC 只数挡路的 (v3.11.0) | OC 行的 Issues 列原来复制供应商那边的异常总数（提醒级也算），2:1 的店还要把两条记录加起来 —— 那是**供应商列表的问题**，而且几乎从来不是让人改变决定的那个数。现在只带 **blocking**，按后果命名；旁边三个 `drift` / `2:1` / `intake` 才是 OC 独有的。颜色也跟着语义走：**红=挡路，橙=要看一眼**（原来漂移是红的、阻塞是橙的，正好反了）。筛选从「有没有异常」变成三个理由：`Blocking data issue` / `Changed since sign-off` / `Duplicate 2:1`；`Intake overridden` 只留徽章 —— 数据里没有这种记录，一个永远筛出 0 行的选项比没有更糟 |
 | 34 | 一个 Source，不是两个 (v3.10.0) | 列表和筛选都只留一个 **Source**：`PUDOpoint (PUDO)`、`packagehub (LMS)`、`M&MP`（M&MP 不重复写两遍）。Type 列、Type 下拉级联、`type ≠ source` 徽章与筛选项一起下线 —— 不可能的组合不再是「被标出来」，而是拼不出来。`Locker` 仍是合法 PUDO 类型但本版不暴露（加回来只是 SOURCES 里一行）。**M&MP 的揽收方固定是 LMS**：店是我们的，揽收不是 —— 数据里没有 M&MP 这个揽收方，筛选里也没有这个选项 |
 | 33 | 供应商改完再拉一次 (v3.9.0) | 供应商列表加 **Refresh from providers**，补上闭环缺的那一脚：**标异常 → 导出 → 供应商改 → 我们拉一次**，不用等夜间同步。拉取只写供应商这次推来的值（沿用 v3.4.0：没有接受/拒绝），逐字段拿「标记那一刻的值」重判，**只有变合法**才自动关闭；不动 enable、不动签收、不动基线（所以 Viewer 不能点 —— 写值是操作员动作）。工具栏下留一行 **上次拉取 + run 号 + 关闭/更新/待人工 三个数**，空拉就明说「没有新数据」 |
@@ -242,7 +242,17 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 
 ![Operator Batch Disable](https://workbuddy-space-static.codebuddy.work/image/bRWhlIpawHygvuqvunNgMg.png)
 
-### 3.4 Sweeper 随同步进来（v3.0.0）
+### 3.4 Duplicate Check — 一次判定，每次同步重读（v3.14.0）
+
+![Duplicate Check 生命周期](https://workbuddy-space-static.codebuddy.work/image/tBzZJHSIMmxqwT8PzQKOfT.png)
+
+对应 §5.19 / §5.20：<br/>
+· **进来**：新记录或被改过的记录按现值打分（地址 50 · 邮编 25 · 城市 15 · 州 10），≥75 进待判定、**不生成 OC**；<br/>
+· **判定**：同一家 → 2:1（一个 OC，优先级高的那条供全部字段），并留快照；不是 → 各一个 OC；<br/>
+· **之后每次同步**：配对的某条身份变了就重算；掉下 75 → **变的那条退出**、另起一个 OC（默认不启用），另一条留在原 OC；<br/>
+· **不在配对里**的记录身份变了，就是普通更新 —— 这是第三轮「LMS 变了仍然对应 C」的原因。
+
+### 3.5 Sweeper 随同步进来（v3.0.0）
 
 sweeper 由供应商随门店一起提供，和其它字段一样只读。发现不对（没给、给了错的揽收方）→ 在供应商记录上**标记异常**，写明原因，推供应商改；下次同步把新值带进来。原「Sweeper 编辑」流程（flow3）已下线。
 
@@ -291,7 +301,7 @@ sweeper 由供应商随门店一起提供，和其它字段一样只读。发现
 | 验收标准（通俗版） | `Location-Management-Admin-验收标准-2026-10-29.md` | 中文 | 业务 / 测试 | 13 条快检、分页面清单、5 个故事、不该发生的事 |
 | **英文功能概览** | `feature-overview-en.html` / `Location-Management-Admin-Feature-Overview-EN.md` | 英文 | **外部同事** | 一页讲清做什么、为什么这样设计；可直接转发或打印 |
 | 交互原型 | `Location-Management-Admin-Prototype-2026-10-29.html` | 中英双语（右上角切换） | 全员 | 单文件高保真，覆盖 6 个菜单 + 详情 5 个标签页 |
-| 流程图 | `diagrams/flow1..11-*.png` | 英文 | 全员 | 11 张，2x 渲染，飞书可直接嵌入 |
+| 流程图 | `diagrams/flow1..12-*.png` | 英文 | 全员 | 12 张，2x 渲染，飞书可直接嵌入 |
 | 演示视频 | `Location-Management-Admin-Demo-2026-10-29.mp4` | 英文字幕 | 全员 | 3 分 25 秒、36 条字幕，按 v3.8.0 重录；十段：两层 → 详情 → 标记 → 列表与来源/类型 → 签收 → 重复 → 自动关闭 → 漂移 → 只读角色 → 中英切换 |
 
 **对外分享用哪一个**：给外国同事发 `feature-overview.html`（英文单页），需要展开细节时再给 PRD 和字段映射；中文团队内部用本文件 + 验收标准。

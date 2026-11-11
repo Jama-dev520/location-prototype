@@ -1,7 +1,7 @@
 # Location Management Admin Console — 功能验收标准（通俗版）
 
-> 版本 **v3.13.0** · 对照原型 https://jama-dev520.github.io/location-prototype/
-> 配套文档：PRD v3.13.0（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
+> 版本 **v3.14.0** · 对照原型 https://jama-dev520.github.io/location-prototype/
+> 配套文档：PRD v3.14.0（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
 > 对外（英文，给外国同事）：https://jama-dev520.github.io/location-prototype/feature-overview.html
 > 演示视频（3 分 25 秒，36 条英文字幕，按 v3.8.0 录制）：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 
@@ -55,7 +55,7 @@
 
 ---
 
-## 一、十分钟快检（只有 10 分钟就跑这 34 条）
+## 一、十分钟快检（只有 10 分钟就跑这 36 条）
 
 | # | 怎么做 | 应该看到 |
 |---|---|---|
@@ -93,6 +93,8 @@
 | 32 | 已选 Brooklyn，再把 Province 改成 TX | 城市自动清空、列表变成 TX 的 4 条 —— 不能出现「表里 0 行、下拉写着全部」；导出的表头是 `…,City,Province,Postal,…` |
 | 33 | Duplicate Check 确认那对 75% 的配对，回 OC 列表看 OC-00088 | 地址变成 `2918 Avenue I Ste 2`、邮编 `11210-2214`（整条来自 LMS）；进详情看 **Phone 是 `—`、来源标 LMS**，营业时间也是空 —— 不拿 PUDO 的补 |
 | 34 | 把 LMS 那条 `LOC-00186` 改成 inactive，再看同一家店 | 整行一次性换成 PUDO 的：地址 `2918 Avenue I`、邮编 `11210`、电话和营业时间都回来了 —— 全来自 PUDO，不是一部分 LMS 一部分 PUDO |
+| 35 | 先确认那对重复（2:1），再去 **Sync Status / Data Issues** 跑一次同步 | Duplicate 页那对变成 `different store · split`、分数掉到 10%；OC-00088 只剩 `LOC-00186` 并保留原地址；新出现一个 **OC-00127**（PUDO 那条，未启用、地址是 Poughkeepsie） |
+| 36 | 再改一次 `LOC-00186` 的地址 | 它已经不在任何配对里，所以只是普通更新：OC 编号不变、不新建 OC、详情页出现漂移 |
 
 这 16 条全对，模型就是通的。剩下的条目用来确认细节和边界。
 

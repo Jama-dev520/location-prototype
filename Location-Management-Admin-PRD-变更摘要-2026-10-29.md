@@ -1,6 +1,6 @@
-# Location Management Admin Console — PRD Change Summary (v3.13.0)
+# Location Management Admin Console — PRD Change Summary (v3.14.0)
 
-> Document version v3.13.0 ｜ Change date 2026-11-11 ｜ Status: Draft — pending review
+> Document version v3.14.0 ｜ Change date 2026-11-11 ｜ Status: Draft — pending review
 > 本轮（v3.0.0）是**模型换向**：OC 层不再改数据，只做两件事——**enable** 和 **标记异常**。所有数据以供应商为唯一来源，错的地方标记回去让供应商改；重复对单独成页；下游按字段合并，LMS 优先；M&MP 用同一套规则管同一份数据。
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
 > **验收标准（通俗版）**: `Location-Management-Admin-验收标准-2026-10-29.md`
@@ -464,6 +464,32 @@ https://jama-dev520.github.io/location-prototype/feature-overview.html
 - 片头片尾重做：片头标 `v3.3.0 / two layers · three sources / enable is a sign-off / a fix closes its own issue`；片尾四条地基换成 v3 的版本（数据只有供应商一个来源、没人处理就不变、下线容易上线要签收、修复能自证才自动关闭）。
 - 为了录制可读性，标记弹窗的严重度下拉文案从 `warning — live, but wrong for customers` 缩短为 `warning · live but wrong`（原来在 560px 弹窗里被截断）。纯文案，不改行为。
 
+## 二之二十二、v3.14.0：判定会被重读
+
+### 一条会过期的结论
+
+2:1 是「这两条记录**在那一刻**是同一家店」。可是在这之前：分数是入池时存下的一个数字，决定是终态（`resolveDup` 遇到非 pending 直接 return），之后的同步只往记录上写值。于是一个映射会比它依据的证据活得更久 —— 供应商把 02 改成了另一家店，系统仍然认为 01 和 02 是一家，OC 就一直由两条不同门店的记录供数。
+
+### 现在怎么重读
+
+1. **分数按现值算**（地址 token 重合 50 · 邮编 25，前五位相同算 0.8 · 城市 15 · 州 10），不再读存下来的 `score`；
+2. **判定时留快照**：分数 + 两条身份。快照就是以后判断「谁变了」的依据；
+3. **每次同步**只对「身份字段真的变了」的记录动手，重算它所在的配对；
+4. 掉到 75 以下 → **变的那条退出**，新 OC 默认不启用，另一条留在原 OC 并保留它签收时的身份；
+5. 新 OC 建好后立刻跟其他记录再判一次重，避免它一出生就是半个重复。
+
+### 为什么不是「优先级低的那条走」
+
+如果按优先级，LMS 永远留下、PUDO 永远走 —— 但失效的是**变了的那条的主张**。用例里 02 走了、01 留下，正好是用户说的第二轮；第三轮 01 再变时它已经不在配对里，那就是一次普通更新，OC 不变。
+
+### 一个故意的边界
+
+如果变的是 **OC 的锚点记录**（当初建这个 OC 的那条），OC 不改 ID、跟着新值走 —— 那是「门店身份变了」，不是重复问题，仍然只体现为漂移。这条留给 §5.20 那一类问题，不在本次范围。
+
+### 流程图
+
+补了 **flow12-duplicate-cycle**（`diagrams/`，2x PNG），把「进来 → 打分 → 判定 → 每次同步重读 → 拆分」画成一条线；需求总览 §3.4 与 PRD §5.20 都嵌了同一张。
+
 ## 二之二十一、v3.13.0：一条记录供整店
 
 ### 逐字段补值，补掉的是责任
@@ -698,6 +724,7 @@ v3.4.0 删掉的是「数据是否应用」，不是「门店是否上线」。�
 
 如果连签收也拿掉，入库一通过门店就自动上线，等于没有人确认客户会开到的那个地址。验收里也加了一条「不该发生」：把「不决定是否应用」误解成「不用签收」。
 
+| v3.14.0 | MINOR | 2026-11-11 | **配对会被重读**：配对分改成按现值计算（`pairScore`），判定时留快照；每次同步改动身份字段就重算该配对，掉到 75 以下则**拆分** —— 变的那条退出、另建一个默认不启用的 OC，另一条留着原 OC。新增 `OC_DUPLICATE_SPLIT` 日志、Duplicate 页新增 `split` 状态与筛选项；演示同步里加入 `LOC-12194` 的身份变更，用来演这条链路。补流程图 **flow12-duplicate-cycle** |
 | v3.13.0 | MINOR | 2026-11-11 | **整条记录供数**：2:1 的店铺由「逐字段取源」改成「挑一条记录，供全部字段」，赢家空着的字段保持为空，不再由另一家补。优先级与 active 过滤不变（M&MP → LMS → PUDO Inc）。演示数据里 LMS 那条没有电话和营业时间，确认 2:1 后这两项在 OC 上就是空的 —— 这正是要暴露的缺口 |
 | v3.12.0 | MINOR | 2026-11-11 | **省市筛选**：两个列表各加 Province / City 两个筛选，带实时条数，城市跟着州级联；切州时先清掉失效城市再重算。供应商列表城市列补上州。CSV 表头 `State` → `Province`（三处导出）。数据模型不变，`state` 列名不动 |
 | v3.11.0 | MINOR | 2026-11-10 | **OC 只数挡路的**：Issues 列由「供应商异常总数」改成「阻塞级 + OC 自身状态」（`n blocking` / `n drift` / `2:1` / `intake`）；颜色按语义重排（红=挡路，橙=看一眼）。筛选改成 `Blocking data issue` / `Changed since sign-off` / `Duplicate 2:1`，删掉「有没有异常」；`Intake overridden` 只留徽章。OC 导出拆成 `Blocking issues` + `Other open issues`。**数据模型零改动** |
