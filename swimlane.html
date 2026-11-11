@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Location 功能泳道图 · v3.14.0</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 34px 28px 46px; background: #F6F8FB; color: #0F172A;
+    font-family: -apple-system, "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1620px; margin: 0 auto; }
+  header { margin: 0 0 18px; }
+  h1 { font-size: 22px; letter-spacing: -.01em; margin: 0 0 6px; }
+  .sub { font-size: 13px; color: #64748B; line-height: 1.6; margin: 0; }
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; margin: 14px 0 16px; font-size: 12px; color: #475569; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: 0; }
+  .canvas { background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; padding: 6px 4px; overflow: auto; }
+  .canvas svg { display: block; max-width: 100%; height: auto; }
+  .notes { margin: 20px 0 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .note { background: #fff; border: 1px solid #E2E8F0; border-radius: 10px; padding: 13px 15px; }
+  .note b { display: block; font-size: 12.5px; margin-bottom: 5px; }
+  .note p { margin: 0; font-size: 12px; line-height: 1.65; color: #475569; }
+  footer { margin-top: 18px; font-size: 11.5px; color: #94A3B8; }
+  footer a { color: #2563EB; text-decoration: none; }
+  @media (max-width: 900px) { .notes { grid-template-columns: 1fr; } }
+  @media print {
+    body { background: #fff; padding: 0; }
+    .canvas { border: 0; }
+    .canvas svg { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Location 功能泳道图</h1>
+    <p class="sub">四条泳道 = 四个角色；五列 = 一条门店记录从进来到上线的五个阶段。箭头是主链路：供应商推 → 系统判 → 运营定 → 上线 → 值继续流动。</p>
+  </header>
+
+  <div class="legend">
+    <span><i style="background:#F59E0B"></i>供应商（PUDO Inc / LMS / M&amp;MP）</span>
+    <span><i style="background:#3B82F6"></i>系统（同步与规则）</span>
+    <span><i style="background:#10B981"></i>运营（Location Manager）</span>
+    <span><i style="background:#94A3B8"></i>下游（客户与路由）</span>
+    <span style="color:#94A3B8">虚线框 = 自动判定，没有人工入口</span>
+  </div>
+
+  <div class="canvas">
+<svg viewBox="0 0 1586 956" width="1586" height="956" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, 'Segoe UI', 'Microsoft YaHei', system-ui, sans-serif">
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B"/></marker>
+<marker id="ard" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#94A3B8"/></marker>
+</defs>
+<rect x="0" y="0" width="1586" height="956" fill="#FFFFFF"/>
+<rect x="128" y="74" width="288" height="870" fill="#FBFCFE"/>
+<text x="140" y="96" font-size="13.5" font-weight="700" fill="#0F172A">01 · 数据进来</text>
+<text x="140" y="113" font-size="10.5" fill="#94A3B8" letter-spacing="0.02em">sync · validate · score</text>
+<rect x="418" y="74" width="288" height="870" fill="#FFFFFF"/>
+<text x="430" y="96" font-size="13.5" font-weight="700" fill="#0F172A">02 · 判定与归属</text>
+<text x="430" y="113" font-size="10.5" fill="#94A3B8" letter-spacing="0.02em">one store or two</text>
+<rect x="708" y="74" width="288" height="870" fill="#FBFCFE"/>
+<text x="720" y="96" font-size="13.5" font-weight="700" fill="#0F172A">03 · 异常与催办</text>
+<text x="720" y="113" font-size="10.5" fill="#94A3B8" letter-spacing="0.02em">flag · export · re-pull</text>
+<rect x="998" y="74" width="288" height="870" fill="#FFFFFF"/>
+<text x="1010" y="96" font-size="13.5" font-weight="700" fill="#0F172A">04 · 上线（签收）</text>
+<text x="1010" y="113" font-size="10.5" fill="#94A3B8" letter-spacing="0.02em">the only decision</text>
+<rect x="1288" y="74" width="288" height="870" fill="#FBFCFE"/>
+<text x="1300" y="96" font-size="13.5" font-weight="700" fill="#0F172A">05 · 上线之后</text>
+<text x="1300" y="113" font-size="10.5" fill="#94A3B8" letter-spacing="0.02em">value flows · drift</text>
+<rect x="22" y="120" width="1542" height="150" fill="#FFF7E6" opacity="0.55"/>
+<line x1="22" y1="120" x2="1564" y2="120" stroke="#E2E8F0"/>
+<rect x="22" y="120" width="4" height="150" fill="#B45309"/>
+<text x="38" y="150" font-size="14" font-weight="700" fill="#B45309">供应商</text>
+<text x="38" y="167" font-size="10" fill="#94A3B8">Providers</text>
+<rect x="22" y="270" width="1542" height="250" fill="#EFF6FF" opacity="0.55"/>
+<line x1="22" y1="270" x2="1564" y2="270" stroke="#E2E8F0"/>
+<rect x="22" y="270" width="4" height="250" fill="#1D4ED8"/>
+<text x="38" y="300" font-size="14" font-weight="700" fill="#1D4ED8">系统</text>
+<text x="38" y="317" font-size="10" fill="#94A3B8">Console rules</text>
+<rect x="22" y="520" width="1542" height="250" fill="#ECFDF5" opacity="0.55"/>
+<line x1="22" y1="520" x2="1564" y2="520" stroke="#E2E8F0"/>
+<rect x="22" y="520" width="4" height="250" fill="#047857"/>
+<text x="38" y="550" font-size="14" font-weight="700" fill="#047857">运营</text>
+<text x="38" y="567" font-size="10" fill="#94A3B8">Location Manager</text>
+<rect x="22" y="770" width="1542" height="156" fill="#F8FAFC" opacity="0.55"/>
+<line x1="22" y1="770" x2="1564" y2="770" stroke="#E2E8F0"/>
+<rect x="22" y="770" width="4" height="156" fill="#475569"/>
+<text x="38" y="800" font-size="14" font-weight="700" fill="#475569">下游</text>
+<text x="38" y="817" font-size="10" fill="#94A3B8">Customers / routing</text>
+<path d="M 272.0 206.0 L 272.0 290.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
+<path d="M 272.0 354.0 L 272.0 374.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
+<path d="M 378.0 398.0 L 393.0 398.0 L 393.0 572.0 L 456.0 572.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
+<path d="M 562.0 604.0 L 562.0 290.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
+<path d="M 668.0 322.0 L 683.0 322.0 L 683.0 572.0 L 746.0 572.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
+<path d="M 852.0 604.0 L 852.0 628.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
+<path d="M 958.0 652.0 L 973.0 652.0 L 973.0 166.0 L 958.0 166.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
+<path d="M 852.0 190.0 L 852.0 290.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
+<path d="M 958.0 322.0 L 997.0 322.0 L 997.0 330.0 L 1036.0 330.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
+<path d="M 1142.0 370.0 L 1142.0 540.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
+<path d="M 1248.0 572.0 L 1248.0 800.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
+<path d="M 1432.0 190.0 L 1432.0 290.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
+<path d="M 1432.0 354.0 L 1311.0 354.0 L 1311.0 800.0 L 1432.0 800.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
+<path d="M 482.0 402.0 L 482.0 364.0" fill="none" stroke="#94A3B8" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#ard)"/>
+<rect x="166.0" y="142.0" width="212.0" height="64.0" rx="8" fill="#FFFFFF" stroke="#F59E0B" stroke-width="1.4"/>
+<text x="180.0" y="162.0" font-size="12.5" fill="#1E293B">推送门店数据</text>
+<text x="180.0" y="178.0" font-size="12.5" fill="#1E293B">新增 · 变更 · 下架</text>
+<text x="180.0" y="194.0" font-size="12.5" fill="#1E293B">PUDO Inc / LMS / M&amp;MP</text>
+<rect x="746.0" y="142.0" width="212.0" height="48.0" rx="8" fill="#FFFFFF" stroke="#F59E0B" stroke-width="1.4"/>
+<text x="760.0" y="162.0" font-size="12.5" fill="#1E293B">按清单修源头</text>
+<text x="760.0" y="178.0" font-size="12.5" fill="#1E293B">下次推送带上正确值</text>
+<rect x="1326.0" y="142.0" width="212.0" height="48.0" rx="8" fill="#FFFFFF" stroke="#F59E0B" stroke-width="1.4"/>
+<text x="1340.0" y="162.0" font-size="12.5" fill="#1E293B">上线后继续推值</text>
+<text x="1340.0" y="178.0" font-size="12.5" fill="#1E293B">或把记录下架</text>
+<rect x="166.0" y="290.0" width="212.0" height="64.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="180.0" y="310.0" font-size="12.5" fill="#1E293B">校验 + 算相似度</text>
+<text x="180.0" y="326.0" font-size="12.5" fill="#1E293B">地址 50 · 邮编 25</text>
+<text x="180.0" y="342.0" font-size="12.5" fill="#1E293B">城市 15 · 州 10</text>
+<rect x="166.0" y="374.0" width="212.0" height="48.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.4" stroke-dasharray="5 4"/>
+<text x="180.0" y="394.0" font-size="12.5" fill="#1E293B">≥75% 待判定，先不给 OC</text>
+<text x="180.0" y="410.0" font-size="12.5" fill="#1E293B">&lt;75% 直接生成 OC（1:1）</text>
+<rect x="456.0" y="290.0" width="212.0" height="64.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="470.0" y="310.0" font-size="12.5" fill="#1E293B">2:1：一个 OC</text>
+<text x="470.0" y="326.0" font-size="12.5" fill="#1E293B">由优先级最高的那条记录</text>
+<text x="470.0" y="342.0" font-size="12.5" fill="#1E293B">供全部字段，空的照空</text>
+<rect x="456.0" y="402.0" width="212.0" height="64.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.4" stroke-dasharray="5 4"/>
+<text x="470.0" y="422.0" font-size="12.5" fill="#1E293B">身份变了 → 重算配对</text>
+<text x="470.0" y="438.0" font-size="12.5" fill="#1E293B">&lt;75% 拆分：变的那条</text>
+<text x="470.0" y="454.0" font-size="12.5" fill="#1E293B">拿一个默认不启用的 OC</text>
+<rect x="746.0" y="290.0" width="212.0" height="64.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="760.0" y="310.0" font-size="12.5" fill="#1E293B">下次同步重判异常</text>
+<text x="760.0" y="326.0" font-size="12.5" fill="#1E293B">变了且合法 → 自动关闭</text>
+<text x="760.0" y="342.0" font-size="12.5" fill="#1E293B">（限缺失/格式/矛盾/超范围）</text>
+<rect x="1036.0" y="290.0" width="212.0" height="80.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="1050.0" y="310.0" font-size="12.5" fill="#1E293B">签收检查：5 个阻塞项</text>
+<text x="1050.0" y="326.0" font-size="12.5" fill="#1E293B">无 active 记录 · 缺营业时间</text>
+<text x="1050.0" y="342.0" font-size="12.5" fill="#1E293B">blocking 异常 · 待判定重复</text>
+<text x="1050.0" y="358.0" font-size="12.5" fill="#1E293B">入池校验被覆盖过</text>
+<rect x="1326.0" y="290.0" width="212.0" height="64.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="1340.0" y="310.0" font-size="12.5" fill="#1E293B">值直通下游，记漂移</text>
+<text x="1340.0" y="326.0" font-size="12.5" fill="#1E293B">（漂移只回答变了什么）</text>
+<text x="1340.0" y="342.0" font-size="12.5" fill="#1E293B">记录 inactive → OC 自动停用</text>
+<rect x="456.0" y="540.0" width="212.0" height="64.0" rx="8" fill="#FFFFFF" stroke="#10B981" stroke-width="1.4"/>
+<text x="470.0" y="560.0" font-size="12.5" fill="#1E293B">左右对照读一遍</text>
+<text x="470.0" y="576.0" font-size="12.5" fill="#1E293B">判「同一家 / 不是」</text>
+<text x="470.0" y="592.0" font-size="12.5" fill="#1E293B">同一家 = 2:1，否则 1:1</text>
+<rect x="746.0" y="540.0" width="212.0" height="64.0" rx="8" fill="#FFFFFF" stroke="#10B981" stroke-width="1.4"/>
+<text x="760.0" y="560.0" font-size="12.5" fill="#1E293B">标记异常</text>
+<text x="760.0" y="576.0" font-size="12.5" fill="#1E293B">字段 → 子字段 → 7 类</text>
+<text x="760.0" y="592.0" font-size="12.5" fill="#1E293B">→ 阻塞 / 提醒</text>
+<rect x="746.0" y="628.0" width="212.0" height="48.0" rx="8" fill="#FFFFFF" stroke="#10B981" stroke-width="1.4"/>
+<text x="760.0" y="648.0" font-size="12.5" fill="#1E293B">导出 CSV 发给供应商</text>
+<text x="760.0" y="664.0" font-size="12.5" fill="#1E293B">（带店名地址，不只单号）</text>
+<rect x="1036.0" y="540.0" width="212.0" height="64.0" rx="8" fill="#FFFFFF" stroke="#10B981" stroke-width="1.4"/>
+<text x="1050.0" y="560.0" font-size="12.5" fill="#1E293B">勾选 + 启用并签收</text>
+<text x="1050.0" y="576.0" font-size="12.5" fill="#1E293B">记基线；下线永远一键</text>
+<text x="1050.0" y="592.0" font-size="12.5" fill="#1E293B">不需要任何审批</text>
+<rect x="166.0" y="800.0" width="792.0" height="32.0" rx="8" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
+<text x="180.0" y="820.0" font-size="12.5" fill="#1E293B">签收之前：客户看不到这家店 —— 数据异常不会把它「推上线」，只有签收会。这也是为什么异常再多，也不影响已经上线的那批店</text>
+<rect x="1036.0" y="800.0" width="502.0" height="32.0" rx="8" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
+<text x="1050.0" y="820.0" font-size="12.5" fill="#1E293B">签收之后：可见 —— 客户拿到的永远是当前值；OC 停用或记录下架就消失</text>
+</svg>
+  </div>
+
+  <div class="notes">
+    <div class="note">
+      <b>只有两个动作是人做的</b>
+      <p>启用（签收）和标记异常。没有编辑框 —— 地址错了不是拿键盘盖掉，是标给拥有这条记录的人去改。</p>
+    </div>
+    <div class="note">
+      <b>值永远往下走，判断永远留给人</b>
+      <p>供应商推来的值直接给下游；控制台不决定「应用不应用」，只决定「标不标、催不催、上不上线」。</p>
+    </div>
+    <div class="note">
+      <b>一条记录供整店，异常不拦展示</b>
+      <p>2:1 时由优先级最高的那条供全部字段（空的也照空）；数据异常只影响能不能签收，不影响已经上线的店。</p>
+    </div>
+  </div>
+
+  <footer>
+    对应原型 v3.14.0 ·
+    <a href="https://jama-dev520.github.io/location-prototype/" target="_blank" rel="noopener">jama-dev520.github.io/location-prototype</a>
+    · 细分流程见 <code>diagrams/flow12-duplicate-cycle.png</code>
+  </footer>
+</div>
+</body>
+</html>
