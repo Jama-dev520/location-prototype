@@ -1,7 +1,7 @@
-# Location Management Admin Console — Requirement Overview (v3.10.1)
+# Location Management Admin Console — Requirement Overview (v3.11.0)
 
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
-> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.10.1)
+> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.11.0)
 > 给外部同事看的英文功能概览：https://jama-dev520.github.io/location-prototype/feature-overview.html
 > 演示视频（3 分 25 秒，36 条英文字幕，录的是 v3.8.0 —— 还没演 refresh，需要时再重录：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
@@ -210,6 +210,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | 19 | Duplicate (v3.0.0) | 独立 **Duplicate Check** 页；同一家 → 2:1 并在 OC 列表标出；不是同一家 → 1:1。未裁决的重复对阻塞启用 |
 | 20 | Merge priority (v3.0.0) | 同一条 OC 记录逐字段取源：**M&MP（自营）→ LMS → PUDO Inc 依次取，先有值的赢**。详情页与列表都标出来源 |
 | 21 | Drift (v3.0.0) | 签收后供应商改了值：下游直接用新值，台账显示「与基线不同」，运营可**重新签收**或**标记异常**。基线是参照物，不是冻结器 |
+| 35 | OC 只数挡路的 (v3.11.0) | OC 行的 Issues 列原来复制供应商那边的异常总数（提醒级也算），2:1 的店还要把两条记录加起来 —— 那是**供应商列表的问题**，而且几乎从来不是让人改变决定的那个数。现在只带 **blocking**，按后果命名；旁边三个 `drift` / `2:1` / `intake` 才是 OC 独有的。颜色也跟着语义走：**红=挡路，橙=要看一眼**（原来漂移是红的、阻塞是橙的，正好反了）。筛选从「有没有异常」变成三个理由：`Blocking data issue` / `Changed since sign-off` / `Duplicate 2:1`；`Intake overridden` 只留徽章 —— 数据里没有这种记录，一个永远筛出 0 行的选项比没有更糟 |
 | 34 | 一个 Source，不是两个 (v3.10.0) | 列表和筛选都只留一个 **Source**：`PUDOpoint (PUDO)`、`packagehub (LMS)`、`M&MP`（M&MP 不重复写两遍）。Type 列、Type 下拉级联、`type ≠ source` 徽章与筛选项一起下线 —— 不可能的组合不再是「被标出来」，而是拼不出来。`Locker` 仍是合法 PUDO 类型但本版不暴露（加回来只是 SOURCES 里一行）。**M&MP 的揽收方固定是 LMS**：店是我们的，揽收不是 —— 数据里没有 M&MP 这个揽收方，筛选里也没有这个选项 |
 | 33 | 供应商改完再拉一次 (v3.9.0) | 供应商列表加 **Refresh from providers**，补上闭环缺的那一脚：**标异常 → 导出 → 供应商改 → 我们拉一次**，不用等夜间同步。拉取只写供应商这次推来的值（沿用 v3.4.0：没有接受/拒绝），逐字段拿「标记那一刻的值」重判，**只有变合法**才自动关闭；不动 enable、不动签收、不动基线（所以 Viewer 不能点 —— 写值是操作员动作）。工具栏下留一行 **上次拉取 + run 号 + 关闭/更新/待人工 三个数**，空拉就明说「没有新数据」 |
 | 31 | 类型带来源 (v3.8.0) | 供应商列表原来的 Provider 列并进 Type，写成 `packagehub (LMS)` —— 一句话说清「是什么」和「谁的数」。**Source 筛选保留**：它驱动类型级联（选 LMS 只剩 packagehub）和合并优先级（2:1 时 LMS 优先），删了筛选就断了两条规则。2:1 门店显示 `(LMS / PUDO)`，顺序就是合并优先级 |
@@ -310,11 +311,12 @@ sweeper 由供应商随门店一起提供，和其它字段一样只读。发现
 | **一个来源**（v3.10.0，原「来源决定类型」v3.2.0） | `packagehub (LMS)` · `PUDOpoint (PUDO)` · `M&MP` —— 类型是值、归属是括号，列表一列、筛选一项，没有需要同步的第二个下拉 |
 | **去重** | 独立 Duplicate Check 页；≥75% 疑似；**未裁决阻塞启用**；确认 2:1 后两条记录喂一条 OC 记录 |
 | **异常** | 四层粒度（字段 → 子字段 → 7 类 → 严重度）；`blocking` 阻塞签收、`warning` 不阻塞；open → reported → fixed |
+| **OC 列表数什么**（v3.11.0） | 只数**阻塞级**（`n blocking`），加上三个 OC 自己的状态：`n drift`（签收后变化）、`2:1`、`intake`。**不再显示供应商的异常总数** —— 那是供应商列表的问题；提醒级不进这个决定。筛选跟着变成三个理由：阻塞 / 签收后变化 / 重复 2:1 |
 | **签收即基线** | 5 项检查 + 核对客户可见值 + 必须勾选；记基线，写 `ENABLE_SIGNED_OFF` |
 | **签收后漂移** | 上游改动照常生效；与基线比对显示 drift；**重新签收**或**标记异常**，都不改值 |
 | **修复后自动关闭**（v3.3.0） | 同步带来「变了且合格」的值 → issue 自动 fixed；变了但还不合格 → 保持 open 并记下尝试值 |
 | **QR code dropoff**（v3.8.0 恢复） | 供应商列表加 `QR` 列：LMS 且支持扫码投递的显示徽章，其余显示 `—`；详情页 Basic Info 也有这一项。只会出现在 LMS（PUDO 不暴露这个能力） |
-| **异常清单可导出**（v3.4.0） | Data Issues 顶部 `Export open issues (CSV)`：字段·子字段·类型·严重度·原因，直接贴进给供应商的工单；OC 列表导出带「未关闭异常数 / 签收后变化数」两列。**v3.7.0 起每行还带门店本身**：店名、地址、城市、州、邮编、来源、类型 —— 供应商拿到 CSV 就知道是哪家店，不用再回查单号 |
+| **异常清单可导出**（v3.4.0） | Data Issues 顶部 `Export open issues (CSV)`：字段·子字段·类型·严重度·原因，直接贴进给供应商的工单；OC 列表导出带「阻塞级异常数 / 其余未关闭数 / 签收后变化数」三列（v3.11.0 拆开：单元格里的 `3 blocking 2 drift` 进表格没法算）。**v3.7.0 起每行还带门店本身**：店名、地址、城市、州、邮编、来源、类型 —— 供应商拿到 CSV 就知道是哪家店，不用再回查单号 |
 | **审计** | 每个动作一条：谁、何时（到秒）、字段、旧值 → 新值 |
 | **兜底原则** | 没人处理 → 不启用 / 保持旧值 / 不生成 OC ID，绝不自动接受错值 |
 | **交付页面** | Vendor List · OC List · Duplicate Check · Data Issues · Change Log · Sync Status + 详情（5 tab） |

@@ -1,7 +1,7 @@
 # Location Management Admin Console — 功能验收标准（通俗版）
 
-> 版本 **v3.10.1** · 对照原型 https://jama-dev520.github.io/location-prototype/
-> 配套文档：PRD v3.10.1（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
+> 版本 **v3.11.0** · 对照原型 https://jama-dev520.github.io/location-prototype/
+> 配套文档：PRD v3.11.0（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
 > 对外（英文，给外国同事）：https://jama-dev520.github.io/location-prototype/feature-overview.html
 > 演示视频（3 分 25 秒，36 条英文字幕，按 v3.8.0 录制）：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 
@@ -55,7 +55,7 @@
 
 ---
 
-## 一、十分钟快检（只有 10 分钟就跑这 28 条）
+## 一、十分钟快检（只有 10 分钟就跑这 30 条）
 
 | # | 怎么做 | 应该看到 |
 |---|---|---|
@@ -87,6 +87,8 @@
 | 26 | 再点一次 Refresh | 回执变成「没有新数据」，toast 说明三家供应商返回的是同一批 —— 不会假装又关了什么东西；切成 Viewer 再点，按钮拒绝并提示需要管理员 |
 | 27 | 看两个列表的列与筛选 | 只有一个 **Source** 列：`PUDOpoint (PUDO)`、`packagehub (LMS)`、`M&amp;MP`（M&amp;MP 不带括号重复）；没有 Type 列、没有 `synced` 小标、没有 `type ≠ source` 徽章；Source 下拉就是这三个值 + 计数 |
 | 28 | Source 选 M&amp;MP，再看揽收方 | 两家自营店的揽收方都是 **LMS**；揽收方筛选里没有 M&amp;MP 选项 |
+| 29 | OC 列表随便看几个 Issues 单元格 | 只出现 `n blocking` / `n drift` / `2:1` / `intake`，**不再有 `n data`**；OC-00089 有 3 条未关闭异常，但格子只写 `1 blocking`（另两条是提醒级） |
+| 30 | Issues 筛选依次选三项，再导出 CSV | 三个选项各返回对应行（阻塞 6 行 / 签收后变化 6 行 / 2:1 需先在重复页确认）；导出表头是 `Blocking issues` + `Other open issues` 两列，相加等于该行的未关闭总数 |
 
 这 16 条全对，模型就是通的。剩下的条目用来确认细节和边界。
 
