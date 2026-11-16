@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v3.14.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v4.0.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -369,6 +369,22 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
 @keyframes pn-pulse{0%,100%{opacity:.2}50%{opacity:1}}
 /* the help mark belongs to the filter, so it has to sit inside an 11px label */
 .f-label .help-dot{width:12px;height:12px;font-size:9px;line-height:12px;margin-left:5px;vertical-align:-2px}
+
+
+/* ===== v4.0.0 — duplicate check: weights, keep picker, mapping table ===== */
+.w-chip{display:inline-block;min-width:16px;margin-left:6px;padding:0 4px;border-radius:4px;
+  background:#EEF2F7;color:#64748B;font:600 9.5px/15px var(--font-mono);text-align:center;vertical-align:1px}
+select.mini-select{height:26px;padding:0 6px;border:1px solid #CBD5E1;border-radius:6px;background:#fff;
+  font:500 11.5px/24px inherit;color:var(--text-primary);margin-right:2px}
+table.data.mapping td{font-size:12px;vertical-align:middle}
+table.data.mapping th{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-tertiary)}
+table.data.mapping tr td:first-child{width:44px}
+.rc-item[data-label="MEDIUM"]{border-left:3px solid var(--color-warning)}
+.rc-item[data-label="HIGH"]{border-left:3px solid var(--color-danger)}
+/* neutral rows: a field that carries no weight must not look like a mismatch */
+table.dup-cmp tr.st-flat td{background:transparent;color:var(--text-secondary)}
+table.dup-cmp tr.st-flat td.m .flat-dot{color:#CBD5E1;font-weight:700}
+table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 </style>
 </head>
 <body>
@@ -376,7 +392,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v3.14.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v4.0.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -401,7 +417,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v3.14.0</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v4.0.0</span></div>
       </div>
     </div>
 
@@ -500,23 +516,26 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
         </div>
       </div>
 
-      <div class="page" id="page-pdup">
+            <div class="page" id="page-pdup">
         <h2 class="page-title">Duplicate Check</h2>
-        <p class="page-desc" data-i18n="pdup.desc">A standalone page for one question only: <b>are these two vendor locations the same store?</b> Pairs are detected by fuzzy match (address 50 · postal 25 · city 15 · state 10, threshold 75%). The two records are shown <b>side by side</b>, one row per field, with the differing part of each value marked, so the decision is read off the screen. The decision decides the mapping — <b>same store = 2:1</b> (two vendor records, one OC location, the higher-priority record supplies every field), <b>not the same = 1:1</b> (each gets its own OC location). And the decision is <b>re-read on every sync</b>: if one side&rsquo;s identity moves so that the pair no longer scores, that record leaves, gets its own OC location (off by default), and the other keeps the original one. Every OC location that is fed by more than one vendor record is marked <b>2:1</b> in the OC list.</p>
+        <p class="page-desc" data-i18n="pdup.desc">Two layers, one question each. <b>Station layer:</b> are these two records the same physical station? The score is <b>binary</b> — address 40 · name 10 · postal 25 · province 15 · city 10, a field counts in full or not at all — and coordinates run beside it as an <b>evidence channel</b>, never as points: ≤30 m is the same point, 30–100 m is a grey zone for a human, &gt;100 m is a different place. That produces <b>HIGH_SUSPECT</b> or <b>MEDIUM_SUSPECT</b>, nothing else. <b>Mapping layer:</b> which OC location does a <b>source_key</b> map to, and what happens when that source's identity moves — <b>one source at a time, never the pair</b>. Nothing merges, disables or blocks by itself.</p>
 
         <div class="card">
           <div class="filter-grid">
             <div><label class="f-label">Pair ID</label><input id="d-f-id" placeholder="e.g. DUP-001" oninput="renderDup()"></div>
-            <div><label class="f-label">Provider</label><select id="d-f-provider" onchange="renderDup()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
-            <div><label class="f-label">Status</label><select id="d-f-status" onchange="renderDup()"><option value="">All</option><option value="pending">Pending</option><option value="confirmed">Same store (2:1)</option><option value="rejected">Not same (1:1)</option><option value="split">Split after a change</option></select></div>
-            <div><label class="f-label">Min score</label><select id="d-f-score" onchange="renderDup()"><option value="0">All</option><option value="75">75%+</option><option value="85">85%+</option></select></div>
+            <div><label class="f-label">Label</label><select id="d-f-label" onchange="renderDup()"><option value="">All</option><option value="HIGH">HIGH_SUSPECT</option><option value="MEDIUM">MEDIUM_SUSPECT</option></select></div>
+            <div><label class="f-label">Provider</label><select id="d-f-provider" onchange="renderDup()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option><option>M&amp;MP</option></select></div>
+            <div><label class="f-label">Status</label><select id="d-f-status" onchange="renderDup()"><option value="">All</option><option value="pending">Needs review</option><option value="merged">Merged</option><option value="separate">Kept apart</option><option value="fix">Address to fix</option><option value="moved">Moved by a mapping change</option></select></div>
           </div>
           <div class="filter-actions">
             <button class="btn btn-secondary" onclick="resetDupFilters()">Reset</button>
           </div>
-          <div class="toolbar"><span class="result-meta" id="d-result-meta"></span></div>
+          <div class="toolbar"><span class="result-meta" id="d-result-meta"></span><span class="rc-meta" style="margin:0">labels are suggestions · nothing is auto-merged, auto-disabled or blocked</span></div>
           <div id="d-body"></div>
         </div>
+
+        <h3 class="sub-head" data-i18n="map.head">Mapping changes — source_key → OC location</h3>
+        <div id="m-body"></div>
       </div>
 
       <div class="page" id="page-pdi">
@@ -639,7 +658,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v3.14.0 (one record, and a pair that can split)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v4.0.0 (labels, not percentages)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -648,7 +667,7 @@ table.dup-cmp tr.st-near mark.df{background:#FEF0C7;color:#B54708}
         <tr><td>3</td><td>OC List</td><td>Read the Source column</td><td data-i18n="walk.3.exp">One value per record — <b>packagehub (LMS)</b>, <b>PUDOpoint (PUDO)</b>, <b>M&amp;MP</b>; a 2:1 store shows both owners, merge order first</td></tr>
         <tr><td>4</td><td>OC Detail</td><td>Basic Info → each field carries its source</td><td>LMS wins the field when LMS has a value, PUDO fills the rest</td></tr>
         <tr><td>5</td><td>OC List</td><td>Enable a ready location</td><td>Sign-off checklist · baseline captured · no data edited</td></tr>
-        <tr><td>6</td><td>Duplicate Check</td><td>Read the pair left to right, then confirm "same store"</td><td>Two columns, one row per field: ✓ same, ≈ one contains the other, ✕ different — then 2:1, and one record becomes the single source of every value</td></tr>
+        <tr><td>6</td><td>Duplicate Check</td><td>Read the pair, then pick the keeper</td><td>Two columns, one row per judged field, a binary ✓ or ✕ — same station disables the other and marks merged_into, different stations keep both</td></tr>
         <tr><td>7</td><td>Data Issues</td><td>The four checks, then the issues split by nature; click the ?</td><td>Missing critical fields (nothing arrived) above Inaccurate data (a value is wrong) · the ? explains what blocks and what closes itself</td></tr>
         <tr><td>8</td><td>Data Issues</td><td>Open a drifted location</td><td>See which fields moved since sign-off; downstream already has the new values — drift is information, not a decision</td></tr>
         <tr><td>9</td><td>OC List</td><td>Filter Source = M&amp;MP</td><td>Self-operated stores follow the same rules: same sign-off, same issue ledger — only the data owner differs</td></tr>
@@ -1047,6 +1066,48 @@ var I18N_ZH = {
   "A pull writes provider values — that needs the Location Manager role.":"拉取会写入供应商的值 —— 这需要门店管理员角色。",
   "Export CSV, then click “Refresh from providers”":"先导出 CSV，再点“从供应商重新拉取”",
   "Two issues close on the spot (the value changed <b>and</b> is valid), one stays open as “changed but still invalid”, one goes back to a human, one is untouched — and the last-pull line keeps the time, the run id and the three counts":"两条当场自动关闭（值变了<b>并且</b>合法），一条保持未关闭并注明“值变了但仍不合法”，一条回到人工，一条没动 —— 而上次拉取那行留下了时间、run 号和三个计数",
+  /* ---- v4.0.0: duplicate check ---- */
+  "Label":"标签",
+  "Needs review":"待复核",
+  "Merged":"已合并",
+  "Kept apart":"各自保留",
+  "Address to fix":"地址待纠正",
+  "Moved by a mapping change":"已按映射变更迁走",
+  "moved · mapping changed":"已迁走 · 映射变更",
+  "needs review":"待复核",
+  "merged · merged_into":"已合并 · merged_into",
+  "separate · same address":"各自保留 · 同址",
+  "address to fix":"地址待纠正",
+  "text ":"文本 ",
+  "coords missing":"坐标缺失",
+  "Suggested keep:":"建议保留：",
+  "keep":"保留",
+  "Same station — disable the other":"同一站点（另一条停用）",
+  "Not the same — keep both":"不是同一家（各自保留）",
+  "Address is wrong":"地址有误",
+  "higher":"更高",
+  "Mapping changes — source_key → OC location":"映射变更 —— source_key → OC 位置",
+  "Round":"轮次",
+  "Changed":"变更字段",
+  "Old OC":"原 OC",
+  "New OC":"新 OC",
+  "Basis":"判定依据",
+  "Confirm — new OC":"确认（分配新 OC）",
+  "Review":"人工复核",
+  "both sides changed":"双方同时变更",
+  "effective":"已生效",
+  "needs confirmation":"待确认",
+  "labels are suggestions · nothing is auto-merged, auto-disabled or blocked":"标签只是建议 · 不自动合并、不自动停用、不拦截",
+  "Source key":"来源标识",
+  "Station name":"站点名称",
+  "Address":"地址",
+  "City":"城市",
+  "Province":"州 / 省",
+  "Postal (Zip5)":"邮编（Zip5）",
+  "no OC":"无 OC",
+  "Created":"建档时间",
+  "Status":"状态",
+  "(suggested)":"（建议）",
   /* ---- table heads / placeholders / titles ---- */
   "Page":"页面",
   "Action":"操作",
@@ -1090,6 +1151,8 @@ var I18N_ZH = {
   "Enable a ready location":"启用一家已就绪的门店",
   "Sign-off checklist · baseline captured · no data edited":"签收检查清单 · 记录基线 · 不改任何数据",
   "Confirm the pending pair as \"same store\"":"把待判定的配对确认为“同一门店”",
+  "Read the pair, then pick the keeper":"左右对照读一遍，然后选保留哪条",
+  "Two columns, one row per judged field, a binary ✓ or ✕ — same station disables the other and marks merged_into, different stations keep both":"两列并排、每个计分字段一行，只有 ✓ 或 ✕ —— 同一站点则停用另一条并标 merged_into；不同站点则两条都留",
   "Read the pair left to right, then confirm \"same store\"":"左右对照着看，然后确认“同一家店”",
   "Two columns, one row per field: ✓ same, ≈ one contains the other, ✕ different — then 2:1 mapping and LMS values on the OC row":"两列并排、每行一个字段：✓ 相同、≈ 一个包含另一个、✕ 不同 —— 之后是 2:1 映射，OC 行取值切到 LMS",
   "The three checks at the top, then the three sections":"先看顶部三个必查项，再看三个分区",
@@ -1107,7 +1170,7 @@ var I18N_ZH = {
 var I18N_BLOCK = {
   "p01.desc":"<b>只有一个来源，不是两个</b> —— 类型和归属一起写在同一个字段：<b>PUDOpoint (PUDO)</b>、<b>packagehub (LMS)</b>、<b>M&amp;MP</b>。既然两者合成一个字段，“不可能的组合”就不再是筛选能搭出来的东西。这里是供应商实际推过来的内容，<b>所有字段只读</b>，包括<b>揽收方</b>，它现在随每日同步一起进来。<b>M&amp;MP</b> 是自营店，责任方是门店本身而不是某个供应商 —— 揽收方固定是 <b>LMS</b>。发现值不对，我们不在这一层改：我们<b>带着原因标记它</b>，标记挂在这条记录上，由供应商去修源头。OC 层只决定这家店是否上线。",
   "p02.desc":"<b>只有一个来源：</b><b>packagehub (LMS)</b> · <b>PUDOpoint (PUDO)</b> · <b>M&amp;MP</b> —— 它是什么、谁拥有，一个字段说完。客户看到的就是这条记录。<b>只有两个动作：启用、标记异常。</b>这里不能改数据 —— 地址错了不是拿键盘盖掉，是标给供应商去改。值<b>按记录整条取，不是逐字段拼</b>：<b>M&amp;MP</b>（自营）优先，其次 <b>LMS</b>；谁赢，这条店就整条由谁供数，<b>包括它空着的字段</b>。赢的那条没有电话，电话就是空的 —— 拿另一家补上，等于把「该催谁」这件事藏起来了。",
-  "pdup.desc":"只问一个问题 —— <b>这两条供应商门店是不是同一家</b>？重复对由模糊匹配找出（地址 50 · 邮编 25 · 城市 15 · 州 10，阈值 75%），两条记录<b>左右并排</b>、一个字段一行，只标出不一样的那段文字，判定是把眼睛放在屏幕上读出来的。判定决定映射 —— <b>同一家 = 2:1</b>（两条记录喂一个 OC，由优先级高的那条供全部字段），<b>不是同一家 = 1:1</b>（各得一个 OC）。而且这个判定<b>每次同步都会重读一遍</b>：只要一方的身份变了、配对分掉到 75% 以下，变的那条就退出去、单独拿一个 OC（默认不启用），另一条留着原来的。凡是挂了两条以上供应商记录的 OC，列表里都标 <b>2:1</b>。",
+  "pdup.desc":"两层，各问一个问题。<b>站点层：</b>这两条记录是不是同一个物理站点？打分是<b>二分制</b> —— 地址 40 · 名称 10 · 邮编 25 · 州 15 · 城市 10，每个字段要么全等拿满分、要么 0 分 —— 坐标在旁边作为<b>证据通道</b>，不并入分数：≤30 m 视为同一物理点位，30–100 m 是灰区、交给人判断，&gt;100 m 视为不同点位。结果只有 <b>HIGH_SUSPECT</b> 或 <b>MEDIUM_SUSPECT</b>。<b>映射层：</b>一个 <b>source_key</b> 对应哪个 OC 位置，以及它的身份变化后该怎么走 —— <b>一次只看一个来源，绝不按一对处理</b>。任何标签都不会自动合并、自动停用或拦截订单。",
   "pdi.desc":"所有数据问题集中在一个台账里 —— <b>没有审核队列</b>。顶部先给运营每天在追的<b>四项检查</b> —— <b>地址信息不全</b>、<b>缺少邮编</b>、<b>没有营业时间</b>、<b>某天营业不足 3 小时</b> —— 各自按未关闭异常计数，点一下就能筛出这一类。往下是三类：我们已经请供应商修的、签收之后变了的（只是信息，不是待决策），以及从来没通过入池校验的。这里不决定任何值是否被应用 —— <b>供应商的值永远给到下游</b>。标记异常是我们提要求的方式，下一次推送是它落地的方式。<b>导出清单</b>就可以发给供应商。",
   "p03.desc":"两个层级上的每一次创建、同步写入、标记、判定和签收都在这里。可按层级和类型筛选。",
   "p04.desc":"每一次供应商同步一行。触发熔断的那一次会停止下发，等人工处理。",
@@ -1130,9 +1193,18 @@ var I18N_BLOCK = {
   "help.close":"下一次供应商推送带来的值<b>变了且合法</b>时，异常会自己关闭 —— 但只限缺失 / 格式 / 前后矛盾 / 超出范围。错误、过期、重复永远回到人工。",
   "help.oc":"OC 列表那个筛选混了两类东西：从供应商记录借来的<b>阻塞级数据异常</b>，以及<b>门店记录自身的状态</b> —— 签收后变化、重复 2:1（入池覆盖只作为徽章出现，不进筛选）。只有阻塞级会被带到行上：提醒级是供应商的活儿，不是启用的判据。",
   "help.checks":"顶部那几个格子只是把同一份清单按字段切开，方便每天干活 —— 一条异常属于哪一格由字段决定，不靠人手选。",
+  "map.head":"映射变更 —— source_key → OC 位置",
+  "dup.hint":"地址 40 · 名称 10 · 邮编 25 · 州 15 · 城市 10 —— 清洗后全等拿满分，否则 0。坐标是证据不是分数：≤30 m 同一物理点位、30–100 m 灰区、&gt;100 m 不同点位。",
+  "dup.recs":"条记录在同一地址",
+  "dup.cluster":"条记录在同一地址 —— 簇",
+  "dup.detected":"检测于",
+  "dup.keep":"建议保留：",
+  "dup.keeprule":"规则：建档更早 —— is_primary 全都为 1、单量字段还没接",
+  "map.empty":"还没有映射变更。只有当某条记录参与了判定的字段发生变化、且它和另一条记录共用一个 OC 时，才会生成一条建议 —— 一次只看一个来源，绝不按整对处理。",
+  "map.rules":"M2 · 只重判发生变更的那个来源 &nbsp;·&nbsp; M3 · 分配新 OC，旧映射进历史 &nbsp;·&nbsp; M4 · 未变更的一方绝不动 &nbsp;·&nbsp; M5 · 没人确认就不落库 &nbsp;·&nbsp; M6 · 两边在同一次推送里都变了 → 进人工",
   "dup.vs":"对比",
   "pull.hint":"标记 → 导出 → 供应商修正 → 再拉一次",
-  "wt.title":"演示脚本 —— v3.14.0（一条记录供整店、配对可拆）"
+  "wt.title":"演示脚本 —— v4.0.0（标签取代百分比）"
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
@@ -1157,6 +1229,7 @@ var I18N_RULES = [
   [/^OC location: (.+) vs (.+)$/, "OC 门店：$1 对 $2"],
   [/^Split — (LOC-\d+) moved to its own OC location (OC-\d+) \((\d+)% match at the re-check\); (LOC-\d+) kept this one$/, "已拆分 —— $1 单独拿到 $2（重判后 $3%）；$4 留在原 OC"],
   [/^(LOC-\d+) now feeds (OC-\d+) · one record supplies every field, empty ones included$/, "$1 现在喂 $2 · 整条记录由它供数，空字段也算空的"],
+  [/^text (\d+)\/100$/, "文本 $1/100"],
   [/^OC Internal Console · v([\d.]+)$/, "OC 内部管理控制台 · v$1"],
   [/^(\d+) vendor location\(s\)$/, "$1 个供应商门店"],
   [/^(\d+) OC location\(s\)$/, "$1 个 OC 门店"],
@@ -1202,6 +1275,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "4.0.0":"<b>重复检查按 v2.0 规则重建。</b>打分从加权相似度改成<b>二分制</b>：地址 40 · 名称 10 · 邮编 25 · 州 15 · 城市 10，字段要么全等拿满分、要么 0；<b>坐标不再折算成分数</b>，而是一条独立的证据通道（≤30 m 同点位 / 30–100 m 灰区 / &gt;100 m 不同）。输出不再是百分比，而是标签：<b>HIGH_SUSPECT</b>（95%）与 <b>MEDIUM_SUSPECT</b>（60–80%）。处置从两种变三种：同一站点（停用一条 + merged_into）、同址两家（各自保留）、地址有误（退回纠正）。同时新增<b>映射层</b>：source_key → OC 位置，<b>只对发生变更的那个来源重判</b>（M2/M4），不按配对连带；所有映射变更<b>等人确认</b>才生效（M5）；两边在同一次推送里都变了则进人工（M6）。",
   "3.14.0":"<b>确认过的配对可以重新打开。</b>2:1 是「这两条记录在那一刻是同一家店」的判断，但以前没人再读过它 —— 于是一个映射会比它依据的证据活得更久，线上门店慢慢变成两家店拼出来的。<br>现在每次同步只要改动了某条记录的身份（地址、城市、州、邮编），就会重算它所在配对的分：**低于 75%，动的那条退出**，还给它一个自己的 OC（默认不启用），另一条留在原来的 OC。`2:1` 徽章会消失，因为支撑它的理由已经没了。",
   "3.13.0":"<b>一条记录供整店。</b>2:1 的店原来是<b>逐字段</b>拼出来的 —— LMS 有值的字段用 LMS，剩下的拿 PUDO Inc 补。结果是「LMS 没填电话，谁来补？」被悄悄回答成「不用补，已经有值了」。现在改成<b>整条记录</b>：赢的那条供全部字段，<b>它空着的也算空的</b>。电话没填就是没填，缺口留在那儿，该补的人是拥有这家店的那家供应商。赢家先在 <b>active</b> 里挑（M&amp;MP → LMS → PUDO Inc）—— 所以某一家下架，是<b>整店</b>交给下一家，而不是交一半。",
   "3.12.0":"<b>先按州 / 省，再按城市。</b>两个列表都加了 <b>Province</b> 与 <b>City</b> 两个筛选，每个选项后面带实时条数。城市跟着州走 —— 选了 NY，城市只剩纽约那三个 —— 因为 14 个城市还会继续长，不做收窄的城市下拉就是一堵名字墙。供应商列表的城市列也补上了州（`Brooklyn, NY`）：你能筛的东西，得能在列表上看见。两个字段在 CSV 里各自成列。",
@@ -1368,8 +1442,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='3.14.0';
+var APP_VERSION='4.0.0';
 var VERSIONS=[
+ {v:'4.0.0',type:'major',date:'2026-11-16',desc:'<b>The duplicate check is rebuilt on the v2.0 rule doc.</b> Scoring is now binary — address 40 · name 10 · postal 25 · province 15 · city 10, a field counts in full or not at all — with coordinates as a separate evidence channel (&le;30 m same point / 30&ndash;100 m grey / &gt;100 m different) rather than points inside the score. The output is a label, not a percentage: <b>HIGH_SUSPECT</b> (95%) or <b>MEDIUM_SUSPECT</b> (60&ndash;80%), and three dispositions instead of two — same station (disable one, mark merged_into), two tenants at one address, or the address is wrong. A second layer arrives with it: <b>source_key &rarr; OC location</b>, re-judged one source at a time (M2/M4), never a pair, and every change waits for a person (M5); both sides moving in one run goes to manual (M6).'},
  {v:'3.14.0',type:'minor',date:'2026-11-11',desc:'<b>A confirmed pair can be re-opened.</b> 2:1 was a statement about two records at one moment; nothing ever re-read it, so a mapping outlived the evidence for it. Now every sync that changes a record\'s identity re-scores the pair it belongs to: below 75% the record that moved leaves, keeps its own new OC location (off by default), and the other record keeps the original one. The 2:1 badge disappears because the reason for it did.'},
  {v:'3.13.0',type:'minor',date:'2026-11-11',desc:'<b>One record supplies the whole store.</b> A 2:1 location used to be assembled field by field — LMS won the fields it had and PUDO Inc filled the rest. That answered "who fixes the empty LMS phone?" with "nobody, it is already filled". Now the winning record supplies <b>every</b> field, empty ones included: a blank phone stays blank, so the gap is visible and the provider who owns the store is the one asked to close it. The winning record is chosen among <b>active</b> ones first (M&amp;MP → LMS → PUDO Inc), so a deactivated source hands the whole store to the next one rather than half of it.'},
  {v:'3.12.0',type:'minor',date:'2026-11-11',desc:'<b>Filter by province, then by city.</b> Both lists gain a <b>Province</b> and a <b>City</b> filter, with a live count on every option. City follows province — pick NY and the list collapses to the three New York cities — because with 14 cities and growing, an unfiltered city dropdown is a wall of names. The City column now prints the province next to it (`Brooklyn, NY`) on the vendor list too, so the thing you filter by is the thing you can see. Both landscape fields land in the CSV exports under their own names.'},
@@ -1621,12 +1696,11 @@ function runProviderSync(opts){
     log('VENDOR','Provider sync','DATA_ISSUE_AUTO_CLOSED',i.vendorId,i.field+(i.subField?' · '+i.subField:''),'open','fixed','run '+NEXT_SYNC.runId+' · '+base+' → '+nowVal);
     closed++;
   });
-  /* identity moved? re-judge every pair the changed records belong to */
-  var touched=NEXT_SYNC.changes.map(function(c){return c.vendorId;}).filter(function(x,i,a){return a.indexOf(x)===i;});
-  var rc=recheckDuplicates(touched);
+  /* identity moved? re-judge the mapping of each changed source, one by one */
+  var rc=recheckMapping(NEXT_SYNC.changes);
   SYNC_DONE=true;
   SYNC_SUMMARY={closed:closed,stillInvalid:stillInvalid,unchanged:unchanged,needsHuman:needsHuman,
-    runId:NEXT_SYNC.runId,split:rc.split.length,newPairs:rc.pairs.length};
+    runId:NEXT_SYNC.runId,proposed:rc.proposed.length,manual:rc.manual.length};
   SYNC_RUNS.unshift({runId:NEXT_SYNC.runId,provider:'Multiple',startedAt:NEXT_SYNC.at,finishedAt:NEXT_SYNC.finished,
     pulled:NEXT_SYNC.pulled,created:NEXT_SYNC.created,updated:NEXT_SYNC.updated,flagged:NEXT_SYNC.flagged,
     breaker:'normal',autoClosed:closed});
@@ -1635,7 +1709,7 @@ function runProviderSync(opts){
   renderIssuesPage();renderSync();renderVendor();renderOC();renderDup();updateBadges();
   if(document.getElementById('page-pd').classList.contains('active'))renderProfile();
   if(!opts.quiet)showToast('Sync applied',closed+' closed automatically · '+needsHuman+' need a human · '+stillInvalid+' still invalid · '+unchanged+' unchanged'
-    +(rc.split.length?' · '+rc.split.length+' duplicate pair split — a record no longer matches its store':''),'success');
+    +(rc.proposed.length?' · '+rc.proposed.length+' mapping change waiting for you':''),'success');
   return SYNC_SUMMARY;
 }
 
@@ -1860,7 +1934,8 @@ function setRole(role){
 }
 function updateBadges(){
   document.getElementById('nav-notlive').textContent=OC_LOCATIONS.filter(function(o){return !o.enable;}).length;
-  document.getElementById('nav-dup').textContent=DUPLICATES.filter(function(d){return d.status==='pending';}).length;
+  document.getElementById('nav-dup').textContent=DUPLICATES.filter(function(d){return d.status==='pending';}).length
+    +MAPPING.filter(function(m){return m.status==='pending';}).length;
   document.getElementById('nav-issues').textContent=ISSUES.filter(function(i){return i.status!=='fixed';}).length+INTAKE.filter(function(i){return i.status!=='fixed';}).length;
   document.getElementById('o-notlive-count').textContent=OC_LOCATIONS.filter(function(o){return !o.enable;}).length;
 }
@@ -2139,173 +2214,365 @@ function confirmBatch(){
   showToast('Batch complete',done+' processed'+(skip?' · '+skip+' skipped (blocked)':''));
 }
 
-/* ============ duplicate page ============ */
-function dupNorm(v){return String(v==null?'':v).toLowerCase().replace(/[.,#]/g,' ').replace(/\s+/g,' ').trim();}
-/* v3.14.0 — the score is computed from live values, not read from a stored copy,
-   because a confirmed pair has to be re-judged when one side's identity moves.
-   addr1 token overlap 50 · postal 25 (a shared first five digits counts 0.8) ·
-   city 15 · state 10. The demo pair lands on exactly 75. */
-var DUP_MIN=75;
-function pairScore(a,b){
-  if(!a||!b)return 0;
-  var tok=function(x){return dupNorm(x).split(' ').filter(Boolean);};
-  var A=tok(a.addr1),B=tok(b.addr1);
-  var inter=0;
-  A.forEach(function(x){if(B.indexOf(x)>=0)inter++;});
-  var union={};A.concat(B).forEach(function(x){union[x]=1;});
-  var n=Object.keys(union).length;
-  var addr=n?inter/n:0;
-  var pa=dupNorm(a.postal),pb=dupNorm(b.postal);
-  var postal=(pa&&pb)?(pa===pb?1:(pa.slice(0,5)===pb.slice(0,5)?0.8:0)):0;
-  var same=function(x,y){return (x&&y&&dupNorm(x)===dupNorm(y))?1:0;};
-  return Math.round(addr*50+postal*25+same(a.city,b.city)*15+same(a.state,b.state)*10);
+/* ============ duplicate check — v4.0.0 ============
+   Two layers, per the v2.0 rule doc:
+     1) 站点层 — is this the same physical station? binary text score + a
+        coordinate evidence channel, output HIGH_SUSPECT / MEDIUM_SUSPECT.
+     2) 映射层 — which OC location does a source_key map to, and what happens
+        when that source's identity moves. One source at a time, never a pair.
+   Nothing here merges, disables or blocks by itself: every label is a
+   suggestion and every mapping change waits for a person. */
+var STATE_ABBR = {
+  ALABAMA:'AL', ALASKA:'AK', ARIZONA:'AZ', ARKANSAS:'AR', CALIFORNIA:'CA', COLORADO:'CO',
+  CONNECTICUT:'CT', DELAWARE:'DE', 'DISTRICT OF COLUMBIA':'DC', FLORIDA:'FL', GEORGIA:'GA',
+  HAWAII:'HI', IDAHO:'ID', ILLINOIS:'IL', INDIANA:'IN', IOWA:'IA', KANSAS:'KS', KENTUCKY:'KY',
+  LOUISIANA:'LA', MAINE:'ME', MARYLAND:'MD', MASSACHUSETTS:'MA', MICHIGAN:'MI', MINNESOTA:'MN',
+  MISSISSIPPI:'MS', MISSOURI:'MO', MONTANA:'MT', NEBRASKA:'NE', NEVADA:'NV', 'NEW HAMPSHIRE':'NH',
+  'NEW JERSEY':'NJ', 'NEW MEXICO':'NM', 'NEW YORK':'NY', 'NORTH CAROLINA':'NC', 'NORTH DAKOTA':'ND',
+  OHIO:'OH', OKLAHOMA:'OK', OREGON:'OR', PENNSYLVANIA:'PA', 'RHODE ISLAND':'RI',
+  'SOUTH CAROLINA':'SC', 'SOUTH DAKOTA':'SD', TENNESSEE:'TN', TEXAS:'TX', UTAH:'UT', VERMONT:'VT',
+  VIRGINIA:'VA', WASHINGTON:'WA', 'WEST VIRGINIA':'WV', WISCONSIN:'WI', WYOMING:'WY'
+};
+var W_ADDR = 40, W_NAME = 10, W_ZIP = 25, W_STATE = 15, W_CITY = 10;
+var HIGH_AT = 80, MID_AT = 50, SAME_POINT = 30, CANDIDATE_M = 100;
+var TRIGGER_FIELDS = ['addr1', 'name', 'city', 'state', 'postal', 'lat', 'lng'];
+
+/* ---- normalization: uppercase, strip . , # ' " , collapse spaces ---- */
+function nrm(s) {
+  return String(s == null ? '' : s).toUpperCase().replace(/[.,#'"]/g, ' ').replace(/\s+/g, ' ').trim();
 }
-function idSnap(v){return {addr1:v.addr1,postal:v.postal,city:v.city,state:v.state};}
-/* ============ identity re-check ============
-   A confirmed pair is a statement about two records at a moment in time. It has
-   to be re-opened when the moment is gone — otherwise a 2:1 mapping outlives the
-   evidence for it, and a live store quietly becomes a blend of two shops. */
-function whoMoved(d){
-  var a=findVendor(d.locA),b=findVendor(d.locB);
-  if(!a)return b; if(!b)return a;
-  if(!d.atDecision)return b;
-  var sa=pairScore(d.atDecision.a,idSnap(a)), sb=pairScore(d.atDecision.b,idSnap(b));
-  return sa<=sb?a:b;                    /* the side that drifted away leaves */
+function zip5(s) { return String(s == null ? '' : s).replace(/\D/g, '').slice(0, 5); }
+function stAbbr(s) {
+  var k = nrm(s).replace(/\s+/g, ' ');
+  return STATE_ABBR[k] || k;
 }
-function splitPair(d,leaver){
-  var oc=OC_LOCATIONS.filter(function(o){return o.vendorIds.indexOf(leaver.id)>=0;})[0];
-  if(!oc)return null;
-  var keeper=(leaver.id===d.locA)?findVendor(d.locB):findVendor(d.locA);
-  oc.vendorIds=oc.vendorIds.filter(function(x){return x!==leaver.id;});
-  oc.dup=oc.vendorIds.length>1;
-  oc.updated=nowStr();
-  var fresh=makeOC(leaver); fresh.intake='new'; OC_LOCATIONS.push(fresh);
-  d.status='split'; d.splitAt=nowStr(); d.newOc=fresh.ocId; d.splitScore=d.score; d.splitVendor=leaver.id;
-  log('OC','System · identity re-check','OC_DUPLICATE_SPLIT',d.pairId,'vendor_oc_mapping','2:1','1:1 · '+fresh.ocId,
-      d.score+'% match — '+leaver.id+' is no longer the same store as '+(keeper?keeper.id:'')+' · '+oc.ocId+' keeps '+(keeper?keeper.id:''));
-  return {oc:oc,fresh:fresh};
+/* the five judged fields, in the shape the scorer works on */
+function stOf(v) {
+  if (!v) return null;
+  return {
+    id: v.id, addr: nrm(v.addr1), name: nrm(v.name), city: nrm(v.city),
+    state: stAbbr(v.state), zip5: zip5(v.postal),
+    lat: typeof v.lat === 'number' ? v.lat : parseFloat(v.lat),
+    lng: typeof v.lng === 'number' ? v.lng : parseFloat(v.lng),
+    created: v.created, provider: v.provider
+  };
 }
-function recheckDuplicates(ids){
-  var out={split:[],pairs:[]};
-  DUPLICATES.filter(function(d){return d.status==='confirmed';}).forEach(function(d){
-    var a=findVendor(d.locA),b=findVendor(d.locB);
-    if(!a||!b)return;
-    d.score=pairScore(a,b);
-    if(d.score>=DUP_MIN)return;
-    var res=splitPair(d,whoMoved(d));
-    if(res)out.split.push(d.pairId);
+/* binary: a field is either the same after cleaning, or it is not. No fuzzy
+   similarity in phase 1 — the coordinate channel covers the near misses. */
+function textScore(a, b) {
+  if (!a || !b) return 0;
+  if (!a.zip5 || a.zip5 !== b.zip5) return 0;      /* different Zip5 -> NO on its own */
+  var s = 0;
+  if (a.addr === b.addr) s += W_ADDR;
+  if (a.name === b.name) s += W_NAME;
+  s += W_ZIP;                                       /* zip5 equal, already checked */
+  if (a.state === b.state) s += W_STATE;
+  if (a.city === b.city) s += W_CITY;
+  return s;
+}
+function distM(a, b) {
+  if (!a || !b) return null;
+  if (!isFinite(a.lat) || !isFinite(a.lng) || !isFinite(b.lat) || !isFinite(b.lng)) return null;
+  if (!a.lat || !a.lng || !b.lat || !b.lng) return null;
+  var R = 6371000, rad = Math.PI / 180;
+  var dLat = (b.lat - a.lat) * rad, dLng = (b.lng - a.lng) * rad;
+  var h = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return Math.round(2 * R * Math.asin(Math.sqrt(h)));
+}
+function judge(a, b) {
+  var s = textScore(a, b), d = distM(a, b);
+  if (s >= HIGH_AT) return { score: s, dist: d, label: 'HIGH', conf: 95, why: 'text' };
+  if (d !== null && d <= SAME_POINT) return { score: s, dist: d, label: 'HIGH', conf: 95, why: s >= MID_AT ? 'upgrade' : 'coords' };
+  if (d !== null && d <= CANDIDATE_M) return { score: s, dist: d, label: 'MEDIUM', conf: 70, why: 'grey' };
+  if (s >= MID_AT && d === null) return { score: s, dist: d, label: 'MEDIUM', conf: 60, why: 'text-only' };
+  return { score: s, dist: d, label: 'NO', conf: 0, why: '' };
+}
+function isCandidate(a, b) {
+  if (!a || !b) return false;
+  if (a.zip5 && a.zip5 === b.zip5) return true;
+  if (a.addr && a.addr === b.addr) return true;
+  var d = distM(a, b);
+  return d !== null && d <= CANDIDATE_M;
+}
+/* how many records sit at this address — 3 or more is a cluster, not a pair */
+/* a unit suffix is not stripped in phase 1, so "same address" also has to
+   accept "same point within 30 m" — otherwise a STE 2 record is not counted */
+function atAddress(v) {
+  var t = stOf(v);
+  return VENDORS.filter(function (x) {
+    var s = stOf(x);
+    if (!s || s.zip5 !== t.zip5) return false;
+    if (s.addr === t.addr) return true;
+    var d = distM(s, t);
+    return d !== null && d <= SAME_POINT;
+  }).length;
+}
+/* 选主: is_primary is 1 for the whole feed, dropoff volume is not wired yet,
+   so the older record is kept — and the card says which rule fired */
+function keepSuggestion(a, b) {
+  var ca = String(a.created || '9999'), cb = String(b.created || '9999');
+  return ca <= cb ? { id: a.id, rule: 'older record' } : { id: b.id, rule: 'older record' };
+}
+function sourceKey(v) {
+  var p = v.provider === 'PUDO Inc' ? 'PUDO_INC' : v.provider === 'M&MP' ? 'M_AND_MP' : 'LMS';
+  return p + ':' + v.id;
+}
+/* keep the differing part highlighted — the eye should land on the word */
+function dupMark(x, y) {
+  var a = String(x == null ? '' : x), b = String(y == null ? '' : y);
+  if (!a || !b) return [esc(a || '—'), esc(b || '—')];
+  var i = 0; while (i < a.length && i < b.length && a.charAt(i).toLowerCase() === b.charAt(i).toLowerCase()) i++;
+  var j = 0; while (j < a.length - i && j < b.length - i && a.charAt(a.length - 1 - j).toLowerCase() === b.charAt(b.length - 1 - j).toLowerCase()) j++;
+  var am = a.slice(i, a.length - j), bm = b.slice(i, b.length - j);
+  if (!am && !bm) return [esc(a), esc(b)];
+  var wrap = function (mid) { return mid ? ('<mark class="df">' + esc(mid) + '</mark>') : ''; };
+  return [esc(a.slice(0, i)) + wrap(am) + esc(a.slice(a.length - j)),
+    esc(b.slice(0, i)) + wrap(bm) + esc(b.slice(b.length - j))];
+}
+function labelChip(l, conf) {
+  var cls = l === 'HIGH' ? 'badge-red' : l === 'MEDIUM' ? 'badge-orange' : 'badge-gray';
+  var txt = l === 'HIGH' ? 'HIGH_SUSPECT' : l === 'MEDIUM' ? 'MEDIUM_SUSPECT' : 'NO_SUSPECT';
+  return '<span class="badge ' + cls + '">' + txt + (conf ? ' · ' + conf + '%' : '') + '</span>';
+}
+function fmtDist(d) { return d === null ? '<span class="badge badge-gray">coords missing</span>' : d + ' m'; }
+
+/* ============ mapping layer (M1–M6) ============
+   A mapping change is per source_key, never per pair: if PUDO 02 moves, LMS 01
+   must not move with it. Unchanged sources stay where they are (M4). */
+var MAPPING = [];
+var MAP_ROUND = 0;
+function proposalsFor(vid) {
+  return MAPPING.filter(function (m) { return m.vendorId === vid && m.status === 'pending'; });
+}
+function recheckMapping(changes) {
+  var byV = {}, out = { proposed: [], manual: [] };
+  (changes || []).forEach(function (c) {
+    if (TRIGGER_FIELDS.indexOf(c.field) < 0) return;
+    (byV[c.vendorId] = byV[c.vendorId] || []).push(c.field);
   });
-  (ids||[]).forEach(function(id){
-    var v=findVendor(id);
-    if(!v||v.status!=='active')return;
-    if(DUPLICATES.some(function(d){return (d.locA===id||d.locB===id)&&d.status!=='split';}))return;
-    var best=null;
-    VENDORS.forEach(function(o){
-      if(o.id===id||o.status!=='active')return;
-      var sc=pairScore(v,o);
-      if(sc>=DUP_MIN&&(!best||sc>best.score))best={o:o,score:sc};
-    });
-    if(!best)return;
-    DUPLICATES.push({pairId:'DUP-'+String(DUPLICATES.length+1).padStart(3,'0'),
-      locA:id,locB:best.o.id,status:'pending',score:best.score,diff:{},detectedAt:nowStr()});
-    out.pairs.push(id+' + '+best.o.id);
+  Object.keys(byV).forEach(function (id) {
+    var v = findVendor(id); if (!v) return;
+    var d = DUPLICATES.filter(function (x) { return (x.locA === id || x.locB === id) && x.status === 'merged'; })[0];
+    if (!d) return;
+    var other = findVendor(d.locA === id ? d.locB : d.locA);
+    if (!other) return;
+    var j = judge(stOf(v), stOf(other));
+    var both = !!byV[other.id];
+    if (!both && j.label === 'HIGH') return;          /* still the same station — nothing to do */
+    if (proposalsFor(id).length) return;
+    MAP_ROUND++;
+    var oc = OC_LOCATIONS.filter(function (o) { return o.vendorIds.indexOf(id) >= 0; })[0];
+    var m = {
+      id: 'MAP-' + String(MAPPING.length + 1).padStart(3, '0'), round: MAP_ROUND, at: nowStr(),
+      sourceKey: sourceKey(v), vendorId: id, changed: byV[id].join(', '),
+      oldOc: oc ? oc.ocId : '—', newOc: null,
+      basis: j.label + '_SUSPECT · text ' + j.score + ' · ' + (j.dist === null ? 'no coords' : j.dist + ' m'),
+      status: both ? 'manual' : 'pending', actor: ''
+    };
+    MAPPING.unshift(m);
+    out[both ? 'manual' : 'proposed'].push(m.id);
   });
   return out;
 }
-/* same · near (one string contains the other, e.g. a missing unit) · diff */
-function dupState(x,y){
-  var a=dupNorm(x),b=dupNorm(y);
-  if(a===b)return 'same';
-  if(a&&b&&(a.indexOf(b)>=0||b.indexOf(a)>=0))return 'near';
-  return 'diff';
-}
-/* mark only the part that differs, so the eye lands on it instead of on the row */
-function dupMark(x,y){
-  var a=String(x==null?'':x),b=String(y==null?'':y);
-  if(!a||!b)return [esc(a||'—'),esc(b||'—')];
-  var i=0;while(i<a.length&&i<b.length&&a.charAt(i).toLowerCase()===b.charAt(i).toLowerCase())i++;
-  var j=0;while(j<a.length-i&&j<b.length-i&&a.charAt(a.length-1-j).toLowerCase()===b.charAt(b.length-1-j).toLowerCase())j++;
-  var am=a.slice(i,a.length-j),bm=b.slice(i,b.length-j);
-  if(!am&&!bm)return [esc(a),esc(b)];
-  var wrap=function(mid){return mid?('<mark class="df">'+esc(mid)+'</mark>'):'';};
-  return [esc(a.slice(0,i))+wrap(am)+esc(a.slice(a.length-j)),
-          esc(b.slice(0,i))+wrap(bm)+esc(b.slice(b.length-j))];
-}
-function resetDupFilters(){document.getElementById('d-f-id').value='';document.getElementById('d-f-provider').value='';document.getElementById('d-f-status').value='';document.getElementById('d-f-score').value='0';renderDup();}
-function renderDup(){
-  var fid=val('d-f-id').toLowerCase(),prov=val('d-f-provider'),st=val('d-f-status'),min=parseInt(val('d-f-score')||'0',10);
-  var rows=DUPLICATES.filter(function(d){
-    if(fid&&d.pairId.toLowerCase().indexOf(fid)<0)return false;
-    if(st&&d.status!==st)return false;
-    var _a=findVendor(d.locA),_b=findVendor(d.locB);
-    if(!_a||!_b)return false;
-    d.score=pairScore(_a,_b);
-    if(d.score<min)return false;
-    if(prov&&!(_a.provider===prov||_b.provider===prov))return false;
-    return true;
+function confirmMapping(id) {
+  if (!isMgr()) { showToast('Permission required', 'A mapping change needs the Location Manager role.', 'error'); return; }
+  var m = MAPPING.filter(function (x) { return x.id === id; })[0];
+  if (!m || m.status !== 'pending') return;
+  var v = findVendor(m.vendorId); if (!v) return;
+  var old = OC_LOCATIONS.filter(function (o) { return o.vendorIds.indexOf(v.id) >= 0; })[0];
+  if (old) {
+    old.vendorIds = old.vendorIds.filter(function (x) { return x !== v.id; });
+    /* the records merged into the one that is leaving were only quiet because it
+       held the address — with it gone they are the store at this address again */
+    old.vendorIds.forEach(function (id) {
+      var m = findVendor(id);
+      if (m && m.mergedInto === v.id) { m.status = 'active'; delete m.mergedInto; m.updated = nowStr(); }
+    });
+    old.dup = old.vendorIds.length > 1; old.updated = nowStr();
+  }
+  var fresh = makeOC(v); fresh.intake = 'new'; OC_LOCATIONS.push(fresh);
+  m.newOc = fresh.ocId; m.status = 'effective'; m.actor = currentUser.name; m.at = nowStr();
+  DUPLICATES.forEach(function (d) {
+    if ((d.locA === v.id || d.locB === v.id) && d.status === 'merged') {
+      d.status = 'moved'; d.newOc = fresh.ocId; d.splitVendor = v.id;
+    }
   });
-  document.getElementById('d-result-meta').textContent=rows.length+' pair(s)';
-  document.getElementById('d-body').innerHTML=rows.length?rows.map(function(d){
-    var a=findVendor(d.locA),b=findVendor(d.locB);
-    var ocA=OC_LOCATIONS.filter(function(o){return o.vendorIds.indexOf(d.locA)>=0;})[0];
-    var ocB=OC_LOCATIONS.filter(function(o){return o.vendorIds.indexOf(d.locB)>=0;})[0];
-    var done=d.status!=='pending';
-    var tag=d.status==='confirmed'?'same store · 2:1':d.status==='rejected'?'not same · 1:1':d.status==='split'?'different store · split':'needs decision';
-    /* v3.6.0 — the pair is read side by side: A on the left, B on the right,
-       one row per field, and the middle column says how the two relate. */
-    var fields=[['Name',a.name,b.name],
-      ['Address',[a.addr1,a.addr2].filter(Boolean).join(' · '),[b.addr1,b.addr2].filter(Boolean).join(' · ')],
-      ['City / State',a.city+', '+a.state,b.city+', '+b.state],
-      ['Postal',a.postal,b.postal],
-      ['Phone',a.phone,b.phone],
-      ['Sweeper',a.sweeper,b.sweeper],
-      ['Opening hours',valOf(a,'hoursText'),valOf(b,'hoursText')]];
-    var differ=0;
-    var cmp=fields.map(function(f){
-      var st=dupState(f[1],f[2]); if(st!=='same')differ++;
-      var pair=(st==='same')?[esc(f[1]||'—'),esc(f[2]||'—')]:dupMark(f[1],f[2]);
-      return '<tr class="st-'+st+'" data-field="'+f[0]+'"><td class="f">'+f[0]+'</td>'
-        +'<td class="a">'+pair[0]+'</td>'
-        +'<td class="m">'+(st==='same'?'✓':st==='near'?'≈':'✕')+'</td>'
-        +'<td class="b">'+pair[1]+'</td></tr>';
-    }).join('');
-    return '<div class="rc-item">'
-      +'<div class="rc-item-head"><b class="mono">'+esc(d.pairId)+'</b><span class="risk '+(done?'risk-auto':'risk-review')+'">'+tag+'</span><span class="badge badge-orange">'+d.score+'% match</span><span class="rc-meta" style="margin:0">detected '+esc(d.detectedAt)+'</span></div>'
-      +'<table class="dup-cmp"><thead><tr><th class="f"></th>'
-      +'<th class="a"><span class="ab">A</span><b class="mono">'+esc(a.id)+'</b>'+provBadge(a.provider)+(ocA?'<span class="mono" style="color:var(--text-tertiary)">'+esc(ocA.ocId)+'</span>':'<span class="badge badge-orange">no OC ID</span>')+'</th>'
-      +'<th class="m" data-i18n="dup.vs">vs</th>'
-      +'<th class="b"><span class="ab">B</span><b class="mono">'+esc(b.id)+'</b>'+provBadge(b.provider)+(ocB?'<span class="mono" style="color:var(--text-tertiary)">'+esc(ocB.ocId)+'</span>':'<span class="badge badge-orange">no OC ID</span>')+'</th>'
-      +'</tr></thead><tbody>'+cmp+'</tbody></table>'
-      +'<div class="rc-meta" style="margin:6px 0 0"><span>'+differ+' field(s) differ</span> · <span class="dup-same">✓ same · ≈ one contains the other · ✕ different</span></div>'
-      +(done?'<div class="rc-actions"><span class="rc-meta" style="margin:0">'+(d.status==='split'?'Split — '+esc(d.splitVendor||'')+' moved to its own OC location '+esc(d.newOc||'')+' ('+d.splitScore+'% match at the re-check); '+esc(d.locA===d.splitVendor?d.locB:d.locA)+' kept this one':'Resolved — see Change Log')+'</span></div>'
-        :'<div class="rc-actions"><button class="btn btn-primary btn-sm" onclick="resolveDup(\''+d.pairId+'\',\'confirmed\')">Same store (2:1)</button><button class="btn btn-secondary btn-sm" onclick="resolveDup(\''+d.pairId+'\',\'rejected\')">Not same (1:1 each)</button></div>')
-      +'</div>';
-  }).join(''):'<div class="card"><div style="font-size:13px">No pair matches these filters.</div></div>';
+  log('OC', currentUser.name, 'OC_MAPPING_CHANGED', m.id, 'source_key',
+    m.oldOc, fresh.ocId, m.sourceKey + ' · ' + m.changed + ' · ' + m.basis);
+  showToast('Mapping updated', m.sourceKey + ' now maps to ' + fresh.ocId + ' (off by default)', 'success');
+  renderDup(); renderOC(); updateBadges();
+}
+
+/* ============ page ============ */
+function resetDupFilters() {
+  ['d-f-id', 'd-f-label', 'd-f-provider', 'd-f-status'].forEach(function (i) {
+    var el = document.getElementById(i); if (el) el.value = '';
+  });
+  renderDup();
+}
+function dupStatusTag(s) {
+  return s === 'merged' ? 'merged · merged_into'
+    : s === 'separate' ? 'separate · same address'
+      : s === 'moved' ? 'moved · mapping changed'
+        : s === 'fix' ? 'address to fix'
+          : 'needs review';
+}
+function pairCard(d) {
+  var a = findVendor(d.locA), b = findVendor(d.locB);
+  if (!a || !b) return '';
+  var sa = stOf(a), sb = stOf(b);
+  var j = judge(sa, sb);
+  d.score = j.score; d.dist = j.dist; d.label = j.label; d.conf = j.conf;
+  var ocA = OC_LOCATIONS.filter(function (o) { return o.vendorIds.indexOf(a.id) >= 0; })[0];
+  var ocB = OC_LOCATIONS.filter(function (o) { return o.vendorIds.indexOf(b.id) >= 0; })[0];
+  var at = atAddress(a);
+  var sug = keepSuggestion(a, b);
+  var done = d.status !== 'pending';
+  /* judged rows compare the *cleaned* value — that is what the score counts —
+     and the rows that carry no weight are shown neutral instead of red */
+  var rows = [
+    { k: 'Source key', f: 'Source key', a: sourceKey(a), b: sourceKey(b) },
+    { k: 'Name', f: 'Station name', a: a.name, b: b.name, w: W_NAME, ka: sa.name, kb: sb.name },
+    { k: 'Address', f: 'Address', a: [a.addr1, a.addr2].filter(Boolean).join(' '), b: [b.addr1, b.addr2].filter(Boolean).join(' '), w: W_ADDR, ka: sa.addr, kb: sb.addr },
+    { k: 'City', f: 'City', a: a.city, b: b.city, w: W_CITY, ka: sa.city, kb: sb.city },
+    { k: 'Province', f: 'Province', a: a.state, b: b.state, w: W_STATE, ka: sa.state, kb: sb.state },
+    { k: 'Postal', f: 'Postal (Zip5)', a: a.postal, b: b.postal, w: W_ZIP, ka: sa.zip5, kb: sb.zip5 },
+    { k: 'Created', f: 'Created', a: a.created || '—', b: b.created || '—' },
+    { k: 'Status', f: 'Status', a: a.status, b: b.status }
+  ];
+  var body = rows.map(function (r) {
+    var judged = r.w !== undefined;
+    var same = judged ? (!!r.ka && r.ka === r.kb) : false;
+    var pair = judged && !same ? dupMark(r.a, r.b) : [esc(r.a || '—'), esc(r.b || '—')];
+    var w = judged ? '<span class="w-chip">' + r.w + '</span>' : '';
+    var cls = judged ? (same ? 'st-same' : 'st-diff') : 'st-flat';
+    return '<tr class="' + cls + '" data-field="' + r.k + '"><td class="f">' + r.f + w + '</td>'
+      + '<td class="a">' + pair[0] + '</td>'
+      + '<td class="m">' + (judged ? (same ? '✓' : '✕') : '<span class="flat-dot">·</span>') + '</td>'
+      + '<td class="b">' + pair[1] + '</td></tr>';
+  }).join('');
+  var keepOpts = [[a, 'A'], [b, 'B']].map(function (x) {
+    var pick = x[0].id === sug.id ? ' data-suggested="1"' : '';
+    return '<option value="' + x[0].id + '"' + pick + '>' + x[1] + ' · ' + x[0].id + (x[0].id === sug.id ? ' ' + tr('(suggested)') : '') + '</option>';
+  }).join('');
+  var who = '<span class="rc-meta" style="margin:0">' + (at >= 3
+    ? '<b><span class="mono">' + at + '</span> <span data-i18n="dup.cluster">records at this address — cluster</span></b>'
+    : '<span class="mono">' + at + '</span> <span data-i18n="dup.recs">record(s) at this address</span>') + '</span>';
+  return '<div class="rc-item" data-label="' + j.label + '" data-status="' + d.status + '">'
+    + '<div class="rc-item-head"><b class="mono">' + esc(d.pairId) + '</b>'
+    + labelChip(j.label, j.conf)
+    + '<span class="badge badge-gray">text ' + j.score + '/100</span>'
+    + '<span class="badge badge-gray">' + fmtDist(j.dist) + '</span>'
+    + '<span class="risk ' + (done ? 'risk-auto' : 'risk-review') + '">' + dupStatusTag(d.status) + '</span>'
+    + who
+    + '<span class="rc-meta" style="margin:0"><span data-i18n="dup.detected">detected</span> ' + esc(d.detectedAt || '') + '</span></div>'
+    + (sa.zip5 !== sb.zip5 ? '<div class="warn-line" style="margin:0 0 8px">Postal differs — the text channel returns <b>0</b> no matter what the other fields say; only the coordinate channel can still call this a duplicate.</div>' : '')
+    + '<div class="rc-meta" style="margin:0 0 6px" data-i18n="dup.hint">address 40 · name 10 · postal 25 · province 15 · city 10 — exact match after cleaning, or 0. Coordinates are evidence, not points: ≤30 m = same point, 30–100 m = grey zone, >100 m = different.</div>'
+    + '<table class="dup-cmp"><thead><tr><th class="f"></th>'
+    + '<th class="a"><span class="ab">A</span><b class="mono">' + esc(a.id) + '</b>' + provBadge(a.provider)
+    + (ocA ? '<span class="mono" style="color:var(--text-tertiary)">' + esc(ocA.ocId) + '</span>' : '<span class="badge badge-orange">no OC</span>') + '</th>'
+    + '<th class="m" data-i18n="dup.vs">vs</th>'
+    + '<th class="b"><span class="ab">B</span><b class="mono">' + esc(b.id) + '</b>' + provBadge(b.provider)
+    + (ocB ? '<span class="mono" style="color:var(--text-tertiary)">' + esc(ocB.ocId) + '</span>' : '<span class="badge badge-orange">no OC</span>') + '</th>'
+    + '</tr></thead><tbody>' + body + '</tbody></table>'
+    + (done ? '' : '<div class="rc-meta" style="margin:8px 0 0"><span data-i18n="dup.keep">Suggested keep:</span> <b>' + esc(sug.id) + '</b> · <span data-i18n="dup.keeprule">rule: older record — is_primary is 1 for every record and dropoff volume is not wired yet</span></div>')
+    + (done ? '<div class="rc-actions"><span class="rc-meta" style="margin:0">'
+      + (d.status === 'merged' ? 'Merged — kept ' + esc(d.keep || '') + ', the other is inactive and marked merged_into'
+        : d.status === 'separate' ? 'Kept apart — both active, labelled same address'
+        : d.status === 'moved' ? 'Mapping changed — ' + esc(d.splitVendor || '') + ' moved to ' + esc(d.newOc || '') + ' after its identity moved; the other record still maps to its own OC'
+          : 'Address flagged for correction — re-runs on the next sync') + '</span></div>'
+      : '<div class="rc-actions">'
+      + '<span class="rc-meta" style="margin:0">keep</span>'
+      + '<select class="mini-select" id="keep-' + d.pairId + '">' + keepOpts + '</select>'
+      + '<button class="btn btn-primary btn-sm" onclick="resolveDup(\'' + d.pairId + '\',\'confirmed\',document.getElementById(\'keep-' + d.pairId + '\').value)">Same station — disable the other</button>'
+      + '<button class="btn btn-secondary btn-sm" onclick="resolveDup(\'' + d.pairId + '\',\'rejected\')">Not the same — keep both</button>'
+      + '<button class="btn btn-secondary btn-sm" onclick="resolveDup(\'' + d.pairId + '\',\'fix\')">Address is wrong</button>'
+      + '</div>')
+    + '</div>';
+}
+function renderDup() {
+  var fid = val('d-f-id').toLowerCase(), lb = val('d-f-label'), prov = val('d-f-provider'), st = val('d-f-status');
+  var rows = DUPLICATES.filter(function (d) {
+    var a = findVendor(d.locA), b = findVendor(d.locB);
+    if (!a || !b) return false;
+    if (fid && d.pairId.toLowerCase().indexOf(fid) < 0) return false;
+    if (st && d.status !== st) return false;
+    if (prov && !(a.provider === prov || b.provider === prov)) return false;
+    if (lb && judge(stOf(a), stOf(b)).label !== lb) return false;
+    return true;
+  }).sort(function (x, y) {
+    var rx = findVendor(x.locA), ry = findVendor(y.locA);
+    var lx = judge(stOf(rx), stOf(findVendor(x.locB))).label;
+    var ly = judge(stOf(ry), stOf(findVendor(y.locB))).label;
+    var rank = { HIGH: 0, MEDIUM: 1, NO: 2 };
+    return rank[lx] - rank[ly];
+  });
+  document.getElementById('d-result-meta').textContent = rows.length + ' pair(s)';
+  document.getElementById('d-body').innerHTML = rows.length ? rows.map(pairCard).join('')
+    : '<div class="card" style="margin:0"><div style="font-size:13px">No pair matches these filters.</div></div>';
+  renderMapping();
   applyLang();
 }
-function resolveDup(pairId,res){
-  if(!isMgr()){showToast('Permission required','Duplicate decisions need the Location Manager role.','error');return;}
-  var d=DUPLICATES.filter(function(x){return x.pairId===pairId;})[0];if(!d||d.status!=='pending')return;
-  var a=findVendor(d.locA),b=findVendor(d.locB);
-  var ocA=OC_LOCATIONS.filter(function(o){return o.vendorIds.indexOf(d.locA)>=0;})[0];
-  if(res==='confirmed'){
-    d.status='confirmed';
-    /* remember what "the same store" looked like, so a later change can be judged
-       against the evidence rather than against a stale score */
-    d.atDecision={score:pairScore(a,b),a:idSnap(a),b:idSnap(b),at:nowStr()};
-    d.score=d.atDecision.score;
-    if(ocA){if(ocA.vendorIds.indexOf(d.locB)<0)ocA.vendorIds.push(d.locB);ocA.dup=true;ocA.updated=nowStr();}
-    else{showToast('Cannot merge','No OC location exists for '+d.locA,'error');return;}
-    log('OC',currentUser.name,'OC_LINK_CONFIRMED',pairId,'vendor_oc_mapping','pending','2:1',d.locA+' + '+d.locB+' → '+ocA.ocId);
-    showToast('Mapped 2:1',d.locB+' now feeds '+ocA.ocId+' · one record supplies every field, empty ones included');
-  }else{
-    d.status='rejected';
-    var oc=OC_LOCATIONS.filter(function(o){return o.vendorIds.indexOf(d.locB)>=0;})[0];
-    if(!oc){oc=makeOC(b);OC_LOCATIONS.push(oc);}
-    log('OC',currentUser.name,'OC_LINK_REJECTED',pairId,'vendor_oc_mapping','pending','1:1',d.locB+' → '+oc.ocId);
-    showToast('Kept 1:1',d.locB+' keeps its own OC location '+oc.ocId);
+function renderMapping() {
+  var el = document.getElementById('m-body'); if (!el) return;
+  var head = '<tr><th>Round</th><th>source_key</th><th>Changed</th><th>Old OC</th><th>New OC</th><th>Basis</th><th>Status</th><th></th></tr>';
+  var body = MAPPING.length ? MAPPING.map(function (m) {
+    var st = m.status === 'effective' ? '<span class="badge badge-green">effective</span>'
+      : m.status === 'manual' ? '<span class="badge badge-orange">both sides changed</span>'
+        : '<span class="badge badge-red">needs confirmation</span>';
+    var act = m.status === 'pending'
+      ? '<button class="btn btn-primary btn-sm" onclick="confirmMapping(\'' + m.id + '\')">Confirm — new OC</button>'
+      : m.status === 'manual'
+        ? '<button class="btn btn-secondary btn-sm" onclick="showToast(\'Manual review\',\'Both sources changed in one run — decide by hand.\',\'info\')">Review</button>'
+        : '<span class="rc-meta" style="margin:0">' + esc(m.actor || '') + '</span>';
+    return '<tr><td class="mono">' + m.round + '</td><td class="mono">' + esc(m.sourceKey) + '</td>'
+      + '<td class="mono" style="font-size:11.5px">' + esc(m.changed) + '</td>'
+      + '<td class="mono">' + esc(m.oldOc) + '</td><td class="mono">' + esc(m.newOc || '—') + '</td>'
+      + '<td style="font-size:11.5px">' + esc(m.basis) + '</td><td>' + st + '</td><td>' + act + '</td></tr>';
+  }).join('') : '<tr><td colspan="8"><span class="rc-meta" data-i18n="map.empty">No mapping change yet. A source only gets a proposal when a judged field on it changes while it shares an OC with another source — one source at a time, never the pair.</span></td></tr>';
+  el.innerHTML = '<div class="card" style="margin:0"><table class="data mapping"><thead>' + head + '</thead><tbody>' + body + '</tbody></table>'
+    + '<div class="rc-meta" style="margin:10px 0 0" data-i18n="map.rules">M2 · only the changed source is re-judged &nbsp;·&nbsp; M3 · a new OC location, old mapping kept in history &nbsp;·&nbsp; M4 · the unchanged side never moves &nbsp;·&nbsp; M5 · nothing is written until a person confirms &nbsp;·&nbsp; M6 · both sides changed in one run → manual</div></div>';
+}
+function resolveDup(pairId, res, keepId) {
+  if (!isMgr()) { showToast('Permission required', 'Duplicate decisions need the Location Manager role.', 'error'); return; }
+  var d = DUPLICATES.filter(function (x) { return x.pairId === pairId; })[0];
+  if (!d || d.status !== 'pending') return;
+  var a = findVendor(d.locA), b = findVendor(d.locB);
+  if (res === 'fix') {
+    d.status = 'fix'; d.at = nowStr();
+    log('OC', currentUser.name, 'DUPLICATE_ADDRESS_FLAGGED', pairId, 'station_address1', d.locA + ' / ' + d.locB, 'pending', 'address to fix', '');
+    showToast('Address flagged', 'Correct the address on the source record — the pair re-runs on the next sync', 'info');
+    renderDup(); updateBadges(); return;
   }
-  renderDup();renderOC();updateBadges();
+  var keep = keepId === d.locB ? b : (keepId === d.locA ? a : findVendor(keepSuggestion(a, b).id));
+  var lose = keep.id === a.id ? b : a;
+  if (res === 'confirmed') {
+    var oc = OC_LOCATIONS.filter(function (o) { return o.vendorIds.indexOf(keep.id) >= 0; })[0];
+    if (!oc) { showToast('Cannot merge', 'No OC location exists for ' + keep.id, 'error'); return; }
+    var other = OC_LOCATIONS.filter(function (o) { return o.vendorIds.indexOf(lose.id) >= 0; })[0];
+    if (other && other !== oc) {
+      other.vendorIds = other.vendorIds.filter(function (x) { return x !== lose.id; });
+      other.dup = other.vendorIds.length > 1; other.updated = nowStr();
+    }
+    if (oc.vendorIds.indexOf(lose.id) < 0) oc.vendorIds.push(lose.id);
+    oc.dup = oc.vendorIds.length > 1; oc.updated = nowStr();
+    lose.status = 'inactive'; lose.mergedInto = keep.id; lose.updated = nowStr();
+    d.status = 'merged'; d.keep = keep.id; d.mergedInto = lose.id;
+    d.atDecision = { a: stOf(a), b: stOf(b), at: nowStr() };
+    log('OC', currentUser.name, 'DUPLICATE_MERGED', pairId, 'vendor_oc_mapping', 'pending',
+      'merged_into ' + keep.id, lose.id + ' → ' + keep.id + ' · both map to ' + oc.ocId);
+    showToast('Merged', lose.id + ' is disabled and marked merged_into ' + keep.id + ' · both keep ' + oc.ocId);
+  } else {
+    d.status = 'separate'; d.at = nowStr();
+    var lost = OC_LOCATIONS.filter(function (o) { return o.vendorIds.indexOf(b.id) >= 0; })[0];
+    if (!lost) { lost = makeOC(b); lost.intake = 'new'; OC_LOCATIONS.push(lost); }
+    b.sameAddressAs = a.id; a.sameAddressAs = b.id;
+    log('OC', currentUser.name, 'DUPLICATE_SEPARATE', pairId, 'vendor_oc_mapping', 'pending', 'kept apart',
+      a.id + ' → ' + (OC_LOCATIONS.filter(function (o) { return o.vendorIds.indexOf(a.id) >= 0; })[0] || {}).ocId + ' · ' + b.id + ' → ' + lost.ocId);
+    showToast('Kept apart', 'Both stay active, labelled as two tenants at one address', 'info');
+  }
+  renderDup(); renderOC(); updateBadges();
 }
 function makeOC(v){
   var id='OC-'+String(OC_LOCATIONS.length+111).padStart(5,'0');
