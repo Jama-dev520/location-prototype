@@ -2,7 +2,7 @@ flowchart TD
     A([Provider run: a new record,<br/>or an identity field changed]) --> B[Clean the text<br/>uppercase, strip punctuation, cut to Zip5]
     B --> C{Zip5 equal<br/>to the other record}
     C -->|No| NO[Text score 0<br/>different station, full stop]
-    C -->|Yes| D[Binary score, no partial credit<br/>address 40 - name 10 - postal 25 - province 15 - city 10<br/>coordinates run beside it as evidence, never as points]
+    C -->|Yes| D[Score in proportion<br/>adjacent character pairs, sorted then compared<br/>address 40 - name 10 - postal 25 - province 15 - city 10<br/>coordinates run beside it as evidence, never as points]
     D --> F{Label}
     F -->|text 80 or more| HIGH[HIGH_SUSPECT]
     F -->|text 50 to 79| MED[MEDIUM_SUSPECT]

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v4.1.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v4.2.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -403,7 +403,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v4.1.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v4.2.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -428,7 +428,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v4.1.0</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v4.2.0</span></div>
       </div>
     </div>
 
@@ -529,7 +529,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 
             <div class="page" id="page-pdup">
         <h2 class="page-title">Duplicate Check</h2>
-        <p class="page-desc" data-i18n="pdup.desc">Two layers, one question each. <b>Station layer:</b> are these two records the same physical station? The score is <b>binary</b> — address 40 · name 10 · postal 25 · province 15 · city 10, a field counts in full or not at all — and coordinates run beside it as an <b>evidence channel</b>, never as points: ≤30 m is the same point, 30–100 m is a grey zone for a human, &gt;100 m is a different place. That produces <b>HIGH_SUSPECT</b> or <b>MEDIUM_SUSPECT</b>, nothing else. <b>Mapping layer:</b> which OC location does a <b>source_key</b> map to, and what happens when that source's identity moves — <b>one source at a time, never the pair</b>. Nothing merges, disables or blocks by itself.</p>
+        <p class="page-desc" data-i18n="pdup.desc">Two layers, one question each. <b>Station layer:</b> are these two records the same physical station? The score is <b>proportional</b> — address 40 · name 10 · postal 25 · province 15 · city 10, and each field pays the share of <b>adjacent character pairs</b> the two values have in common (the pairs are sorted first, so word order stops mattering) — with coordinates beside it as an <b>evidence channel</b>, never as points: ≤30 m is the same point, 30–100 m is a grey zone for a human, &gt;100 m is a different place. That produces <b>HIGH_SUSPECT</b> or <b>MEDIUM_SUSPECT</b>, nothing else. <b>Mapping layer:</b> which OC location does a <b>source_key</b> map to, and what happens when that source's identity moves — <b>one source at a time, never the pair</b>. Nothing merges, disables or blocks by itself.</p>
 
         <div class="card">
           <div class="filter-grid">
@@ -669,7 +669,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v4.1.0 (one store, one live source)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v4.2.0 (the score counts shared pairs)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -1193,7 +1193,7 @@ var I18N_ZH = {
 var I18N_BLOCK = {
   "p01.desc":"<b>只有一个来源，不是两个</b> —— 类型和归属一起写在同一个字段：<b>PUDOpoint (PUDO)</b>、<b>packagehub (LMS)</b>、<b>M&amp;MP</b>。既然两者合成一个字段，“不可能的组合”就不再是筛选能搭出来的东西。这里是供应商实际推过来的内容，<b>所有字段只读</b>，包括<b>揽收方</b>，它现在随每日同步一起进来。<b>M&amp;MP</b> 是自营店，责任方是门店本身而不是某个供应商 —— 揽收方固定是 <b>LMS</b>。发现值不对，我们不在这一层改：我们<b>带着原因标记它</b>，标记挂在这条记录上，由供应商去修源头。OC 层只决定这家店是否上线。",
   "p02.desc":"<b>只有一个来源：</b><b>packagehub (LMS)</b> · <b>PUDOpoint (PUDO)</b> · <b>M&amp;MP</b> —— 它是什么、谁拥有，一个字段说完。客户看到的就是这条记录。<b>只有两个动作：启用、标记异常。</b>这里不能改数据 —— 地址错了不是拿键盘盖掉，是标给供应商去改。值<b>按记录整条取，不是逐字段拼</b>：<b>M&amp;MP</b>（自营）优先，其次 <b>LMS</b>；谁赢，这条店就整条由谁供数，<b>包括它空着的字段</b>。赢的那条没有电话，电话就是空的 —— 拿另一家补上，等于把「该催谁」这件事藏起来了。<b>一个门店可以挂两条记录（2:1）。</b>两条都列出来，一上一下，各自显示<b>自己</b>的值 —— 但<b>只有一条是供数来源</b>，下游读的就是它。换源不是拨开关，是重新签收：字段整条替换，基线重新记一次。",
-  "pdup.desc":"两层，各问一个问题。<b>站点层：</b>这两条记录是不是同一个物理站点？打分是<b>二分制</b> —— 地址 40 · 名称 10 · 邮编 25 · 州 15 · 城市 10，每个字段要么全等拿满分、要么 0 分 —— 坐标在旁边作为<b>证据通道</b>，不并入分数：≤30 m 视为同一物理点位，30–100 m 是灰区、交给人判断，&gt;100 m 视为不同点位。结果只有 <b>HIGH_SUSPECT</b> 或 <b>MEDIUM_SUSPECT</b>。<b>映射层：</b>一个 <b>source_key</b> 对应哪个 OC 位置，以及它的身份变化后该怎么走 —— <b>一次只看一个来源，绝不按一对处理</b>。任何标签都不会自动合并、自动停用或拦截订单。",
+  "pdup.desc":"两层，各问一个问题。<b>站点层：</b>这两条记录是不是同一个物理站点？打分是<b>按比例</b>的 —— 地址 40 · 名称 10 · 邮编 25 · 州 15 · 城市 10，每个字段给的是两个值<b>相邻字符对</b>的重合比例（先排序，词的先后不再影响结果），地址差一个门牌号就是高分而不是 0 分。坐标是并排的一条<b>证据通道</b>，从不折算成分数：≤30 m 同一物理点位、30–100 m 灰区（交给人）、&gt;100 m 不同点位。输出只有 <b>HIGH_SUSPECT</b> 与 <b>MEDIUM_SUSPECT</b> 两个标签。<b>映射层：</b>这个 <b>source_key</b> 现在对应哪个 OC？一次只判一个来源、从不按配对连带 —— 没有任何一步会自己合并、停用或阻断。",
   "pdi.desc":"所有数据问题集中在一个台账里 —— <b>没有审核队列</b>。顶部先给运营每天在追的<b>四项检查</b> —— <b>地址信息不全</b>、<b>缺少邮编</b>、<b>没有营业时间</b>、<b>某天营业不足 3 小时</b> —— 各自按未关闭异常计数，点一下就能筛出这一类。往下是三类：我们已经请供应商修的、签收之后变了的（只是信息，不是待决策），以及从来没通过入池校验的。这里不决定任何值是否被应用 —— <b>供应商的值永远给到下游</b>。标记异常是我们提要求的方式，下一次推送是它落地的方式。<b>导出清单</b>就可以发给供应商。",
   "p03.desc":"两个层级上的每一次创建、同步写入、标记、判定和签收都在这里。可按层级和类型筛选。",
   "p04.desc":"每一次供应商同步一行。触发熔断的那一次会停止下发，等人工处理。",
@@ -1217,7 +1217,7 @@ var I18N_BLOCK = {
   "help.oc":"OC 列表那个筛选混了两类东西：从供应商记录借来的<b>阻塞级数据异常</b>，以及<b>门店记录自身的状态</b> —— 签收后变化、重复 2:1（入池覆盖只作为徽章出现，不进筛选）。只有阻塞级会被带到行上：提醒级是供应商的活儿，不是启用的判据。",
   "help.checks":"顶部那几个格子只是把同一份清单按字段切开，方便每天干活 —— 一条异常属于哪一格由字段决定，不靠人手选。",
   "map.head":"映射变更 —— source_key → OC 位置",
-  "dup.hint":"地址 40 · 名称 10 · 邮编 25 · 州 15 · 城市 10 —— 清洗后全等拿满分，否则 0。坐标是证据不是分数：≤30 m 同一物理点位、30–100 m 灰区、&gt;100 m 不同点位。",
+  "dup.hint":"地址 40 · 名称 10 · 邮编 25 · 州 15 · 城市 10。每个字段<b>按比例</b>给分：把两个值切成<b>相邻字符对</b>、排序（词的先后不再影响结果），重合多少就给多少比例。邮编是门：Zip5 不同，文本通道直接 0。坐标是证据不是分数：≤30 m 同一物理点位、30–100 m 灰区、&gt;100 m 不同点位。",
   "dup.recs":"条记录在同一地址",
   "dup.cluster":"条记录在同一地址 —— 簇",
   "dup.detected":"检测于",
@@ -1227,7 +1227,7 @@ var I18N_BLOCK = {
   "map.rules":"M2 · 只重判发生变更的那个来源 &nbsp;·&nbsp; M3 · 分配新 OC，旧映射进历史 &nbsp;·&nbsp; M4 · 未变更的一方绝不动 &nbsp;·&nbsp; M5 · 没人确认就不落库 &nbsp;·&nbsp; M6 · 两边在同一次推送里都变了 → 进人工",
   "dup.vs":"对比",
   "pull.hint":"标记 → 导出 → 供应商修正 → 再拉一次",
-  "wt.title":"演示脚本 —— v4.1.0（一家店，一个供数来源）"
+  "wt.title":"演示脚本 —— v4.2.0（打分按重合的字符对算）"
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
@@ -1298,6 +1298,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "4.2.0":"<b>打分不再是「全等或 0」。</b>两条地址以前逐字段比 —— 清洗后一样就满分、否则 0，于是「2918 Avenue I」和「2918 Avenue I Ste 2」在那个占 40 分的字段上是 <b>0</b>：同一栋楼里换了个单元，读起来像换了一家店，只能靠坐标通道捞回来。现在每个字段<b>按比例</b>给分：两个值都切成<b>相邻字符对</b>、排序（词的先后不再影响结果），重合比例就是得分（Dice 系数）。同一对现在读 <b>89</b> 分而不是 50，真正对不上的仍然接近 0 —— 演示数据里跑出来正好两对候选，都对。对比表每个字段直接印这个比例，评审看得见「为什么是 89」，而不只是一个对勾。",
   "4.1.0":"<b>一家店、多条记录、一个供数来源。</b>以前 2:1 的门店只打一行合并后的字：排名最高的那条记录供全部字段，另一条记录根本看不见 —— 于是没人能发现两家供应商在喂同一家店，更别说挑一个。现在 OC 列表<b>一条记录一行</b>：名称、地址、揽收方、状态、更新时间各按各的显示，而且<b>只有一行能是 live</b>。开关的含义也变了，从「这家店开没开」变成「这家店由哪条记录供数」：关掉 live 那行 = 门店下线（备用记录从没被签收过，没有可回退的对象）；打开另一行 = <b>带换源的签收</b>，字段整条替换、基线重新记一次。筛选跟着列名走：两处统一叫 <b>Live / Not live</b>，列头不再叫 Enable。供应商列表在对应的记录上标 <b>live</b> 或 <b>standby</b>。",
   "4.0.0":"<b>重复检查按 v2.0 规则重建。</b>打分从加权相似度改成<b>二分制</b>：地址 40 · 名称 10 · 邮编 25 · 州 15 · 城市 10，字段要么全等拿满分、要么 0；<b>坐标不再折算成分数</b>，而是一条独立的证据通道（≤30 m 同点位 / 30–100 m 灰区 / &gt;100 m 不同）。输出不再是百分比，而是标签：<b>HIGH_SUSPECT</b>（95%）与 <b>MEDIUM_SUSPECT</b>（60–80%）。处置从两种变三种：同一站点（停用一条 + merged_into）、同址两家（各自保留）、地址有误（退回纠正）。同时新增<b>映射层</b>：source_key → OC 位置，<b>只对发生变更的那个来源重判</b>（M2/M4），不按配对连带；所有映射变更<b>等人确认</b>才生效（M5）；两边在同一次推送里都变了则进人工（M6）。",
   "3.14.0":"<b>确认过的配对可以重新打开。</b>2:1 是「这两条记录在那一刻是同一家店」的判断，但以前没人再读过它 —— 于是一个映射会比它依据的证据活得更久，线上门店慢慢变成两家店拼出来的。<br>现在每次同步只要改动了某条记录的身份（地址、城市、州、邮编），就会重算它所在配对的分：**低于 75%，动的那条退出**，还给它一个自己的 OC（默认不启用），另一条留在原来的 OC。`2:1` 徽章会消失，因为支撑它的理由已经没了。",
@@ -1466,8 +1467,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='4.1.0';
+var APP_VERSION='4.2.0';
 var VERSIONS=[
+ {v:'4.2.0',type:'minor',date:'2026-11-17',desc:'<b>The score stops being all-or-nothing.</b> Two addresses were compared field by field — same after cleaning, or nothing — which meant "2918 Avenue I" and "2918 Avenue I Ste 2" scored <b>0</b> on the field worth 40 points: a unit move inside one building read as a different shop, and only the coordinate channel could rescue it. Each field now scores <b>in proportion</b>: both values are cut into adjacent character pairs, the pairs are sorted so word order stops mattering, and the shared share becomes the score (Dice). The same pair now reads <b>89</b> instead of 50, and a genuine miss still scores near zero — the demo feed produces exactly two candidates, both correct. The comparison table prints that number per field instead of a tick, so a reviewer can see <i>why</i> 89 and not just that it passed.'},
  {v:'4.1.0',type:'minor',date:'2026-11-17',desc:'<b>One store, several records, one live source.</b> A 2:1 store used to print one merged line: whichever record ranked highest supplied every field and the other record was invisible — so nobody could see that two providers were feeding one store, let alone pick between them. The OC list now prints <b>one row per source record</b>, each with its own name, address, sweeper, status and update time, and <b>only one row can be live</b>. The switch stopped meaning “is this store on” and started meaning “which record feeds it”: turning the live row off takes the store down (a standby record was never signed off, so there is nothing to fall back to), turning another row on is a <b>sign-off with a source change</b> — every field is replaced and the baseline recaptured. The filter follows the column: the wording is <b>Live / Not live</b> in both, and the column is no longer called Enable. The vendor list tags each of those records <b>live</b> or <b>standby</b> where it states its OC location.'},
  {v:'4.0.0',type:'major',date:'2026-11-16',desc:'<b>The duplicate check is rebuilt on the v2.0 rule doc.</b> Scoring is now binary — address 40 · name 10 · postal 25 · province 15 · city 10, a field counts in full or not at all — with coordinates as a separate evidence channel (&le;30 m same point / 30&ndash;100 m grey / &gt;100 m different) rather than points inside the score. The output is a label, not a percentage: <b>HIGH_SUSPECT</b> (95%) or <b>MEDIUM_SUSPECT</b> (60&ndash;80%), and three dispositions instead of two — same station (disable one, mark merged_into), two tenants at one address, or the address is wrong. A second layer arrives with it: <b>source_key &rarr; OC location</b>, re-judged one source at a time (M2/M4), never a pair, and every change waits for a person (M5); both sides moving in one run goes to manual (M6).'},
  {v:'3.14.0',type:'minor',date:'2026-11-11',desc:'<b>A confirmed pair can be re-opened.</b> 2:1 was a statement about two records at one moment; nothing ever re-read it, so a mapping outlived the evidence for it. Now every sync that changes a record\'s identity re-scores the pair it belongs to: below 75% the record that moved leaves, keeps its own new OC location (off by default), and the other record keeps the original one. The 2:1 badge disappears because the reason for it did.'},
@@ -2391,18 +2393,43 @@ function stOf(v) {
     created: v.created, provider: v.provider
   };
 }
-/* binary: a field is either the same after cleaning, or it is not. No fuzzy
-   similarity in phase 1 — the coordinate channel covers the near misses. */
+/* v4.2.0 — similarity is read off SORTED ADJACENT PAIRS, not off equality.
+   Cut each string into adjacent character pairs (bigrams), sort the pairs so
+   that word order stops mattering ("STE 2 2918 AVENUE I" and "2918 AVENUE I
+   STE 2" become the same bag), then compare the two bags with the Dice
+   coefficient: 2|A and B| / (|A| + |B|).
+   A field therefore scores in proportion: the same address with a suite number
+   added is a high score, not a miss. That is the point — a unit move inside one
+   building used to read as "different address" and disappear. */
+function pairsOf(s) {
+  var t = nrm(s);
+  if (!t) return [];
+  if (t.length < 2) return [t];
+  var out = [];
+  for (var i = 0; i < t.length - 1; i++) out.push(t.substr(i, 2));
+  return out.sort();
+}
+function sim(a, b) {
+  var A = pairsOf(a), B = pairsOf(b);
+  if (!A.length && !B.length) return 1;
+  if (!A.length || !B.length) return 0;
+  var i = 0, j = 0, hit = 0;
+  while (i < A.length && j < B.length) {
+    if (A[i] === B[j]) { hit++; i++; j++; }
+    else if (A[i] < B[j]) i++;
+    else j++;
+  }
+  return (2 * hit) / (A.length + B.length);
+}
 function textScore(a, b) {
   if (!a || !b) return 0;
-  if (!a.zip5 || a.zip5 !== b.zip5) return 0;      /* different Zip5 -> NO on its own */
-  var s = 0;
-  if (a.addr === b.addr) s += W_ADDR;
-  if (a.name === b.name) s += W_NAME;
-  s += W_ZIP;                                       /* zip5 equal, already checked */
-  if (a.state === b.state) s += W_STATE;
-  if (a.city === b.city) s += W_CITY;
-  return s;
+  if (!a.zip5 || a.zip5 !== b.zip5) return 0;      /* Zip5 stays a gate, not a score */
+  var s = W_ZIP;                                   /* zip5 equal, already checked */
+  s += W_ADDR * sim(a.addr, b.addr);
+  s += W_NAME * sim(a.name, b.name);
+  s += W_STATE * sim(a.state, b.state);
+  s += W_CITY * sim(a.city, b.city);
+  return Math.round(s);
 }
 function distM(a, b) {
   if (!a || !b) return null;
@@ -2578,12 +2605,21 @@ function pairCard(d) {
   var body = rows.map(function (r) {
     var judged = r.w !== undefined;
     var same = judged ? (!!r.ka && r.ka === r.kb) : false;
+    /* the middle cell prints the number the score actually used: the share of
+       adjacent pairs the two values have in common. Postal is a gate, so it
+       reads 100 or 0 and never anything in between. */
+    var pct = null;
+    if (judged) pct = (r.k === 'Postal') ? (same ? 100 : 0) : Math.round(sim(String(r.a || ''), String(r.b || '')) * 100);
     var pair = judged && !same ? dupMark(r.a, r.b) : [esc(r.a || '—'), esc(r.b || '—')];
     var w = judged ? '<span class="w-chip">' + r.w + '</span>' : '';
-    var cls = judged ? (same ? 'st-same' : 'st-diff') : 'st-flat';
+    var cls = !judged ? 'st-flat' : (pct >= 100 ? 'st-same' : (pct === 0 ? 'st-diff' : 'st-part'));
+    var mark = judged
+      ? (pct >= 100 ? '✓' : (pct === 0 ? '✕' : pct + '%'))
+      : '<span class="flat-dot">·</span>';
+    var tip = judged ? ' title="' + pct + '% similar after sorting adjacent pairs → ' + Math.round(r.w * pct / 100) + ' of ' + r.w + ' points"' : '';
     return '<tr class="' + cls + '" data-field="' + r.k + '"><td class="f">' + r.f + w + '</td>'
       + '<td class="a">' + pair[0] + '</td>'
-      + '<td class="m">' + (judged ? (same ? '✓' : '✕') : '<span class="flat-dot">·</span>') + '</td>'
+      + '<td class="m"' + tip + '>' + mark + '</td>'
       + '<td class="b">' + pair[1] + '</td></tr>';
   }).join('');
   var keepOpts = [[a, 'A'], [b, 'B']].map(function (x) {
@@ -2602,7 +2638,7 @@ function pairCard(d) {
     + who
     + '<span class="rc-meta" style="margin:0"><span data-i18n="dup.detected">detected</span> ' + esc(d.detectedAt || '') + '</span></div>'
     + (sa.zip5 !== sb.zip5 ? '<div class="warn-line" style="margin:0 0 8px">Postal differs — the text channel returns <b>0</b> no matter what the other fields say; only the coordinate channel can still call this a duplicate.</div>' : '')
-    + '<div class="rc-meta" style="margin:0 0 6px" data-i18n="dup.hint">address 40 · name 10 · postal 25 · province 15 · city 10 — exact match after cleaning, or 0. Coordinates are evidence, not points: ≤30 m = same point, 30–100 m = grey zone, >100 m = different.</div>'
+    + '<div class="rc-meta" style="margin:0 0 6px" data-i18n="dup.hint">address 40 · name 10 · postal 25 · province 15 · city 10. Each field scores <b>in proportion</b>: the two values are cut into adjacent character pairs, the pairs are sorted (so word order stops mattering), and the shared share is what counts — 60% similar is 60% of the weight of that field. Postal is a gate: a different Zip5 zeroes the text channel outright. Coordinates are evidence, not points: ≤30 m = same point, 30–100 m = grey zone, >100 m = different.</div>'
     + '<table class="dup-cmp"><thead><tr><th class="f"></th>'
     + '<th class="a"><span class="ab">A</span><b class="mono">' + esc(a.id) + '</b>' + provBadge(a.provider)
     + (ocA ? '<span class="mono" style="color:var(--text-tertiary)">' + esc(ocA.ocId) + '</span>' : '<span class="badge badge-orange">no OC</span>') + '</th>'

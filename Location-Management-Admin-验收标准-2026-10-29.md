@@ -1,7 +1,7 @@
 # Location Management Admin Console — 功能验收标准（通俗版）
 
-> 版本 **v4.1.0** · 对照原型 https://jama-dev520.github.io/location-prototype/
-> 配套文档：PRD v4.1.0（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
+> 版本 **v4.2.0** · 对照原型 https://jama-dev520.github.io/location-prototype/
+> 配套文档：PRD v4.2.0（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
 > 对外（英文，给外国同事）：https://jama-dev520.github.io/location-prototype/feature-overview.html
 > 演示视频（3 分 25 秒，36 条英文字幕，**按 v3.8.0 录制** —— v4.0 的重复检查与 v4.1 的多源展示还没录进去）：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 
@@ -76,7 +76,7 @@ v4.0.0 另有一处变化在重复页：打分从百分比改成**标签**（`HI
 | 4 | 不写原因直接点确认 | 被拦住，提示必须写原因 |
 | 5 | 打开 **OC Location List** | 有 `Source` 列（`packagehub (LMS)` 这种）、`Issues` 列（`N blocking` / `N drift` / `2:1`）、`Sweeper` 列，和 **`Live`** 列（开关旁写着 `live` / `not live`） |
 | 6 | 点工具栏 **Not live yet (n)** | 只剩未上线门店；左侧 OC 菜单徽章是同一个数字 |
-| 7 | 打开 **Duplicate Check** | 一组疑似同店的门店，A/B 两列逐字段对比，中间 ✓ / ✕（每行带权重 40/10/25/15/10）；顶部是标签 `HIGH_SUSPECT` / `MEDIUM_SUSPECT`，不是百分比；处置是三种，不是两种 |
+| 7 | 打开 **Duplicate Check** | 一组疑似同店的门店，A/B 两列逐字段对比，中间是**重合比例**（100% 才显示 ✓，0% 显示 ✕，其余显示百分比，每行带权重 40/10/25/15/10）；顶部是标签 `HIGH_SUSPECT` / `MEDIUM_SUSPECT` |
 | 8 | 在重复页选「同一站点」并确认，回 OC 列表看那家店 | 被放弃的那条变 `inactive` 并标 `merged_into`；OC 列表这**一家店变成两行**（一行 live、一行 standby），Issues 列出现 `2:1`，Linked Vendors 显示两条记录 |
 | 9 | 打开 **Data Issues** | 三块：Provider data issues / Changed after sign-off / Failed intake，没有"待决策队列"这种说法 |
 | 10 | 找一条 `Not live yet` 且无异常的门店，点启用开关 | 弹核对窗，列出地址/坐标/营业时间 + **每个字段的来源** + 5 项检查 + 必须勾选 |
@@ -89,7 +89,7 @@ v4.0.0 另有一处变化在重复页：打分从百分比改成**标签**（`HI
 | 17 | 点顶部 `中文`，逐页翻一遍；再点回 `EN` | 导航、表头、页面说明、弹框、详情标签页、演示脚本、提示全部变中文；**门店名、地址、供应商名、单号、字段名仍是英文**（数据不翻）；切回 `EN` 全部还原，不留中文；刷新后记住上次选择 |
 | 18 | 打开 **Data Issues**，看顶部三个数字 | 地址信息不全 / 缺少邮编 / 营业时间为空，三个数字都 > 0；点「缺少邮编」列表只剩两条，Tile 高亮；再点一次恢复全量 |
 | 19 | 随便标记一条 `postal` 异常，回 Data Issues | 「缺少邮编」的数字 +1 —— 不用选类别，字段决定它落哪一格 |
-| 20 | 打开 **Duplicate Check**，看两个邮编 `11210` 与 `11210-2214` | 一字段一行，中间只有 ✓ 或 ✕（**没有 ≈**）；Zip5 相同算 ✓，`-2214` 那截不参与打分；地址行 `2918 Avenue I` 与 `2918 Avenue I Ste 2` 是 ✕，只高亮不同的那段 |
+| 20 | 打开 **Duplicate Check**，看邮编与地址两行 | 邮编行：Zip5 相同 → **100%**（`-2214` 那截不参与打分）；地址行 `2918 Avenue I` 与 `2918 Avenue I Ste 2` → **80%**（不是 0），只高亮不同的那段 `STE 2` |
 | 21 | 打开任意门店详情的 **Hours & Services** | 若某天不足 3 小时，营业时间下方有黄色告警，写明「SATURDAY 10:00-12:00 — under 3 hours (2.0h)」 |
 | 22 | 回 **Data Issues**，点第四个必查项后导出 CSV | 第四个格子的数字 = 导出行数；表头有 Address / City / State / Postal code / Source / Type，每行能看出是哪家店 |
 | 23 | 看供应商列表的 **Type** 与 **QR** 两列 | Type 写成 `packagehub (LMS)` 这种样式（没有单独的 Provider 列）；QR 只在 LMS 的 6 条记录上出现，其余是 `—` |
@@ -203,7 +203,7 @@ v4.0.0 另有一处变化在重复页：打分从百分比改成**标签**（`HI
 某条 LMS 门店同步进来没有 sweeper。运营在供应商详情看到 `missing` → 标记异常（字段 sweeper，原因"未提供揽收方，下游无法路由"）。这家店仍然不能被启用（有未关闭问题），也不会悄悄上线。
 
 **故事 3 · 两条记录其实是同一家店**
-Duplicate Check 里一对 `HIGH_SUSPECT` 的疑似重复（地址一样、邮编一个带四位后缀）。运营在 A/B 两列里核对：地址行 ✕ 只差 `Ste 2`，邮编行 ✓（Zip5 相同），坐标相距不到 30 米。判断是同一家 → 选「同一站点」并确认。
+Duplicate Check 里一对 `HIGH_SUSPECT` 的疑似重复（地址一样、邮编一个带四位后缀）。运营在 A/B 两列里核对：地址行 **80%**（只差 `STE 2`）、邮编行 **100%**（Zip5 相同）、名称行只有六成，坐标相距不到 30 米 —— 总分 89，`HIGH_SUSPECT`。判断是同一家 → 选「同一站点」并确认。
 结果：被放弃的那条变成 `inactive` 并记 `merged_into`，留下的那条保住原 OC。OC 列表里这家店现在**两行** —— 一行 live，一行 standby 且状态 inactive；Issues 列出现 `2:1`。**合并是停用一条，不是把两条数据混在一起。**
 
 **故事 4 · 新店上线前的核对**

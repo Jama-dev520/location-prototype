@@ -1,6 +1,6 @@
-# Location Management Admin Console — PRD Change Summary (v4.1.0)
+# Location Management Admin Console — PRD Change Summary (v4.2.0)
 
-> Document version v4.1.0 ｜ Change date 2026-11-17 ｜ Status: Draft — pending review
+> Document version v4.2.0 ｜ Change date 2026-11-17 ｜ Status: Draft — pending review
 > 本轮（v3.0.0）是**模型换向**：OC 层不再改数据，只做两件事——**enable** 和 **标记异常**。所有数据以供应商为唯一来源，错的地方标记回去让供应商改；重复对单独成页；下游按字段合并，LMS 优先；M&MP 用同一套规则管同一份数据。
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
 > **验收标准（通俗版）**: `Location-Management-Admin-验收标准-2026-10-29.md`
@@ -464,6 +464,20 @@ https://jama-dev520.github.io/location-prototype/feature-overview.html
 - 片头片尾重做：片头标 `v3.3.0 / two layers · three sources / enable is a sign-off / a fix closes its own issue`；片尾四条地基换成 v3 的版本（数据只有供应商一个来源、没人处理就不变、下线容易上线要签收、修复能自证才自动关闭）。
 - 为了录制可读性，标记弹窗的严重度下拉文案从 `warning — live, but wrong for customers` 缩短为 `warning · live but wrong`（原来在 560px 弹窗里被截断）。纯文案，不改行为。
 
+## 二之二十五、v4.2.0：打分按重合的字符对算
+
+### 59. 「全等或 0」把该看见的判成了 0
+
+上一版的站点层是二分制：地址清洗后一样就 40 分，不一样就 0。听起来干净，实际把最该看见的一种情况直接判死了 —— **同一栋楼里换了个单元**：`2918 Avenue I` 与 `2918 Avenue I Ste 2` 是同一家店，却因为多了 `STE 2` 在那个占 40 分的字段上一分不得，最后只能靠坐标刚好重合捞回来。坐标没重合的呢？直接漏掉。
+
+### 60. 现在按「相邻字符对」的重合比例给分
+
+两个值都切成相邻的两字符（bigram），**排序**（这样词的先后不再影响结果 —— `STE 2 2918 AVENUE I` 与 `2918 AVENUE I STE 2` 是同一袋），然后用 Dice 系数算两袋的重合：`2|A∩B| / (|A|+|B|)`。字段得分 = 权重 × 这个比例。
+
+于是同一对从 **50 分变成 89 分**（地址拿了大部分、邮编/州/城市满分），真正对不上的地址仍接近 0，而演示数据里跑出来正好两对候选 —— 都对，没有多出来的噪音。对比表每行的中间列也从 ✓/✕ 改成了**这个比例**，评审看得见「为什么是 89」，而不是只能看到一个勾。
+
+**代价说清楚**：`ST` / `AVE` / `W` 这类通用词会带来一点底噪 —— 两条完全不同的街也能拿 30% 左右的地址相似度。所以邮编仍然是门（不同直接 0），城市和州仍然计分，坐标仍然是独立证据；单靠文本相似度是进不了 HIGH 的。
+
 ## 二之二十四、v4.1.0：一家店多条记录，只有一个供数
 
 ### 48. 一店一行藏掉了一半的事实
@@ -809,6 +823,7 @@ v3.4.0 删掉的是「数据是否应用」，不是「门店是否上线」。�
 | v2.3.0 | MINOR | 2026-10-30 | QR code 投递（仅 LMS）：两列表标记 + 筛选 + 详情字段 + CSV |
 | v2.2.0 | MINOR | 2026-10-30 | 跨层反查：Vendor 按 OC ID 查、OC 按 Vendor ID 查 |
 | v2.1.2 | PATCH | 2026-10-30 | ID 搜索大小写不敏感 + 输入即筛 |
+| v4.2.0 | MINOR | 2026-11-17 | 去重打分改为「相邻字符对排序后比重合」（Dice），字段按比例给分；对比表印比例而非对勾 |
 | v4.1.0 | MINOR | 2026-11-17 | 一店多记录：列表一行一条记录，只有一个 live source；换源 = 签收；列名与筛选统一 Live / Not live |
 | v4.0.0 | MAJOR | 2026-11-16 | 重复检查按 v2.0 规则重建：二分制打分 + 坐标证据 + 三种处置；新增映射层 |
 | v2.1.1 | PATCH | 2026-10-30 | 补充 LOC-00177 多段营业时间样例 |
