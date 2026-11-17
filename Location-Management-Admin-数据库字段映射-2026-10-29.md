@@ -134,7 +134,7 @@ oc_location (OC-owned, downstream-facing)
 | `qr_dropoff` | bool | backfill (derived) | yes | QR-code dropoff; `true` if **any** linked vendor location supports it |
 | `status` | enum(active,inactive,removed) | derived | yes | derived from linked vendor location(s) |
 | `is_enable` | bool | OC | no | OC switch; only F08/F09 writable. **v4.1.0:** `is_enable = true` requires `live_source_vendor_id` to be set |
-| **`live_source_vendor_id`** (v4.1.0) | varchar(32) FK → vendor_location | OC (chosen at sign-off) | no | the one record the store reads from. Must be a record linked through `vendor_oc_mapping`; at most one per `oc_location`; cleared only by `is_enable = false` |
+| **`live_source_vendor_id`** (v4.1.0) | varchar(32) FK → vendor_location | OC (chosen at sign-off) | no | the one record the store reads from. **Default `null`** — written only by a sign-off, never by the sync, never by a merge, never by a ranking. Must be a record linked through `vendor_oc_mapping`; at most one per `oc_location`; cleared only by `is_enable = false` |
 | **`baseline_source_vendor_id`** (v4.1.0) | varchar(32) FK → vendor_location | system | yes | which record the current baseline was captured from — the missing half of «what was verified», since with 2:1 the values alone no longer say whose they are |
 | **`intake_status`** (v2.6.0) | enum(pass,warn,fail,overridden) | intake check | yes | result of the quality gate; `fail` means no OC record; `overridden` means it exists but cannot be enabled |
 | **`baseline_at`** (v2.6.0) | timestamp | system | yes | **when the currently-stored values were human-verified** — the reference for good data |
@@ -144,7 +144,7 @@ oc_location (OC-owned, downstream-facing)
 
 ### Table 3 — `vendor_oc_mapping` (mapping table)
 
-> Links vendor location(s) to OC location. Principle 1:1; confirmed duplicate → 2:1. **v4.1.0:** a store may hold several **active** linked records and exactly one of them is the live source (`oc_location.live_source_vendor_id`); the mapping table itself stays a plain link table — the choice lives on the OC row, not on the link, so it survives a re-link unchanged.
+> Links vendor location(s) to OC location. Principle 1:1; confirmed duplicate → 2:1. **v4.1.0:** a store may hold several **active** linked records and exactly one of them is the live source (`oc_location.live_source_vendor_id`); the mapping table itself stays a plain link table — the choice lives on the OC row, not on the link, so it survives a re-link unchanged. Inserting a row here (a new or merged record) writes **no** live source: a record joins the store as a candidate.
 
 | Field | Type | Notes |
 |---|---|---|

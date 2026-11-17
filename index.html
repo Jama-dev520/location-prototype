@@ -1787,8 +1787,10 @@ var BASELINE={};
 function winnerOf(o){
   var vs=(o.vendorIds||[]).map(findVendor).filter(Boolean);
   /* v4.1.0 — one OC, several sources: the live source is chosen, not ranked.
-     The ranking below is only the default for a store nobody has picked a
-     source for yet (and the answer for every 1:1 record).
+     The ranking below is a PREVIEW for a store that has never been signed off
+     (it answers "what would customers read once we pick this one"); it never
+     decides that anything is live. A record that arrives with the sync is a
+     candidate until a person signs it off.
      A chosen source that went inactive is still the source: the store follows
      its provider down instead of silently borrowing another record's values. */
   if(o.liveSource){
@@ -1806,15 +1808,18 @@ function winnerOf(o){
   if(any)return {vendor:any,src:any.provider,inactive:true};
   return null;
 }
-/* every live OC must name one source — with two records on one OC the switch
-   answers "which record feeds this store", and a store cannot be half-on */
+/* v4.1.0 — a live store names the record it reads from, and nothing picks one
+   for it. A record that arrives with the sync is **not live**: it is a
+   candidate, not a source, whatever its rank. 1:1 is the only case with a
+   single possible answer, so it needs no choice. A 2:1 store with no chosen
+   source is simply not live — that is what "waiting for sign-off" looks like. */
 function ensureLiveSources(){
   OC_LOCATIONS.forEach(function(o){
     var ids=o.vendorIds||[];
-    if(!o.liveSource||ids.indexOf(o.liveSource)<0){
-      if(o.enable){var w=winnerOf(o);o.liveSource=w?w.vendor.id:(ids[0]||null);}
-      else o.liveSource=null;
-    }
+    if(o.liveSource&&ids.indexOf(o.liveSource)<0)o.liveSource=null;
+    if(o.liveSource||!o.enable)return;
+    if(ids.length===1)o.liveSource=ids[0];
+    else o.enable=false;              /* two candidates, nobody chose: not live */
   });
 }
 function sourcesOf(o){return (o.vendorIds||[]).map(findVendor).filter(Boolean);}
@@ -2099,9 +2104,11 @@ function renderVendor(){
       +'<td>'+statusBadge(v.status)+'</td>'
       +'<td>'+(oi.length?'<span class="pending-badge" onclick="openIssuesFor(\''+v.id+'\')">'+oi.length+' flagged</span>':'<span style="color:var(--text-tertiary)">—</span>')+'</td>'
       +'<td>'+(oc?'<span class="mono link" onclick="openOCDetail(\''+oc.ocId+'\')">'+esc(oc.ocId)+'</span>'
-        +(oc.vendorIds.length>1?(oc.enable&&oc.liveSource===v.id
-          ?' <span class="badge badge-green" title="this record feeds the store">live</span>'
-          :' <span class="badge badge-gray" title="listed on the store but not feeding it">standby</span>'):'')
+        +(!oc.enable?' <span class="badge badge-gray" title="this store is not live; no record is feeding it">not live</span>'
+          :oc.vendorIds.length>1?(oc.liveSource===v.id
+            ?' <span class="badge badge-green" title="this record feeds the store">live</span>'
+            :' <span class="badge badge-gray" title="listed on the store but not feeding it">standby</span>')
+          :'')
         :'<span style="color:var(--text-tertiary)">none</span>')+'</td>'
       +'<td class="mono" style="font-size:10.5px;white-space:nowrap">'+esc(v.updated||'—')+'</td>'
       +'</tr>';
@@ -2705,7 +2712,7 @@ function makeOC(v){
   var id='OC-'+String(OC_LOCATIONS.length+111).padStart(5,'0');
   return {ocId:id,name:v.name,addr1:v.addr1,addr2:v.addr2||'',city:v.city,state:v.state,country:v.country,postal:v.postal,
     provider:v.provider,type:v.type,sweeper:v.sweeper,phone:v.phone,lat:v.lat,lng:v.lng,timezone:v.timezone,
-    hoursText:v.hoursText||'',hoursOfOp:v.hoursOfOp||[],enable:false,vendorIds:[v.id],created:nowStr(),updated:nowStr(),intake:'overridden'};
+    hoursText:v.hoursText||'',hoursOfOp:v.hoursOfOp||[],enable:false,liveSource:null,vendorIds:[v.id],created:nowStr(),updated:nowStr(),intake:'overridden'};
 }
 
 /* ============ issues page ============ */
@@ -2970,7 +2977,8 @@ function ocPanels(o){
       +kv('Live source',(o.enable&&lv)?('<span class="mono">'+esc(lv.id)+'</span> '+provBadge(lv.provider)+' <span class="badge badge-green">live</span>'):'<span class="badge badge-gray">not chosen</span>')
       +kv('Source records',o.vendorIds.map(function(id){
         var isL=!!(o.enable&&o.liveSource===id);
-        return '<span class="mono">'+esc(id)+'</span> <span class="badge '+(isL?'badge-green':'badge-gray')+'">'+(isL?'live':'standby')+'</span>';
+        var lab=isL?'live':(o.enable?'standby':'not live');
+        return '<span class="mono">'+esc(id)+'</span> <span class="badge '+(isL?'badge-green':'badge-gray')+'">'+lab+'</span>';
       }).join(' &nbsp; '))
       +kv('Visible downstream',(o.enable&&statusOf(o)==='active')?'<span class="badge badge-green">Yes</span>':'<span class="badge badge-gray">No</span>')
       +kv('Mapping',o.vendorIds.length>1?'<span class="badge badge-blue">2:1</span>':'<span class="badge badge-gray">1:1</span>')

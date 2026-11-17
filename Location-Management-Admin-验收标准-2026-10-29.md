@@ -81,7 +81,7 @@ v4.0.0 另有一处变化在重复页：打分从百分比改成**标签**（`HI
 | 9 | 打开 **Data Issues** | 三块：Provider data issues / Changed after sign-off / Failed intake，没有"待决策队列"这种说法 |
 | 10 | 找一条 `Not live yet` 且无异常的门店，点启用开关 | 弹核对窗，列出地址/坐标/营业时间 + **每个字段的来源** + 5 项检查 + 必须勾选 |
 | 11 | 在 OC 列表把 `Source` 筛成 **M&MP** | 出现自营门店（如 `M&MP — Downtown Austin`）；它们的来源标成 `M&MP`（自营数据优先级最高），且和供应商门店一样要签收才能上线 |
-| 12 | 在 OC 列表找 **OC-00001**（挂了 PUDO 和 LMS 两条记录） | 这家店**占两行**：第一行 `PUDOpoint (PUDO)`、`live`；第二行以 `↳` 起头、`packagehub (LMS)`、`not live`。两行各自显示自己的地址/揽收方/更新时间；只有第一行有勾选框和异常徽章 |
+| 12 | 在 OC 列表找 **OC-00001**（挂了 PUDO 和 LMS 两条记录） | 这家店**占两行**：第一行 `PUDOpoint (PUDO)`、`live`；第二行以 `↳` 起头、`packagehub (LMS)`、`not live`。两行各自显示自己的地址/揽收方/更新时间；只有第一行有勾选框和异常徽章。**后进来的那条默认不是 live**，哪怕它的排名更高 |
 | 13 | 点第二行（LMS 那条）的开关 | 弹框顶部说明「这家店已经 live 在 LOC-10024 上」，列的是 **LMS 那条**的值（电话 2125550189），按钮写 `Switch live source & sign off`；勾选后确认 |
 | 14 | 打开 **Data Issues**，点顶部 `Apply next provider sync` | 2 条自动关闭（sweeper 缺失、邮编矛盾）、1 条「变了但仍不合格」保持 open、1 条「需要人工复核」保持 open、1 条「未变化」保持 open；页面下方出现「Closed automatically by a sync」并列出旧值 → 新值 | 全关 / 全不关，或只显示一个总数 |
 | 15 | 在 **Data Issues** 点 `Export open issues (CSV)` | 下载 `data-issues-YYYYMMDD-HHMMSS.csv`，每行一条未关闭异常，包含 OC ID、字段·子字段、类型、严重度、原因；筛选了类型就只有该类型 | 只能截图、或导出的是全部历史 |
@@ -224,6 +224,8 @@ OC-00001 挂着两条记录：PUDO 的 `LOC-10024`（正在供数）和 LMS 的 
 - ❌ 任何页面能直接改门店的地址 / 营业时间 / 名称 / sweeper
 - ❌ 同一家 2:1 门店只显示一行，另一条记录在界面上看不见
 - ❌ 一家店有两条记录同时是 live（开着两条，或两条都关着却还标 live）
+- ❌ 新同步进来的一条记录，自己变成了 live（没经过任何人签收）
+- ❌ 两条记录、没人选过源，这家店却显示成 live
 - ❌ 关掉 live 那一行之后，店自动切到备用记录上继续在线
 - ❌ 换源时字段没有整条替换，或换了源却没重记基线
 - ❌ 重复页判成「同一站点」之后，两条记录还都是 active

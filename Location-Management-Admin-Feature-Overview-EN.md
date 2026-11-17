@@ -86,6 +86,11 @@ nobody has picked a source for yet — otherwise a merge could silently change w
 **What the live record supplies, it supplies alone.** Every field comes from that one record, empty ones included: a
 blank phone stays blank, because borrowing it from the standby record would hide who has to fix it.
 
+**A record arrives as a candidate, never as a source.** A new vendor record generates a store that is off and has no live
+source; a record merged into an existing store does not take the pointer either, whatever its rank. Two records with nobody
+choosing means the store is simply not live. What customers read changes when a person signs off — never because a sync
+delivered something that looks better.
+
 **Switching source is a sign-off, not a toggle.** Turning the standby line on runs the same checks over *that* record,
 replaces every field with its values, and recaptures the baseline. Turning the live line off takes the store down — it
 never promotes the standby, which has never been verified.

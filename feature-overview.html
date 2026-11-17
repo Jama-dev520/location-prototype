@@ -205,6 +205,10 @@
   nobody has picked a source for yet. And what the live record supplies, it supplies <b>alone</b>: every field, empty ones
   included. A blank phone stays blank — borrowing it from the standby record would hide the gap, and the gap is what tells
   the provider what to fix.</div>
+  <div class="callout"><b>A record arrives as a candidate, never as a source.</b> A new vendor record generates a store that is off
+  and has no live source; a record merged into an existing store does not take the pointer either, whatever its rank. Two
+  records with nobody choosing means the store is simply not live. What customers read changes when a person signs off —
+  never because a sync delivered something that looks better.</div>
   <div class="callout"><b>Switching source is a sign-off, not a toggle.</b> Turning the standby line on runs the same five
   checks over <i>that</i> record, replaces every field with its values and recaptures the baseline
   (<code>LIVE_SOURCE_CHANGED</code>), with the store staying live throughout. Turning the live line off takes the store down —
