@@ -254,7 +254,13 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 
 ### 3.4 Duplicate Check — 两层，各问一个问题（v4.0.0）
 
-![Duplicate Check 生命周期](https://workbuddy-space-static.codebuddy.work/image/tBzZJHSIMmxqwT8PzQKOfT.png)
+**站点层**：这两条记录是不是同一个物理站点？
+
+![Duplicate Check 2.0 — 站点层](https://workbuddy-space-static.codebuddy.work/image/rGWDRa0VC1YNMYnMZuvv4I.png)
+
+**映射层**：这个 source_key 现在对应哪个 OC？
+
+![Duplicate Check 2.0 — 映射层](https://workbuddy-space-static.codebuddy.work/image/3VT8csckDQBI9Bs3zQSB76.png)
 
 对应 PRD §5.21：<br/>
 · **站点层**：这两条记录是不是同一个物理站点？打分是**二分制** —— 地址 40 · 名称 10 · 邮编 25 · 州 15 · 城市 10，清洗后要么全等拿满分、要么 0（邮编不同直接 0）。坐标不折算成分数，而是**并排的证据通道**：≤30 m 同点位 / 30–100 m 灰区 / >100 m 不同。输出是标签：`HIGH_SUSPECT`（≥80）/ `MEDIUM_SUSPECT`（50–79）；<br/>
@@ -273,12 +279,6 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 ### 3.5 Sweeper 随同步进来（v3.0.0）
 
 sweeper 由供应商随门店一起提供，和其它字段一样只读。发现不对（没给、给了错的揽收方）→ 在供应商记录上**标记异常**，写明原因，推供应商改；下次同步把新值带进来。原「Sweeper 编辑」流程（flow3）已下线。
-
-### 3.5 Duplicate Check（独立页）
-
-![Duplicate Review](https://workbuddy-space-static.codebuddy.work/image/THq85hNgrIbu1LIbM5Pwrz.png)
-
-> 独立页面只回答一个问题：这两条供应商门店是不是同一家。是 → 2:1（两条记录喂一个 OC 门店，下游按字段合并，LMS 优先）；不是 → 1:1。OC 列表里 2:1 的门店带 `2:1` 标记。
 
 ### 3.6 Exception
 
@@ -308,6 +308,18 @@ sweeper 由供应商随门店一起提供，和其它字段一样只读。发现
 
 原来的「手改即裁决」「字段锁」「字段回退」三条流程（flow9/10/11）在 v3.0.0 全部下线——没有改，就没有锁和回退。
 
+### 3.10 Location 状态机（v4.1.0）
+
+![Location 状态机](https://workbuddy-space-static.codebuddy.work/image/s6IUFbwPF90MxY0uXkVAGN.png)
+
+两行、一根轴：**门店能是什么状态**，**一条记录被允许做什么**。它们只在一个地方相遇 —— 签收，因为那是唯一同时移动两行的动作。
+
+- **门店**：`No record`（入库失败 / 重复未决，下游什么都没有）→ `Not live`（已生成但关闭、无供数源；两条记录没人选也落在这里）→ `Live`（开着，恰好一个供数源，基线已记）→ `Offline`（人为关，或供数源失效；两者立即生效）→ `Retired`（被合并，`merged_into` 指向留下那条）。
+- **记录**：`Candidate`（同步刚送来的，永远不是来源）→ `Standby`（挂在别人供数的店上）或 `Live source`（这家店读它，一店一个），出口是 `Withdrawn`（`merged_into`，合并方离开就回到候选）与 `Removed`（供应商下架）。
+- **三条不变量画在图上**：① 同步本身进不了任何状态；② `Blocked` 不是状态（检查没过，店原地不动）；③ 下线一键、上线一检。
+
+对应 PRD §5.23；图为 `diagrams/flow13-location-state.png`。
+
 ## 四、交付物清单（v4.1.0）
 
 | 交付物 | 文件 | 语言 | 读者 | 说明 |
@@ -319,7 +331,7 @@ sweeper 由供应商随门店一起提供，和其它字段一样只读。发现
 | 验收标准（通俗版） | `Location-Management-Admin-验收标准-2026-10-29.md` | 中文 | 业务 / 测试 | 13 条快检、分页面清单、5 个故事、不该发生的事 |
 | **英文功能概览** | `feature-overview-en.html` / `Location-Management-Admin-Feature-Overview-EN.md` | 英文 | **外部同事** | 一页讲清做什么、为什么这样设计；可直接转发或打印 |
 | 交互原型 | `Location-Management-Admin-Prototype-2026-10-29.html` | 中英双语（右上角切换） | 全员 | 单文件高保真，覆盖 6 个菜单 + 详情 5 个标签页 |
-| 流程图 | `diagrams/flow1..12-*.png` | 英文 | 全员 | 12 张，2x 渲染，飞书可直接嵌入 |
+| 流程图 | `diagrams/flow1..13-*.png` | 英文 | 全员 | 13 张，2x 渲染，飞书可直接嵌入。v4 新增：`flow4` 站点层、`flow12` 映射层（重复检查 2.0），`flow13` Location 状态机 |
 | 演示视频 | `Location-Management-Admin-Demo-2026-10-29.mp4` | 英文字幕 | 全员 | 3 分 25 秒、36 条字幕，按 v3.8.0 重录；十段：两层 → 详情 → 标记 → 列表与来源/类型 → 签收 → 重复 → 自动关闭 → 漂移 → 只读角色 → 中英切换 |
 
 **对外分享用哪一个**：给外国同事发 `feature-overview.html`（英文单页），需要展开细节时再给 PRD 和字段映射；中文团队内部用本文件 + 验收标准。

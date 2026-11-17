@@ -401,11 +401,17 @@ A 2:1 mapping is a claim about the world: *these two records describe one shop*.
 
 **What this does not fix.** If the *anchor* record (the one the OC was created from) is the one that moves, the OC keeps its id and follows the new values — that is a store identity change, not a duplicate question, and it is still only visible as drift. That is the case in §5.20's territory, not this one.
 
-### 5.20 The duplicate lifecycle, as a picture
+### 5.20 The duplicate check, as two pictures
 
-![Duplicate check — one decision, re-read on every sync](https://workbuddy-space-static.codebuddy.work/image/tBzZJHSIMmxqwT8PzQKOfT.png)
+The station layer answers one question — are these two records the same physical station — and stops there. A binary text score with the postal code as a gate, coordinates alongside as evidence, two labels out, three dispositions waiting for a person.
 
-The diagram is also published as `diagrams/flow12-duplicate-cycle.png`; the source is `diagrams/flow12-duplicate-cycle.mmd`.
+![Duplicate check 2.0 — station layer](https://workbuddy-space-static.codebuddy.work/image/rGWDRa0VC1YNMYnMZuvv4I.png)
+
+The mapping layer answers a different question — which OC location does this `source_key` point at now — one source at a time, with every move proposed before it is written.
+
+![Duplicate check 2.0 — mapping layer](https://workbuddy-space-static.codebuddy.work/image/3VT8csckDQBI9Bs3zQSB76.png)
+
+Both are published as `diagrams/flow4-duplicate.png` and `diagrams/flow12-duplicate-cycle.png`; the sources are the matching `.mmd` files. The v3.14 lifecycle diagram — one decision, re-read on every sync, with an automatic split when the score dropped — is **superseded**: nothing splits by itself any more, a move is a proposal (§5.21).
 
 ### 5.21 The duplicate check, rebuilt on the v2.0 rule doc (v4.0.0)
 
@@ -439,6 +445,24 @@ A 2:1 store used to print one merged line. Whichever record ranked highest suppl
 
 **Why the chosen source beats the ranking.** Ranking (M&MP → LMS → PUDO Inc) answers a question nobody asked once a store is live: it silently re-points a signed-off store whenever a better-ranked record arrives. A merge into a live store must not change what the customer reads, so the named source wins; the ranking only fills the gap for a store that has never been signed off. This is the same rule as §5.18 — one record supplies the whole store — with the addition that the record is now chosen rather than inferred.
 
+### 5.23 The location state machine (v4.1.0)
+
+![Location state machine — one store, one live source](https://workbuddy-space-static.codebuddy.work/image/s6IUFbwPF90MxY0uXkVAGN.png)
+
+Two rows on one axis: what a **store** may be, and what a **record** is allowed to do. They meet in exactly one place — the sign-off — because that is the only action that moves both.
+
+**Store states.** `No record` (intake failed, or a duplicate pair is still open; nothing downstream exists) → `Not live` (`is_enable` false, `live_source` null — including the case of two records and nobody choosing) → `Live` (`is_enable` true, exactly one live source, baseline captured) → `Offline` (switched off by a person, or the source went inactive; both take effect immediately) → `Retired` (merged away, `merged_into` points at the keeper).
+
+**Record roles.** `Candidate` (delivered by the sync, never a source) → `Standby` (linked to a store that is live on another record) or `Live source` (the record this store reads, one per store), with `Withdrawn` (`merged_into`, returns to candidate if the keeper leaves) and `Removed` (delisted by the provider) as the exits.
+
+**Three invariants, drawn rather than asserted:**
+
+1. **No state is entered by the sync alone.** A record arrives as a candidate; the store it joins stays exactly where it was (§5.22).
+2. **`Blocked` is not a state.** A failed check leaves the store where it already was — `Not live`. Rendering it as a state would suggest the store moved, and the point is that it did not.
+3. **Down is one click, up is a check.** The asymmetry is the design: an unverified store going offline is a smaller failure than an unverified store going live.
+
+The diagram is published as `diagrams/flow13-location-state.png`; the source is `make_state_machine.py` (hand-drawn SVG, so the two rows stay aligned where they meet).
+
 ## 6. Page Map
 
 | Page ID | Page Name | Module | Core Functions | Entry | Exit | Data Passed | Feature IDs | Priority |
@@ -446,7 +470,7 @@ A 2:1 store used to print one merged line. Whichever record ranked highest suppl
 | P01 | Vendor Location List | Vendor Location List | Filter, list, export, sweeper edit | Sidebar "Vendor Location List" | P03 | Vendor Location ID (to detail) | F01/F02/F05/F10 | P0 |
 | P02 | OC Location List | OC Location List | Filter, list (one line per source record), export, live on/off per source, batch enable/disable, **Not live yet** queue | Sidebar "OC Location List" (default landing) | P03 / P04 | OC Location ID (to detail) | F03/F04/F05/F08/F09/F11/F20/F31/F32 | P0 |
 | P03 | Location Detail | Detail (vendor / OC) | Full profile tabs (Basic Info / Operations / Hours & Services / Linked Records / Change History), per-location change history, contextual actions (sweeper edit for vendor; enable + store edit for OC), **pending-change banner + downstream push status** | P01/P02 row click | P01, P02, P05 | Location ID | F06/F07/F08/F10/F11/F20/F21 | P0 |
-| P04 | **Duplicate Check** | Query + decide | Two layers: is this the same station (binary score + coordinate evidence, `HIGH_SUSPECT` / `MEDIUM_SUSPECT`), and where does a `source_key` map (one source at a time, human-confirmed). Three dispositions — same station / two tenants / address to fix; A/B comparison with a weight chip per judged field | Sidebar "Duplicate Check" | P02/P03 | Pair ID | F26 | P0 |
+| P04 | **Duplicate Check** | Query + decide | Two layers: is this the same station (binary score + coordinate evidence, `HIGH_SUSPECT` / `MEDIUM_SUSPECT`), and where does a `source_key` map (one source at a time, human-confirmed). Three dispositions — same station / two tenants / address to fix; A/B comparison with a weight chip per judged field. Diagrams: §5.20, state machine §5.23 | Sidebar "Duplicate Check" | P02/P03 | Pair ID | F26 | P0 |
 | P05 | **Data Issues** | One anomaly ledger | Three sections — provider data issues (open → reported → fixed), drift after sign-off (**information only**), failed intake (chase only). No decision queues, no approval step. **Export open issues to CSV** for the provider | Sidebar "Data Issues" | P01/P02/P03 | Issue / OC ID | F11/F19/F20 | P0 |
 | P05 | Change Log (global) | Change History | Cross-location change log with filters | Sidebar "Change Log" | P03 | Optional location ID prefill | F15 | P1 |
 | P06 | Sync Status | Data Sync | Last sync run per provider, results, failure alerts | Sidebar "Sync Status" | P05 | — | F16 | P1 |
