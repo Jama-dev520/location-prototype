@@ -461,7 +461,7 @@ Two rows on one axis: what a **store** may be, and what a **record** is allowed 
 2. **`Blocked` is not a state.** A failed check leaves the store where it already was — `Not live`. Rendering it as a state would suggest the store moved, and the point is that it did not.
 3. **Down is one click, up is a check.** The asymmetry is the design: an unverified store going offline is a smaller failure than an unverified store going live.
 
-The diagram is published as `diagrams/flow13-location-state.png`; the source is `make_state_machine.py` (hand-drawn SVG, so the two rows stay aligned where they meet).
+The diagram is published as `diagrams/flow13-location-state.png` (vector version: `diagrams/flow13-location-state.html`). It is hand-drawn SVG rather than generated, so the two rows stay aligned exactly where they meet — the sign-off.
 
 ## 6. Page Map
 
