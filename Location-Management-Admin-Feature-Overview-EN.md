@@ -1,7 +1,7 @@
 # Location Management Admin Console — Feature Overview
 
 **Audience:** operations, partner-facing and M&MP teams who work with location data
-**Document version:** 2.4 (covers console v3.13.0) · **Status:** clickable prototype (not in production)
+**Document version:** 2.6 (covers console v4.1.0) · **Status:** clickable prototype (not in production)
 **Prototype:** https://jama-dev520.github.io/location-prototype/
 **One-page version (shareable):** https://jama-dev520.github.io/location-prototype/feature-overview.html
 **Languages:** the console itself switches between English and Chinese in the header (v3.5.0); interface only — data stays as delivered  
@@ -16,7 +16,7 @@ self-operated stores. It exists so four daily jobs take seconds instead of a tic
 
 | # | What someone needs to do | What "done" looks like | Where |
 |---|---|---|---|
-| **J1** | Find out which locations are live | Filter `Status = active` + `Downstream = Live`, see the count, export exactly that set | OC Location List |
+| **J1** | Find out which locations are live | Filter `Live = Live` (the column and the filter use the same word), see the count, export exactly that set | OC Location List |
 | **J2** | Find out who actually collects parcels (sweeper) | Already on the row, in the detail page, filterable — no spreadsheet | Both lists |
 | **J3** | Correct a wrong address | Report it to the owner of the data with a precise reason; it is fixed at the source and arrives with the next sync | Vendor record → `Flag a data issue` |
 | **J4** | See what changed, and when | Any field, any location: who, when (to the second), old value → new value | Detail → Change History / Change Log |
@@ -74,12 +74,21 @@ source clears the type. If a record ever arrives with a type that does not belon
 ### 2.4 One store, several vendor records
 
 When a duplicate pair is confirmed as the same physical store, two vendor records feed one OC location (mapping `2:1`).
-Each **field** is then resolved independently, by source priority:
+Since v4.1.0 the list shows that honestly: **one line per record**, each with its own name, address, source, sweeper,
+status and update time, and **exactly one of them is the live source** — the record every downstream system reads.
 
-**M&MP (self-operated) → LMS → PUDO Inc** — the first source that has a value wins, and the next fills the gaps.
+The two rules that make this safe:
 
-Every field in the detail page shows where its value came from, so "why does this say X?" is answerable without asking
-anyone. Type is not merged loosely: it follows the constraint in 2.3.
+**The choice beats the ranking.** A record that was picked and signed off stays the source, even if a
+higher-ranked record arrives later. The ranking (M&MP → LMS → PUDO Inc, active records first) only answers for a store
+nobody has picked a source for yet — otherwise a merge could silently change what customers read.
+
+**What the live record supplies, it supplies alone.** Every field comes from that one record, empty ones included: a
+blank phone stays blank, because borrowing it from the standby record would hide who has to fix it.
+
+**Switching source is a sign-off, not a toggle.** Turning the standby line on runs the same checks over *that* record,
+replaces every field with its values, and recaptures the baseline. Turning the live line off takes the store down — it
+never promotes the standby, which has never been verified.
 
 ### 2.5 One visibility rule
 
@@ -99,10 +108,11 @@ Two different questions, two different owners: **is this value applied?** — it
 **is this store visible?** — the operator decides, through this sign-off. Enabling is the only moment a location becomes
 customer-visible, so it is treated as a signed release.
 
-Turning a location on is the only moment it becomes customer-visible, so it is treated as a signed release. Five checks
-run first; any failure blocks the button and states the reason:
+Turning a location on is the only moment it becomes customer-visible, so it is treated as a signed release. The
+sign-off applies to **one record** — on a 2:1 store, the line you clicked, not the merged row. Five checks run first;
+any failure blocks the button and states the reason:
 
-1. An **active** vendor location feeds this store
+1. That **source record** is active
 2. Opening hours are present
 3. Intake checks passed (no override)
 4. No duplicate pair waiting for a decision
@@ -110,7 +120,9 @@ run first; any failure blocks the button and states the reason:
 
 The dialog then shows the customer-facing values — address, postal code, coordinates, opening hours — each with its
 source, plus an acknowledgement the operator must tick. Confirming captures a **signed-off baseline** and writes
-`ENABLE_SIGNED_OFF` to the audit trail.
+`ENABLE_SIGNED_OFF` to the audit trail. When the store is already live on another record the dialog says so up front,
+the button reads **Switch live source & sign off**, and the audit line is `LIVE_SOURCE_CHANGED` — the store stays live
+throughout, so a source change never causes a visible outage.
 
 Turning a location **off** is one click. Going offline is always the safe direction, so it needs no ceremony.
 
@@ -202,6 +214,9 @@ M&MP is not a role — self-operated stores are handled by the same people under
 
 | Version | Change |
 |---|---|
+| **v4.1.0** | One store, several records, one live source: one line per record, the switch means “which record feeds this store”, source changes are sign-offs |
+| **v4.0.0** | Duplicate check rebuilt: binary station score with coordinates as evidence → `HIGH_SUSPECT` / `MEDIUM_SUSPECT` labels; three dispositions; a mapping layer judged one source at a time |
+| v3.13.0 | One record supplies the whole store, empty fields included |
 | v3.4.0 | No approval step: provider data is always applied; drift is information; issues export to CSV |
 | v3.3.0 | Issues close themselves when a provider run delivers a valid value |
 | v3.2.2 | The self-operated type value is `M&MP` (it used to read “M&MP store”) |

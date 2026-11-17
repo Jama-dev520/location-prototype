@@ -1,9 +1,9 @@
-# Location Management Admin Console — Requirement Overview (v3.14.0)
+# Location Management Admin Console — Requirement Overview (v4.1.0)
 
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
-> Companion: `Location-Management-Admin-PRD-2026-10-29` (v3.14.0)
+> Companion: `Location-Management-Admin-PRD-2026-10-29` (v4.1.0)
 > 给外部同事看的英文功能概览：https://jama-dev520.github.io/location-prototype/feature-overview.html
-> 演示视频（3 分 25 秒，36 条英文字幕，录的是 v3.8.0 —— 还没演 refresh，需要时再重录：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
+> 演示视频（3 分 25 秒，36 条英文字幕，**录的是 v3.8.0** —— v4.0.0 的重复检查与 v4.1.0 的多源展示都还没演，需要时再重录：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
 > Detail view (v2.4.0): clicking a location ID opens a **full page** with tabs — Basic Info / Operations / Hours & Services / Linked Records / Change History.
 > **v3.0.0 — 供应商之外，自营 M&MP 小店也走同一套。** M&MP = 自营小店（美国叫法），是门店目录里的第三类来源，数据由门店自己维护，异常找门店负责人；规则与供应商门店完全一致。
@@ -63,7 +63,9 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | `opening_hours{}` | json | backfill → OC-editable | no | opening hours (OC can override) |
 | `qr_dropoff` | bool | backfill (derived) | yes | QR-code dropoff：任一关联 vendor location 支持即为 `true` |
 | `status` | enum(active/inactive/removed) | derived | yes | derived from linked vendor location(s) |
-| `is_enable` | bool | OC | no | **OC switch**; new OC location defaults `false`; F08/F09 writable |
+| `is_enable` | bool | OC | no | **Live 开关**；新 OC 门店默认 `false`；**v4.1.0：`true` 时必须同时有 `live_source_vendor_id`** |
+| `live_source_vendor_id` | varchar(32) FK | OC（签收时选定） | no | **v4.1.0：这家店由哪条记录供数。** 一个 OC 只有一个；必须是 `vendor_oc_mapping` 里链上的记录；关店时清空 |
+| `baseline_source_vendor_id` | varchar(32) FK | system | yes | **v4.1.0：当前基线是从哪条记录取的。** 2:1 时只看值已经说不清"核实的是谁" |
 | `intake_status` | enum(pass/warn/fail/overridden) | intake check | yes | 数据质量准入结果；`fail` 表示根本没生成 OC 门店 |
 | `baseline_at` | timestamp | system | yes | **人工核实过的那一版的时间** —— 判断"好数据"的参照物 |
 | `propagated_at` | timestamp | system | yes | 最后一次推给下游的时间（缓存已失效）；`null` = 从未推送 |
@@ -73,9 +75,10 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 
 | Table | Key fields | Meaning |
 |---|---|---|
-| `vendor_oc_mapping` | `mapping_id` / `vendor_location_id` / `oc_location_id` / `created_at` | links vendor ↔ OC (principle 1:1; duplicate 2:1) |
+| `vendor_oc_mapping` | `mapping_id` / `vendor_location_id` / `oc_location_id` / `created_at` | links vendor ↔ OC (principle 1:1; duplicate 2:1)。**v4.1.0：** 一个 OC 可挂多条 active 记录，其中恰好一条是 live source；这个选择存在 `oc_location` 上，不在映射行上 |
 | `change_log` | `log_id` / `location_id` / `location_layer` / `occurred_at` / `operator` / `operation_type` / `field_name` / `old_value` / `new_value` / `source` / `remark` | append-only audit trail |
-| `duplicate_pair` | `pair_id` / `vendor_location_a` / `vendor_location_b` / `matched_on` / `match_score` / `diff` / `status` / `detected_at` / `resolved_by` / `resolved_at` | cross-provider fuzzy duplicate pairs |
+| `duplicate_pair` | `pair_id` / `vendor_location_a` / `vendor_location_b` / **`text_score`** / **`distance_m`** / **`label`** / `diff` / **`status`** / **`keep_vendor_location_id`** / **`merged_into`** / `detected_at` / `resolved_by` / `resolved_at` | **v4.0.0：** 站点层二分制打分（0–100）+ 坐标距离，输出 `HIGH_SUSPECT` / `MEDIUM_SUSPECT` 标签；处置三种 `merged` / `separate` / `fix` |
+| **`mapping_change`** (v4.0.0) | `change_id` / `round` / `source_key` / `changed_field` / `old_oc_location_id` / `new_oc_location_id` / `basis` / `status` / `actor` / `decided_at` | 映射层：**只针对一个来源**重判，`pending` 表示还没写任何东西，等人确认 |
 | `sync_run` | `run_id` / `provider` / `started_at` / `finished_at` / `result` / counts / `error_message` | one record per provider per day |
 | `user` | `user_id` / `name` / `email` / `has_enable_permission` | SSO user; `has_enable_permission` gates enable/edit |
 | **`oc_field_baseline`** (v2.6.0) | `baseline_id` / `oc_location_id` / `field_name` / `baseline_value` / `captured_at` / `capture_reason` | 签收时的值，用来判断「签收后变了哪些字段」；v3.0 起不再用于回退 |
@@ -105,6 +108,8 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | `SYNC_ROLLBACK` (v2.6.0) | 按同步批次或单字段回退 |
 | `INTAKE_OVERRIDDEN` (v2.6.0) | 数据质量不合格但人工强制生成 OC 门店（仍不可启用） |
 | `SYNC_QUARANTINED` (v2.6.0) | 硬校验失败，整条记录隔离，不写 OC |
+| `LIVE_SOURCE_CHANGED` (v4.1.0) | 换供数来源：店保持上线，字段整条替换、基线重记一次，记 old → new 来源 |
+| `OC_MAPPING_CHANGED` (v4.0.0) | 映射变更：某条 source_key 在人工确认后被指到另一个 OC |
 
 ### 1.6 Key semantic distinctions
 
@@ -160,29 +165,31 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 |---|---|---|---|---|
 | F01 | Vendor List | Paginated vendor list | P0 | raw provider locations, read-only except sweeper |
 | F02 | Vendor List | Filter & search | P0 | multi-condition AND |
-| F03 | OC List | Paginated OC list | P0 | OC-owned locations with enable + linked vendor |
+| F03 | OC List | Paginated OC list | P0 | OC 门店列表；**v4.1.0：一条供应商记录一行**，同一家店两条记录就两行，各显示自己的值，列表列头叫 **Live** |
 | F04 | OC List | Filter & search | P0 | multi-condition AND |
 | F05 | Export | Export current view | P0 | both lists, ≤10k rows |
 | F06 | Detail | Detail (vendor/OC) | P0 | tabs; OC detail shows editable fields |
 | F07 | Change History | Per-location log | P0 | full timeline |
-| F08 | Enable | Single enable/disable | P0 | OC layer; blocked if vendor inactive |
+| F08 | Live | One live source per store | P0 | **v4.1.0：开关是「哪条记录供数」**，一个 OC 只有一个；开备用行 = 带换源的签收；关 live 行 = 整店下线，不自动切到备用 |
 | F09 | Enable | Batch enable/disable | P0 | Mode A inline + Mode B Excel |
 | F10 | Sweeper | Sweeper sync + flag | P0 | sweeper comes with the sync, read-only; a wrong one is flagged (`DATA_ISSUE_RAISED`) |
 | F11 | Data issue | Flag an anomaly on a vendor field | P0 | field + reason, no value change; open issues block enable |
 | F12 | OC Generation | Auto-generate OC | P0 | new vendor (non-duplicate) → one OC (disabled) |
 | F13 | Status Propagation | Vendor inactive → OC disable | P0 | auto-disable + block downstream |
-| F14 | Duplicate | Standalone duplicate check | P0 | own page; same store → 2:1 (marked in OC list), not same → 1:1 |
+| F14 | Duplicate | Station check + mapping layer | P0 | **v4.0.0：** 二分制打分 + 坐标证据 → `HIGH_SUSPECT` / `MEDIUM_SUSPECT`；处置三种（合并停用 / 同址两家 / 地址待纠正）；映射层一次只判一个来源 |
 | F15 | Change History | Global log | P1 | cross-location search |
 | F16 | Data Sync | Sync status | P1 | per-provider run + failure alerts |
 | F17 | Overview | Dashboard | P2 | KPIs |
 | F18 | QR Dropoff | QR-code dropoff marker | P0 | LMS-only flag; shown on both lists + detail, filterable, exported |
 | F19 | Review Center | Intake data-quality gate | P0 | 新门店地址/坐标/营业时间不合格 → **不生成 OC 门店**，进 Data Quality |
 | F20 | Drift | Baseline drift + re-sign | P0 | 已上线门店被上游改动 → 下游用新值，台账显示漂移，可重新签收或标记异常 |
-| F21 | Enable | Enable sign-off | P0 | 前置 5 项检查 + 必须勾选 + 记基线；无在营供应商/缺时间/重复未决/有未关问题都不能启用 |
+| F21 | Enable | Enable sign-off | P0 | 前置 5 项检查 + 必须勾选 + 记基线；无在营供应商/缺时间/重复未决/有未关问题都不能启用。**v4.1.0：签收的是「一条记录」**，换源时弹框顶部说明已上线在哪条，按钮变 `Switch live source & sign off` |
 | F22 | Data Sync | Breaker & rollback | P1 | 单次 run 变更过多 → 降级干跑；按 run 一键回滚（7 天） |
 | F23 | *(retired)* | Field lock release | — | v3.0.0 删除：没有手改，就没有需要解锁的锁 |
 | F24 | *(retired)* | Field-level revert | — | v3.0.0 删除：值只能由供应商改，回退等于改数据 |
-| F25 | Merge | One record supplies the store | P0 | **整条记录**由一个来源供数：M&MP → LMS → PUDO Inc（先在 active 里挑），赢的那条供全部字段，<b>空的也算空的</b>，不跨记录借值 |
+| F25 | Merge | One record supplies the store | P0 | **整条记录**由一个来源供数：先看 `live_source_vendor_id`（**v4.1.0**），没有才按 M&MP → LMS → PUDO Inc（active 优先）；赢的那条供全部字段，<b>空的也算空的</b>，不跨记录借值 |
+| F31 | OC List | One line per source record | P0 | **v4.1.0：** 2:1 的店一行一条记录，live 在前，备用行 `↳` 起头；勾选框、异常徽章、关联供应商只在第一行，一次决定只对一家店 |
+| F32 | Live Source | Which record feeds the store | P0 | **v4.1.0：** `live_source_vendor_id` 存指针而不是算排名；供应商列表标 live / standby；详情页 `Live source` 挨着 `Live (is_enable)`；导出带 `Live source` 列 |
 | F26 | Data Issues | One ledger for all anomalies | P0 | 供应商问题 + 签收后漂移 + 入库失败合成一页，替代 Review Center |
 
 ### 2.4 Key business decisions
@@ -210,6 +217,8 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | 19 | Duplicate (v3.0.0) | 独立 **Duplicate Check** 页；同一家 → 2:1 并在 OC 列表标出；不是同一家 → 1:1。未裁决的重复对阻塞启用 |
 | 20 | Merge priority (v3.0.0 → v3.13.0 改为整条记录) | 来源优先级 **M&MP（自营）→ LMS → PUDO Inc**。取值单位由「字段」改成「记录」，见决策 37 |
 | 21 | Drift (v3.0.0) | 签收后供应商改了值：下游直接用新值，台账显示「与基线不同」，运营可**重新签收**或**标记异常**。基线是参照物，不是冻结器 |
+| 40 | 一家店多条记录，只有一个供数 (v4.1.0) | 2:1 的店以前只打一行合并值：排名高的那条供全部字段，另一条**看不见** —— 于是没人知道两家在喂一家店，更没法挑。现在**一条记录一行**，各显示各自的值，而且**只有一行能是 live**。开关的含义跟着变：从「这家店开没开」变成「这条店由谁供数」。关掉 live 行 = 门店下线（备用记录从没被签收过，没有可回退的对象）；打开备用行 = **带换源的签收**，字段整条替换、基线重记。列名与筛选统一叫 **Live / Not live** |
+| 39 | 重复检查按 v2.0 规则重建 (v4.0.0) | 从「加权相似度 ≥75%」改成两层：**站点层**用二分制打分（地址 40 · 名称 10 · 邮编 25 · 州 15 · 城市 10，邮编不同直接 0）+ **坐标证据通道**（≤30 m 同点 / 30–100 m 灰区 / >100 m 不同），输出 `HIGH_SUSPECT` / `MEDIUM_SUSPECT` 两个标签，不再是百分比；**映射层**一次只判一个来源（source_key），变更先提案、等人确认，两边同一次都变了进人工。处置从两种变三种：合并停用一条（记 `merged_into`）/ 同址两家各自保留 / 地址待纠正。**没有一步是自动的** |
 | 38 | 配对会被重读 (v3.14.0) | 2:1 是「这两条记录**在那一刻**是同一家店」的判断，但以前没人再读过它：分数是入池时存下的，决定是终态。现在分数**按现值算**，判定时**留一份快照**（分数 + 两条身份）；之后每次同步只要改了某条的身份（地址/城市/州/邮编），就重算它所在的配对：<br>· 仍 ≥75 → 保持 2:1，无需动作<br>· 掉到 75 以下 → **拆分**：**变的那条**退出去，另给一个 OC（默认不启用、要签收），另一条留着原 OC 和它签收时的身份<br>· 这条不在配对里 → 就是一次普通更新，值与漂移照旧<br>「变的那条走」而不是「优先级低的那条走」—— 因为失效的是它的主张。**注意**：OC 不因此改 ID；新 OC 建好后会立刻跟其他记录再判一次重，免得它一出生就是半个重复 |\n| 37 | 整条记录供数 (v3.13.0) | 2:1 的店不再「逐字段拼」：**挑一条记录，它供全部字段**。以前 LMS 没填电话，就拿 PUDO 的补上 —— 界面看着完整，但「LMS 缺电话，谁去催」这个问题被系统自己回答成了「不用催，已经有值了」，于是 LMS 永远不会被要求补齐。<br>现在没填就是没填：OC 那一行显示 `—`，来源标 LMS，缺口留在能被看见、也就能被标出去的地方。选赢家仍然先看 **active**：LMS 下架，是**整店**交给 PUDO，而不是交一半。代价要说清：已上线的店可能出现 `—`，这是故意的 —— 宁可露缺口，也不要一家看起来完整、实际没人负责的店 |\n| 36 | 省市筛选 (v3.12.0) | 两个列表都加 **Province** / **City** 两个筛选，每个选项带实时条数。城市跟着州走：选 NY 只剩纽约那三个 —— 不做收窄的城市下拉就是一堵只会变长的名字墙。**切换州时会先清掉不属于新城范围的市**，否则表里会显示 0 行而下拉写着「全部」。供应商列表的城市列补上州（`Brooklyn, NY`）：能筛的东西得能在行上看见。CSV 表头统一叫 `Province`，背后仍是 `state` 列 |
 | 35 | OC 只数挡路的 (v3.11.0) | OC 行的 Issues 列原来复制供应商那边的异常总数（提醒级也算），2:1 的店还要把两条记录加起来 —— 那是**供应商列表的问题**，而且几乎从来不是让人改变决定的那个数。现在只带 **blocking**，按后果命名；旁边三个 `drift` / `2:1` / `intake` 才是 OC 独有的。颜色也跟着语义走：**红=挡路，橙=要看一眼**（原来漂移是红的、阻塞是橙的，正好反了）。筛选从「有没有异常」变成三个理由：`Blocking data issue` / `Changed since sign-off` / `Duplicate 2:1`；`Intake overridden` 只留徽章 —— 数据里没有这种记录，一个永远筛出 0 行的选项比没有更糟 |
 | 34 | 一个 Source，不是两个 (v3.10.0) | 列表和筛选都只留一个 **Source**：`PUDOpoint (PUDO)`、`packagehub (LMS)`、`M&MP`（M&MP 不重复写两遍）。Type 列、Type 下拉级联、`type ≠ source` 徽章与筛选项一起下线 —— 不可能的组合不再是「被标出来」，而是拼不出来。`Locker` 仍是合法 PUDO 类型但本版不暴露（加回来只是 SOURCES 里一行）。**M&MP 的揽收方固定是 LMS**：店是我们的，揽收不是 —— 数据里没有 M&MP 这个揽收方，筛选里也没有这个选项 |
@@ -242,15 +251,23 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 
 ![Operator Batch Disable](https://workbuddy-space-static.codebuddy.work/image/bRWhlIpawHygvuqvunNgMg.png)
 
-### 3.4 Duplicate Check — 一次判定，每次同步重读（v3.14.0）
+### 3.4 Duplicate Check — 两层，各问一个问题（v4.0.0）
 
 ![Duplicate Check 生命周期](https://workbuddy-space-static.codebuddy.work/image/tBzZJHSIMmxqwT8PzQKOfT.png)
 
-对应 §5.19 / §5.20：<br/>
-· **进来**：新记录或被改过的记录按现值打分（地址 50 · 邮编 25 · 城市 15 · 州 10），≥75 进待判定、**不生成 OC**；<br/>
-· **判定**：同一家 → 2:1（一个 OC，优先级高的那条供全部字段），并留快照；不是 → 各一个 OC；<br/>
-· **之后每次同步**：配对的某条身份变了就重算；掉下 75 → **变的那条退出**、另起一个 OC（默认不启用），另一条留在原 OC；<br/>
-· **不在配对里**的记录身份变了，就是普通更新 —— 这是第三轮「LMS 变了仍然对应 C」的原因。
+对应 PRD §5.21：<br/>
+· **站点层**：这两条记录是不是同一个物理站点？打分是**二分制** —— 地址 40 · 名称 10 · 邮编 25 · 州 15 · 城市 10，清洗后要么全等拿满分、要么 0（邮编不同直接 0）。坐标不折算成分数，而是**并排的证据通道**：≤30 m 同点位 / 30–100 m 灰区 / >100 m 不同。输出是标签：`HIGH_SUSPECT`（≥80）/ `MEDIUM_SUSPECT`（50–79）；<br/>
+· **三种处置**（都要人点）：同一站点 → 停用一条并记 `merged_into`，留下的那条保住 OC；同址两家 → 都保留、各自一个 OC、都标「同址」；地址有误 → 挂起等下一次同步送来正确地址；<br/>
+· **映射层**：某个 `source_key` 现在对应哪个 OC？**一次只判一个来源，不按配对连带**。身份字段变了就重判，变更会**先提案**（附打分与距离依据）等人确认；两边在同一次 run 都变了 → 进人工；<br/>
+· **没有任何一步是自动的**：不自动合并、不自动停用、不自动阻断。
+
+### 3.4a 一家店多条记录，只有一个供数（v4.1.0）
+
+对应 PRD §5.22：<br/>
+· **展示**：2:1 的店在 OC 列表里**一条记录一行**，live 在前，备用行以 `↳` 起头，各显示自己的名称/地址/来源/揽收方/状态/更新时间；勾选框、异常徽章、关联供应商只在第一行；<br/>
+· **live 只有一个**：`is_enable = true` 必然对应一个 `live_source_vendor_id`。打开备用行 → 走签收（5 项检查针对**那条记录**），弹框顶部说明这家店现在在哪条上，按钮是 `Switch live source & sign off`；确认后字段整条替换、基线重记、记 `LIVE_SOURCE_CHANGED`；<br/>
+· **关掉 live 行 = 整店下线**：不会自动切到备用记录 —— 备用记录从没被签收过，等于拿未核实的数据顶上，这是这套系统唯一不肯做的事；<br/>
+· **排序让位给选择**：`live_source_vendor_id` 优先于 M&MP → LMS → PUDO 的排名。否则一条新记录合并进来，会把一家已签收的店悄悄换个数据源；排名只在「这家店还从没选过源」时兜底。
 
 ### 3.5 Sweeper 随同步进来（v3.0.0）
 
@@ -290,13 +307,13 @@ sweeper 由供应商随门店一起提供，和其它字段一样只读。发现
 
 原来的「手改即裁决」「字段锁」「字段回退」三条流程（flow9/10/11）在 v3.0.0 全部下线——没有改，就没有锁和回退。
 
-## 四、交付物清单（v3.2.1）
+## 四、交付物清单（v4.1.0）
 
 | 交付物 | 文件 | 语言 | 读者 | 说明 |
 |---|---|---|---|---|
 | 需求总览（本文） | `Location-Management-Admin-需求总览-2026-10-29.md` | 中文 | 全员 | 字段字典、需求与优先级、流程图、交付物清单 |
-| 产品需求文档 | `Location-Management-Admin-PRD-2026-10-29.md` | 英文 | 研发 / QA | F01–F26、页面规格、验收标准（§10） |
-| 数据库字段映射 | `Location-Management-Admin-数据库字段映射-2026-10-29.md` | 英文 | 后端 / 数据 | 11 张表、筛选↔API↔字段、来源→类型约束 |
+| 产品需求文档 | `Location-Management-Admin-PRD-2026-10-29.md` | 英文 | 研发 / QA | F01–F32、页面规格、验收标准（§10） |
+| 数据库字段映射 | `Location-Management-Admin-数据库字段映射-2026-10-29.md` | 英文 | 后端 / 数据 | 12 张表、筛选↔API↔字段、来源→类型约束、`live_source_vendor_id` 与 `mapping_change` |
 | 变更摘要 | `Location-Management-Admin-PRD-变更摘要-2026-10-29.md` | 中文 | 全员 | 每一版改了什么、为什么改 |
 | 验收标准（通俗版） | `Location-Management-Admin-验收标准-2026-10-29.md` | 中文 | 业务 / 测试 | 13 条快检、分页面清单、5 个故事、不该发生的事 |
 | **英文功能概览** | `feature-overview-en.html` / `Location-Management-Admin-Feature-Overview-EN.md` | 英文 | **外部同事** | 一页讲清做什么、为什么这样设计；可直接转发或打印 |
@@ -318,9 +335,11 @@ sweeper 由供应商随门店一起提供，和其它字段一样只读。发现
 | **核心控制** | OC 层只有两个动作：`enable`（签收）和 `flag an issue`；**不改任何值** |
 | **可见性** | `status = active` **且** `is_enable = true`，下游才可见 |
 | **状态联动** | 供应商 inactive → 关联 OC 自动 disable + 阻断下游；强制启用报错 |
-| **取值规则** | **整条记录**合并：**M&MP → LMS → PUDO Inc**（先在 active 里挑），赢的那条供全部字段，**它空着的字段也照空**，不拿另一家补 |
+| **取值规则** | **整条记录**合并：先看 `live_source`，没有才按 **M&MP → LMS → PUDO Inc**（active 优先），赢的那条供全部字段，**它空着的字段也照空**，不拿另一家补 |
+| **一家店多条记录**（v4.1.0） | 2:1 的店**一条记录一行**：各自的值都看得见，**只有一个 live**；开备用行 = 带换源的签收，关 live 行 = 整店下线（不自动顶替） |
+| **Live 与 enable**（v4.1.0） | 列表列头、筛选、行内标签统一叫 **Live / Not live**；字段名仍是 `is_enable`，详情页与它并排显示 `Live source` |
 | **一个来源**（v3.10.0，原「来源决定类型」v3.2.0） | `packagehub (LMS)` · `PUDOpoint (PUDO)` · `M&MP` —— 类型是值、归属是括号，列表一列、筛选一项，没有需要同步的第二个下拉 |
-| **去重** | 独立 Duplicate Check 页；≥75% 疑似；**未裁决阻塞启用**；确认 2:1 后两条记录喂一条 OC 记录 |
+| **去重**（v4.0.0） | 独立 Duplicate Check 页，两层：站点层二分制打分 + 坐标证据 → `HIGH_SUSPECT` / `MEDIUM_SUSPECT`；映射层一次只判一个来源；处置三种；**未裁决阻塞启用** |
 | **异常** | 四层粒度（字段 → 子字段 → 7 类 → 严重度）；`blocking` 阻塞签收、`warning` 不阻塞；open → reported → fixed |
 | **OC 列表数什么**（v3.11.0） | 只数**阻塞级**（`n blocking`），加上三个 OC 自己的状态：`n drift`（签收后变化）、`2:1`、`intake`。**不再显示供应商的异常总数** —— 那是供应商列表的问题；提醒级不进这个决定。筛选跟着变成三个理由：阻塞 / 签收后变化 / 重复 2:1 |
 | **签收即基线** | 5 项检查 + 核对客户可见值 + 必须勾选；记基线，写 `ENABLE_SIGNED_OFF` |

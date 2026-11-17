@@ -1,6 +1,6 @@
-# Location Management Admin Console — Database Field Mapping (v3.14.0)
+# Location Management Admin Console — Database Field Mapping (v4.1.0)
 
-> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v3.14.0)
+> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v4.1.0)
 > Feature overview (English, for readers outside the team): `https://jama-dev520.github.io/location-prototype/feature-overview.html`
 >
 > **v3.0.0 model change.** The console no longer writes location fields. `field_lock` is replaced by `data_issue`; `sync_change_set` decisions and `oc_field_baseline` versions used for revert are retired; downstream values are a per-field merge with **LMS first**. The console writes exactly four things: `oc_location.is_enable`, `data_issue` rows, baseline captures, and `change_log`.
@@ -48,7 +48,7 @@ oc_location (OC-owned, downstream-facing)
 
 ### 1.2 OC Location List (`GET /api/oc-locations`)
 
-> v2.7.0 adds the **Downstream** filter and the `⏳ Not live yet (N)` preset, which maps to `is_enable = false` (N = `COUNT(*) WHERE is_enable = false`). This preset is the sign-off queue that used to be the fourth Review Center tab.
+> v2.7.0 added the **Downstream** filter and the `⏳ Not live yet (N)` preset, which maps to `is_enable = false` (N = `COUNT(*) WHERE is_enable = false`). This preset is the sign-off queue that used to be the fourth Review Center tab. **v4.1.0** renames the filter to **Live** (`Live` / `Not live`) so it matches the column it filters, and adds `live_source_vendor_id` as a filter param (`live_source`) — the row that answers «which record feeds this store» is a query an operator actually asks during an incident.
 
 | UI Filter | API Param | Table | Field | Type | Match | Notes |
 |---|---|---|---|---|---|---|
@@ -59,7 +59,8 @@ oc_location (OC-owned, downstream-facing)
 | Provider | `provider` | `vendor_location` (via mapping) | `source_provider` | enum | exact | join through mapping |
 | Sweeper | `sweeper` | `vendor_location` (via mapping) | `sweeper` | enum | exact | join through mapping |
 | Status | `status` | `oc_location` | `status` | enum(active,inactive,removed) | exact | derived from linked vendor |
-| Enable | `is_enable` | `oc_location` | `is_enable` | bool | exact | OC switch |
+| **Live** (was *Enable*, v4.1.0) | `is_enable` | `oc_location` | `is_enable` | bool | exact | the column heading and the filter label are the same word; the field name stays `is_enable` |
+| **Live source** (v4.1.0) | `live_source` | `oc_location` | `live_source_vendor_id` | varchar(32) | exact | which linked record the store reads from; `null` when the store has never been signed off |
 | Type | `location_type` | `vendor_location` (via mapping) | `location_type` | enum | exact | join through mapping |
 | QR Dropoff | `qr_dropoff` | `oc_location` | `qr_dropoff` | bool | exact | backfilled from linked vendor location |
 | **Sync status** (v2.6.0) | `sync_state` | `sync_change_set` (derived) | `decision` | enum | `pending` / `none` / `all_resolved` | derived: does this OC location have held provider changes |
@@ -132,7 +133,9 @@ oc_location (OC-owned, downstream-facing)
 | `opening_hours{}` | json | backfill → OC-editable | no | opening hours (OC can override) |
 | `qr_dropoff` | bool | backfill (derived) | yes | QR-code dropoff; `true` if **any** linked vendor location supports it |
 | `status` | enum(active,inactive,removed) | derived | yes | derived from linked vendor location(s) |
-| `is_enable` | bool | OC | no | OC switch; only F08/F09 writable |
+| `is_enable` | bool | OC | no | OC switch; only F08/F09 writable. **v4.1.0:** `is_enable = true` requires `live_source_vendor_id` to be set |
+| **`live_source_vendor_id`** (v4.1.0) | varchar(32) FK → vendor_location | OC (chosen at sign-off) | no | the one record the store reads from. Must be a record linked through `vendor_oc_mapping`; at most one per `oc_location`; cleared only by `is_enable = false` |
+| **`baseline_source_vendor_id`** (v4.1.0) | varchar(32) FK → vendor_location | system | yes | which record the current baseline was captured from — the missing half of «what was verified», since with 2:1 the values alone no longer say whose they are |
 | **`intake_status`** (v2.6.0) | enum(pass,warn,fail,overridden) | intake check | yes | result of the quality gate; `fail` means no OC record; `overridden` means it exists but cannot be enabled |
 | **`baseline_at`** (v2.6.0) | timestamp | system | yes | **when the currently-stored values were human-verified** — the reference for good data |
 | **`propagated_at`** (v2.6.0) | timestamp | system | yes | last push to the downstream (cache invalidated); `null` = never pushed |
@@ -141,7 +144,7 @@ oc_location (OC-owned, downstream-facing)
 
 ### Table 3 — `vendor_oc_mapping` (mapping table)
 
-> Links vendor location(s) to OC location. Principle 1:1; confirmed duplicate → 2:1.
+> Links vendor location(s) to OC location. Principle 1:1; confirmed duplicate → 2:1. **v4.1.0:** a store may hold several **active** linked records and exactly one of them is the live source (`oc_location.live_source_vendor_id`); the mapping table itself stays a plain link table — the choice lives on the OC row, not on the link, so it survives a re-link unchanged.
 
 | Field | Type | Notes |
 |---|---|---|
@@ -161,7 +164,7 @@ oc_location (OC-owned, downstream-facing)
 | `location_layer` | enum(VENDOR,OC) | which layer the change belongs to |
 | `occurred_at` | timestamp | occurred time |
 | `operator` | varchar | operator, or `System · PUDO Sync` / `System · LMS Sync` |
-| `operation_type` | enum | ENABLE / DISABLE / BATCH_ENABLE / BATCH_DISABLE / ENABLE_SIGNED_OFF / DATA_ISSUE_RAISED (v3.0.0) / DATA_ISSUE_REPORTED (v3.0.0) / DATA_ISSUE_CLOSED (v3.0.0) / DATA_ISSUE_AUTO_CLOSED (v3.3.0) / OC_LINK_CONFIRMED / OC_LINK_REJECTED / OC_GENERATED / PROVIDER_STATUS_CHANGE / PROVIDER_FIELD_UPDATE / PROVIDER_CREATED / PROVIDER_REMOVED / DOWNSTREAM_PROPAGATED — retired in v3.0.0: SWEEPER_CHANGE, STORE_DETAIL_EDIT, SYNC_CHANGE_ACCEPTED, SYNC_CHANGE_REJECTED, FIELD_UNLOCKED, FIELD_REVERTED |
+| `operation_type` | enum | ENABLE / DISABLE / BATCH_ENABLE / BATCH_DISABLE / ENABLE_SIGNED_OFF / DATA_ISSUE_RAISED (v3.0.0) / DATA_ISSUE_REPORTED (v3.0.0) / DATA_ISSUE_CLOSED (v3.0.0) / DATA_ISSUE_AUTO_CLOSED (v3.3.0) / OC_LINK_CONFIRMED / OC_LINK_REJECTED / OC_GENERATED / PROVIDER_STATUS_CHANGE / PROVIDER_FIELD_UPDATE / PROVIDER_CREATED / PROVIDER_REMOVED / DOWNSTREAM_PROPAGATED / **LIVE_SOURCE_CHANGED** (v4.1.0: store stayed live, source moved) / **OC_MAPPING_CHANGED** (v4.0.0: a `source_key` was re-pointed after a person confirmed it) — retired in v3.0.0: SWEEPER_CHANGE, STORE_DETAIL_EDIT, SYNC_CHANGE_ACCEPTED, SYNC_CHANGE_REJECTED, FIELD_UNLOCKED, FIELD_REVERTED |
 | `field_name` | varchar | changed field |
 | `old_value` | text | old value |
 | `new_value` | text | new value |
@@ -178,9 +181,13 @@ oc_location (OC-owned, downstream-facing)
 | `vendor_location_a` | varchar FK → vendor_location | location A (one provider) |
 | `vendor_location_b` | varchar FK → vendor_location | location B (other provider) |
 | `matched_on` | varchar | address_line1 + city + state + postal_code |
-| `match_score` | int | 0–100% (addr1 50% + postal 25% + city 15% + state 10%) |
+| `text_score` (v4.0.0) | int | 0–100, **binary**: address 40 · name 10 · postal 25 · province 15 · city 10; a different Zip5 zeroes it. Replaces `match_score` |
+| `distance_m` (v4.0.0) | int | coordinate evidence, not a score: ≤30 same point / 30–100 grey / >100 different |
+| `label` (v4.0.0) | enum(HIGH_SUSPECT, MEDIUM_SUSPECT) | derived from `text_score` + `distance_m`; a label, never a percentage |
 | `diff` | json | per-field differences |
-| `status` | enum(pending,confirmed,rejected) | pending / confirmed same-store / rejected |
+| `status` (v4.0.0) | enum(pending,merged,separate,fix) | pending / same station (one disabled) / two tenants / address to fix |
+| `keep_vendor_location_id` (v4.0.0) | varchar FK | the record that keeps the OC location |
+| `merged_into` (v4.0.0) | varchar FK | written on the record that lost; cleared when that record leaves the store again |
 | `detected_at` | timestamp | detected time |
 | `resolved_by` | varchar | resolver |
 | `resolved_at` | timestamp | resolved time |
@@ -294,6 +301,23 @@ oc_location (OC-owned, downstream-facing)
 | `detected_at` | timestamp | when detected |
 | `status` | enum(open,overridden,resolved) | `overridden` = ops forced an OC record (still `is_enable=false`) |
 
+### Table 12 — `mapping_change` (source_key → OC re-point, added v4.0.0)
+
+> One **source**, never a pair. Written when a record's identity fields change and its mapping is re-judged.
+
+| Field | Type | Notes |
+|---|---|---|
+| `change_id` | varchar PK | e.g. `MAP-001` |
+| `round` | int | which re-check produced it |
+| `source_key` | varchar | `PUDO_INC:<vendor_location_id>` / `LMS:<vendor_location_id>` — the key downstream actually uses |
+| `changed_field` | varchar | which identity field moved (`address_line1`, `name`, `postal_code`, `lat`, `lng`, `city`, `state`) |
+| `old_oc_location_id` | varchar FK → oc_location | where the source is mapped now |
+| `new_oc_location_id` | varchar FK → oc_location | proposed target; `null` when a new OC has not been allocated yet |
+| `basis` | varchar | the re-check that produced it, e.g. `NO_SUSPECT · text 0 · 119169 m` |
+| `status` | enum(pending,effective,manual) | `pending` = nothing written yet; `manual` = both sides moved in one run (M6) |
+| `actor` | varchar | who confirmed it |
+| `decided_at` | timestamp | when confirmed |
+
 ---
 
 ## 3. Field Ownership Quick Reference
@@ -306,11 +330,13 @@ oc_location (OC-owned, downstream-facing)
 | `oc_location` | `is_enable` only | the operator (sign-off, F21) | yes, and that is the only OC write |
 | derived (not stored) | name / address / hours / coordinates / sweeper as shown downstream | computed from the linked vendor records | no |
 
-### 3.2 Downstream merge rule — one record supplies the store (F25, v3.13.0)
+### 3.2 Downstream merge rule — one record supplies the store (F25, v3.13.0; named source since v4.1.0)
 
 When one OC location is fed by several vendor records (2:1), the console picks **one** record and takes every field from it:
 
 ```
+0. if oc_location.live_source_vendor_id is set and still linked -> that record wins,
+   whatever the ranking says (a merge must not re-point a signed-off store)
 1. candidates = linked vendor records with status = 'active'
 2. winner     = first by priority: M&MP (self-operated) > LMS > PUDO Inc
 3. if no candidate is active -> same priority applied to all linked records,
@@ -428,8 +454,11 @@ Failure modes the rule deliberately produces:
 | **`/api/review/sync-changes`** (v2.6.0) | GET | `sync_change_set` + `oc_field_baseline` | held changes grouped by OC location, with baseline value |
 | ~~`/api/review/sync-changes/{id}/decide`~~ | — | — | **retired in v3.0.0**: there is no per-field accept/reject, the provider value already applies |
 | **`/api/oc-locations/{id}/enable`** (v2.6.0, extended) | PATCH | `oc_location` + `oc_field_baseline` + `change_log` | enable now requires the sign-off payload (checklist acknowledged); writes `baseline_at`, `propagated_at`, `ENABLE_SIGNED_OFF` |
+| **`/api/oc-locations/{id}/live-source`** (v4.1.0) | PATCH | `oc_location` + `oc_field_baseline` + `change_log` | set `live_source_vendor_id` and `is_enable = true` in one write, with the same checklist payload as sign-off; `LIVE_SOURCE_CHANGED` (old and new source) when the store was already live, `ENABLE_SIGNED_OFF` when it was not. `DELETE` on the same path drops the store to `is_enable = false` — it never promotes another record |
 | **`/api/vendor-locations/{id}/issues`** (v3.0.0) | POST | `data_issue` + `change_log` | flag a field: `field_name` + `reason` (both required); never writes a value |
 | **`/api/issues/{id}`** (v3.0.0) | PATCH | `data_issue` + `change_log` | move status OPEN → REPORTED → FIXED; closing requires the provider value to have changed or an explicit confirmation |
+| **`oc_location.live_source_vendor_id`** / `baseline_source_vendor_id` (v4.1.0) | — | `oc_location` + `change_log` | — | **The live source is a stored pointer, not a computed ranking.** `is_enable = true` must name a record (`live_source_vendor_id`), and that name beats the merge ranking — otherwise a merge into a live store silently re-points what customers read. Constrain it to a record reachable through `vendor_oc_mapping` (a CHECK or a trigger, not application code alone), and keep at most one per `oc_location` — there is no join table for «which of the two is live», because that question has one answer. `baseline_source_vendor_id` records whose values the baseline holds: with 2:1 the baseline values alone no longer say which record was verified. `live_source` is a filter param, `is_enable` keeps its name, and the UI word everywhere is **Live**. |
+| **`duplicate_pair.text_score` / `distance_m` / `label`** + new `mapping_change` (v4.0.0) | — | `duplicate_pair` + `mapping_change` | — | **The score stops being a percentage and the pair stops being the unit.** `text_score` is binary over five fields with Zip5 as a gate; `distance_m` is evidence stored beside it, never folded into it; `label` is derived, so a stored copy is a cache, not a fact. `match_score` is superseded — keep it only as history. The disposition set changes from `confirmed/rejected` to `merged/separate/fix`, with `merged_into` written on the record that lost. The new `mapping_change` table exists because the second layer judges **one source at a time**: without it, a re-point would be a silent write to `vendor_oc_mapping`, and the confirmation step (M5) would have nowhere to live. |
 | *(none)* (v3.14.0) | — | — | — | **The re-check adds one column and removes a habit.** `duplicate_pair.status` gains `split`, and `duplicate_pair.decided_identity` (JSON: score + both identity snapshots) is written at decision time — that snapshot is what a later change is compared with; without it the console can only say "these two differ", not "this one moved". The pair `score` becomes **derived, not trusted**: recompute it from the two `vendor_location` rows on read, and never treat the stored value as evidence — a stored score is exactly what made the old decision look permanent |
 | *(none)* (v3.13.0) | — | — | — | **The record-level merge adds nothing to the schema.** The winner is computed on read from `status` + `source_provider`; do not add `merged_*` columns to `oc_location`, and do not keep a "primary vendor" pointer — a cached winner would go stale the moment a source is deactivated, and the whole point of v3.13.0 is that the owner of the store is always recomputed |
 | *(none)* (v3.12.0) | — | — | — | **Province is a label, not a column.** The filter, the column header and the CSV header all say `Province`; the field behind them is `state` — the same column for a US state and a province elsewhere. Do **not** rename `state` to `province`: it is a migration, a backfill and a downstream contract change to buy a word. Do **not** add a derived `province_code` either. The filter takes `state=NY` and `city=Brooklyn`; the city list is a `SELECT DISTINCT city WHERE state = :state` |

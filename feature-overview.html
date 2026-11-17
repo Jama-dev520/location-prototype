@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Feature Overview (v3.13.0)</title>
+<title>Location Management Admin Console — Feature Overview (v4.1.0)</title>
 <style>
   :root{
     --text:#0f172a; --muted:#64748b; --faint:#94a3b8;
@@ -103,7 +103,7 @@
   own self-operated stores. It answers four daily questions in seconds, and it never edits the data it shows.</p>
 
   <div class="meta">
-    <span class="pill blue">v3.13.0</span>
+    <span class="pill blue">v4.1.0</span>
     <span class="pill">English / 中文 switch</span>
     <span class="pill">Clickable prototype — not in production</span>
     <span class="pill teal">Two layers · three sources</span>
@@ -126,7 +126,7 @@
   <table>
     <thead><tr><th>#</th><th>What someone needs to do</th><th>What “done” looks like</th></tr></thead>
     <tbody>
-      <tr><td><b>J1</b></td><td>Find out which locations are live</td><td><code>Status = active</code> + <code>Downstream = Live</code>, count on screen, export exactly that set</td></tr>
+      <tr><td><b>J1</b></td><td>Find out which locations are live</td><td><code>Live = Live</code> (column and filter use the same word), count on screen, export exactly that set</td></tr>
       <tr><td><b>J2</b></td><td>Know who actually collects parcels (sweeper)</td><td>On the row and in the detail page, filterable — no spreadsheet</td></tr>
       <tr><td><b>J3</b></td><td>Get a wrong address fixed</td><td>Reported to the data owner with a precise reason; fixed at the source, arrives with the next sync</td></tr>
       <tr><td><b>J4</b></td><td>See what changed, and when</td><td>Any field: who, when (to the second), old → new</td></tr>
@@ -195,13 +195,20 @@
   whose type does not belong to its source is marked <code>type ≠ source</code> and isolatable with one filter — a signal
   about the feed, not something we correct by hand.</p>
 
-  <h3>One store, several vendor records</h3>
+  <h3>One store, several vendor records, one live source</h3>
   <p>When a duplicate pair is confirmed as the same physical store, two vendor records feed one OC location (mapping
-  <code>2:1</code>). <b>One record supplies every field</b> — the merge is by record, not by field:</p>
-  <div class="callout"><b>M&amp;MP (self-operated) → LMS → PUDO Inc.</b> The winner is picked among active records, and it
-  supplies the whole store, <b>empty fields included</b>. A blank phone on the winning record stays blank: borrowing it from the
-  other record would hide the gap, and the gap is what tells the provider what to fix. Every field in the detail page shows its
-  source, so “why does this say X?” is answerable without asking anyone.</div>
+  <code>2:1</code>). Since <b>v4.1.0</b> the list shows that honestly: <b>one line per record</b>, each with its own name,
+  address, source, sweeper, status and update time — and <b>exactly one of them is the live source</b>, the record every
+  downstream system reads.</p>
+  <div class="callout"><b>The choice beats the ranking.</b> A record that was picked and signed off stays the source, even if a
+  higher-ranked record arrives later; the ranking (<b>M&amp;MP → LMS → PUDO Inc</b>, active first) only answers for a store
+  nobody has picked a source for yet. And what the live record supplies, it supplies <b>alone</b>: every field, empty ones
+  included. A blank phone stays blank — borrowing it from the standby record would hide the gap, and the gap is what tells
+  the provider what to fix.</div>
+  <div class="callout"><b>Switching source is a sign-off, not a toggle.</b> Turning the standby line on runs the same five
+  checks over <i>that</i> record, replaces every field with its values and recaptures the baseline
+  (<code>LIVE_SOURCE_CHANGED</code>), with the store staying live throughout. Turning the live line off takes the store down —
+  it never promotes the standby, which has never been verified.</div>
 
   <h3>One visibility rule</h3>
   <div class="callout">A location is visible to customers <b>iff</b> its vendor record is <code>active</code> <b>and</b> the
@@ -222,8 +229,9 @@
         <li>No open <b>blocking</b> data issue</li>
       </ul>
       <p style="font-size:12.5px;color:var(--muted);margin:8px 0 0">All five pass → the dialog shows the customer-facing values
-      with their source, plus an acknowledgement. Confirming captures a <b>signed-off baseline</b>. Turning a location
-      <b>off</b> is one click — going offline is always safe.</p>
+      of <b>that record</b> with their source, plus an acknowledgement. Confirming captures a <b>signed-off baseline</b>.
+      When the store is already live on another record the dialog says so and the button reads
+      <b>Switch live source &amp; sign off</b>. Turning a location <b>off</b> is one click — going offline is always safe.</p>
     </div>
     <div class="box">
       <h4>Flag a data issue — the replacement for editing</h4>
@@ -258,7 +266,7 @@
   <table>
     <thead><tr><th>Need</th><th>How</th></tr></thead>
     <tbody>
-      <tr><td>Which locations are live</td><td><code>Downstream = Live</code>; the <b>Not live yet (N)</b> preset is the onboarding queue and matches the menu badge</td></tr>
+      <tr><td>Which locations are live</td><td><code>Live = Live</code>; the <b>Not live yet (N)</b> preset is the onboarding queue and matches the menu badge</td></tr>
       <tr><td>Which provider sent this</td><td><code>Source</code> filter; <code>2:1</code> rows show both</td></tr>
       <tr><td>Only hubs, or only lockers</td><td><code>Source</code> → <code>Type</code>, with live counts</td></tr>
       <tr><td>Everything wrong right now</td><td><b>Data Issues</b> — one ledger: open issues, baseline drift, failed intake</td></tr>
@@ -296,7 +304,7 @@
       <ul>
         <li>Overview dashboard — specified, out of scope for this round</li>
         <li>Batch upload (Excel) — in the PRD, not in the prototype</li>
-        <li>The demo video was recorded at v3.8.0; newer releases (v3.9.0–v3.13.0) are not in it — check the prototype itself</li>
+        <li>The demo video was recorded at v3.8.0; newer releases (v3.9.0–v4.1.0) are not in it — check the prototype itself</li>
       </ul>
     </div>
   </div>
@@ -315,7 +323,7 @@
   <p>Yes — every action writes an audit row with actor, timestamp to the second, field, old value and new value.</p>
 
   <footer>
-    Location Management Admin Console · v3.13.0 · clickable prototype ·
+    Location Management Admin Console · v4.1.0 · clickable prototype ·
     <a href="https://jama-dev520.github.io/location-prototype/">open the prototype</a> ·
     <a href="https://jama-dev520.github.io/location-prototype/Location-Management-Admin-Feature-Overview-EN.md">full overview</a>
   </footer>
