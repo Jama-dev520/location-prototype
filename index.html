@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v4.2.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v4.3.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -112,6 +112,9 @@ table.data tbody tr.oc-sub:hover{background:var(--bg-hover)}
 .live-cell{display:flex;align-items:center;gap:6px;white-space:nowrap}
 .live-txt{font-size:10.5px;color:var(--text-tertiary)}
 .live-txt.on{color:var(--color-success);font-weight:600}
+.live-txt.block{color:var(--color-danger);font-weight:600}
+.switch.blocked{background:#FEE2E2;cursor:not-allowed}
+.switch.blocked::after{left:2px;background:#DC2626}
 .dp-src-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .batch-bar{display:flex;align-items:center;gap:var(--space-3);background:var(--color-primary-light);border:1px solid #DBEAFE;border-radius:var(--radius-sm);padding:10px var(--space-4);margin-bottom:var(--space-4);flex-wrap:wrap}
 .batch-bar .sel-count{font-size:13px;color:var(--color-primary);font-weight:600}
@@ -403,7 +406,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v4.2.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v4.3.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -414,7 +417,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
     <div class="nav-item" data-nav="p03" onclick="switchPage('p03')">Change Log</div>
     <div class="nav-item" data-nav="p04" onclick="switchPage('p04')">Sync Status</div>
     <div style="padding:var(--space-4) var(--space-3);font-size:11px;color:var(--text-tertiary);line-height:1.6">
-      Daily sync<br>PUDO Inc 02:00 · LMS 02:30
+      Daily sync<br>23:30 · one batch, all providers
     </div>
   </aside>
 
@@ -428,7 +431,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v4.2.0</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v4.3.0</span></div>
       </div>
     </div>
 
@@ -483,7 +486,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 
       <div class="page" id="page-p02">
         <h2 class="page-title">OC Location List</h2>
-        <p class="page-desc" data-i18n="p02.desc"><b>One Source:</b> <b>packagehub (LMS)</b> · <b>PUDOpoint (PUDO)</b> · <b>M&amp;MP</b> — what it is and who owns it in one field. The record customers see. <b>Two actions only: enable, and flag an anomaly.</b> There is no editing here — a wrong address does not get typed over, it gets flagged back to the provider. Values come from <b>one record, not one value per field</b>: an <b>M&amp;MP</b> self-operated store wins first, then <b>LMS</b>, and whichever record wins supplies <b>every</b> field — including the empty ones. A blank phone on the winning record stays blank: borrowing it from the other record would hide the gap, and the gap is what tells the provider what to fix. <b>A store can carry two records (2:1).</b> Both are listed, one under the other, each with <b>its own</b> values — and only <b>one of them is the live source</b>, the record every downstream system reads. Switching it is a sign-off, not a toggle: the fields are replaced and the baseline is recaptured.</p>
+        <p class="page-desc" data-i18n="p02.desc"><b>One Source:</b> <b>packagehub (LMS)</b> · <b>PUDOpoint (PUDO)</b> · <b>M&amp;MP</b> — what it is and who owns it in one field. The record customers see. <b>Two actions only: sign off (which writes the whitelist) and flag an anomaly.</b> A store blocked by the platform shows a dead switch — the console cannot lift it. There is no editing here — a wrong address does not get typed over, it gets flagged back to the provider. Values come from <b>one record, not one value per field</b>: an <b>M&amp;MP</b> self-operated store wins first, then <b>LMS</b>, and whichever record wins supplies <b>every</b> field — including the empty ones. A blank phone on the winning record stays blank: borrowing it from the other record would hide the gap, and the gap is what tells the provider what to fix. <b>A store can carry two records (2:1).</b> Both are listed, one under the other, each with <b>its own</b> values — and only <b>one of them is the live source</b>, the record every downstream system reads. Switching it is a sign-off, not a toggle: the fields are replaced and the baseline is recaptured.</p>
 
         <div class="card">
           <div class="filter-grid">
@@ -494,7 +497,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
             <div><label class="f-label">City</label><select id="o-f-city" onchange="applyOCFilters()"></select></div>
             <div><label class="f-label">Source</label><select id="o-f-source" onchange="applyOCFilters()"></select></div>
             <div><label class="f-label">Status</label><select id="o-f-status" onchange="applyOCFilters()"><option value="">All</option><option value="active">active</option><option value="inactive">inactive</option></select></div>
-            <div><label class="f-label">Live</label><select id="o-f-live" onchange="applyOCFilters()"><option value="">All</option><option value="yes">Live</option><option value="no">Not live</option></select></div>
+            <div><label class="f-label">Live</label><select id="o-f-live" onchange="applyOCFilters()"><option value="">All</option><option value="yes">Live</option><option value="no">Not live</option><option value="blocked">Blocked</option></select></div>
             <div><label class="f-label">Issues <span class="help-dot" onclick="openHelp()" title="What counts as an issue">?</span></label><select id="o-f-issues" onchange="applyOCFilters()"><option value="">All</option><option value="blocking">Blocking data issue</option><option value="drift">Changed since sign-off</option><option value="dup">Duplicate 2:1</option></select></div>
           </div>
           <div class="filter-actions">
@@ -669,7 +672,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v4.2.0 (the score counts shared pairs)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v4.3.0 (the list is a whitelist)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -730,7 +733,7 @@ var OC_LOCATIONS=[
  {ocId:'OC-00103',name:'Pack & Ship North',addr1:'9477 W 104th Ave',addr2:'',city:'Westminster',state:'CO',country:'US',postal:'80021',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:39.886107,lng:-105.103101,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00178'],created:'2024-03-02 08:12:21',updated:'2026-07-11 11:14:36'},
  {ocId:'OC-00104',name:'The Box',addr1:'3023 S. University Drive',addr2:'',city:'Fort Worth',state:'TX',country:'US',postal:'76109',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:32.707053,lng:-97.360128,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00179'],created:'2024-03-02 08:12:39',updated:'2026-06-30 12:22:08'},
  {ocId:'OC-00105',name:'Postal Options',addr1:'2448 Lamar Ave',addr2:'',city:'Paris',state:'TX',country:'US',postal:'75460',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:33.660832,lng:-95.530295,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:false,vendorIds:['LOC-00180'],created:'2024-03-02 08:12:57',updated:'2026-10-21 14:30:45'},
- {ocId:'OC-00106',name:'Private Postal Systems',addr1:'12555 Biscayne Blvd',addr2:'',city:'North Miami',state:'FL',country:'US',postal:'33181',provider:'LMS',type:'packagehub',sweeper:'',phone:'',lat:25.891822,lng:-80.162421,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00181'],created:'2024-03-02 08:13:15',updated:'2026-05-02 09:55:19'},
+ {ocId:'OC-00106',name:'Private Postal Systems',addr1:'12555 Biscayne Blvd',addr2:'',city:'North Miami',state:'FL',country:'US',postal:'33181',provider:'LMS',type:'packagehub',sweeper:'',phone:'',lat:25.891822,lng:-80.162421,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:false,blocked:true,vendorIds:['LOC-00181'],created:'2024-03-02 08:13:15',updated:'2026-05-02 09:55:19'},
  {ocId:'OC-00107',name:'Eagle Postal Center #11',addr1:'4101 W Green Oaks Blvd Ste 305',addr2:'',city:'Arlington',state:'TX',country:'US',postal:'76016',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:32.682112,lng:-97.195009,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00182'],created:'2024-03-02 08:13:33',updated:'2026-04-18 10:41:27'},
  {ocId:'OC-00108',name:'Upost Shipping Center',addr1:'3784 Mission Ave Ste 148',addr2:'',city:'Oceanside',state:'CA',country:'US',postal:'92058',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:33.227719,lng:-117.33188,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00183'],created:'2024-03-02 08:13:51',updated:'2026-03-27 11:08:53'},
  {ocId:'OC-00109',name:'Postal Dispatch Business Center',addr1:'5123 W 98th St',addr2:'',city:'Bloomington',state:'MN',country:'US',postal:'55437',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:44.824115,lng:-93.347352,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00184'],created:'2024-03-02 08:14:09',updated:'2026-02-14 12:36:40'}
@@ -1227,7 +1230,7 @@ var I18N_BLOCK = {
   "map.rules":"M2 · 只重判发生变更的那个来源 &nbsp;·&nbsp; M3 · 分配新 OC，旧映射进历史 &nbsp;·&nbsp; M4 · 未变更的一方绝不动 &nbsp;·&nbsp; M5 · 没人确认就不落库 &nbsp;·&nbsp; M6 · 两边在同一次推送里都变了 → 进人工",
   "dup.vs":"对比",
   "pull.hint":"标记 → 导出 → 供应商修正 → 再拉一次",
-  "wt.title":"演示脚本 —— v4.2.0（打分按重合的字符对算）"
+  "wt.title":"演示脚本 —— v4.3.0（列表就是白名单）"
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
@@ -1298,6 +1301,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "4.3.0":"<b>列表就是白名单，开关终于说的是它真正在做的事。</b>三个字段的含义按技术口径改正：<b>`is_enable`</b> 是供应商的营业状态（1 活跃 / 0 关闭），控制台只读；<b>`is_active`</b> 是我们自己库里的标记；<b>`is_primary`</b> 不可用（每条都是 1）。控制台真正控制的是<b>名单</b>：签收 = 写白名单条目，撤签 = 移出；黑名单由平台写，运营解不开 —— 所以被拉黑的店显示一个点不动的开关和红色 <b>blocked</b>，而不是假装给一个选择。因为一家店离开白名单有三种原因，移出时保留原因（<b>UNSIGNED</b> / <b>SOURCE_SWITCHED</b> / <b>BLOCKED</b>），日志记在供应商记录上，决定记在 OC 上。同步改成每晚 <b>23:30</b> 单批，不再是 02:00 / 02:30 两批。",
   "4.2.0":"<b>打分不再是「全等或 0」。</b>两条地址以前逐字段比 —— 清洗后一样就满分、否则 0，于是「2918 Avenue I」和「2918 Avenue I Ste 2」在那个占 40 分的字段上是 <b>0</b>：同一栋楼里换了个单元，读起来像换了一家店，只能靠坐标通道捞回来。现在每个字段<b>按比例</b>给分：两个值都切成<b>相邻字符对</b>、排序（词的先后不再影响结果），重合比例就是得分（Dice 系数）。同一对现在读 <b>89</b> 分而不是 50，真正对不上的仍然接近 0 —— 演示数据里跑出来正好两对候选，都对。对比表每个字段直接印这个比例，评审看得见「为什么是 89」，而不只是一个对勾。",
   "4.1.0":"<b>一家店、多条记录、一个供数来源。</b>以前 2:1 的门店只打一行合并后的字：排名最高的那条记录供全部字段，另一条记录根本看不见 —— 于是没人能发现两家供应商在喂同一家店，更别说挑一个。现在 OC 列表<b>一条记录一行</b>：名称、地址、揽收方、状态、更新时间各按各的显示，而且<b>只有一行能是 live</b>。开关的含义也变了，从「这家店开没开」变成「这家店由哪条记录供数」：关掉 live 那行 = 门店下线（备用记录从没被签收过，没有可回退的对象）；打开另一行 = <b>带换源的签收</b>，字段整条替换、基线重新记一次。筛选跟着列名走：两处统一叫 <b>Live / Not live</b>，列头不再叫 Enable。供应商列表在对应的记录上标 <b>live</b> 或 <b>standby</b>。",
   "4.0.0":"<b>重复检查按 v2.0 规则重建。</b>打分从加权相似度改成<b>二分制</b>：地址 40 · 名称 10 · 邮编 25 · 州 15 · 城市 10，字段要么全等拿满分、要么 0；<b>坐标不再折算成分数</b>，而是一条独立的证据通道（≤30 m 同点位 / 30–100 m 灰区 / &gt;100 m 不同）。输出不再是百分比，而是标签：<b>HIGH_SUSPECT</b>（95%）与 <b>MEDIUM_SUSPECT</b>（60–80%）。处置从两种变三种：同一站点（停用一条 + merged_into）、同址两家（各自保留）、地址有误（退回纠正）。同时新增<b>映射层</b>：source_key → OC 位置，<b>只对发生变更的那个来源重判</b>（M2/M4），不按配对连带；所有映射变更<b>等人确认</b>才生效（M5）；两边在同一次推送里都变了则进人工（M6）。",
@@ -1467,8 +1471,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='4.2.0';
+var APP_VERSION='4.3.0';
 var VERSIONS=[
+ {v:'4.3.0',type:'minor',date:'2026-11-19',desc:'<b>The list is a whitelist, and the switches now say what they are.</b> Three field meanings were wrong and are corrected against engineering: <b>`is_enable`</b> is the provider&rsquo;s business status (1 open / 0 closed) and the console only reads it, <b>`is_active`</b> is our own database flag, and <b>`is_primary`</b> is unusable (it is 1 on every record). What the console actually controls is the <b>list</b>: sign-off writes the whitelist entry, un-sign removes it, and the blocklist is written by the platform — an operator cannot lift it, so a blocked store shows a dead switch and a red <b>blocked</b> label instead of pretending to offer a choice. Because a store can leave the whitelist for three different reasons, removal keeps its reason (<b>UNSIGNED</b> / <b>SOURCE_SWITCHED</b> / <b>BLOCKED</b>) and is logged on the vendor record, while the decision stays on the OC. Sync is one batch at <b>23:30</b>, not two runs at 02:00 and 02:30.'},
  {v:'4.2.0',type:'minor',date:'2026-11-17',desc:'<b>The score stops being all-or-nothing.</b> Two addresses were compared field by field — same after cleaning, or nothing — which meant "2918 Avenue I" and "2918 Avenue I Ste 2" scored <b>0</b> on the field worth 40 points: a unit move inside one building read as a different shop, and only the coordinate channel could rescue it. Each field now scores <b>in proportion</b>: both values are cut into adjacent character pairs, the pairs are sorted so word order stops mattering, and the shared share becomes the score (Dice). The same pair now reads <b>89</b> instead of 50, and a genuine miss still scores near zero — the demo feed produces exactly two candidates, both correct. The comparison table prints that number per field instead of a tick, so a reviewer can see <i>why</i> 89 and not just that it passed.'},
  {v:'4.1.0',type:'minor',date:'2026-11-17',desc:'<b>One store, several records, one live source.</b> A 2:1 store used to print one merged line: whichever record ranked highest supplied every field and the other record was invisible — so nobody could see that two providers were feeding one store, let alone pick between them. The OC list now prints <b>one row per source record</b>, each with its own name, address, sweeper, status and update time, and <b>only one row can be live</b>. The switch stopped meaning “is this store on” and started meaning “which record feeds it”: turning the live row off takes the store down (a standby record was never signed off, so there is nothing to fall back to), turning another row on is a <b>sign-off with a source change</b> — every field is replaced and the baseline recaptured. The filter follows the column: the wording is <b>Live / Not live</b> in both, and the column is no longer called Enable. The vendor list tags each of those records <b>live</b> or <b>standby</b> where it states its OC location.'},
  {v:'4.0.0',type:'major',date:'2026-11-16',desc:'<b>The duplicate check is rebuilt on the v2.0 rule doc.</b> Scoring is now binary — address 40 · name 10 · postal 25 · province 15 · city 10, a field counts in full or not at all — with coordinates as a separate evidence channel (&le;30 m same point / 30&ndash;100 m grey / &gt;100 m different) rather than points inside the score. The output is a label, not a percentage: <b>HIGH_SUSPECT</b> (95%) or <b>MEDIUM_SUSPECT</b> (60&ndash;80%), and three dispositions instead of two — same station (disable one, mark merged_into), two tenants at one address, or the address is wrong. A second layer arrives with it: <b>source_key &rarr; OC location</b>, re-judged one source at a time (M2/M4), never a pair, and every change waits for a person (M5); both sides moving in one run goes to manual (M6).'},
@@ -1633,7 +1638,7 @@ var SYNC_RUN={runId:'RUN-20261103-0230',provider:'LMS',startedAt:'2026-11-03 02:
    actually changed AND passes the basic validity check for that field. */
 var SYNC_RUNS=[SYNC_RUN];
 var NEXT_SYNC={
-  runId:'RUN-20261104-0230', at:'2026-11-04 02:30:07', finished:'2026-11-04 02:33:41',
+  runId:'RUN-20261104-2330', at:'2026-11-04 23:30:07', finished:'2026-11-04 23:33:41',
   pulled:38, created:0, updated:7, flagged:2,
   changes:[
     {vendorId:'LOC-00181',field:'sweeper',value:'LMS'},
@@ -2106,7 +2111,8 @@ function renderVendor(){
       +'<td>'+statusBadge(v.status)+'</td>'
       +'<td>'+(oi.length?'<span class="pending-badge" onclick="openIssuesFor(\''+v.id+'\')">'+oi.length+' flagged</span>':'<span style="color:var(--text-tertiary)">—</span>')+'</td>'
       +'<td>'+(oc?'<span class="mono link" onclick="openOCDetail(\''+oc.ocId+'\')">'+esc(oc.ocId)+'</span>'
-        +(!oc.enable?' <span class="badge badge-gray" title="this store is not live; no record is feeding it">not live</span>'
+        +(oc.blocked?' <span class="badge badge-red" title="the store is on the system blocklist">blocked</span>'
+          :!oc.enable?' <span class="badge badge-gray" title="this store is not live; no record is feeding it">not live</span>'
           :oc.vendorIds.length>1?(oc.liveSource===v.id
             ?' <span class="badge badge-green" title="this record feeds the store">live</span>'
             :' <span class="badge badge-gray" title="listed on the store but not feeding it">standby</span>')
@@ -2134,7 +2140,8 @@ function ocFilters(skipSource,skipGeo,skipCity){
     if(!skipCity&&f.city&&mergedField(o,'city').value!==f.city)return false;
     if(f.status&&statusOf(o)!==f.status)return false;
     if(f.source&&mergedField(o,'type').value!==f.source)return false;
-    if(f.live==='no'&&o.enable)return false;
+    if(f.live==='blocked'&&!o.blocked)return false;
+    if(f.live==='no'&&(o.enable||o.blocked))return false;
     if(f.live==='yes'&&!o.enable)return false;
     if(f.issues==='blocking'&&!openIssues(o).some(function(i){return i.severity==='blocking';}))return false;
     if(f.issues==='drift'&&!driftOf(o).length)return false;
@@ -2192,10 +2199,17 @@ function renderOC(){
    operator is here to settle. */
 function ocRowHTML(o,v,first){
   var live=!!(o.enable&&o.liveSource===v.id);
-  var sw=(v.status!=='active')
-    ? '<span class="switch disabled" title="this source is not active — nothing to put live"></span>'
-    : (!isMgr()?'<span class="switch '+(live?'on':'')+' disabled" title="requires the Location Manager role"></span>'
-      : '<span class="switch '+(live?'on':'')+'" title="'+(live?'switch this store off':'make this the live source')+'" onclick="toggleSourceLive(\''+o.ocId+'\',\''+v.id+'\')"></span>');
+  var blocked=!!o.blocked;
+  /* v4.3.0 — three list states, not two: white (live), black (blocked by the
+     system, read-only), none (not live). A blocked store cannot be signed off
+     from here — the switch is dead on purpose, because the blocklist is
+     written by the platform, not by an operator. */
+  var sw=(blocked)
+    ? '<span class="switch off blocked" title="blocked by the system — an operator cannot sign this off or lift it"></span>'
+    : (v.status!=='active')
+      ? '<span class="switch disabled" title="this source is not active — nothing to put live"></span>'
+      : (!isMgr()?'<span class="switch '+(live?'on':'')+' disabled" title="requires the Location Manager role"></span>'
+        : '<span class="switch '+(live?'on':'')+'" title="'+(live?'switch this store off':'make this the live source')+'" onclick="toggleSourceLive(\''+o.ocId+'\',\''+v.id+'\')"></span>');
   var swp=valOf(v,'sweeper');
   var badgeCls=v.provider==='LMS'?'badge-blue':v.provider==='M&MP'?'badge-green':'badge-teal';
   return '<tr data-oc="'+esc(o.ocId)+'" data-src="'+esc(v.id)+'" class="'+(first?'':'oc-sub')+'">'
@@ -2209,7 +2223,7 @@ function ocRowHTML(o,v,first){
     +'<td>'+(swp?esc(srcShort(swp)):'<span class="badge badge-orange">missing</span>')+'</td>'
     +'<td>'+statusBadge(v.status)+'</td>'
     +'<td>'+(first?issueBadges(o):'<span style="color:var(--text-tertiary)">—</span>')+'</td>'
-    +'<td><div class="live-cell">'+sw+'<span class="live-txt'+(live?' on':'')+'">'+(live?'live':'not live')+'</span></div></td>'
+    +'<td><div class="live-cell">'+sw+'<span class="live-txt'+(blocked?' block':(live?' on':''))+'">'+(blocked?'blocked':(live?'live':'not live'))+'</span></div></td>'
     +'<td>'+(first?'<span class="mono" style="font-size:11px">'+esc(o.vendorIds.join(', '))+'</span>':'')+'</td>'
     +'<td class="mono" style="font-size:10.5px;white-space:nowrap">'+esc(v.updated||o.updated||'—')+'</td>'
     +'</tr>';
@@ -2232,11 +2246,15 @@ function defaultSourceOf(o){var w=winnerOf(o);return w?w.vendor.id:((o.vendorIds
 function toggleSourceLive(ocId,vid){
   if(!isMgr()){showToast('Permission required','Enable requires the Location Manager role.','error');return;}
   var o=findOC(ocId),v=findVendor(vid);if(!o||!v)return;
+  if(o.blocked){showToast('Blocked by the system','This store sits on the blocklist — the console cannot sign it off or lift it.','error');return;}
   if(v.status!=='active'){showToast('Cannot go live','This source record is not active.','error');return;}
   if(o.enable&&o.liveSource===vid){
-    o.enable=false;o.updated=nowStr();
-    log('OC',currentUser.name,'DISABLE',o.ocId,'is_enable','true','false','live source '+vid+' switched off');
-    renderOC();showToast('Switched off',o.ocId+' · hidden from downstream immediately');
+    /* un-sign: the intent is logged on the OC, the removal on the vendor record */
+    o.enable=false;o.listRemovedReason='UNSIGNED';o.updated=nowStr();
+    var prev=o.liveSource;o.liveSource=null;o.listType='none';
+    log('OC',currentUser.name,'UNSIGNED_OFF',o.ocId,'live_source',prev,'—','operator took the store off');
+    log('VENDOR',currentUser.name,'WHITELIST_REMOVED',prev,'list_type','white','none','removed_reason=UNSIGNED · '+o.ocId);
+    renderOC();showToast('Un-signed',o.ocId+' · out of the whitelist, hidden from downstream immediately');
     return;
   }
   soTarget={ocId:ocId,vid:vid};openSignoff(o,vid);
@@ -2244,10 +2262,13 @@ function toggleSourceLive(ocId,vid){
 function toggleEnable(ocId){
   if(!isMgr()){showToast('Permission required','Enable requires the Location Manager role.','error');return;}
   var o=findOC(ocId);if(!o)return;
+  if(o.blocked){showToast('Blocked by the system','This store sits on the blocklist — the console cannot lift it.','error');return;}
   if(o.enable){
-    o.enable=false;o.updated=nowStr();
-    log('OC',currentUser.name,'DISABLE',o.ocId,'is_enable','true','false','');
-    renderOC();showToast('Disabled',o.ocId+' · hidden from downstream immediately');
+    var prev=o.liveSource;
+    o.enable=false;o.liveSource=null;o.listType='none';o.listRemovedReason='UNSIGNED';o.updated=nowStr();
+    log('OC',currentUser.name,'UNSIGNED_OFF',o.ocId,'live_source',prev||'—','—','operator took the store off');
+    if(prev)log('VENDOR',currentUser.name,'WHITELIST_REMOVED',prev,'list_type','white','none','removed_reason=UNSIGNED · '+o.ocId);
+    renderOC();showToast('Un-signed',o.ocId+' · out of the whitelist, hidden from downstream immediately');
     return;
   }
   soTarget={ocId:ocId,vid:defaultSourceOf(o)};openSignoff(o,soTarget.vid);
@@ -2300,12 +2321,22 @@ function confirmSignoff(){
   var vid=soTarget.vid;
   if(blockers(o,vid).length)return;
   if(!document.getElementById('so-ack').checked)return;
-  var prev=o.liveSource,wasLive=!!o.enable;
-  o.liveSource=vid;o.enable=true;o.updated=nowStr();
+  var prev=o.liveSource,wasLive=!!o.enable&&!!prev;
+  var switching=wasLive&&prev!==vid;
+  o.liveSource=vid;o.enable=true;o.blocked=false;o.listType='white';o.listRemovedReason=null;o.updated=nowStr();
   BASELINE[o.ocId]=snapshot(o);
-  log('OC',currentUser.name,wasLive&&prev!==vid?'LIVE_SOURCE_CHANGED':'ENABLE_SIGNED_OFF',o.ocId,'live_source',prev||'—',vid,'baseline captured');
+  /* v4.3.0 — the business act and the list write are logged separately, on the
+     ids they belong to: OC for the decision, the vendor record for the list. */
+  if(switching){
+    log('OC',currentUser.name,'LIVE_SOURCE_CHANGED',o.ocId,'live_source',prev,vid,'baseline captured');
+    log('VENDOR',currentUser.name,'WHITELIST_REMOVED',prev,'list_type','white','none','removed_reason=SOURCE_SWITCHED · '+o.ocId);
+    log('VENDOR',currentUser.name,'WHITELIST_ADDED',vid,'list_type','none','white',o.ocId);
+  }else{
+    log('OC',currentUser.name,'ENABLE_SIGNED_OFF',o.ocId,'live_source','—',vid,'baseline captured');
+    log('VENDOR',currentUser.name,'WHITELIST_ADDED',vid,'list_type','none','white',o.ocId);
+  }
   closeModal('modal-signoff');renderOC();updateBadges();
-  showToast(wasLive&&prev!==vid?'Live source switched':'Enabled · baseline captured',o.ocId+' · every field now reads from '+vid);
+  showToast(switching?'Live source switched':'Signed off · whitelisted',o.ocId+' · every field now reads from '+vid);
 }
 function openEnableFromProfile(){
   var o=findOC(profile.id);if(!o)return;
@@ -2339,11 +2370,14 @@ function confirmBatch(){
       if(o.enable)return;
       var vid=defaultSourceOf(o);
       if(blockers(o,vid).length){skip++;return;}
-      o.liveSource=vid;o.enable=true;o.updated=nowStr();BASELINE[o.ocId]=snapshot(o);
-      log('OC',currentUser.name,'BATCH_ENABLE',o.ocId,'is_enable','false','true','live source '+vid+' · baseline captured');done++;
+      o.liveSource=vid;o.enable=true;o.blocked=false;o.listType='white';o.updated=nowStr();BASELINE[o.ocId]=snapshot(o);
+      log('OC',currentUser.name,'BATCH_ENABLE',o.ocId,'live_source','—',vid,'baseline captured');
+      log('VENDOR',currentUser.name,'WHITELIST_ADDED',vid,'list_type','none','white',o.ocId);done++;
     }else{
       if(!o.enable)return;
-      o.enable=false;o.updated=nowStr();log('OC',currentUser.name,'BATCH_DISABLE',o.ocId,'is_enable','true','false','');done++;
+      var bprev=o.liveSource;o.enable=false;o.liveSource=null;o.listType='none';o.listRemovedReason='UNSIGNED';o.updated=nowStr();
+      log('OC',currentUser.name,'BATCH_UNSIGNED_OFF',o.ocId,'live_source',bprev||'—','—','batch');
+      if(bprev)log('VENDOR',currentUser.name,'WHITELIST_REMOVED',bprev,'list_type','white','none','removed_reason=UNSIGNED · '+o.ocId);done++;
     }
   });
   closeModal('modal-batch');renderOC();clearOCSelection();
@@ -2646,7 +2680,7 @@ function pairCard(d) {
     + '<th class="b"><span class="ab">B</span><b class="mono">' + esc(b.id) + '</b>' + provBadge(b.provider)
     + (ocB ? '<span class="mono" style="color:var(--text-tertiary)">' + esc(ocB.ocId) + '</span>' : '<span class="badge badge-orange">no OC</span>') + '</th>'
     + '</tr></thead><tbody>' + body + '</tbody></table>'
-    + (done ? '' : '<div class="rc-meta" style="margin:8px 0 0"><span data-i18n="dup.keep">Suggested keep:</span> <b>' + esc(sug.id) + '</b> · <span data-i18n="dup.keeprule">rule: older record — is_primary is 1 for every record and dropoff volume is not wired yet</span></div>')
+    + (done ? '' : '<div class="rc-meta" style="margin:8px 0 0"><span data-i18n="dup.keep">Suggested keep:</span> <b>' + esc(sug.id) + '</b> · <span data-i18n="dup.keeprule">rule: older record (created_at) — is_primary cannot be used, it is 1 on every record</span></div>')
     + (done ? '<div class="rc-actions"><span class="rc-meta" style="margin:0">'
       + (d.status === 'merged' ? 'Merged — kept ' + esc(d.keep || '') + ', the other is inactive and marked merged_into'
         : d.status === 'separate' ? 'Kept apart — both active, labelled same address'
@@ -3009,7 +3043,8 @@ function ocPanels(o){
     var dr=driftOf(o),oi=openIssues(o);
     var lv=o.liveSource?findVendor(o.liveSource):null;
     return psec('Downstream visibility','<div class="dp-kv-grid">'
-      +kv('Live (is_enable)',o.enable?'<span class="badge badge-green">true</span>':'<span class="badge badge-gray">false</span>')
+      +kv('Provider status (is_enable)',lv?(lv.status==='active'?'<span class="badge badge-green">active</span>':(lv.status==='removed'?'<span class="badge badge-gray">removed</span>':'<span class="badge badge-red">inactive</span>')):'<span style="color:var(--text-tertiary)">—</span>')
+      +kv('List',o.blocked?'<span class="badge badge-red">blocked</span> (system-controlled)':(o.enable?'<span class="badge badge-green">white</span>':'<span class="badge badge-gray">none</span>'))
       +kv('Live source',(o.enable&&lv)?('<span class="mono">'+esc(lv.id)+'</span> '+provBadge(lv.provider)+' <span class="badge badge-green">live</span>'):'<span class="badge badge-gray">not chosen</span>')
       +kv('Source records',o.vendorIds.map(function(id){
         var isL=!!(o.enable&&o.liveSource===id);

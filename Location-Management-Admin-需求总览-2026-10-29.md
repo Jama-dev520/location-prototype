@@ -1,13 +1,13 @@
-# Location Management Admin Console — Requirement Overview (v4.2.0)
+# Location Management Admin Console — Requirement Overview (v4.3.0)
 
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
-> Companion: `Location-Management-Admin-PRD-2026-10-29` (v4.2.0)
+> Companion: `Location-Management-Admin-PRD-2026-10-29` (v4.2.0，待同步到 v4.3.0)
 > 给外部同事看的英文功能概览：https://jama-dev520.github.io/location-prototype/feature-overview.html
 > 演示视频（3 分 25 秒，36 条英文字幕，**录的是 v3.8.0** —— v4.0.0 的重复检查与 v4.1.0 的多源展示都还没演，需要时再重录：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
 > Detail view (v2.4.0): clicking a location ID opens a **full page** with tabs — Basic Info / Operations / Hours & Services / Linked Records / Change History.
 > **同步节奏（2026-11-19 确认）**：OC 每天**晚上 23:30** 从供应商拉一次店铺信息（单一批次，不分供应商），先写入供应商层，再做入库校验与去重判定，最后才轮到「上线」。
-> **字段口径（2026-11-19 与技术确认）**：`is_enable` 是**供应商的店铺状态**（1 活跃 / 0 关闭），`is_active` 是**我们数据库自己的标记**（不是供应商推的），`is_primary` **不可参考**。**下游能不能看到由名单决定**：白名单可见 · 黑名单不可见（且禁止上线）· 不在名单不可见。**签收 = 写白名单**，名单由运营在 OC location 维度自己开关。本文件已按此口径修正；原型与其余五份文档尚待同步（见 §2.4 决策 43）。
+> **字段口径（2026-11-19 与技术确认）**：`is_enable` 是**供应商的店铺状态**（1 活跃 / 0 关闭），`is_active` 是**我们数据库自己的标记**（不是供应商推的），`is_primary` **不可参考**。**下游能不能看到由名单决定**：白名单可见 · 黑名单不可见（且禁止上线）· 不在名单不可见。**签收 = 写白名单**，名单由运营在 OC location 维度自己开关。本文件与**原型（v4.3.0）**已按此口径修正；其余五份文档待同步（见 §2.4 决策 43）。
 >
 > **v3.0.0 — 供应商之外，自营 M&MP 小店也走同一套。** M&MP = 自营小店（美国叫法），是门店目录里的第三类来源，数据由门店自己维护，异常找门店负责人；规则与供应商门店完全一致。
 >
