@@ -497,7 +497,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
             <div><label class="f-label">City</label><select id="o-f-city" onchange="applyOCFilters()"></select></div>
             <div><label class="f-label">Source</label><select id="o-f-source" onchange="applyOCFilters()"></select></div>
             <div><label class="f-label">Status</label><select id="o-f-status" onchange="applyOCFilters()"><option value="">All</option><option value="active">active</option><option value="inactive">inactive</option></select></div>
-            <div><label class="f-label">Live</label><select id="o-f-live" onchange="applyOCFilters()"><option value="">All</option><option value="yes">Live</option><option value="no">Not live</option><option value="blocked">Blocked</option></select></div>
+            <div><label class="f-label">Live</label><select id="o-f-live" onchange="applyOCFilters()"><option value="">All</option><option value="yes">Live</option><option value="no">Not live</option><option value="blocked">Blocked by system</option></select></div>
             <div><label class="f-label">Issues <span class="help-dot" onclick="openHelp()" title="What counts as an issue">?</span></label><select id="o-f-issues" onchange="applyOCFilters()"><option value="">All</option><option value="blocking">Blocking data issue</option><option value="drift">Changed since sign-off</option><option value="dup">Duplicate 2:1</option></select></div>
           </div>
           <div class="filter-actions">
@@ -863,6 +863,8 @@ var I18N_ZH = {
   "live":"已上线",
   "not live":"未上线",
   "standby":"备用",
+  "blocked":"已被系统拉黑",
+  "Blocked by system":"已被系统拉黑",
   "Live source":"供数来源",
   "Live (is_enable)":"上线（is_enable）",
   "Source records":"来源记录",
