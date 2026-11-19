@@ -118,7 +118,9 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | `SYNC_QUARANTINED` (v2.6.0) | 硬校验失败，整条记录隔离，不写 OC |
 | `LIVE_SOURCE_CHANGED` (v4.1.0) | 换供数来源：店保持上线，字段整条替换、基线重记一次，记 old → new 来源 |
 | `OC_MAPPING_CHANGED` (v4.0.0) | 映射变更：某条 source_key 在人工确认后被指到另一个 OC |
-| `UNSIGNED_OFF` (2026-11-19) | 撤签：清空 live source + 移出白名单（`removed_reason = UNSIGNED`） |
+| `UNSIGNED_OFF` (2026-11-19) | 撤签：运营把店从白名单撤下（业务动作） |
+| `WHITELIST_ADDED` (2026-11-19) | 名单条目写入白名单：谁写的、哪条 vendor location、由哪次签收/换源触发 |
+| `WHITELIST_REMOVED` (2026-11-19) | 名单条目移出白名单：必须带 `removed_reason`（UNSIGNED / SOURCE_SWITCHED / BLOCKED / PROVIDER_DISABLED） |
 | `LOCATION_BLOCKED` (2026-11-19) | 系统拉黑：名单转为 `black`，下游立即不可见。控制台只读，解铃要找系统方 |
 
 ### 1.6 Key semantic distinctions
@@ -168,7 +170,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | **是什么** | 运营的意图：这家店我不再让它上线 | 名单表上的一次写操作：某条 vendor location 从 `white` 变成 `none` |
 | **谁触发** | 只有运营 | 三种来源：**撤签** · **换源**（旧源被替换） · **系统拉黑** |
 | **数据变化** | 清空 `live_source_vendor_id` + 名单条目删除 | 只删名单条目，是否清 `live_source_vendor_id` 取决于原因 |
-| **日志** | `UNSIGNED_OFF`（记 OC location + 被撤掉的 vendor location） | 不单独记一条；它是上一步的**结果**，原因写在 `removed_reason` 里 |
+| **日志** | `UNSIGNED_OFF` + 一条 `WHITELIST_REMOVED(UNSIGNED)` | `WHITELIST_REMOVED`，带 `removed_reason` 说明是谁移的；**不记 `UNSIGNED_OFF`** |
 | **下游** | 立即不可见 | 立即不可见 |
 
 **为什么名单表要带 `removed_reason`。** 只删一行的话，三个月后没人说得清这家店当初是「运营主动下线」「换了个源」还是「被系统拉黑」——三种情况的处理方式完全不同（第一种要问运营，第二种要去查新源，第三种要找开发）。所以移出时不删行，而是打标记：
@@ -179,6 +181,24 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | `SOURCE_SWITCHED` | 运营换源 | 「旧记录为什么不在名单了」→ 因为换成了另一条 |
 | `BLOCKED` | 系统 | 「为什么可见开关打不开」→ 被系统拉黑，找开发 |
 | `PROVIDER_DISABLED` | 供应商 | 「为什么突然看不见了」→ 供应商 `is_enable=0` |
+
+**日志记在哪个 ID 上，也要分清。** 名单是 **vendor location** 维度的，运营的动作是 **OC location** 维度的，所以：
+
+- `UNSIGNED_OFF` / `ENABLE_SIGNED_OFF` / `LIVE_SOURCE_CHANGED` 记在 **OC location**（`location_layer = OC`）；
+- `WHITELIST_ADDED` / `WHITELIST_REMOVED` 记在 **vendor location**（`location_layer = VENDOR`），并在 remark 里带上 OC 号。
+
+查一家店的历史时，这两类要按当时的映射合并显示 —— 否则运营在 OC 详情页只会看到"撤签了"，看不到"哪条记录的名单条目被移走"。
+
+**三个动作分别落几条日志**（一次名单变动必然有记录，否则查不了账）：
+
+| 动作 | 日志 | 说明 |
+|---|---|---|
+| 签收 | `ENABLE_SIGNED_OFF` + `WHITELIST_ADDED(white)` | 业务动作 + 名单写入 |
+| 换源 | `LIVE_SOURCE_CHANGED` + `WHITELIST_REMOVED(SOURCE_SWITCHED)` + `WHITELIST_ADDED(white)` | 三条：换了谁、旧条目为什么走、新条目进来了 |
+| 撤签 | `UNSIGNED_OFF` + `WHITELIST_REMOVED(UNSIGNED)` | 两条：意图 + 结果 |
+| 系统拉黑 | `LOCATION_BLOCKED` + `WHITELIST_REMOVED(BLOCKED)` | 两条，都由系统写 |
+
+> **为什么换源要三条而不是一条。** 只记 `LIVE_SOURCE_CHANGED` 的话，旧记录的名单条目什么时候没的、为什么没的，日志里查不到 —— 而这正是"这条记录为什么从客户那儿消失了"的答案。三条日志各自回答一个问题，合并成一条就只剩"换过源"，查不到旧条目的去向。
 
 > **供应商关店 / 记录作废时，名单本身不动。** `is_enable → 0` 或 `is_active → 0` 只是让店「不可见」，白名单条目仍在 —— 供应商第二天重开，店自动恢复可见，不需要运营再签一次。把名单也删掉的话，一次临时关店就会把运营的决定抹掉，重开时没人知道该不该重新上线。
 
@@ -272,7 +292,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | 19 | Duplicate (v3.0.0) | 独立 **Duplicate Check** 页；同一家 → 2:1 并在 OC 列表标出；不是同一家 → 1:1。未裁决的重复对阻塞启用 |
 | 20 | Merge priority (v3.0.0 → v3.13.0 改为整条记录) | 来源优先级 **M&MP（自营）→ LMS → PUDO Inc**。取值单位由「字段」改成「记录」，见决策 37 |
 | 21 | Drift (v3.0.0) | 签收后供应商改了值：下游直接用新值，台账显示「与基线不同」，运营可**重新签收**或**标记异常**。基线是参照物，不是冻结器 |
-| 44 | 名单三态；白名单归运营，黑名单归系统 (2026-11-19) | 一个 vendor location 的名单状态只有三种：**白名单**（下游可见）· **黑名单**（下游不可见，且明确禁止上线）· **不在名单里**（默认，不可见）。**签收 = 写白名单**，不是另一道门；撤签 = 回到「不在名单」。名单由**运营在 OC location 维度自己开关**，不走别的系统。三态互斥是硬约束：同时命中黑白名单时，下游只能靠实现顺序决定显示与否，那是把业务问题留给代码。**黑名单由开发层面系统控制，控制台不提供拉黑按钮** —— 运营只有签收与撤签两个动作。但控制台必须**显示** `blocked`（列表第三态、详情徽章、可筛选），否则运营看到一家「怎么都上不了线」的店会以为是数据问题，反复签收。 |
+| 44 | 名单三态；白名单归运营，黑名单归系统 (2026-11-19) | 一个 vendor location 的名单状态只有三种：**白名单**（下游可见）· **黑名单**（下游不可见，且明确禁止上线）· **不在名单里**（默认，不可见）。**签收 = 写白名单**，不是另一道门；撤签 = 回到「不在名单」。名单由**运营在 OC location 维度自己开关**，不走别的系统。三态互斥是硬约束：同时命中黑白名单时，下游只能靠实现顺序决定显示与否，那是把业务问题留给代码。**名单变动必须独立记日志**：`WHITELIST_ADDED` 与 `WHITELIST_REMOVED`（带 `removed_reason`）各自一条，撤签再额外记 `UNSIGNED_OFF`。**黑名单由开发层面系统控制，控制台不提供拉黑按钮** —— 运营只有签收与撤签两个动作。但控制台必须**显示** `blocked`（列表第三态、详情徽章、可筛选），否则运营看到一家「怎么都上不了线」的店会以为是数据问题，反复签收。 |
 | 43 | 三个标记各管一件事 (2026-11-19 与技术确认) | **`is_enable` = 供应商的店铺状态**（1 活跃 / 0 关闭），**`is_active` = 我们数据库自己的标记**（0 表示这行作废，不是供应商推的），**`is_primary` 不可参考**（每条都是 1）。所以：供应商关店 → 我们跟着下线；记录作废 → 不再对外；而「我们主动下线」只能靠**取消 live source** 表达 —— 三种下线原因在日志里必须分开记，否则出事查不出是谁关的。界面上的 `active / inactive / removed` 是前两个标记的**组合视图**，不是独立字段。 |
 | 42 | 打分按重合的字符对算 (v4.2.0) | 「全等或 0」把最该看见的情况判成了 0：同一栋楼里换了个单元（`2918 Avenue I` vs `2918 Avenue I Ste 2`），在那个占 40 分的字段上一分不得，只能靠坐标通道捞回来。现在每个字段**按比例**给分：两个值切成**相邻字符对**、排序（词的先后不影响结果），重合比例就是得分（Dice 系数）。同一对从 50 分变成 89 分，真正对不上的仍接近 0；对比表每行直接印这个比例，评审看得见「为什么是 89」而不只是一个勾。 |
 | 41 | 新记录只是候选，不是来源 (v4.1.0) | 同步进来的 vendor location **默认不 live**：新建 OC 只有供应商的 `is_enable`，没有 `live_source`；把一条记录合并进已上线的店，指针不动（哪怕它排名更高）；两条记录没人选过源 = 这家店不 live。排名只回答「选它之后客户会读到什么」，它本身不是「选」。 |
