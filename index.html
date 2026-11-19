@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v4.3.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v4.3.1)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -406,7 +406,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v4.3.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v4.3.1</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
@@ -431,7 +431,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v4.3.0</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v4.3.1</span></div>
       </div>
     </div>
 
@@ -672,7 +672,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v4.3.0 (the list is a whitelist)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v4.3.1 (a closed shop leaves the list)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -1232,7 +1232,7 @@ var I18N_BLOCK = {
   "map.rules":"M2 · 只重判发生变更的那个来源 &nbsp;·&nbsp; M3 · 分配新 OC，旧映射进历史 &nbsp;·&nbsp; M4 · 未变更的一方绝不动 &nbsp;·&nbsp; M5 · 没人确认就不落库 &nbsp;·&nbsp; M6 · 两边在同一次推送里都变了 → 进人工",
   "dup.vs":"对比",
   "pull.hint":"标记 → 导出 → 供应商修正 → 再拉一次",
-  "wt.title":"演示脚本 —— v4.3.0（列表就是白名单）"
+  "wt.title":"演示脚本 —— v4.3.1（关店的门店会自己离名单）"
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
@@ -1303,6 +1303,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "4.3.1":"<b>供应商关店，门店自己就不再是 live。</b>`is_enable = 0`（供应商关门）或 `is_active = 0`（记录作废）会<b>自动</b>把那条记录移出白名单：门店回到 <b>Not live</b>、live source 清空、日志分别记 <b>PROVIDER_DISABLED</b> / <b>RECORD_VOIDED</b>。这条替掉了之前「关店时保留白名单条目」的写法 —— 那等于门店既在白名单里、客户又看不到，两个事实从来没被对齐过。<b>重开不会自动恢复</b>：关着的时候店可能搬了、营业时间也改过，所以要人重新签收。列表会写清楚这家店为什么掉下来（<i>closed by the provider</i> / <i>record voided</i>），不再只有一个 <i>not live</i>。",
   "4.3.0":"<b>列表就是白名单，开关终于说的是它真正在做的事。</b>三个字段的含义按技术口径改正：<b>`is_enable`</b> 是供应商的营业状态（1 活跃 / 0 关闭），控制台只读；<b>`is_active`</b> 是我们自己库里的标记；<b>`is_primary`</b> 不可用（每条都是 1）。控制台真正控制的是<b>名单</b>：签收 = 写白名单条目，撤签 = 移出；黑名单由平台写，运营解不开 —— 所以被拉黑的店显示一个点不动的开关和红色 <b>blocked</b>，而不是假装给一个选择。因为一家店离开白名单有三种原因，移出时保留原因（<b>UNSIGNED</b> / <b>SOURCE_SWITCHED</b> / <b>BLOCKED</b>），日志记在供应商记录上，决定记在 OC 上。同步改成每晚 <b>23:30</b> 单批，不再是 02:00 / 02:30 两批。",
   "4.2.0":"<b>打分不再是「全等或 0」。</b>两条地址以前逐字段比 —— 清洗后一样就满分、否则 0，于是「2918 Avenue I」和「2918 Avenue I Ste 2」在那个占 40 分的字段上是 <b>0</b>：同一栋楼里换了个单元，读起来像换了一家店，只能靠坐标通道捞回来。现在每个字段<b>按比例</b>给分：两个值都切成<b>相邻字符对</b>、排序（词的先后不再影响结果），重合比例就是得分（Dice 系数）。同一对现在读 <b>89</b> 分而不是 50，真正对不上的仍然接近 0 —— 演示数据里跑出来正好两对候选，都对。对比表每个字段直接印这个比例，评审看得见「为什么是 89」，而不只是一个对勾。",
   "4.1.0":"<b>一家店、多条记录、一个供数来源。</b>以前 2:1 的门店只打一行合并后的字：排名最高的那条记录供全部字段，另一条记录根本看不见 —— 于是没人能发现两家供应商在喂同一家店，更别说挑一个。现在 OC 列表<b>一条记录一行</b>：名称、地址、揽收方、状态、更新时间各按各的显示，而且<b>只有一行能是 live</b>。开关的含义也变了，从「这家店开没开」变成「这家店由哪条记录供数」：关掉 live 那行 = 门店下线（备用记录从没被签收过，没有可回退的对象）；打开另一行 = <b>带换源的签收</b>，字段整条替换、基线重新记一次。筛选跟着列名走：两处统一叫 <b>Live / Not live</b>，列头不再叫 Enable。供应商列表在对应的记录上标 <b>live</b> 或 <b>standby</b>。",
@@ -1473,8 +1474,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='4.3.0';
+var APP_VERSION='4.3.1';
 var VERSIONS=[
+ {v:'4.3.1',type:'patch',date:'2026-11-19',desc:'<b>A shop that closes is not live any more, and nobody has to remember to switch it off.</b> `is_enable = 0` (the provider closed the shop) or `is_active = 0` (the record is void) now takes that record off the whitelist <b>by itself</b>: the store falls back to <b>Not live</b>, its live source is cleared, and the removal is logged as <b>PROVIDER_DISABLED</b> / <b>RECORD_VOIDED</b>. This replaces the earlier rule that kept the whitelist entry through a closure — which meant a shop could sit in the whitelist while the customer saw nothing, and the two facts were never reconciled. <b>Reopening does not put the entry back</b>: a shop can move or change its hours while it is closed, so it is signed off again by a person. The list says why a store dropped (<i>closed by the provider</i> / <i>record voided</i>) instead of only <i>not live</i>.'},
  {v:'4.3.0',type:'minor',date:'2026-11-19',desc:'<b>The list is a whitelist, and the switches now say what they are.</b> Three field meanings were wrong and are corrected against engineering: <b>`is_enable`</b> is the provider&rsquo;s business status (1 open / 0 closed) and the console only reads it, <b>`is_active`</b> is our own database flag, and <b>`is_primary`</b> is unusable (it is 1 on every record). What the console actually controls is the <b>list</b>: sign-off writes the whitelist entry, un-sign removes it, and the blocklist is written by the platform — an operator cannot lift it, so a blocked store shows a dead switch and a red <b>blocked</b> label instead of pretending to offer a choice. Because a store can leave the whitelist for three different reasons, removal keeps its reason (<b>UNSIGNED</b> / <b>SOURCE_SWITCHED</b> / <b>BLOCKED</b>) and is logged on the vendor record, while the decision stays on the OC. Sync is one batch at <b>23:30</b>, not two runs at 02:00 and 02:30.'},
  {v:'4.2.0',type:'minor',date:'2026-11-17',desc:'<b>The score stops being all-or-nothing.</b> Two addresses were compared field by field — same after cleaning, or nothing — which meant "2918 Avenue I" and "2918 Avenue I Ste 2" scored <b>0</b> on the field worth 40 points: a unit move inside one building read as a different shop, and only the coordinate channel could rescue it. Each field now scores <b>in proportion</b>: both values are cut into adjacent character pairs, the pairs are sorted so word order stops mattering, and the shared share becomes the score (Dice). The same pair now reads <b>89</b> instead of 50, and a genuine miss still scores near zero — the demo feed produces exactly two candidates, both correct. The comparison table prints that number per field instead of a tick, so a reviewer can see <i>why</i> 89 and not just that it passed.'},
  {v:'4.1.0',type:'minor',date:'2026-11-17',desc:'<b>One store, several records, one live source.</b> A 2:1 store used to print one merged line: whichever record ranked highest supplied every field and the other record was invisible — so nobody could see that two providers were feeding one store, let alone pick between them. The OC list now prints <b>one row per source record</b>, each with its own name, address, sweeper, status and update time, and <b>only one row can be live</b>. The switch stopped meaning “is this store on” and started meaning “which record feeds it”: turning the live row off takes the store down (a standby record was never signed off, so there is nothing to fall back to), turning another row on is a <b>sign-off with a source change</b> — every field is replaced and the baseline recaptured. The filter follows the column: the wording is <b>Live / Not live</b> in both, and the column is no longer called Enable. The vendor list tags each of those records <b>live</b> or <b>standby</b> where it states its OC location.'},
@@ -1654,7 +1656,10 @@ var NEXT_SYNC={
     {vendorId:'LOC-12194',field:'city',value:'Poughkeepsie'},
     {vendorId:'LOC-12194',field:'postal',value:'12601'},
     {vendorId:'LOC-12194',field:'lat',value:41.7004},
-    {vendorId:'LOC-12194',field:'lng',value:-73.9210}
+    {vendorId:'LOC-12194',field:'lng',value:-73.9210},
+    /* v4.3.1 — the same run reports a closure: is_enable went to 0 for this
+       shop, so the store it feeds leaves the whitelist by itself */
+    {vendorId:'LOC-12191',field:'status',value:'inactive'}
   ]
 };
 var SYNC_DONE=false, SYNC_SUMMARY=null, ISSUE_BASE={};
@@ -1730,6 +1735,8 @@ function runProviderSync(opts){
     log('VENDOR','Provider sync','DATA_ISSUE_AUTO_CLOSED',i.vendorId,i.field+(i.subField?' · '+i.subField:''),'open','fixed','run '+NEXT_SYNC.runId+' · '+base+' → '+nowVal);
     closed++;
   });
+  /* a run can also close a shop: unlist it before anything renders */
+  var unlisted=enforceListOnProviderFlags(true);
   /* identity moved? re-judge the mapping of each changed source, one by one */
   var rc=recheckMapping(NEXT_SYNC.changes);
   SYNC_DONE=true;
@@ -1739,7 +1746,7 @@ function runProviderSync(opts){
     pulled:NEXT_SYNC.pulled,created:NEXT_SYNC.created,updated:NEXT_SYNC.updated,flagged:NEXT_SYNC.flagged,
     breaker:'normal',autoClosed:closed});
   LAST_PULL={at:nowStr(),run:SYNC_SUMMARY.runId,rows:NEXT_SYNC.pulled,closed:closed,
-    updated:NEXT_SYNC.updated,needsHuman:needsHuman,stillInvalid:stillInvalid};
+    updated:NEXT_SYNC.updated,needsHuman:needsHuman,stillInvalid:stillInvalid,unlisted:unlisted};
   renderIssuesPage();renderSync();renderVendor();renderOC();renderDup();updateBadges();
   if(document.getElementById('page-pd').classList.contains('active'))renderProfile();
   if(!opts.quiet)showToast('Sync applied',closed+' closed automatically · '+needsHuman+' need a human · '+stillInvalid+' still invalid · '+unchanged+' unchanged'
@@ -1822,6 +1829,33 @@ function winnerOf(o){
    candidate, not a source, whatever its rank. 1:1 is the only case with a
    single possible answer, so it needs no choice. A 2:1 store with no chosen
    source is simply not live — that is what "waiting for sign-off" looks like. */
+/* v4.3.1 — the provider's flag is not advice. is_enable = 0 (shop closed) or
+   is_active = 0 (record void) takes that record off the whitelist by itself:
+   the live source is cleared and the store falls back to Not live. A store only
+   stays live while the record it reads is open and still valid.
+   Reopening does not put the entry back — a closed-then-open shop may have moved
+   or changed its hours while nobody was watching, so it needs a fresh sign-off. */
+function enforceListOnProviderFlags(logIt){
+  var n=0;
+  OC_LOCATIONS.forEach(function(o){
+    if(!o.enable||!o.liveSource)return;
+    var v=findVendor(o.liveSource); if(!v)return;
+    if(v.status==='active')return;
+    var voided=v.status==='removed';
+    var prev=o.liveSource;
+    o.enable=false;o.liveSource=null;o.listType='none';
+    o.listRemovedReason=voided?'RECORD_VOIDED':'PROVIDER_DISABLED';
+    o.listRemovedAt=nowStr();o.lastLiveSource=prev;o.updated=nowStr();
+    n++;
+    if(logIt){
+      log('OC','Provider sync','SOURCE_CLOSED',o.ocId,'live_source',prev,'—',
+        voided?'record voided (is_active = 0)':'shop closed by the provider (is_enable = 0)');
+      log('VENDOR','Provider sync','WHITELIST_REMOVED',prev,'list_type','white','none',
+        'removed_reason='+(voided?'RECORD_VOIDED':'PROVIDER_DISABLED')+' · '+o.ocId);
+    }
+  });
+  return n;
+}
 function ensureLiveSources(){
   OC_LOCATIONS.forEach(function(o){
     var ids=o.vendorIds||[];
@@ -2012,11 +2046,15 @@ function setRole(role){
   if(document.getElementById('page-pd').classList.contains('active'))renderProfile();
 }
 function updateBadges(){
-  document.getElementById('nav-notlive').textContent=OC_LOCATIONS.filter(function(o){return !o.enable;}).length;
+  /* v4.3.1 — blocked stores are not waiting for a sign-off: the console cannot
+     sign them off at all, so they are counted by their own filter, not here.
+     The badge and the Not live preset must agree, or the number lies. */
+  var waiting=OC_LOCATIONS.filter(function(o){return !o.enable&&!o.blocked;}).length;
+  document.getElementById('nav-notlive').textContent=waiting;
   document.getElementById('nav-dup').textContent=DUPLICATES.filter(function(d){return d.status==='pending';}).length
     +MAPPING.filter(function(m){return m.status==='pending';}).length;
   document.getElementById('nav-issues').textContent=ISSUES.filter(function(i){return i.status!=='fixed';}).length+INTAKE.filter(function(i){return i.status!=='fixed';}).length;
-  document.getElementById('o-notlive-count').textContent=OC_LOCATIONS.filter(function(o){return !o.enable;}).length;
+  document.getElementById('o-notlive-count').textContent=waiting;
 }
 
 /* ============ vendor list ============ */
@@ -2159,7 +2197,7 @@ function filterNotLive(){
   document.getElementById('o-f-source').value='';renderSourceFilter('o');
   document.getElementById('o-f-issues').value='';
   document.getElementById('o-f-live').value='no';renderOC();
-  var n=OC_LOCATIONS.filter(function(o){return !o.enable;}).length;
+  var n=OC_LOCATIONS.filter(function(o){return !o.enable&&!o.blocked;}).length;
   showToast('Waiting for sign-off',n+' location(s) not live yet');
 }
 /* v3.11.0 — an OC row answers "can this go live, and if not why". The provider's
@@ -2212,6 +2250,12 @@ function ocRowHTML(o,v,first){
       ? '<span class="switch disabled" title="this source is not active — nothing to put live"></span>'
       : (!isMgr()?'<span class="switch '+(live?'on':'')+' disabled" title="requires the Location Manager role"></span>'
         : '<span class="switch '+(live?'on':'')+'" title="'+(live?'switch this store off':'make this the live source')+'" onclick="toggleSourceLive(\''+o.ocId+'\',\''+v.id+'\')"></span>');
+  var why=(!blocked&&!live&&o.listRemovedReason)
+    ? (o.listRemovedReason==='PROVIDER_DISABLED'?'closed by the provider'
+      :o.listRemovedReason==='RECORD_VOIDED'?'record voided by us'
+      :o.listRemovedReason==='UNSIGNED'?'un-signed by an operator'
+      :o.listRemovedReason==='SOURCE_SWITCHED'?'read from another record now':'')
+    : '';
   var swp=valOf(v,'sweeper');
   var badgeCls=v.provider==='LMS'?'badge-blue':v.provider==='M&MP'?'badge-green':'badge-teal';
   return '<tr data-oc="'+esc(o.ocId)+'" data-src="'+esc(v.id)+'" class="'+(first?'':'oc-sub')+'">'
@@ -2225,7 +2269,8 @@ function ocRowHTML(o,v,first){
     +'<td>'+(swp?esc(srcShort(swp)):'<span class="badge badge-orange">missing</span>')+'</td>'
     +'<td>'+statusBadge(v.status)+'</td>'
     +'<td>'+(first?issueBadges(o):'<span style="color:var(--text-tertiary)">—</span>')+'</td>'
-    +'<td><div class="live-cell">'+sw+'<span class="live-txt'+(blocked?' block':(live?' on':''))+'">'+(blocked?'blocked':(live?'live':'not live'))+'</span></div></td>'
+    +'<td><div class="live-cell">'+sw+'<span class="live-txt'+(blocked?' block':(live?' on':''))+'"'
+      +(why?' title="'+esc(why)+'" style="text-decoration:underline dotted;cursor:help"':'')+'>'+esc(blocked?'blocked':(live?'live':'not live'))+'</span></div></td>'
     +'<td>'+(first?'<span class="mono" style="font-size:11px">'+esc(o.vendorIds.join(', '))+'</span>':'')+'</td>'
     +'<td class="mono" style="font-size:10.5px;white-space:nowrap">'+esc(v.updated||o.updated||'—')+'</td>'
     +'</tr>';
@@ -2766,9 +2811,14 @@ function resolveDup(pairId, res, keepId) {
     lose.status = 'inactive'; lose.mergedInto = keep.id; lose.updated = nowStr();
     d.status = 'merged'; d.keep = keep.id; d.mergedInto = lose.id;
     d.atDecision = { a: stOf(a), b: stOf(b), at: nowStr() };
+    /* v4.3.1 — if the record we just withdrew was feeding a store, that store
+       falls back to Not live: the keeper was never signed off, and the console
+       never promotes an unverified record (see §5.22). */
+    var dropped = enforceListOnProviderFlags(true);
     log('OC', currentUser.name, 'DUPLICATE_MERGED', pairId, 'vendor_oc_mapping', 'pending',
       'merged_into ' + keep.id, lose.id + ' → ' + keep.id + ' · both map to ' + oc.ocId);
-    showToast('Merged', lose.id + ' is disabled and marked merged_into ' + keep.id + ' · both keep ' + oc.ocId);
+    showToast('Merged', lose.id + ' is disabled and marked merged_into ' + keep.id + ' · both keep ' + oc.ocId
+      + (dropped ? ' · ' + dropped + ' store(s) dropped to Not live, re-sign on the keeper' : ''));
   } else {
     d.status = 'separate'; d.at = nowStr();
     var lost = OC_LOCATIONS.filter(function (o) { return o.vendorIds.indexOf(b.id) >= 0; })[0];
@@ -3046,7 +3096,14 @@ function ocPanels(o){
     var lv=o.liveSource?findVendor(o.liveSource):null;
     return psec('Downstream visibility','<div class="dp-kv-grid">'
       +kv('Provider status (is_enable)',lv?(lv.status==='active'?'<span class="badge badge-green">active</span>':(lv.status==='removed'?'<span class="badge badge-gray">removed</span>':'<span class="badge badge-red">inactive</span>')):'<span style="color:var(--text-tertiary)">—</span>')
-      +kv('List',o.blocked?'<span class="badge badge-red">blocked</span> (system-controlled)':(o.enable?'<span class="badge badge-green">white</span>':'<span class="badge badge-gray">none</span>'))
+      +kv('List',o.blocked?'<span class="badge badge-red">blocked</span> (system-controlled)'
+        :(o.enable?'<span class="badge badge-green">white</span>'
+          :'<span class="badge badge-gray">none</span>'+(o.listRemovedReason
+            ?' <span class="badge badge-orange">'+(o.listRemovedReason==='PROVIDER_DISABLED'?'closed by the provider'
+              :o.listRemovedReason==='RECORD_VOIDED'?'record voided'
+              :o.listRemovedReason==='UNSIGNED'?'un-signed':'source switched')+'</span>'
+              +(o.lastLiveSource?' <span class="mono" style="font-size:11px">was '+esc(o.lastLiveSource)+'</span>':'')
+            :'')))
       +kv('Live source',(o.enable&&lv)?('<span class="mono">'+esc(lv.id)+'</span> '+provBadge(lv.provider)+' <span class="badge badge-green">live</span>'):'<span class="badge badge-gray">not chosen</span>')
       +kv('Source records',o.vendorIds.map(function(id){
         var isL=!!(o.enable&&o.liveSource===id);
@@ -3207,6 +3264,7 @@ function exportIssues(){
   /* v4.1.0 — a live store must name the record it reads from before any
      baseline is taken, otherwise the snapshot is taken from a ranking. */
   ensureLiveSources();
+  enforceListOnProviderFlags(false);
   var v80=findVendor('LOC-00180');
   if(v80){v80.hoursText='Mon - Fri: 08:30am to 06:00pm\nSat: 09:00am to 01:00pm';v80.hoursOfOp=[{day:'MONDAY',timeRanges:[{startTime:'08:30',endTime:'18:00'}]},{day:'TUESDAY',timeRanges:[{startTime:'08:30',endTime:'18:00'}]},{day:'WEDNESDAY',timeRanges:[{startTime:'08:30',endTime:'18:00'}]},{day:'THURSDAY',timeRanges:[{startTime:'08:30',endTime:'18:00'}]},{day:'FRIDAY',timeRanges:[{startTime:'08:30',endTime:'18:00'}]},{day:'SATURDAY',timeRanges:[{startTime:'09:00',endTime:'13:00'}]}];}
   var v6=findVendor('LOC-00181'); if(v6)v6.name='Private Postal Systems LLC';
