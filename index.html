@@ -864,6 +864,10 @@ var I18N_ZH = {
   "not live":"未上线",
   "standby":"备用",
   "blocked":"已被系统拉黑",
+  "closed by the provider":"供应商已关店",
+  "record voided by us":"记录已作废",
+  "un-signed by an operator":"运营已撤签",
+  "read from another record now":"已改为另一条记录供数",
   "Blocked by system":"已被系统拉黑",
   "Live source":"供数来源",
   "Live (is_enable)":"上线（is_enable）",
@@ -2270,7 +2274,7 @@ function ocRowHTML(o,v,first){
     +'<td>'+statusBadge(v.status)+'</td>'
     +'<td>'+(first?issueBadges(o):'<span style="color:var(--text-tertiary)">—</span>')+'</td>'
     +'<td><div class="live-cell">'+sw+'<span class="live-txt'+(blocked?' block':(live?' on':''))+'"'
-      +(why?' title="'+esc(why)+'" style="text-decoration:underline dotted;cursor:help"':'')+'>'+esc(blocked?'blocked':(live?'live':'not live'))+'</span></div></td>'
+      +(why?' title="'+esc(tr(why))+'" style="text-decoration:underline dotted;cursor:help"':'')+'>'+esc(blocked?'blocked':(live?'live':'not live'))+'</span></div></td>'
     +'<td>'+(first?'<span class="mono" style="font-size:11px">'+esc(o.vendorIds.join(', '))+'</span>':'')+'</td>'
     +'<td class="mono" style="font-size:10.5px;white-space:nowrap">'+esc(v.updated||o.updated||'—')+'</td>'
     +'</tr>';
