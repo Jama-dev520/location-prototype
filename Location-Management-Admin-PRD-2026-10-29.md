@@ -448,18 +448,18 @@ A 2:1 store used to print one merged line. Whichever record ranked highest suppl
 
 ### 5.23 The location state machine (v4.1.0)
 
-![Location state machine — one store, one live source](https://workbuddy-space-static.codebuddy.work/image/s6IUFbwPF90MxY0uXkVAGN.png)
+![Location state machine — one store, one live source](https://workbuddy-space-static.codebuddy.work/image/xgPet1S8oJUFrwmXSOZvyg.png)
 
 Two rows on one axis: what a **store** may be, and what a **record** is allowed to do. They meet in exactly one place — the sign-off — because that is the only action that moves both.
 
 **Store states.** `No record` (intake failed, or a duplicate pair is still open; nothing downstream exists) → `Not live` (`is_enable` false, `live_source` null — including the case of two records and nobody choosing) → `Live` (`is_enable` true, exactly one live source, baseline captured) → `Offline` (switched off by a person, or the source went inactive; both take effect immediately) → `Retired` (merged away, `merged_into` points at the keeper).
 
-**Record roles.** `Candidate` (delivered by the sync, never a source) → `Standby` (linked to a store that is live on another record) or `Live source` (the record this store reads, one per store), with `Withdrawn` (`merged_into`, returns to candidate if the keeper leaves) and `Removed` (delisted by the provider) as the exits.
+**Record roles.** `Candidate` (delivered by the sync, never a source — and where a pending pair or a failed intake waits, with no OC location) → `Standby` (linked to a store that is live on another record) or `Live source` (the record this store reads, one per store), with `Withdrawn` (`merged_into`, returns to candidate if the keeper leaves) and `Removed` (delisted by the provider) as the exits.
 
 **Three invariants, drawn rather than asserted:**
 
 1. **No state is entered by the sync alone.** A record arrives as a candidate; the store it joins stays exactly where it was (§5.22).
-2. **`Blocked` is not a state.** A failed check leaves the store where it already was — `Not live`. Rendering it as a state would suggest the store moved, and the point is that it did not.
+2. **`Blocked` is not a state.** A failed check leaves the store where it already was — `Not live`. Rendering it as a state would suggest the store moved, and the point is that it did not. The same applies to a **pending duplicate**: the record waits in `Candidate` with no OC location at all, because a suspected pair generates nothing until a person decides. Nothing to sign off, nothing downstream.
 3. **Down is one click, up is a check.** The asymmetry is the design: an unverified store going offline is a smaller failure than an unverified store going live.
 
 The diagram is published as `diagrams/flow13-location-state.png` (vector version: `diagrams/flow13-location-state.html`). It is hand-drawn SVG rather than generated, so the two rows stay aligned exactly where they meet — the sign-off.

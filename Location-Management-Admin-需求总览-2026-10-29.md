@@ -311,13 +311,13 @@ sweeper 由供应商随门店一起提供，和其它字段一样只读。发现
 
 ### 3.10 Location 状态机（v4.1.0）
 
-![Location 状态机](https://workbuddy-space-static.codebuddy.work/image/s6IUFbwPF90MxY0uXkVAGN.png)
+![Location 状态机](https://workbuddy-space-static.codebuddy.work/image/xgPet1S8oJUFrwmXSOZvyg.png)
 
 两行、一根轴：**门店能是什么状态**，**一条记录被允许做什么**。它们只在一个地方相遇 —— 签收，因为那是唯一同时移动两行的动作。
 
 - **门店**：`No record`（入库失败 / 重复未决，下游什么都没有）→ `Not live`（已生成但关闭、无供数源；两条记录没人选也落在这里）→ `Live`（开着，恰好一个供数源，基线已记）→ `Offline`（人为关，或供数源失效；两者立即生效）→ `Retired`（被合并，`merged_into` 指向留下那条）。
-- **记录**：`Candidate`（同步刚送来的，永远不是来源）→ `Standby`（挂在别人供数的店上）或 `Live source`（这家店读它，一店一个），出口是 `Withdrawn`（`merged_into`，合并方离开就回到候选）与 `Removed`（供应商下架）。
-- **三条不变量画在图上**：① 同步本身进不了任何状态；② `Blocked` 不是状态（检查没过，店原地不动）；③ 下线一键、上线一检。
+- **记录**：`Candidate`（同步刚送来的，永远不是来源；待判重复和入库失败也停在这里 —— 此时**没有 OC**，所以既不能签收、下游也没有东西）→ `Standby`（挂在别人供数的店上）或 `Live source`（这家店读它，一店一个），出口是 `Withdrawn`（`merged_into`，合并方离开就回到候选）与 `Removed`（供应商下架）。
+- **三条不变量画在图上**：① 同步本身进不了任何状态；② `Blocked` 不是状态（检查没过，店原地不动），**待判重复同理**（记录停在 Candidate、没有 OC）；③ 下线一键、上线一检。
 
 对应 PRD §5.23；图为 `diagrams/flow13-location-state.png`。
 
