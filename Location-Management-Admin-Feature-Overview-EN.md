@@ -1,7 +1,7 @@
 # Location Management Admin Console — Feature Overview
 
 **Audience:** operations, partner-facing and M&MP teams who work with location data
-**Document version:** 2.7 (covers console v4.2.0) · **Status:** clickable prototype (not in production)
+**Document version:** 2.8 (covers console v4.4.0) · **Status:** clickable prototype (not in production)
 **Prototype:** https://jama-dev520.github.io/location-prototype/
 **One-page version (shareable):** https://jama-dev520.github.io/location-prototype/feature-overview.html
 **Languages:** the console itself switches between English and Chinese in the header (v3.5.0); interface only — data stays as delivered  
@@ -220,6 +220,7 @@ M&MP is not a role — self-operated stores are handled by the same people under
 | Version | Change |
 |---|---|
 | **v4.1.0** | One store, several records, one live source: one line per record, the switch means “which record feeds this store”, source changes are sign-offs |
+| **v4.4.0** | Filters are facets: multi-select with a search box inside, plus one fuzzy search across id/name/address/city/postal — OR within a filter, AND across filters. The console also carries the rollout: **P1** vendor list, **P2** duplicate check and OC list |
 | **v4.2.0** | The station score counts shared pairs: both values are cut into adjacent character pairs, sorted, and compared — a field pays in proportion, so a suite number no longer reads as a different shop |
 | **v4.0.0** | Duplicate check rebuilt: station score with coordinates as evidence → `HIGH_SUSPECT` / `MEDIUM_SUSPECT` labels; three dispositions; a mapping layer judged one source at a time |
 | v3.13.0 | One record supplies the whole store, empty fields included |

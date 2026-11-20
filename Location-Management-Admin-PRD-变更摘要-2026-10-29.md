@@ -1,6 +1,6 @@
-# Location Management Admin Console — PRD Change Summary (v4.2.0)
+# Location Management Admin Console — PRD Change Summary (v4.4.0)
 
-> Document version v4.2.0 ｜ Change date 2026-11-17 ｜ Status: Draft — pending review
+> Document version v4.4.0 ｜ Change date 2026-11-20 ｜ Status: Draft — pending review
 > 本轮（v3.0.0）是**模型换向**：OC 层不再改数据，只做两件事——**enable** 和 **标记异常**。所有数据以供应商为唯一来源，错的地方标记回去让供应商改；重复对单独成页；下游按字段合并，LMS 优先；M&MP 用同一套规则管同一份数据。
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
 > **验收标准（通俗版）**: `Location-Management-Admin-验收标准-2026-10-29.md`
@@ -464,6 +464,37 @@ https://jama-dev520.github.io/location-prototype/feature-overview.html
 - 片头片尾重做：片头标 `v3.3.0 / two layers · three sources / enable is a sign-off / a fix closes its own issue`；片尾四条地基换成 v3 的版本（数据只有供应商一个来源、没人处理就不变、下线容易上线要签收、修复能自证才自动关闭）。
 - 为了录制可读性，标记弹窗的严重度下拉文案从 `warning — live, but wrong for customers` 缩短为 `warning · live but wrong`（原来在 560px 弹窗里被截断）。纯文案，不改行为。
 
+## 二之二十六、v4.4.0：筛选变成多选，上线节奏标在工具上
+
+### 61. 单选下拉撑不住运营真实会问的问题
+
+「纽约或佛罗里达的店有哪些」是一个问题，不是两个。旧的单选下拉逼着运营跑两次、心里再加一遍 —— 而且第二次跑的时候，第一次的结果已经不在屏幕上了。现在每个筛选都是**多选**：`Province` 能同时勾 NY 和 FL，`Source` 能同时勾 LMS 和 PUDO，`Live` 能同时勾 Live 和 Blocked。
+
+按钮上写的是**真实状态**：一个值时写值（`NY`），多个值时写 `NY +1`，不选时写 `All (21)`。三种都能一眼看出「我现在到底筛了什么」，这是单选下拉做不到的。
+
+### 62. 语义一个字都没改
+
+多选容易顺手改成「筛选之间也 OR」—— 那就等于多加一个筛选反而多返回行，是筛选器最不该有的行为。所以写死一条：**同一筛选内 OR，筛选之间 AND**。`Province = NY + FL` 返回两个州，再加 `City = Brooklyn` 是在这 11 条里收窄，不是再并一批。
+
+### 63. 两个数字不能说谎
+
+- **省份变了之后不存在的城市**：以前（单选）会静默清空，用户只看到列表突然空了。现在会**摘掉并在工具栏说明**「Brooklyn dropped — not in the selected province」，因为「筛出来是空的」和「我的筛选失效了」是两件事，长得很像。
+- **徽章 / 预设 / 列表**：`Not live yet (4)` 写的是 facet，数的也是 facet 会返回的东西。这三处只要有一处自己算，数字就会开始飘。
+
+### 64. 模糊搜索是「找」，不是「筛」
+
+精确字段（Location ID、Name）保留原样 —— 「这个 ID」是查找。新加的一个**模糊搜索**跨 ID、名称、地址、城市、邮编、电话，多个词**必须同时命中**：`brooklyn 11210` 是收窄，不是把两个词的结果并起来。这条规则比「像搜索引擎」重要：运营用它缩小范围，不是用它发现新东西。
+
+代价要说清：跨六个字段的模糊匹配用不了索引。要么放在当前结果集上做（几千行没问题），要么给拼接后的 haystack 建 trigram / 全文索引；不要每次按键扫全表。
+
+### 65. 一期二期，标在工具上
+
+20 号会议定的顺序是**依赖**，不是工作量：重复判定决定一家店挂几条记录，OC 列表在它之前做不准 —— 先做 OC 等于做两遍。所以：**P1 = Vendor Location List**，**P2 = Duplicate Check → OC Location List**；Sync Status / Change Log / Data Issues 是两期共用的只读基础设施，不单列。
+
+标识直接打在侧栏与页面标题上（`P1` / `P2`），截图、评审意见、bug 单都自带范围。它不是权限也不是开关 —— 原型里每页都能点，因为原型要展示整套模型。
+
+> **一期要提前说好**：P1 的列表里 `OC Location ID` 基本是空的（映射二期才建）。这一列显示 `—` + 提示「二期分配」，不要显示 `none` —— `none` 读起来像数据有问题。
+
 ## 二之二十五、v4.2.0：打分按重合的字符对算
 
 ### 59. 「全等或 0」把该看见的判成了 0
@@ -823,6 +854,8 @@ v3.4.0 删掉的是「数据是否应用」，不是「门店是否上线」。�
 | v2.3.0 | MINOR | 2026-10-30 | QR code 投递（仅 LMS）：两列表标记 + 筛选 + 详情字段 + CSV |
 | v2.2.0 | MINOR | 2026-10-30 | 跨层反查：Vendor 按 OC ID 查、OC 按 Vendor ID 查 |
 | v2.1.2 | PATCH | 2026-10-30 | ID 搜索大小写不敏感 + 输入即筛 |
+| v4.4.0 | MINOR | 2026-11-20 | 筛选改为多选 + 内嵌搜索 + 跨字段模糊搜索；P1/P2 上线节奏标在工具上 |
+| v4.3.1 | PATCH | 2026-11-19 | 供应商关店自动移出白名单；重开需重新签收 |
 | v4.2.0 | MINOR | 2026-11-17 | 去重打分改为「相邻字符对排序后比重合」（Dice），字段按比例给分；对比表印比例而非对勾 |
 | v4.1.0 | MINOR | 2026-11-17 | 一店多记录：列表一行一条记录，只有一个 live source；换源 = 签收；列名与筛选统一 Live / Not live |
 | v4.0.0 | MAJOR | 2026-11-16 | 重复检查按 v2.0 规则重建：二分制打分 + 坐标证据 + 三种处置；新增映射层 |

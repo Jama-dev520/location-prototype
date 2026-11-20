@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v4.3.1)</title>
+<title>Location Management Admin Console — Interactive Prototype (v4.4.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -399,6 +399,38 @@ table.data.mapping tr td:first-child{width:44px}
 table.dup-cmp tr.st-flat td{background:transparent;color:var(--text-secondary)}
 table.dup-cmp tr.st-flat td.m .flat-dot{color:#CBD5E1;font-weight:700}
 table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
+
+/* ===== v4.4.0 — facets: multi-select filters with type-to-find ===== */
+.facet{position:relative}
+.facet-native{position:absolute!important;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden;clip:rect(0 0 0 0)}
+.facet-btn{width:100%;display:flex;align-items:center;gap:6px;justify-content:space-between;padding:7px 10px;border:1px solid #D6DEE8;border-radius:var(--radius-sm);background:var(--bg-card);font-family:inherit;font-size:13px;color:var(--text-primary);cursor:pointer;text-align:left;transition:var(--transition)}
+.facet-btn:hover{border-color:#B9C6D6}
+.facet-btn.on{border-color:var(--color-primary);background:var(--color-primary-light)}
+.facet-btn .fv{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.facet-btn .caret{flex:0 0 auto;font-size:9px;color:var(--text-tertiary)}
+.facet-pop{position:absolute;z-index:120;top:calc(100% + 4px);left:0;width:250px;background:var(--bg-card);border:1px solid #D6DEE8;border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:8px;display:none}
+.facet.open{z-index:121}
+.facet.open .facet-pop{display:block}
+.facet-search{width:100%!important;font-size:12px!important;padding:5px 8px!important;margin-bottom:6px}
+.facet-list{max-height:210px;overflow:auto}
+.facet-opt{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;font-size:12px;cursor:pointer;color:var(--text-primary)}
+.facet-opt:hover{background:var(--bg-hover)}
+.facet-opt input{margin:0;accent-color:var(--color-primary)}
+.facet-opt .n{margin-left:auto;font-size:11px;color:var(--text-tertiary);font-variant-numeric:tabular-nums}
+.facet-empty{padding:10px 6px;font-size:12px;color:var(--text-tertiary)}
+.facet-foot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--bg-section);margin-top:6px;padding-top:6px}
+.facet-foot button{background:none;border:0;padding:2px 4px;font-family:inherit;font-size:11.5px;color:var(--color-primary);cursor:pointer}
+.facet-foot button:hover{text-decoration:underline}
+
+/* rollout phases */
+.phase{display:inline-flex;align-items:center;justify-content:center;height:16px;padding:0 6px;border-radius:999px;font-size:9.5px;font-weight:700;letter-spacing:.4px;vertical-align:1px;flex:0 0 auto}
+.phase.p1{background:#DCFCE7;color:#166534}
+.phase.p2{background:#E0E7FF;color:#3730A3}
+.page-title .phase{vertical-align:3px;margin-left:6px}
+.rollout{padding:var(--space-4) var(--space-3);font-size:11px;color:var(--text-tertiary);line-height:1.7;border-top:1px solid var(--bg-section);margin-top:8px}
+.rollout b{color:var(--text-secondary);font-weight:600}
+.rollout .phase{margin-right:6px}
+.rollout .rl-name{margin-left:2px}
 </style>
 </head>
 <body>
@@ -406,18 +438,23 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v4.3.1</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v4.4.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
-    <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
-    <div class="nav-item" data-nav="p02" onclick="switchPage('p02')">OC Location List <span class="tag" id="nav-notlive">3</span></div>
-    <div class="nav-item" data-nav="pdup" onclick="switchPage('pdup')">Duplicate Check <span class="tag" id="nav-dup">1</span></div>
+    <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List <span class="phase p1" title="Phase 1 — build and ship this first">P1</span></div>
+    <div class="nav-item" data-nav="p02" onclick="switchPage('p02')">OC Location List <span class="phase p2" title="Phase 2 — needs the duplicate decisions first">P2</span> <span class="tag" id="nav-notlive">3</span></div>
+    <div class="nav-item" data-nav="pdup" onclick="switchPage('pdup')">Duplicate Check <span class="phase p2" title="Phase 2 — decides how many records a store has before the OC list can be right">P2</span> <span class="tag" id="nav-dup">1</span></div>
     <div class="nav-group-label">Quality</div>
     <div class="nav-item" data-nav="pdi" onclick="switchPage('pdi')">Data Issues <span class="tag" id="nav-issues">4</span></div>
     <div class="nav-item" data-nav="p03" onclick="switchPage('p03')">Change Log</div>
     <div class="nav-item" data-nav="p04" onclick="switchPage('p04')">Sync Status</div>
-    <div style="padding:var(--space-4) var(--space-3);font-size:11px;color:var(--text-tertiary);line-height:1.6">
-      Daily sync<br>23:30 · one batch, all providers
+    <div class="rollout">
+      <div data-i18n="rollout.title"><b>Rollout</b></div>
+      <div><span class="phase p1">P1</span><span class="rl-name">Vendor Location List</span></div>
+      <div><span class="phase p2">P2</span><span class="rl-name">Duplicate Check</span></div>
+      <div><span class="phase p2">P2</span><span class="rl-name">OC Location List</span></div>
+      <div style="margin-top:6px" data-i18n="rollout.why">Why this order: duplicate decisions decide <i>how many</i> records a store has, so the OC list cannot be right before them.</div>
+      <div style="margin-top:6px">Daily sync · 23:30 · one batch, all providers</div>
     </div>
   </aside>
 
@@ -431,18 +468,19 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v4.3.1</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v4.4.0</span></div>
       </div>
     </div>
 
     <div class="admin-content">
 
       <div class="page active" id="page-p01">
-        <h2 class="page-title">Vendor Location List</h2>
+        <h2 class="page-title">Vendor Location List <span class="phase p1">P1</span></h2>
         <p class="page-desc" data-i18n="p01.desc"><b>One Source, not two</b> — the type and its owner travel together: <b>PUDOpoint (PUDO)</b>, <b>packagehub (LMS)</b>, <b>M&amp;MP</b>. Because the pair is a single field, an impossible type/source combination is not a filter you can build. What the providers actually sent us — <b>every field is read-only</b>, including <b>sweeper</b>, which now arrives with the daily sync. <b>M&amp;MP</b> stores are self-operated, so their owner is the store itself rather than a provider — and <b>LMS</b> is who picks up for them. When a value is wrong, we do not correct it here: we <b>flag it with a reason</b>, the flag travels on this record, and the provider fixes the source. The OC layer only decides whether the location goes live.</p>
 
         <div class="card">
           <div class="filter-grid">
+            <div><label class="f-label">Search</label><input id="v-f-q" placeholder="id, name, address, city, postal — fuzzy" oninput="applyVendorFilters()"></div>
             <div><label class="f-label">Location ID</label><input id="v-f-id" placeholder="e.g. LOC-10024" oninput="applyVendorFilters()"></div>
             <div><label class="f-label">OC Location ID</label><input id="v-f-ocid" placeholder="e.g. OC-00001" oninput="applyVendorFilters()"></div>
             <div><label class="f-label">Name</label><input id="v-f-name" placeholder="keyword" oninput="applyVendorFilters()"></div>
@@ -454,6 +492,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
             <div><label class="f-label">Issues <span class="help-dot" onclick="openHelp()" title="What counts as an issue">?</span></label><select id="v-f-issues" onchange="applyVendorFilters()"><option value="">All</option><option value="open">Has open issue</option><option value="none">No issue</option></select></div>
           </div>
           <div class="filter-actions">
+            <span class="result-meta" id="v-geo-note" style="margin-right:auto;color:var(--color-warning)"></span>
             <button class="btn btn-secondary" onclick="resetVendorFilters()">Reset</button>
             <button class="btn btn-primary" onclick="applyVendorFilters()">Apply Filters</button>
           </div>
@@ -485,11 +524,12 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
       </div>
 
       <div class="page" id="page-p02">
-        <h2 class="page-title">OC Location List</h2>
+        <h2 class="page-title">OC Location List <span class="phase p2">P2</span></h2>
         <p class="page-desc" data-i18n="p02.desc"><b>One Source:</b> <b>packagehub (LMS)</b> · <b>PUDOpoint (PUDO)</b> · <b>M&amp;MP</b> — what it is and who owns it in one field. The record customers see. <b>Two actions only: sign off (which writes the whitelist) and flag an anomaly.</b> A store blocked by the platform shows a dead switch — the console cannot lift it. There is no editing here — a wrong address does not get typed over, it gets flagged back to the provider. Values come from <b>one record, not one value per field</b>: an <b>M&amp;MP</b> self-operated store wins first, then <b>LMS</b>, and whichever record wins supplies <b>every</b> field — including the empty ones. A blank phone on the winning record stays blank: borrowing it from the other record would hide the gap, and the gap is what tells the provider what to fix. <b>A store can carry two records (2:1).</b> Both are listed, one under the other, each with <b>its own</b> values — and only <b>one of them is the live source</b>, the record every downstream system reads. Switching it is a sign-off, not a toggle: the fields are replaced and the baseline is recaptured.</p>
 
         <div class="card">
           <div class="filter-grid">
+            <div><label class="f-label">Search</label><input id="o-f-q" placeholder="id, name, address, city, postal — fuzzy" oninput="applyOCFilters()"></div>
             <div><label class="f-label">OC Location ID</label><input id="o-f-id" placeholder="e.g. OC-00001" oninput="applyOCFilters()"></div>
             <div><label class="f-label">Vendor Location ID</label><input id="o-f-vendorid" placeholder="e.g. LOC-10024" oninput="applyOCFilters()"></div>
             <div><label class="f-label">Name</label><input id="o-f-name" placeholder="keyword" oninput="applyOCFilters()"></div>
@@ -501,6 +541,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
             <div><label class="f-label">Issues <span class="help-dot" onclick="openHelp()" title="What counts as an issue">?</span></label><select id="o-f-issues" onchange="applyOCFilters()"><option value="">All</option><option value="blocking">Blocking data issue</option><option value="drift">Changed since sign-off</option><option value="dup">Duplicate 2:1</option></select></div>
           </div>
           <div class="filter-actions">
+            <span class="result-meta" id="o-geo-note" style="margin-right:auto;color:var(--color-warning)"></span>
             <button class="btn btn-secondary" onclick="resetOCFilters()">Reset</button>
             <button class="btn btn-primary" onclick="applyOCFilters()">Apply Filters</button>
           </div>
@@ -531,7 +572,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
       </div>
 
             <div class="page" id="page-pdup">
-        <h2 class="page-title">Duplicate Check</h2>
+        <h2 class="page-title">Duplicate Check <span class="phase p2">P2</span></h2>
         <p class="page-desc" data-i18n="pdup.desc">Two layers, one question each. <b>Station layer:</b> are these two records the same physical station? The score is <b>proportional</b> — address 40 · name 10 · postal 25 · province 15 · city 10, and each field pays the share of <b>adjacent character pairs</b> the two values have in common (the pairs are sorted first, so word order stops mattering) — with coordinates beside it as an <b>evidence channel</b>, never as points: ≤30 m is the same point, 30–100 m is a grey zone for a human, &gt;100 m is a different place. That produces <b>HIGH_SUSPECT</b> or <b>MEDIUM_SUSPECT</b>, nothing else. <b>Mapping layer:</b> which OC location does a <b>source_key</b> map to, and what happens when that source's identity moves — <b>one source at a time, never the pair</b>. Nothing merges, disables or blocks by itself.</p>
 
         <div class="card">
@@ -672,7 +713,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v4.3.1 (a closed shop leaves the list)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v4.4.0 (facets, and what ships first)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -852,6 +893,13 @@ var I18N_ZH = {
 
   /* ---- option values ---- */
   "All":"全部",
+  "Clear":"清空",
+  "Search":"搜索",
+  "Type to find":"输入关键字筛选",
+  "Nothing matches":"没有匹配项",
+  "Rollout":"上线节奏",
+  "P1":"一期",
+  "P2":"二期",
   "active":"生效中",
   "inactive":"已失效",
   "removed":"已移除",
@@ -1200,6 +1248,8 @@ var I18N_ZH = {
 
 /* ---- whole blocks (inline markup inside the sentence) ---- */
 var I18N_BLOCK = {
+  "rollout.title":"<b>上线节奏</b>",
+  "rollout.why":"为什么是这个顺序：重复判定决定一家店<b>挂几条记录</b>，所以 OC 列表在它之前做不准。",
   "p01.desc":"<b>只有一个来源，不是两个</b> —— 类型和归属一起写在同一个字段：<b>PUDOpoint (PUDO)</b>、<b>packagehub (LMS)</b>、<b>M&amp;MP</b>。既然两者合成一个字段，“不可能的组合”就不再是筛选能搭出来的东西。这里是供应商实际推过来的内容，<b>所有字段只读</b>，包括<b>揽收方</b>，它现在随每日同步一起进来。<b>M&amp;MP</b> 是自营店，责任方是门店本身而不是某个供应商 —— 揽收方固定是 <b>LMS</b>。发现值不对，我们不在这一层改：我们<b>带着原因标记它</b>，标记挂在这条记录上，由供应商去修源头。OC 层只决定这家店是否上线。",
   "p02.desc":"<b>只有一个来源：</b><b>packagehub (LMS)</b> · <b>PUDOpoint (PUDO)</b> · <b>M&amp;MP</b> —— 它是什么、谁拥有，一个字段说完。客户看到的就是这条记录。<b>只有两个动作：启用、标记异常。</b>这里不能改数据 —— 地址错了不是拿键盘盖掉，是标给供应商去改。值<b>按记录整条取，不是逐字段拼</b>：<b>M&amp;MP</b>（自营）优先，其次 <b>LMS</b>；谁赢，这条店就整条由谁供数，<b>包括它空着的字段</b>。赢的那条没有电话，电话就是空的 —— 拿另一家补上，等于把「该催谁」这件事藏起来了。<b>一个门店可以挂两条记录（2:1）。</b>两条都列出来，一上一下，各自显示<b>自己</b>的值 —— 但<b>只有一条是供数来源</b>，下游读的就是它。换源不是拨开关，是重新签收：字段整条替换，基线重新记一次。",
   "pdup.desc":"两层，各问一个问题。<b>站点层：</b>这两条记录是不是同一个物理站点？打分是<b>按比例</b>的 —— 地址 40 · 名称 10 · 邮编 25 · 州 15 · 城市 10，每个字段给的是两个值<b>相邻字符对</b>的重合比例（先排序，词的先后不再影响结果），地址差一个门牌号就是高分而不是 0 分。坐标是并排的一条<b>证据通道</b>，从不折算成分数：≤30 m 同一物理点位、30–100 m 灰区（交给人）、&gt;100 m 不同点位。输出只有 <b>HIGH_SUSPECT</b> 与 <b>MEDIUM_SUSPECT</b> 两个标签。<b>映射层：</b>这个 <b>source_key</b> 现在对应哪个 OC？一次只判一个来源、从不按配对连带 —— 没有任何一步会自己合并、停用或阻断。",
@@ -1236,7 +1286,7 @@ var I18N_BLOCK = {
   "map.rules":"M2 · 只重判发生变更的那个来源 &nbsp;·&nbsp; M3 · 分配新 OC，旧映射进历史 &nbsp;·&nbsp; M4 · 未变更的一方绝不动 &nbsp;·&nbsp; M5 · 没人确认就不落库 &nbsp;·&nbsp; M6 · 两边在同一次推送里都变了 → 进人工",
   "dup.vs":"对比",
   "pull.hint":"标记 → 导出 → 供应商修正 → 再拉一次",
-  "wt.title":"演示脚本 —— v4.3.1（关店的门店会自己离名单）"
+  "wt.title":"演示脚本 —— v4.4.0（筛选变多选，先做哪一块标在工具上）"
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
@@ -1307,6 +1357,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "4.4.0":"<b>筛选变成多选，上线节奏标在工具上。</b>每个下拉都变成<b>带搜索框的多选</b> —— NY 和 FL 一起选、输入 <i>broo</i> 找 Brooklyn、Live 与 Blocked 同时勾 —— 语义仍是<b>同一筛选内 OR、筛选之间 AND</b>。精确字段上方加了一个<b>模糊搜索</b>，跨 ID、名称、地址、城市、邮编、电话，多个词必须同时命中（所以 <i>brooklyn 11210</i> 是收窄而不是放宽）。两条规则保证数字不说谎：省份换了之后不存在的城市会<b>被摘掉并明说</b>，不会静默留着；徽章、预设、列表读的是同一个 facet。11 月 20 日定的节奏也标在工具上：<b>一期</b> 供应商门店列表，<b>二期</b> 重复检查 + OC 列表，侧栏写明原因 —— 重复判定决定一家店挂几条记录，OC 列表在它之前做不准。",
   "4.3.1":"<b>供应商关店，门店自己就不再是 live。</b>`is_enable = 0`（供应商关门）或 `is_active = 0`（记录作废）会<b>自动</b>把那条记录移出白名单：门店回到 <b>Not live</b>、live source 清空、日志分别记 <b>PROVIDER_DISABLED</b> / <b>RECORD_VOIDED</b>。这条替掉了之前「关店时保留白名单条目」的写法 —— 那等于门店既在白名单里、客户又看不到，两个事实从来没被对齐过。<b>重开不会自动恢复</b>：关着的时候店可能搬了、营业时间也改过，所以要人重新签收。列表会写清楚这家店为什么掉下来（<i>closed by the provider</i> / <i>record voided</i>），不再只有一个 <i>not live</i>。",
   "4.3.0":"<b>列表就是白名单，开关终于说的是它真正在做的事。</b>三个字段的含义按技术口径改正：<b>`is_enable`</b> 是供应商的营业状态（1 活跃 / 0 关闭），控制台只读；<b>`is_active`</b> 是我们自己库里的标记；<b>`is_primary`</b> 不可用（每条都是 1）。控制台真正控制的是<b>名单</b>：签收 = 写白名单条目，撤签 = 移出；黑名单由平台写，运营解不开 —— 所以被拉黑的店显示一个点不动的开关和红色 <b>blocked</b>，而不是假装给一个选择。因为一家店离开白名单有三种原因，移出时保留原因（<b>UNSIGNED</b> / <b>SOURCE_SWITCHED</b> / <b>BLOCKED</b>），日志记在供应商记录上，决定记在 OC 上。同步改成每晚 <b>23:30</b> 单批，不再是 02:00 / 02:30 两批。",
   "4.2.0":"<b>打分不再是「全等或 0」。</b>两条地址以前逐字段比 —— 清洗后一样就满分、否则 0，于是「2918 Avenue I」和「2918 Avenue I Ste 2」在那个占 40 分的字段上是 <b>0</b>：同一栋楼里换了个单元，读起来像换了一家店，只能靠坐标通道捞回来。现在每个字段<b>按比例</b>给分：两个值都切成<b>相邻字符对</b>、排序（词的先后不再影响结果），重合比例就是得分（Dice 系数）。同一对现在读 <b>89</b> 分而不是 50，真正对不上的仍然接近 0 —— 演示数据里跑出来正好两对候选，都对。对比表每个字段直接印这个比例，评审看得见「为什么是 89」，而不只是一个对勾。",
@@ -1478,8 +1529,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='4.3.1';
+var APP_VERSION='4.4.0';
 var VERSIONS=[
+ {v:'4.4.0',type:'minor',date:'2026-11-20',desc:'<b>The filters became facets, and the build order is on the tool.</b> Every dropdown is now a <b>multi-select with a search box inside it</b> — pick NY and FL at once, type <i>broo</i> to find Brooklyn, tick Live and Blocked together — while the <b>OR inside a filter, AND across filters</b> semantics stay the same. Above the exact-match fields there is one <b>fuzzy search</b> that reads across id, name, address, city, postal and phone, with every word required (so <i>brooklyn 11210</i> narrows rather than widens). Two rules keep the counts honest: a city that no longer exists under the selected provinces is <b>dropped and reported</b>, never silently kept — and the badge, the preset and the list all read the same facet. The rollout decided in the 20 Nov meeting is marked on the tool: <b>P1</b> vendor list, <b>P2</b> duplicate check and OC list, with the reason in the sidebar — duplicate decisions decide how many records a store has, so the OC list cannot be right before them.'},
  {v:'4.3.1',type:'patch',date:'2026-11-19',desc:'<b>A shop that closes is not live any more, and nobody has to remember to switch it off.</b> `is_enable = 0` (the provider closed the shop) or `is_active = 0` (the record is void) now takes that record off the whitelist <b>by itself</b>: the store falls back to <b>Not live</b>, its live source is cleared, and the removal is logged as <b>PROVIDER_DISABLED</b> / <b>RECORD_VOIDED</b>. This replaces the earlier rule that kept the whitelist entry through a closure — which meant a shop could sit in the whitelist while the customer saw nothing, and the two facts were never reconciled. <b>Reopening does not put the entry back</b>: a shop can move or change its hours while it is closed, so it is signed off again by a person. The list says why a store dropped (<i>closed by the provider</i> / <i>record voided</i>) instead of only <i>not live</i>.'},
  {v:'4.3.0',type:'minor',date:'2026-11-19',desc:'<b>The list is a whitelist, and the switches now say what they are.</b> Three field meanings were wrong and are corrected against engineering: <b>`is_enable`</b> is the provider&rsquo;s business status (1 open / 0 closed) and the console only reads it, <b>`is_active`</b> is our own database flag, and <b>`is_primary`</b> is unusable (it is 1 on every record). What the console actually controls is the <b>list</b>: sign-off writes the whitelist entry, un-sign removes it, and the blocklist is written by the platform — an operator cannot lift it, so a blocked store shows a dead switch and a red <b>blocked</b> label instead of pretending to offer a choice. Because a store can leave the whitelist for three different reasons, removal keeps its reason (<b>UNSIGNED</b> / <b>SOURCE_SWITCHED</b> / <b>BLOCKED</b>) and is logged on the vendor record, while the decision stays on the OC. Sync is one batch at <b>23:30</b>, not two runs at 02:00 and 02:30.'},
  {v:'4.2.0',type:'minor',date:'2026-11-17',desc:'<b>The score stops being all-or-nothing.</b> Two addresses were compared field by field — same after cleaning, or nothing — which meant "2918 Avenue I" and "2918 Avenue I Ste 2" scored <b>0</b> on the field worth 40 points: a unit move inside one building read as a different shop, and only the coordinate channel could rescue it. Each field now scores <b>in proportion</b>: both values are cut into adjacent character pairs, the pairs are sorted so word order stops mattering, and the shared share becomes the score (Dice). The same pair now reads <b>89</b> instead of 50, and a genuine miss still scores near zero — the demo feed produces exactly two candidates, both correct. The comparison table prints that number per field instead of a tick, so a reviewer can see <i>why</i> 89 and not just that it passed.'},
@@ -2061,11 +2113,128 @@ function updateBadges(){
   document.getElementById('o-notlive-count').textContent=waiting;
 }
 
+
+/* ============ v4.4.0 — facets: multi-select, type to find ============
+   The native <select> stays the single source of truth: it is turned into a
+   multiple select and hidden, and the pill you see is a rendering of it. That
+   keeps every preset, keyboard path and test that assigns .value working, and
+   makes it impossible for the facet to drift out of sync with the filter. */
+var FACET_IDS=['v-f-prov','v-f-city','v-f-source','v-f-status','v-f-sweeper','v-f-issues',
+               'o-f-prov','o-f-city','o-f-source','o-f-status','o-f-live','o-f-issues'];
+var FACET={};
+function vals(id){
+  var el=document.getElementById(id); if(!el)return [];
+  return Array.prototype.map.call(el.selectedOptions||[],function(o){return o.value;})
+    .filter(function(v){return v!=='';});
+}
+function setFacet(id,arr){
+  var el=document.getElementById(id); if(!el)return;
+  Array.prototype.forEach.call(el.options,function(o){o.selected=arr.indexOf(o.value)>=0;});
+  syncFacet(id);
+}
+/* fuzzy = every whitespace-separated token appears somewhere in the row,
+   after case, punctuation and accent-insensitive normalisation (nrm) */
+function fuzzyHit(hay,q){
+  var h=nrm(hay),ts=nrm(q).split(' ').filter(Boolean);
+  for(var i=0;i<ts.length;i++){if(h.indexOf(ts[i])<0)return false;}
+  return true;
+}
+function enhanceFacets(){
+  FACET_IDS.forEach(function(id){
+    var sel=document.getElementById(id); if(!sel||sel.dataset.fx)return;
+    sel.dataset.fx='1';
+    if(!sel.multiple)sel.multiple=true;
+    sel.classList.add('facet-native');
+    var wrap=document.createElement('div');wrap.className='facet';wrap.id='fx-'+id;
+    sel.parentNode.insertBefore(wrap,sel);wrap.appendChild(sel);
+    var btn=document.createElement('button');
+    btn.type='button';btn.className='facet-btn';
+    btn.innerHTML='<span class="fv"></span><span class="caret">\u25BE</span>';
+    btn.onclick=function(e){e.stopPropagation();toggleFacetPop(id);};
+    var pop=document.createElement('div');pop.className='facet-pop';
+    pop.innerHTML='<input class="facet-search" placeholder="'+tr('Type to find')+'" oninput="facetSearch(\''+id+'\',this.value)">'
+      +'<div class="facet-list"></div>'
+      +'<div class="facet-foot"><button type="button" onclick="facetBulk(\''+id+'\',true)">'+tr('All')+'</button>'
+      +'<button type="button" onclick="facetBulk(\''+id+'\',false)">'+tr('Clear')+'</button></div>';
+    pop.onclick=function(e){e.stopPropagation();};
+    wrap.appendChild(btn);wrap.appendChild(pop);
+    FACET[id]={q:''};
+    syncFacet(id);
+  });
+  if(!window.__facetGlobal){
+    window.__facetGlobal=1;
+    var close=function(){Array.prototype.forEach.call(document.querySelectorAll('.facet.open'),function(f){f.classList.remove('open');});};
+    document.addEventListener('click',close);
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+  }
+}
+function toggleFacetPop(id){
+  var w=document.getElementById('fx-'+id); if(!w)return;
+  var was=w.classList.contains('open');
+  Array.prototype.forEach.call(document.querySelectorAll('.facet.open'),function(f){f.classList.remove('open');});
+  if(was)return;
+  w.classList.add('open');
+  var inp=w.querySelector('.facet-search');
+  if(inp){inp.value=(FACET[id]||{}).q||'';setTimeout(function(){inp.focus();},20);}
+}
+function syncFacet(id){
+  var sel=document.getElementById(id),w=document.getElementById('fx-'+id);
+  if(!sel||!w)return;
+  var st=FACET[id]||(FACET[id]={q:''});
+  var opts=Array.prototype.map.call(sel.options,function(o){
+    return {v:o.value,t:o.getAttribute('data-label')||o.textContent,n:o.getAttribute('data-n')||''};
+  });
+  var cur=vals(id);
+  var shown=opts.filter(function(o){return o.v!==''&&(!st.q||fuzzyHit(o.t,st.q));});
+  w.querySelector('.facet-list').innerHTML=shown.length?shown.map(function(o){
+    return '<label class="facet-opt"><input type="checkbox" '+(cur.indexOf(o.v)>=0?'checked':'')
+      +' data-v="'+esc(o.v)+'" onchange="facetPick(\''+id+'\',this.dataset.v,this.checked)">'
+      +'<span>'+esc(tr(o.t))+'</span>'+(o.n?'<span class="n">'+esc(o.n)+'</span>':'')+'</label>';
+  }).join(''):'<div class="facet-empty">'+tr('Nothing matches')+'</div>';
+  var inp=w.querySelector('.facet-search');
+  if(inp&&inp.placeholder!==tr('Type to find'))inp.placeholder=tr('Type to find');
+  var foot=w.querySelectorAll('.facet-foot button');
+  if(foot[0])foot[0].textContent=tr('All');
+  if(foot[1])foot[1].textContent=tr('Clear');
+  var btn=w.querySelector('.facet-btn'),fv=w.querySelector('.fv');
+  var label=function(v){var o=opts.filter(function(x){return x.v===v;})[0];return tr(o?o.t:v);};
+  if(!cur.length){
+    var allOpt=opts.filter(function(o){return o.v==='';})[0];
+    fv.textContent=tr(allOpt?allOpt.t:'All');
+    btn.classList.remove('on');btn.title='';
+  }else if(cur.length===1){
+    fv.textContent=label(cur[0]);
+    btn.classList.add('on');btn.title=label(cur[0]);
+  }else{
+    fv.textContent=label(cur[0])+' +'+(cur.length-1);
+    btn.classList.add('on');btn.title=cur.map(label).join(', ');
+  }
+}
+function facetPick(id,v,on){
+  var sel=document.getElementById(id); if(!sel)return;
+  Array.prototype.forEach.call(sel.options,function(o){if(o.value===v)o.selected=!!on;});
+  syncFacet(id);
+  if(typeof sel.onchange==='function')sel.onchange();
+}
+function facetBulk(id,all){
+  var sel=document.getElementById(id); if(!sel)return;
+  Array.prototype.forEach.call(sel.options,function(o){o.selected=!!all&&o.value!=='';});
+  syncFacet(id);
+  if(typeof sel.onchange==='function')sel.onchange();
+}
+function facetSearch(id,q){
+  FACET[id]=FACET[id]||{q:''};
+  FACET[id].q=q||'';
+  syncFacet(id);
+}
+
 /* ============ vendor list ============ */
 function vendorFilters(skipSource,skipGeo,skipCity){
   var f={id:val('v-f-id').toLowerCase(),ocid:val('v-f-ocid').toLowerCase(),name:val('v-f-name').toLowerCase(),
-    prov:val('v-f-prov'),city:val('v-f-city'),
-    source:skipSource?'':val('v-f-source'),status:val('v-f-status'),sweeper:val('v-f-sweeper'),issues:val('v-f-issues')};
+    q:val('v-f-q'),
+    prov:vals('v-f-prov'),city:vals('v-f-city'),
+    source:skipSource?[]:vals('v-f-source'),status:vals('v-f-status'),
+    sweeper:vals('v-f-sweeper'),issues:vals('v-f-issues')};
   return VENDORS.filter(function(v){
     if(f.id&&v.id.toLowerCase().indexOf(f.id)<0)return false;
     if(f.ocid){
@@ -2073,52 +2242,81 @@ function vendorFilters(skipSource,skipGeo,skipCity){
       if(!oc||oc.ocId.toLowerCase().indexOf(f.ocid)<0)return false;
     }
     if(f.name&&v.name.toLowerCase().indexOf(f.name)<0)return false;
-    if(!skipGeo&&f.prov&&v.state!==f.prov)return false;
-    if(!skipCity&&f.city&&v.city!==f.city)return false;
-    if(f.source&&v.type!==f.source)return false;
-    if(f.status&&v.status!==f.status)return false;
-    if(f.sweeper&&v.sweeper!==f.sweeper)return false;
-    var oi=issuesOfVendor(v.id).filter(function(i){return i.status!=='fixed';}).length;
-    if(f.issues==='open'&&!oi)return false;
-    if(f.issues==='none'&&oi)return false;
+    if(f.q&&!fuzzyHit([v.id,v.name,v.addr1,v.addr2,v.city,v.state,v.postal,v.phone,v.provider,v.type].join(' '),f.q))return false;
+    if(!skipGeo&&f.prov.length&&f.prov.indexOf(v.state)<0)return false;
+    if(!skipCity&&f.city.length){
+      var inScope=cityInScope('v',f.prov,f.city);
+      if(inScope.length&&inScope.indexOf(v.city)<0)return false;
+    }
+    if(f.source.length&&f.source.indexOf(v.type)<0)return false;
+    if(f.status.length&&f.status.indexOf(v.status)<0)return false;
+    if(f.sweeper.length&&f.sweeper.indexOf(v.sweeper||'')<0)return false;
+    if(f.issues.length){
+      var has=issuesOfVendor(v.id).filter(function(i){return i.status!=='fixed';}).length>0;
+      if(f.issues.indexOf(has?'open':'none')<0)return false;
+    }
     return true;
   });
 }
 function applyVendorFilters(){renderVendor();}
 /* v3.12.0 — province, then city. Both are derived from the rows the *other*
    filters left, so a count never lies about what clicking it would return. */
+/* a city means nothing without its province: if both are set, the city list is
+   intersected with the cities that exist under the selected provinces, so a
+   stale pick can never produce an empty list for no visible reason */
+function cityInScope(kind,prov,city){
+  if(!prov.length||!city.length)return city;
+  var src=kind==='v'?VENDORS:OC_LOCATIONS,out=[];
+  src.forEach(function(r){
+    var st=kind==='v'?r.state:mergedField(r,'state').value;
+    var ct=kind==='v'?r.city:mergedField(r,'city').value;
+    if(prov.indexOf(st)>=0&&city.indexOf(ct)>=0&&out.indexOf(ct)<0)out.push(ct);
+  });
+  return out;
+}
 function geoRows(kind,skipProv,skipCity){
   return kind==='v'?vendorFilters(false,skipProv,skipCity):ocFilters(false,skipProv,skipCity);
 }
 function geoValue(kind,row,field){
   return kind==='v'?row[field]:mergedField(row,field).value;
 }
-/* a city that does not exist in the newly picked province must go before the
-   table is rebuilt — otherwise one render shows 0 rows while the UI says "All" */
+/* a city that does not exist in the newly picked province drops out of the
+   selection before the table is rebuilt — otherwise one render shows 0 rows
+   while the filter says "All". Works on a set, so a multi-province pick keeps
+   the cities that still exist under any of them. */
 function onProvinceChange(kind){
-  var c=document.getElementById(kind+'-f-city');
-  if(c&&c.value){
-    var allowed=geoRows(kind,false,true).map(function(r){return geoValue(kind,r,'city');});
-    if(allowed.indexOf(c.value)<0)c.value='';
-  }
   if(kind==='v')renderVendor();else renderOC();
 }
 function renderGeoFilters(kind){
   var pSel=document.getElementById(kind+'-f-prov'),cSel=document.getElementById(kind+'-f-city');
   if(!pSel||!cSel)return;
-  var curP=pSel.value,curC=cSel.value;
+  var curP=vals(kind+'-f-prov'),curC=vals(kind+'-f-city');
   var all=geoRows(kind,true,true),inProv=geoRows(kind,false,true);
   var pc={},cc={};
   all.forEach(function(r){var v=geoValue(kind,r,'state');if(v)pc[v]=(pc[v]||0)+1;});
   inProv.forEach(function(r){var v=geoValue(kind,r,'city');if(v)cc[v]=(cc[v]||0)+1;});
-  pSel.innerHTML='<option value="">'+tr('All')+' ('+all.length+')</option>'+Object.keys(pc).sort().map(function(v){
-    return '<option value="'+esc(v)+'"'+(v===curP?' selected':'')+'>'+esc(v)+' · '+pc[v]+'</option>';
-  }).join('');
-  cSel.innerHTML='<option value="">'+tr('All')+' ('+inProv.length+')</option>'+Object.keys(cc).sort().map(function(v){
-    return '<option value="'+esc(v)+'"'+(v===curC?' selected':'')+'>'+esc(v)+' · '+cc[v]+'</option>';
-  }).join('');
-  pSel.value=pc[curP]?curP:'';
-  cSel.value=cc[curC]?curC:'';        /* a city outside the chosen province drops out */
+  pSel.innerHTML='<option value="" data-n="'+all.length+'">'+tr('All')+' ('+all.length+')</option>'
+    +Object.keys(pc).sort().map(function(v){
+      return '<option value="'+esc(v)+'" data-label="'+esc(v)+'" data-n="'+pc[v]+'"'
+        +(curP.indexOf(v)>=0?' selected':'')+'>'+esc(v)+' · '+pc[v]+'</option>';
+    }).join('');
+  var cities=Object.keys(cc).sort();
+  var keepC=curC.filter(function(c){return cc[c];});   /* a city outside the picked provinces drops out */
+  cSel.innerHTML='<option value="" data-n="'+inProv.length+'">'+tr('All')+' ('+inProv.length+')</option>'
+    +cities.map(function(v){
+      return '<option value="'+esc(v)+'" data-label="'+esc(v)+'" data-n="'+cc[v]+'"'
+        +(keepC.indexOf(v)>=0?' selected':'')+'>'+esc(v)+' · '+cc[v]+'</option>';
+    }).join('');
+  applyGeoDrop(kind,curC,keepC);   /* also clears a stale note when nothing dropped */
+  syncFacet(kind+'-f-prov');syncFacet(kind+'-f-city');
+}
+/* a dropped city has to be reported, not silently forgotten: the operator
+   picked it, and the list above should say why it no longer applies */
+function applyGeoDrop(kind,was,keep){
+  var el=document.getElementById(kind+'-geo-note');
+  if(!el)return;
+  var lost=was.filter(function(c){return keep.indexOf(c)<0;});
+  el.textContent=lost.length?(lost.join(', ')+' dropped — not in the selected province'):'';
 }
 function sourceCounts(kind){
   var rows=kind==='v'?vendorFilters(true):ocFilters(true),c={};
@@ -2131,14 +2329,21 @@ function sourceCounts(kind){
 /* one dropdown, three values, each with the count it would return */
 function renderSourceFilter(kind){
   var sel=document.getElementById(kind+'-f-source'); if(!sel)return;
-  var counts=sourceCounts(kind),cur=sel.value,total=kind==='v'?vendorFilters(true).length:ocFilters(true).length;
-  sel.innerHTML='<option value="">'+tr('All')+' ('+total+')</option>'+SOURCES.map(function(x){
-    var n=counts[x.type]||0;
-    return '<option value="'+esc(x.type)+'"'+(x.type===cur?' selected':'')+'>'+esc(x.type)+(x.short===x.type?'':' ('+esc(x.short)+')')+' · '+n+'</option>';
+  var counts=sourceCounts(kind),cur=vals(kind+'-f-source');
+  var total=kind==='v'?vendorFilters(true).length:ocFilters(true).length;
+  sel.innerHTML='<option value="" data-n="'+total+'">'+tr('All')+' ('+total+')</option>'+SOURCES.map(function(x){
+    var n=counts[x.type]||0,label=x.type+(x.short===x.type?'':' ('+x.short+')');
+    return '<option value="'+esc(x.type)+'" data-label="'+esc(label)+'" data-n="'+n+'"'
+      +(cur.indexOf(x.type)>=0?' selected':'')+'>'+esc(label)+' · '+n+'</option>';
   }).join('');
-  sel.value=SOURCES.some(function(x){return x.type===cur;})?cur:'';
+  syncFacet(kind+'-f-source');
 }
-function resetVendorFilters(){['v-f-id','v-f-ocid','v-f-name','v-f-prov','v-f-city','v-f-sweeper','v-f-status'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('v-f-source').value='';document.getElementById('v-f-issues').value='';renderSourceFilter('v');renderVendor();}
+function resetVendorFilters(){
+  ['v-f-id','v-f-ocid','v-f-name','v-f-q'].forEach(function(i){var el=document.getElementById(i);if(el)el.value='';});
+  ['v-f-prov','v-f-city','v-f-source','v-f-status','v-f-sweeper','v-f-issues'].forEach(function(i){setFacet(i,[]);});
+  var g=document.getElementById('v-geo-note');if(g)g.textContent='';
+  renderVendor();
+}
 function renderVendor(){
   var rows=vendorFilters();
   document.getElementById('v-tbody').innerHTML=rows.map(function(v){
@@ -2174,33 +2379,56 @@ function renderVendor(){
 /* ============ OC list ============ */
 function ocFilters(skipSource,skipGeo,skipCity){
   var f={id:val('o-f-id').toLowerCase(),vid:val('o-f-vendorid').toLowerCase(),name:val('o-f-name').toLowerCase(),
-    prov:val('o-f-prov'),city:val('o-f-city'),
-    source:skipSource?'':val('o-f-source'),status:val('o-f-status'),live:val('o-f-live'),issues:val('o-f-issues')};
+    q:val('o-f-q'),
+    prov:vals('o-f-prov'),city:vals('o-f-city'),
+    source:skipSource?[]:vals('o-f-source'),status:vals('o-f-status'),
+    live:vals('o-f-live'),issues:vals('o-f-issues')};
   return OC_LOCATIONS.filter(function(o){
     if(f.id&&o.ocId.toLowerCase().indexOf(f.id)<0)return false;
     if(f.vid&&!o.vendorIds.some(function(v){return v.toLowerCase().indexOf(f.vid)>=0;}))return false;
     if(f.name&&mergedField(o,'name').value.toLowerCase().indexOf(f.name)<0)return false;
-    if(!skipGeo&&f.prov&&mergedField(o,'state').value!==f.prov)return false;
-    if(!skipCity&&f.city&&mergedField(o,'city').value!==f.city)return false;
-    if(f.status&&statusOf(o)!==f.status)return false;
-    if(f.source&&mergedField(o,'type').value!==f.source)return false;
-    if(f.live==='blocked'&&!o.blocked)return false;
-    if(f.live==='no'&&(o.enable||o.blocked))return false;
-    if(f.live==='yes'&&!o.enable)return false;
-    if(f.issues==='blocking'&&!openIssues(o).some(function(i){return i.severity==='blocking';}))return false;
-    if(f.issues==='drift'&&!driftOf(o).length)return false;
-    if(f.issues==='dup'&&!o.dup)return false;
+    if(f.q){
+      var hay=[o.ocId,mergedField(o,'name').value,mergedField(o,'addr1').value,mergedField(o,'city').value,
+        mergedField(o,'state').value,mergedField(o,'postal').value,mergedField(o,'phone').value]
+        .concat(o.vendorIds).join(' ');
+      if(!fuzzyHit(hay,f.q))return false;
+    }
+    if(!skipGeo&&f.prov.length&&f.prov.indexOf(mergedField(o,'state').value)<0)return false;
+    if(!skipCity&&f.city.length){
+      var inScope=cityInScope('o',f.prov,f.city);
+      if(inScope.length&&inScope.indexOf(mergedField(o,'city').value)<0)return false;
+    }
+    if(f.status.length&&f.status.indexOf(statusOf(o))<0)return false;
+    if(f.source.length&&f.source.indexOf(mergedField(o,'type').value)<0)return false;
+    if(f.live.length){
+      var st=o.blocked?'blocked':(o.enable?'yes':'no');
+      if(f.live.indexOf(st)<0)return false;
+    }
+    if(f.issues.length){
+      var hit=f.issues.some(function(x){
+        if(x==='blocking')return openIssues(o).some(function(i){return i.severity==='blocking';});
+        if(x==='drift')return driftOf(o).length>0;
+        if(x==='dup')return !!o.dup;
+        if(x==='intake')return o.intake==='overridden';
+        return false;
+      });
+      if(!hit)return false;
+    }
     return true;
   });
 }
 function applyOCFilters(){renderOC();}
-function resetOCFilters(){['o-f-id','o-f-vendorid','o-f-name','o-f-prov','o-f-city'].forEach(function(i){document.getElementById(i).value='';});['o-f-source','o-f-status','o-f-live','o-f-issues'].forEach(function(i){document.getElementById(i).value='';});renderSourceFilter('o');renderOC();}
+function resetOCFilters(){
+  ['o-f-id','o-f-vendorid','o-f-name','o-f-q'].forEach(function(i){var el=document.getElementById(i);if(el)el.value='';});
+  ['o-f-prov','o-f-city','o-f-source','o-f-status','o-f-live','o-f-issues'].forEach(function(i){setFacet(i,[]);});
+  var g=document.getElementById('o-geo-note');if(g)g.textContent='';
+  renderOC();
+}
 function filterNotLive(){
   /* a preset wins over leftover filters, otherwise the count in the toast and the
      count on the menu badge would disagree with what is on screen */
-  document.getElementById('o-f-source').value='';renderSourceFilter('o');
-  document.getElementById('o-f-issues').value='';
-  document.getElementById('o-f-live').value='no';renderOC();
+  setFacet('o-f-source',[]);setFacet('o-f-issues',[]);setFacet('o-f-live',['no']);
+  renderOC();
   var n=OC_LOCATIONS.filter(function(o){return !o.enable&&!o.blocked;}).length;
   showToast('Waiting for sign-off',n+' location(s) not live yet');
 }
@@ -3303,7 +3531,7 @@ function exportIssues(){
 /* the header badge reads from APP_VERSION — a hardcoded copy is how v3.8.0
    survived a release once. Never write the number in the markup again. */
 var vc=document.getElementById('ver-chip-no'); if(vc)vc.textContent='v'+APP_VERSION;
-captureIssueBase();switchPage('p01');tickClock();renderGeoFilters('v');renderGeoFilters('o');renderSourceFilter('v');renderSourceFilter('o');applyLang();
+enhanceFacets();captureIssueBase();switchPage('p01');tickClock();renderGeoFilters('v');renderGeoFilters('o');renderSourceFilter('v');renderSourceFilter('o');applyLang();
 </script>
 </body>
 </html>
