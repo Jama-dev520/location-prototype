@@ -1,7 +1,7 @@
-# Location Management Admin Console — Requirement Overview (v4.4.0)
+# Location Management Admin Console — Requirement Overview (v4.5.0)
 
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
-> Companion: `Location-Management-Admin-PRD-2026-10-29` (v4.4.0 — 状态机、名单口径、筛选与上线节奏已同步，F08/F21 仍待同步)
+> Companion: `Location-Management-Admin-PRD-2026-10-29` (v4.5.0 — 状态机、名单口径、筛选与上线节奏已同步，F08/F21 仍待同步)
 > 给外部同事看的英文功能概览：https://jama-dev520.github.io/location-prototype/feature-overview.html
 > 演示视频（3 分 25 秒，36 条英文字幕，**录的是 v3.8.0** —— v4.0.0 的重复检查与 v4.1.0 的多源展示都还没演，需要时再重录：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
@@ -281,9 +281,9 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | ID | Module | Feature | Priority | One-liner |
 |---|---|---|---|---|
 | F01 | Vendor List | Paginated vendor list | P0 | raw provider locations, read-only except sweeper |
-| F02 | Vendor List | Filter & search | P0 | **v4.4.0：每个下拉都是多选 + 内嵌搜索**（输入 `broo` 找 Brooklyn），加一个跨 ID/名称/地址/城市/邮编/电话的**模糊搜索**；语义仍是同筛选内 OR、筛选之间 AND |
+| F02 | Vendor List | Filter & search | P0 | **v4.4.0：每个下拉都是多选 + 内嵌搜索**（输入 `broo` 找 Brooklyn）。**v4.5.0：Location ID / OC Location ID / Name 各收最多 20 个条件**（空格或逗号分隔），每个条件子串匹配；语义仍是同筛选内 OR、筛选之间 AND |
 | F03 | OC List | Paginated OC list | P0 | OC 门店列表；**v4.1.0：一条供应商记录一行**，同一家店两条记录就两行，各显示自己的值，列表列头叫 **Live** |
-| F04 | OC List | Filter & search | P0 | 同一套 facet 组件；`Live` 也是多选（`Live + Blocked` 一次查完），一家店只算一次 |
+| F04 | OC List | Filter & search | P0 | 同一套 facet 组件；`Live` 也是多选（`Live + Blocked` 一次查完），一家店只算一次。三个文本字段同样收 20 个条件 |
 | F05 | Export | Export current view | P0 | both lists, ≤10k rows |
 | F06 | Detail | Detail (vendor/OC) | P0 | tabs; OC detail shows editable fields |
 | F07 | Change History | Per-location log | P0 | full timeline |
@@ -335,7 +335,8 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | 20 | Merge priority (v3.0.0 → v3.13.0 改为整条记录) | 来源优先级 **M&MP（自营）→ LMS → PUDO Inc**。取值单位由「字段」改成「记录」，见决策 37 |
 | 21 | Drift (v3.0.0) | 签收后供应商改了值：下游直接用新值，台账显示「与基线不同」，运营可**重新签收**或**标记异常**。基线是参照物，不是冻结器 |
 | 48 | 先做 P1，再做 P2 (2026-11-20 会议) | 一期只做 **Vendor Location List**（含筛选、标记、导出）；二期做 **Duplicate Check → OC Location List**。理由是依赖而不是工作量：重复判定决定一家店挂几条记录，OC 列表在它之前做不准。Sync Status / Change Log / Data Issues 是两期共用的只读基础设施，不单独排期。标识打在侧栏与页面标题上（`P1` / `P2`），截图与 bug 单自带范围 |
-| 47 | 筛选升级为 facet (v4.4.0) | 单选下拉撑不住运营真实会问的问题（「纽约或佛罗里达的店」）。每个下拉改成**多选 + 内嵌搜索**，按钮上写清选了什么（`NY +1`）；语义不变：**同一筛选内 OR、筛选之间 AND**。另加一个跨字段**模糊搜索**，多个词必须同时命中（`brooklyn 11210` 是收窄）。两条约束：① 省份变了之后不存在的城市**被摘掉并在工具栏说明**，不能静默保留（否则空列表看起来像数据没了）；② 徽章、预设、列表读同一份状态，数字不允许各算各的 |
+| 49 | 三个字段各收 20 个条件 (v4.5.0) | 跨字段那个搜索框**去掉**了：它一次读六列，等于在筛选项旁边偷偷用另一套规则，同一行数据可能被它捞出来又被 facet 排掉。现在只有 **Location ID / OC Location ID / Name** 三个字段负责「找」，每个支持**最多 20 个条件**（空格或逗号分隔），每个条件是子串匹配。**ID 是清单**（`LOC-1, LOC-2` = 任意一条，粘贴工单里的 ID 才有用）；**名字是短语**（`postal annex` 是一家店，逗号才是第二家 —— 否则会捞出所有 "Postal *"）。条件数量印在标签旁，超过 20 变橙写明，不静默截断 |
+| 47 | 筛选升级为 facet (v4.4.0) | 单选下拉撑不住运营真实会问的问题（「纽约或佛罗里达的店」）。每个下拉改成**多选 + 内嵌搜索**，按钮上写清选了什么（`NY +1`）；语义不变：**同一筛选内 OR、筛选之间 AND**。两条约束：① 省份变了之后不存在的城市**被摘掉并在工具栏说明**，不能静默保留（否则空列表看起来像数据没了）；② 徽章、预设、列表读同一份状态，数字不允许各算各的 |
 | 46 | 关店自动离名单 (v4.3.1) | **`is_enable=0`（供应商关店）或 `is_active=0`（记录作废）会自动把该记录移出白名单**，并清空 live source，门店回到 Not live —— 没有人需要记得去关。之前「关店时名单不动」的写法作废：那会让门店既在白名单里、客户又看不到，供应商一重开，店就在没人核实的情况下自己回到客户面前。代价是重开必须重新签收（装修、盘点这类短期关店也会掉线），这是有意选的：没核实过就不上线。 |
 | 45 | 下游用哪个 ID 查 (2026-11-19，待技术确认) | 控制台内部：判重比 vendor 记录、decision 落在 OC、可见性落在名单（vendor location）。但**下游实际拿哪个 ID 做查询/缓存键**需要确认：若用 `oc_location_id`，拆分后新建 OC 时下游缓存必须失效；若用 `source_key`（vendor 侧），OC 只是内部管理实体。这决定了「拆分」对外是"换了一个门店"还是"同一条记录换了归属" |
 | 44 | 名单三态；白名单归运营，黑名单归系统 (2026-11-19) | 一个 vendor location 的名单状态只有三种：**白名单**（下游可见）· **黑名单**（下游不可见，且明确禁止上线）· **不在名单里**（默认，不可见）。**签收 = 写白名单**，不是另一道门；撤签 = 回到「不在名单」。名单由**运营在 OC location 维度自己开关**，不走别的系统。三态互斥是硬约束：同时命中黑白名单时，下游只能靠实现顺序决定显示与否，那是把业务问题留给代码。**名单变动必须独立记日志**：`WHITELIST_ADDED` 与 `WHITELIST_REMOVED`（带 `removed_reason`）各自一条，撤签再额外记 `UNSIGNED_OFF`。**黑名单由开发层面系统控制，控制台不提供拉黑按钮** —— 运营只有签收与撤签两个动作。但控制台必须**显示** `blocked`（列表第三态、详情徽章、可筛选），否则运营看到一家「怎么都上不了线」的店会以为是数据问题，反复签收。 |
@@ -471,7 +472,7 @@ sweeper 由供应商随门店一起提供，和其它字段一样只读。发现
 | **三类来源** | PUDO Inc（PUDOpoint / Locker）· LMS（packagehub）· **M&MP（自营小店）** |
 | **给谁用** | Viewer（只读 + 导出）· Location Manager（+ enable/签收、标记异常、裁决重复、重新签收） |
 | **数据怎么来** | **每晚 23:30** 从供应商拉一次；新记录过入库校验与去重（`HIGH_SUSPECT` / `MEDIUM_SUSPECT`）后生成或关联 OC 记录，默认不上线 |
-| **筛选**（v4.4.0） | 每个下拉是**多选 + 内嵌搜索**（输入 `broo` 找 Brooklyn），另有一个跨字段**模糊搜索**；同筛选内 OR、筛选之间 AND；被省份变化挤掉的城市会明说 |
+| **筛选**（v4.4.0 / v4.5.0） | 每个下拉是**多选 + 内嵌搜索**（输入 `broo` 找 Brooklyn）；**Location ID / OC Location ID / Name 各收最多 20 个条件**（空格或逗号分隔，子串匹配）；同筛选内 OR、筛选之间 AND；被省份变化挤掉的城市会明说 |
 | **上线节奏**（2026-11-20） | **P1** Vendor Location List · **P2** Duplicate Check → OC Location List（先定「一家店几条记录」，OC 一行才不是猜的） |
 | **核心控制** | OC 层只有两个动作：`enable`（签收）和 `flag an issue`；**不改任何值** |
 | **可见性** | 三个条件全过才可见：**名单在白名单**（= 已签收）· 记录 `is_active=1` · 供应商 `is_enable=1` |

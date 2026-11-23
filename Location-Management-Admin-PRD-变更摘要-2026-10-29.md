@@ -1,6 +1,6 @@
-# Location Management Admin Console — PRD Change Summary (v4.4.0)
+# Location Management Admin Console — PRD Change Summary (v4.5.0)
 
-> Document version v4.4.0 ｜ Change date 2026-11-20 ｜ Status: Draft — pending review
+> Document version v4.5.0 ｜ Change date 2026-11-23 ｜ Status: Draft — pending review
 > 本轮（v3.0.0）是**模型换向**：OC 层不再改数据，只做两件事——**enable** 和 **标记异常**。所有数据以供应商为唯一来源，错的地方标记回去让供应商改；重复对单独成页；下游按字段合并，LMS 优先；M&MP 用同一套规则管同一份数据。
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
 > **验收标准（通俗版）**: `Location-Management-Admin-验收标准-2026-10-29.md`
@@ -464,6 +464,27 @@ https://jama-dev520.github.io/location-prototype/feature-overview.html
 - 片头片尾重做：片头标 `v3.3.0 / two layers · three sources / enable is a sign-off / a fix closes its own issue`；片尾四条地基换成 v3 的版本（数据只有供应商一个来源、没人处理就不变、下线容易上线要签收、修复能自证才自动关闭）。
 - 为了录制可读性，标记弹窗的严重度下拉文案从 `warning — live, but wrong for customers` 缩短为 `warning · live but wrong`（原来在 560px 弹窗里被截断）。纯文案，不改行为。
 
+## 二之二十七、v4.5.0：找店只用三个字段，每个收 20 个条件
+
+### 66. 跨字段那个搜索框，删了
+
+上一版加过一个「跨 ID / 名称 / 地址 / 城市 / 邮编 / 电话」的搜索框。问题不在实现，在于**它是第二个筛选项**：同一行数据可能被它捞出来，又被旁边的 facet 排掉，而界面上看不出到底哪个生效。一个筛选器旁边摆另一个规则不同的筛选器，等于没有筛选器。
+
+现在只有三个字段负责「找」：`Location ID`、`OC Location ID`、`Name`。地址、城市、邮编交给 facet —— 那本来就是它们的位置。
+
+### 67. 一个字段，最多 20 个条件
+
+三个字段都收**最多 20 个条件**，用**空格或逗号**分隔，每个条件都是子串匹配（`LOC-1002` 命中 `LOC-10024`）。
+
+但两种字段的含义不一样，这一点必须写死，否则总有一种用法是废的：
+
+- **ID 是清单**：`LOC-1, LOC-2` 是**任意一条**。运营从工单里粘一串 ID，要求"全都有"会返回 0 条。
+- **名字是短语**：`postal annex` 是**一家店**（两个词都要有），逗号才是第二家。把名字按空格拆成单字，会捞出所有 `Postal *` 和 `* Annex` —— 那不是搜店名的人想看到的。
+
+### 68. 上限要印出来
+
+标签旁显示解析出的条件数（`4`）；超过 20 变成橙色并写 `26 · only 20 used`。静默截断是最坏的一种：返回了 26 条里的 20 条，看起来是对的。
+
 ## 二之二十六、v4.4.0：筛选变成多选，上线节奏标在工具上
 
 ### 61. 单选下拉撑不住运营真实会问的问题
@@ -854,6 +875,7 @@ v3.4.0 删掉的是「数据是否应用」，不是「门店是否上线」。�
 | v2.3.0 | MINOR | 2026-10-30 | QR code 投递（仅 LMS）：两列表标记 + 筛选 + 详情字段 + CSV |
 | v2.2.0 | MINOR | 2026-10-30 | 跨层反查：Vendor 按 OC ID 查、OC 按 Vendor ID 查 |
 | v2.1.2 | PATCH | 2026-10-30 | ID 搜索大小写不敏感 + 输入即筛 |
+| v4.5.0 | MINOR | 2026-11-23 | 去掉跨字段搜索；三个文本字段各收 20 个条件（ID 是清单、名字是短语），上限明示 |
 | v4.4.0 | MINOR | 2026-11-20 | 筛选改为多选 + 内嵌搜索 + 跨字段模糊搜索；P1/P2 上线节奏标在工具上 |
 | v4.3.1 | PATCH | 2026-11-19 | 供应商关店自动移出白名单；重开需重新签收 |
 | v4.2.0 | MINOR | 2026-11-17 | 去重打分改为「相邻字符对排序后比重合」（Dice），字段按比例给分；对比表印比例而非对勾 |

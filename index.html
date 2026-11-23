@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v4.4.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v4.5.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -431,6 +431,8 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 .rollout b{color:var(--text-secondary);font-weight:600}
 .rollout .phase{margin-right:6px}
 .rollout .rl-name{margin-left:2px}
+.f-cap:not(:empty){display:inline-block;margin-left:5px;padding:0 4px;border-radius:3px;background:var(--bg-section);font-size:10px;line-height:14px;color:var(--text-secondary);font-weight:600;vertical-align:1px}
+.f-cap.over{background:#FFF7ED;color:var(--color-warning)}
 </style>
 </head>
 <body>
@@ -438,7 +440,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v4.4.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v4.5.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List <span class="phase p1" title="Phase 1 — build and ship this first">P1</span></div>
@@ -468,7 +470,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v4.4.0</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v4.5.0</span></div>
       </div>
     </div>
 
@@ -480,10 +482,9 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 
         <div class="card">
           <div class="filter-grid">
-            <div><label class="f-label">Search</label><input id="v-f-q" placeholder="id, name, address, city, postal — fuzzy" oninput="applyVendorFilters()"></div>
-            <div><label class="f-label">Location ID</label><input id="v-f-id" placeholder="e.g. LOC-10024" oninput="applyVendorFilters()"></div>
-            <div><label class="f-label">OC Location ID</label><input id="v-f-ocid" placeholder="e.g. OC-00001" oninput="applyVendorFilters()"></div>
-            <div><label class="f-label">Name</label><input id="v-f-name" placeholder="keyword" oninput="applyVendorFilters()"></div>
+            <div><label class="f-label">Location ID <span class="f-cap" id="v-f-id-cap"></span></label><input id="v-f-id" placeholder="up to 20 — space or comma" oninput="applyVendorFilters()"></div>
+            <div><label class="f-label">OC Location ID <span class="f-cap" id="v-f-ocid-cap"></span></label><input id="v-f-ocid" placeholder="up to 20 — space or comma" oninput="applyVendorFilters()"></div>
+            <div><label class="f-label">Name <span class="f-cap" id="v-f-name-cap"></span></label><input id="v-f-name" placeholder="name, or several names with commas" oninput="applyVendorFilters()"></div>
             <div><label class="f-label">Province</label><select id="v-f-prov" onchange="onProvinceChange('v')"></select></div>
             <div><label class="f-label">City</label><select id="v-f-city" onchange="applyVendorFilters()"></select></div>
             <div><label class="f-label">Source</label><select id="v-f-source" onchange="applyVendorFilters()"></select></div>
@@ -529,10 +530,9 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 
         <div class="card">
           <div class="filter-grid">
-            <div><label class="f-label">Search</label><input id="o-f-q" placeholder="id, name, address, city, postal — fuzzy" oninput="applyOCFilters()"></div>
-            <div><label class="f-label">OC Location ID</label><input id="o-f-id" placeholder="e.g. OC-00001" oninput="applyOCFilters()"></div>
-            <div><label class="f-label">Vendor Location ID</label><input id="o-f-vendorid" placeholder="e.g. LOC-10024" oninput="applyOCFilters()"></div>
-            <div><label class="f-label">Name</label><input id="o-f-name" placeholder="keyword" oninput="applyOCFilters()"></div>
+            <div><label class="f-label">OC Location ID <span class="f-cap" id="o-f-id-cap"></span></label><input id="o-f-id" placeholder="up to 20 — space or comma" oninput="applyOCFilters()"></div>
+            <div><label class="f-label">Vendor Location ID <span class="f-cap" id="o-f-vendorid-cap"></span></label><input id="o-f-vendorid" placeholder="up to 20 — space or comma" oninput="applyOCFilters()"></div>
+            <div><label class="f-label">Name <span class="f-cap" id="o-f-name-cap"></span></label><input id="o-f-name" placeholder="name, or several names with commas" oninput="applyOCFilters()"></div>
             <div><label class="f-label">Province</label><select id="o-f-prov" onchange="onProvinceChange('o')"></select></div>
             <div><label class="f-label">City</label><select id="o-f-city" onchange="applyOCFilters()"></select></div>
             <div><label class="f-label">Source</label><select id="o-f-source" onchange="applyOCFilters()"></select></div>
@@ -713,7 +713,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v4.4.0 (facets, and what ships first)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v4.5.0 (twenty conditions per field)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -1286,7 +1286,7 @@ var I18N_BLOCK = {
   "map.rules":"M2 · 只重判发生变更的那个来源 &nbsp;·&nbsp; M3 · 分配新 OC，旧映射进历史 &nbsp;·&nbsp; M4 · 未变更的一方绝不动 &nbsp;·&nbsp; M5 · 没人确认就不落库 &nbsp;·&nbsp; M6 · 两边在同一次推送里都变了 → 进人工",
   "dup.vs":"对比",
   "pull.hint":"标记 → 导出 → 供应商修正 → 再拉一次",
-  "wt.title":"演示脚本 —— v4.4.0（筛选变多选，先做哪一块标在工具上）"
+  "wt.title":"演示脚本 —— v4.5.0（三个字段各收 20 个条件）"
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
@@ -1357,6 +1357,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "4.5.0":"<b>找店只由三个字段负责，而且每个都能收一串条件。</b>跨字段的那个搜索框去掉了：它一次读六列，等于在筛选项旁边偷偷回答了另一个问题，而且和它们做的事重复。现在 <b>Location ID</b>、<b>OC Location ID</b>、<b>Name</b> 各自收<b>最多 20 个条件，空格或逗号分隔</b>，每个条件都是子串匹配（不完整的 ID 也能命中）。ID 是一张清单 —— <i>LOC-1, LOC-2</i> 是「其中任意一条」；名字是一个短语 —— <i>postal annex</i> 是一家店，<i>postal annex, box city</i> 才是两家。条件数量印在标签旁，超过 20 会变橙并写明，不会默默只用前二十个。",
   "4.4.0":"<b>筛选变成多选，上线节奏标在工具上。</b>每个下拉都变成<b>带搜索框的多选</b> —— NY 和 FL 一起选、输入 <i>broo</i> 找 Brooklyn、Live 与 Blocked 同时勾 —— 语义仍是<b>同一筛选内 OR、筛选之间 AND</b>。精确字段上方加了一个<b>模糊搜索</b>，跨 ID、名称、地址、城市、邮编、电话，多个词必须同时命中（所以 <i>brooklyn 11210</i> 是收窄而不是放宽）。两条规则保证数字不说谎：省份换了之后不存在的城市会<b>被摘掉并明说</b>，不会静默留着；徽章、预设、列表读的是同一个 facet。11 月 20 日定的节奏也标在工具上：<b>一期</b> 供应商门店列表，<b>二期</b> 重复检查 + OC 列表，侧栏写明原因 —— 重复判定决定一家店挂几条记录，OC 列表在它之前做不准。",
   "4.3.1":"<b>供应商关店，门店自己就不再是 live。</b>`is_enable = 0`（供应商关门）或 `is_active = 0`（记录作废）会<b>自动</b>把那条记录移出白名单：门店回到 <b>Not live</b>、live source 清空、日志分别记 <b>PROVIDER_DISABLED</b> / <b>RECORD_VOIDED</b>。这条替掉了之前「关店时保留白名单条目」的写法 —— 那等于门店既在白名单里、客户又看不到，两个事实从来没被对齐过。<b>重开不会自动恢复</b>：关着的时候店可能搬了、营业时间也改过，所以要人重新签收。列表会写清楚这家店为什么掉下来（<i>closed by the provider</i> / <i>record voided</i>），不再只有一个 <i>not live</i>。",
   "4.3.0":"<b>列表就是白名单，开关终于说的是它真正在做的事。</b>三个字段的含义按技术口径改正：<b>`is_enable`</b> 是供应商的营业状态（1 活跃 / 0 关闭），控制台只读；<b>`is_active`</b> 是我们自己库里的标记；<b>`is_primary`</b> 不可用（每条都是 1）。控制台真正控制的是<b>名单</b>：签收 = 写白名单条目，撤签 = 移出；黑名单由平台写，运营解不开 —— 所以被拉黑的店显示一个点不动的开关和红色 <b>blocked</b>，而不是假装给一个选择。因为一家店离开白名单有三种原因，移出时保留原因（<b>UNSIGNED</b> / <b>SOURCE_SWITCHED</b> / <b>BLOCKED</b>），日志记在供应商记录上，决定记在 OC 上。同步改成每晚 <b>23:30</b> 单批，不再是 02:00 / 02:30 两批。",
@@ -1529,8 +1530,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='4.4.0';
+var APP_VERSION='4.5.0';
 var VERSIONS=[
+ {v:'4.5.0',type:'minor',date:'2026-11-23',desc:'<b>Three fields do the finding, and each of them takes a list.</b> The one cross-field search box is gone: it read across six columns, which meant it quietly answered a different question from the filters next to it, and it overlapped everything they already did. Now <b>Location ID</b>, <b>OC Location ID</b> and <b>Name</b> each accept <b>up to 20 conditions, split on a space or a comma</b>, and each condition is a substring match (so a partial id still lands). IDs are a list — <i>LOC-1, LOC-2</i> means either record; a name is a phrase — <i>postal annex</i> is one name, while <i>postal annex, box city</i> is two. The count is printed next to the label, and past 20 it says so in orange rather than silently using the first twenty.'},
  {v:'4.4.0',type:'minor',date:'2026-11-20',desc:'<b>The filters became facets, and the build order is on the tool.</b> Every dropdown is now a <b>multi-select with a search box inside it</b> — pick NY and FL at once, type <i>broo</i> to find Brooklyn, tick Live and Blocked together — while the <b>OR inside a filter, AND across filters</b> semantics stay the same. Above the exact-match fields there is one <b>fuzzy search</b> that reads across id, name, address, city, postal and phone, with every word required (so <i>brooklyn 11210</i> narrows rather than widens). Two rules keep the counts honest: a city that no longer exists under the selected provinces is <b>dropped and reported</b>, never silently kept — and the badge, the preset and the list all read the same facet. The rollout decided in the 20 Nov meeting is marked on the tool: <b>P1</b> vendor list, <b>P2</b> duplicate check and OC list, with the reason in the sidebar — duplicate decisions decide how many records a store has, so the OC list cannot be right before them.'},
  {v:'4.3.1',type:'patch',date:'2026-11-19',desc:'<b>A shop that closes is not live any more, and nobody has to remember to switch it off.</b> `is_enable = 0` (the provider closed the shop) or `is_active = 0` (the record is void) now takes that record off the whitelist <b>by itself</b>: the store falls back to <b>Not live</b>, its live source is cleared, and the removal is logged as <b>PROVIDER_DISABLED</b> / <b>RECORD_VOIDED</b>. This replaces the earlier rule that kept the whitelist entry through a closure — which meant a shop could sit in the whitelist while the customer saw nothing, and the two facts were never reconciled. <b>Reopening does not put the entry back</b>: a shop can move or change its hours while it is closed, so it is signed off again by a person. The list says why a store dropped (<i>closed by the provider</i> / <i>record voided</i>) instead of only <i>not live</i>.'},
  {v:'4.3.0',type:'minor',date:'2026-11-19',desc:'<b>The list is a whitelist, and the switches now say what they are.</b> Three field meanings were wrong and are corrected against engineering: <b>`is_enable`</b> is the provider&rsquo;s business status (1 open / 0 closed) and the console only reads it, <b>`is_active`</b> is our own database flag, and <b>`is_primary`</b> is unusable (it is 1 on every record). What the console actually controls is the <b>list</b>: sign-off writes the whitelist entry, un-sign removes it, and the blocklist is written by the platform — an operator cannot lift it, so a blocked store shows a dead switch and a red <b>blocked</b> label instead of pretending to offer a choice. Because a store can leave the whitelist for three different reasons, removal keeps its reason (<b>UNSIGNED</b> / <b>SOURCE_SWITCHED</b> / <b>BLOCKED</b>) and is logged on the vendor record, while the decision stays on the OC. Sync is one batch at <b>23:30</b>, not two runs at 02:00 and 02:30.'},
@@ -2132,6 +2134,53 @@ function setFacet(id,arr){
   Array.prototype.forEach.call(el.options,function(o){o.selected=arr.indexOf(o.value)>=0;});
   syncFacet(id);
 }
+/* ---- v4.5.0 — up to 20 query conditions on the three text fields ----
+   IDs are a list: every token (split on comma OR space) is one condition, and
+   matching any of them is enough: LOC-1, LOC-2 means either record.
+   A name is a phrase: a comma separates alternatives, a space inside one
+   alternative means all of its words must appear — so "postal annex" is one
+   name, while "postal annex, box city" is two. Both are substring matches
+   after nrm(), so a partial id or a half-remembered name still lands. */
+var TERM_CAP=20;
+function termTokens(raw){
+  return String(raw||'').split(/[,\s]+/).filter(Boolean).slice(0,TERM_CAP);
+}
+function termTokenCount(raw){
+  return String(raw||'').split(/[,\s]+/).filter(Boolean).length;
+}
+function termGroups(raw){
+  return String(raw||'').split(',')
+    .map(function(g){return g.trim().split(/\s+/).filter(Boolean);})
+    .filter(function(g){return g.length;})
+    .slice(0,TERM_CAP);
+}
+function matchAnyTerm(hay,terms){
+  if(!terms.length)return true;
+  var h=nrm(hay);
+  for(var i=0;i<terms.length;i++){var t=nrm(terms[i]);if(t&&h.indexOf(t)>=0)return true;}
+  return false;
+}
+function matchEveryGroup(hay,groups){
+  if(!groups.length)return true;
+  var h=nrm(hay);
+  for(var i=0;i<groups.length;i++){
+    var g=groups[i],all=true;
+    for(var j=0;j<g.length;j++){var t=nrm(g[j]);if(t&&h.indexOf(t)<0){all=false;break;}}
+    if(all)return true;                       /* one alternative is enough */
+  }
+  return false;
+}
+/* the cap has to be visible: silently using the first 20 of 26 would be a
+   filter that lies about what it applied */
+function updateTermHint(id,phrase){
+  var el=document.getElementById(id),cap=document.getElementById(id+'-cap');
+  if(!el||!cap)return;
+  var total=phrase
+    ? String(el.value||'').split(',').filter(function(g){return g.trim();}).length
+    : termTokenCount(el.value);
+  cap.textContent=total>1?(total+(total>TERM_CAP?' · only '+TERM_CAP+' used':'')):'';
+  cap.className='f-cap'+(total>TERM_CAP?' over':'');
+}
 /* fuzzy = every whitespace-separated token appears somewhere in the row,
    after case, punctuation and accent-insensitive normalisation (nrm) */
 function fuzzyHit(hay,q){
@@ -2230,19 +2279,17 @@ function facetSearch(id,q){
 
 /* ============ vendor list ============ */
 function vendorFilters(skipSource,skipGeo,skipCity){
-  var f={id:val('v-f-id').toLowerCase(),ocid:val('v-f-ocid').toLowerCase(),name:val('v-f-name').toLowerCase(),
-    q:val('v-f-q'),
+  var f={idT:termTokens(val('v-f-id')),ocT:termTokens(val('v-f-ocid')),nameG:termGroups(val('v-f-name')),
     prov:vals('v-f-prov'),city:vals('v-f-city'),
     source:skipSource?[]:vals('v-f-source'),status:vals('v-f-status'),
     sweeper:vals('v-f-sweeper'),issues:vals('v-f-issues')};
   return VENDORS.filter(function(v){
-    if(f.id&&v.id.toLowerCase().indexOf(f.id)<0)return false;
-    if(f.ocid){
+    if(f.idT.length&&!matchAnyTerm(v.id,f.idT))return false;
+    if(f.ocT.length){
       var oc=OC_LOCATIONS.filter(function(o){return o.vendorIds.indexOf(v.id)>=0;})[0];
-      if(!oc||oc.ocId.toLowerCase().indexOf(f.ocid)<0)return false;
+      if(!oc||!matchAnyTerm(oc.ocId,f.ocT))return false;
     }
-    if(f.name&&v.name.toLowerCase().indexOf(f.name)<0)return false;
-    if(f.q&&!fuzzyHit([v.id,v.name,v.addr1,v.addr2,v.city,v.state,v.postal,v.phone,v.provider,v.type].join(' '),f.q))return false;
+    if(f.nameG.length&&!matchEveryGroup(v.name,f.nameG))return false;
     if(!skipGeo&&f.prov.length&&f.prov.indexOf(v.state)<0)return false;
     if(!skipCity&&f.city.length){
       var inScope=cityInScope('v',f.prov,f.city);
@@ -2258,7 +2305,10 @@ function vendorFilters(skipSource,skipGeo,skipCity){
     return true;
   });
 }
-function applyVendorFilters(){renderVendor();}
+function applyVendorFilters0(){
+  updateTermHint('v-f-id',false);updateTermHint('v-f-ocid',false);updateTermHint('v-f-name',true);
+}
+function applyVendorFilters(){applyVendorFilters0();renderVendor();}
 /* v3.12.0 — province, then city. Both are derived from the rows the *other*
    filters left, so a count never lies about what clicking it would return. */
 /* a city means nothing without its province: if both are set, the city list is
@@ -2339,7 +2389,8 @@ function renderSourceFilter(kind){
   syncFacet(kind+'-f-source');
 }
 function resetVendorFilters(){
-  ['v-f-id','v-f-ocid','v-f-name','v-f-q'].forEach(function(i){var el=document.getElementById(i);if(el)el.value='';});
+  ['v-f-id','v-f-ocid','v-f-name'].forEach(function(i){var el=document.getElementById(i);if(el)el.value='';});
+  applyVendorFilters0();
   ['v-f-prov','v-f-city','v-f-source','v-f-status','v-f-sweeper','v-f-issues'].forEach(function(i){setFacet(i,[]);});
   var g=document.getElementById('v-geo-note');if(g)g.textContent='';
   renderVendor();
@@ -2378,21 +2429,14 @@ function renderVendor(){
 
 /* ============ OC list ============ */
 function ocFilters(skipSource,skipGeo,skipCity){
-  var f={id:val('o-f-id').toLowerCase(),vid:val('o-f-vendorid').toLowerCase(),name:val('o-f-name').toLowerCase(),
-    q:val('o-f-q'),
+  var f={idT:termTokens(val('o-f-id')),vidT:termTokens(val('o-f-vendorid')),nameG:termGroups(val('o-f-name')),
     prov:vals('o-f-prov'),city:vals('o-f-city'),
     source:skipSource?[]:vals('o-f-source'),status:vals('o-f-status'),
     live:vals('o-f-live'),issues:vals('o-f-issues')};
   return OC_LOCATIONS.filter(function(o){
-    if(f.id&&o.ocId.toLowerCase().indexOf(f.id)<0)return false;
-    if(f.vid&&!o.vendorIds.some(function(v){return v.toLowerCase().indexOf(f.vid)>=0;}))return false;
-    if(f.name&&mergedField(o,'name').value.toLowerCase().indexOf(f.name)<0)return false;
-    if(f.q){
-      var hay=[o.ocId,mergedField(o,'name').value,mergedField(o,'addr1').value,mergedField(o,'city').value,
-        mergedField(o,'state').value,mergedField(o,'postal').value,mergedField(o,'phone').value]
-        .concat(o.vendorIds).join(' ');
-      if(!fuzzyHit(hay,f.q))return false;
-    }
+    if(f.idT.length&&!matchAnyTerm(o.ocId,f.idT))return false;
+    if(f.vidT.length&&!matchAnyTerm(o.vendorIds.join(' '),f.vidT))return false;
+    if(f.nameG.length&&!matchEveryGroup(mergedField(o,'name').value,f.nameG))return false;
     if(!skipGeo&&f.prov.length&&f.prov.indexOf(mergedField(o,'state').value)<0)return false;
     if(!skipCity&&f.city.length){
       var inScope=cityInScope('o',f.prov,f.city);
@@ -2417,9 +2461,13 @@ function ocFilters(skipSource,skipGeo,skipCity){
     return true;
   });
 }
-function applyOCFilters(){renderOC();}
+function applyOCFilters0(){
+  updateTermHint('o-f-id',false);updateTermHint('o-f-vendorid',false);updateTermHint('o-f-name',true);
+}
+function applyOCFilters(){applyOCFilters0();renderOC();}
 function resetOCFilters(){
-  ['o-f-id','o-f-vendorid','o-f-name','o-f-q'].forEach(function(i){var el=document.getElementById(i);if(el)el.value='';});
+  ['o-f-id','o-f-vendorid','o-f-name'].forEach(function(i){var el=document.getElementById(i);if(el)el.value='';});
+  applyOCFilters0();
   ['o-f-prov','o-f-city','o-f-source','o-f-status','o-f-live','o-f-issues'].forEach(function(i){setFacet(i,[]);});
   var g=document.getElementById('o-geo-note');if(g)g.textContent='';
   renderOC();
