@@ -1,7 +1,7 @@
-# Location Management Admin Console — Requirement Overview (v4.5.0)
+# Location Management Admin Console — Requirement Overview (v5.0.0)
 
 > **Live prototype (public)**: https://jama-dev520.github.io/location-prototype/
-> Companion: `Location-Management-Admin-PRD-2026-10-29` (v4.5.0 — 状态机、名单口径、筛选与上线节奏已同步，F08/F21 仍待同步)
+> Companion: `Location-Management-Admin-PRD-2026-10-29` (v5.0.0 — 状态机、名单口径、筛选与上线节奏已同步，F08/F21 仍待同步)
 > 给外部同事看的英文功能概览：https://jama-dev520.github.io/location-prototype/feature-overview.html
 > 演示视频（3 分 25 秒，36 条英文字幕，**录的是 v3.8.0** —— v4.0.0 的重复检查与 v4.1.0 的多源展示都还没演，需要时再重录：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 > Purpose: a quick-reference doc answering three questions — ① what each field means; ② what this requirement does and its priority; ③ what the core flows look like.
@@ -335,6 +335,7 @@ A **mapping table** (`vendor_oc_mapping`) links them — principle **1:1**; a du
 | 20 | Merge priority (v3.0.0 → v3.13.0 改为整条记录) | 来源优先级 **M&MP（自营）→ LMS → PUDO Inc**。取值单位由「字段」改成「记录」，见决策 37 |
 | 21 | Drift (v3.0.0) | 签收后供应商改了值：下游直接用新值，台账显示「与基线不同」，运营可**重新签收**或**标记异常**。基线是参照物，不是冻结器 |
 | 48 | 先做 P1，再做 P2 (2026-11-20 会议) | 一期只做 **Vendor Location List**（含筛选、标记、导出）；二期做 **Duplicate Check → OC Location List**。理由是依赖而不是工作量：重复判定决定一家店挂几条记录，OC 列表在它之前做不准。Sync Status / Change Log / Data Issues 是两期共用的只读基础设施，不单独排期。标识打在侧栏与页面标题上（`P1` / `P2`），截图与 bug 单自带范围 |
+| 50 | 指纹找、ID 定格 (v5.0.0) | 按《OC_Location_ID 与指纹规则 v1.0》：**`addr_fingerprint` = 检索钥匙**（每条记录都有，清洗变了就重算）；**`oc_location_id` = 物理位置的永久身份**（`OC-{ST2}-{City3}-{Zip5}-{seq6}`，**只在人工确认后发**，此后重跑、改地址、清洗升级都不改）。拆簇发新号、旧号标废弃；合并簇保留较早的号；**废弃号永不回收**。标签从两档变三档 `HIGH / MEDIUM / LOW`，且**候选只能靠文本产生**（Zip5 相同，或清洗地址全等），坐标只做升档与灰区判断。最后一条是选过的：文档写「HIGH 自动确认」，我们改成**人工确认后才发号** —— 一个活过很多年的身份，不该由一个阈值签发 |
 | 49 | 三个字段各收 20 个条件 (v4.5.0) | 跨字段那个搜索框**去掉**了：它一次读六列，等于在筛选项旁边偷偷用另一套规则，同一行数据可能被它捞出来又被 facet 排掉。现在只有 **Location ID / OC Location ID / Name** 三个字段负责「找」，每个支持**最多 20 个条件**（空格或逗号分隔），每个条件是子串匹配。**ID 是清单**（`LOC-1, LOC-2` = 任意一条，粘贴工单里的 ID 才有用）；**名字是短语**（`postal annex` 是一家店，逗号才是第二家 —— 否则会捞出所有 "Postal *"）。条件数量印在标签旁，超过 20 变橙写明，不静默截断 |
 | 47 | 筛选升级为 facet (v4.4.0) | 单选下拉撑不住运营真实会问的问题（「纽约或佛罗里达的店」）。每个下拉改成**多选 + 内嵌搜索**，按钮上写清选了什么（`NY +1`）；语义不变：**同一筛选内 OR、筛选之间 AND**。两条约束：① 省份变了之后不存在的城市**被摘掉并在工具栏说明**，不能静默保留（否则空列表看起来像数据没了）；② 徽章、预设、列表读同一份状态，数字不允许各算各的 |
 | 46 | 关店自动离名单 (v4.3.1) | **`is_enable=0`（供应商关店）或 `is_active=0`（记录作废）会自动把该记录移出白名单**，并清空 live source，门店回到 Not live —— 没有人需要记得去关。之前「关店时名单不动」的写法作废：那会让门店既在白名单里、客户又看不到，供应商一重开，店就在没人核实的情况下自己回到客户面前。代价是重开必须重新签收（装修、盘点这类短期关店也会掉线），这是有意选的：没核实过就不上线。 |
@@ -473,6 +474,7 @@ sweeper 由供应商随门店一起提供，和其它字段一样只读。发现
 | **给谁用** | Viewer（只读 + 导出）· Location Manager（+ enable/签收、标记异常、裁决重复、重新签收） |
 | **数据怎么来** | **每晚 23:30** 从供应商拉一次；新记录过入库校验与去重（`HIGH_SUSPECT` / `MEDIUM_SUSPECT`）后生成或关联 OC 记录，默认不上线 |
 | **筛选**（v4.4.0 / v4.5.0） | 每个下拉是**多选 + 内嵌搜索**（输入 `broo` 找 Brooklyn）；**Location ID / OC Location ID / Name 各收最多 20 个条件**（空格或逗号分隔，子串匹配）；同筛选内 OR、筛选之间 AND；被省份变化挤掉的城市会明说 |
+| **两个 ID**（v5.0.0） | `addr_fingerprint` 负责**找**（可变，SHA-256 前 16 位）；`oc_location_id` 负责**是谁**（`OC-NY-NYC-10036-000001`，人工确认后发，永不改号，废弃不回收） |
 | **上线节奏**（2026-11-20） | **P1** Vendor Location List · **P2** Duplicate Check → OC Location List（先定「一家店几条记录」，OC 一行才不是猜的） |
 | **核心控制** | OC 层只有两个动作：`enable`（签收）和 `flag an issue`；**不改任何值** |
 | **可见性** | 三个条件全过才可见：**名单在白名单**（= 已签收）· 记录 `is_active=1` · 供应商 `is_enable=1` |

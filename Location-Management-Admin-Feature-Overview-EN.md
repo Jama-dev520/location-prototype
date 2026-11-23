@@ -1,7 +1,7 @@
 # Location Management Admin Console — Feature Overview
 
 **Audience:** operations, partner-facing and M&MP teams who work with location data
-**Document version:** 2.9 (covers console v4.5.0) · **Status:** clickable prototype (not in production)
+**Document version:** 3.0 (covers console v5.0.0) · **Status:** clickable prototype (not in production)
 **Prototype:** https://jama-dev520.github.io/location-prototype/
 **One-page version (shareable):** https://jama-dev520.github.io/location-prototype/feature-overview.html
 **Languages:** the console itself switches between English and Chinese in the header (v3.5.0); interface only — data stays as delivered  
@@ -220,6 +220,7 @@ M&MP is not a role — self-operated stores are handled by the same people under
 | Version | Change |
 |---|---|
 | **v4.1.0** | One store, several records, one live source: one line per record, the switch means “which record feeds this store”, source changes are sign-offs |
+| **v5.0.0** | Two ids, two jobs: `addr_fingerprint` (SHA-256 of the cleaned record) is the bucket key and may change; `oc_location_id` is `OC-{ST2}-{City3}-{Zip5}-{seq6}` and never changes — minted only when a person confirms a cluster. Labels are HIGH / MEDIUM / LOW, and candidates come from text only |
 | **v4.5.0** | Finding a store is three fields: `Location ID`, `OC Location ID`, `Name` — each takes up to 20 conditions split on a space or a comma, every condition a substring match. An id field is a list (either), a name field is a phrase (comma = another name), and the count is printed |
 | **v4.4.0** | Filters are facets: multi-select with a search box inside — OR within a filter, AND across filters. The console also carries the rollout: **P1** vendor list, **P2** duplicate check and OC list |
 | **v4.2.0** | The station score counts shared pairs: both values are cut into adjacent character pairs, sorted, and compared — a field pays in proportion, so a suite number no longer reads as a different shop |

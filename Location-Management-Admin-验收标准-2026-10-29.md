@@ -1,7 +1,7 @@
 # Location Management Admin Console — 功能验收标准（通俗版）
 
-> 版本 **v4.5.0** · 对照原型 https://jama-dev520.github.io/location-prototype/
-> 配套文档：PRD v4.5.0（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
+> 版本 **v5.0.0** · 对照原型 https://jama-dev520.github.io/location-prototype/
+> 配套文档：PRD v5.0.0（技术版验收在 §10）· 需求总览 · 字段映射 · 变更摘要
 > 对外（英文，给外国同事）：https://jama-dev520.github.io/location-prototype/feature-overview.html
 > 演示视频（3 分 25 秒，36 条英文字幕，**按 v3.8.0 录制** —— v4.0 的重复检查与 v4.1 的多源展示还没录进去）：https://jama-dev520.github.io/location-prototype/demo/location-admin-demo.mp4
 
@@ -66,7 +66,7 @@ v3 里 2:1 的店只显示一行合并值，另一条记录在界面上不存在
 
 v4.0.0 另有一处变化在重复页：打分从百分比改成**标签**（`HIGH_SUSPECT` / `MEDIUM_SUSPECT`），处置从两种变三种，并新增「映射层」—— 这些都要人点，页面不会自己动。
 
-## 一、十分钟快检（只有 10 分钟就跑这 42 条）
+## 一、十分钟快检（只有 10 分钟就跑这 45 条）
 
 | # | 怎么做 | 应该看到 |
 |---|---|---|
@@ -81,7 +81,7 @@ v4.0.0 另有一处变化在重复页：打分从百分比改成**标签**（`HI
 | 9 | 打开 **Data Issues** | 三块：Provider data issues / Changed after sign-off / Failed intake，没有"待决策队列"这种说法 |
 | 10 | 找一条 `Not live yet` 且无异常的门店，点启用开关 | 弹核对窗，列出地址/坐标/营业时间 + **每个字段的来源** + 5 项检查 + 必须勾选 |
 | 11 | 在 OC 列表把 `Source` 筛成 **M&MP** | 出现自营门店（如 `M&MP — Downtown Austin`）；它们的来源标成 `M&MP`（自营数据优先级最高），且和供应商门店一样要签收才能上线 |
-| 12 | 在 OC 列表找 **OC-00001**（挂了 PUDO 和 LMS 两条记录） | 这家店**占两行**：第一行 `PUDOpoint (PUDO)`、`live`；第二行以 `↳` 起头、`packagehub (LMS)`、`not live`。两行各自显示自己的地址/揽收方/更新时间；只有第一行有勾选框和异常徽章。**后进来的那条默认不是 live**，哪怕它的排名更高 |
+| 12 | 在 OC 列表找 **OC-NY-NYC-10036-000001**（挂了 PUDO 和 LMS 两条记录） | 这家店**占两行**：第一行 `PUDOpoint (PUDO)`、`live`；第二行以 `↳` 起头、`packagehub (LMS)`、`not live`。两行各自显示自己的地址/揽收方/更新时间；只有第一行有勾选框和异常徽章。**后进来的那条默认不是 live**，哪怕它的排名更高 |
 | 13 | 点第二行（LMS 那条）的开关 | 弹框顶部说明「这家店已经 live 在 LOC-10024 上」，列的是 **LMS 那条**的值（电话 2125550189），按钮写 `Switch live source & sign off`；勾选后确认 |
 | 14 | 打开 **Data Issues**，点顶部 `Apply next provider sync` | 2 条自动关闭（sweeper 缺失、邮编矛盾）、1 条「变了但仍不合格」保持 open、1 条「需要人工复核」保持 open、1 条「未变化」保持 open；页面下方出现「Closed automatically by a sync」并列出旧值 → 新值 | 全关 / 全不关，或只显示一个总数 |
 | 15 | 在 **Data Issues** 点 `Export open issues (CSV)` | 下载 `data-issues-YYYYMMDD-HHMMSS.csv`，每行一条未关闭异常，包含 OC ID、字段·子字段、类型、严重度、原因；筛选了类型就只有该类型 | 只能截图、或导出的是全部历史 |
@@ -98,11 +98,11 @@ v4.0.0 另有一处变化在重复页：打分从百分比改成**标签**（`HI
 | 26 | 再点一次 Refresh | 回执变成「没有新数据」，toast 说明三家供应商返回的是同一批 —— 不会假装又关了什么东西；切成 Viewer 再点，按钮拒绝并提示需要管理员 |
 | 27 | 看两个列表的列与筛选 | 只有一个 **Source** 列：`PUDOpoint (PUDO)`、`packagehub (LMS)`、`M&amp;MP`（M&amp;MP 不带括号重复）；没有 Type 列、没有 `synced` 小标、没有 `type ≠ source` 徽章；Source 下拉就是这三个值 + 计数 |
 | 28 | Source 选 M&amp;MP，再看揽收方 | 两家自营店的揽收方都是 **LMS**；揽收方筛选里没有 M&amp;MP 选项 |
-| 29 | OC 列表随便看几个 Issues 单元格 | 只出现 `n blocking` / `n drift` / `2:1` / `intake`，**不再有 `n data`**；OC-00089 有 3 条未关闭异常，但格子只写 `1 blocking`（另两条是提醒级） |
+| 29 | OC 列表随便看几个 Issues 单元格 | 只出现 `n blocking` / `n drift` / `2:1` / `intake`，**不再有 `n data`**；OC-NY-BKN-11221-000001 有 3 条未关闭异常，但格子只写 `1 blocking`（另两条是提醒级） |
 | 30 | Issues 筛选依次选三项，再导出 CSV | 三个选项各返回对应行（阻塞 6 行 / 签收后变化 6 行 / 2:1 需先在重复页确认）；导出表头是 `Blocking issues` + `Other open issues` 两列，相加等于该行的未关闭总数 |
 | 31 | 供应商列表 Province 选 NY | 列表剩 **8** 条；City 只剩 Brooklyn / Larchmont / New York（各带条数），不再是十几个城市 |
 | 32 | 已选 Brooklyn，再把 Province 改成 TX | 城市自动清空、列表变成 TX 的 4 条 —— 不能出现「表里 0 行、下拉写着全部」；导出的表头是 `…,City,Province,Postal,…` |
-| 33 | Duplicate Check 确认那对（`LOC-12194` / `LOC-00186`），回 OC 列表看 OC-00088 | 这家店是两行：live 那行仍是 `LOC-12194`（PUDO），另一行 `LOC-00186` 状态变 **inactive** 并记 `merged_into` —— 合并是**停用一条**，不是换数据源 |
+| 33 | Duplicate Check 确认那对（`LOC-12194` / `LOC-00186`），回 OC 列表看 OC-NY-BKN-11210-000003 | 这家店是两行：live 那行仍是 `LOC-12194`（PUDO），另一行 `LOC-00186` 状态变 **inactive** 并记 `merged_into` —— 合并是**停用一条**，不是换数据源 |
 | 34 | 把 `LOC-00186` 改回 active，再看同一家店 | 供数源**不变**（仍是 `LOC-12194`）：已签收的店不会因为另一条记录"变好了"就自动换源。想换必须点那行开关、走签收 |
 | 35 | 确认那对之后跑一次同步（`Apply next provider sync`），看 Duplicate 页下方 **Mapping changes** | 出现一条**提案**（不是自动执行）：写明 `source_key`、变更字段、原 OC → 新 OC、依据（打分 + 距离）；状态 `pending`，什么都没写 |
 | 36 | 点那条提案的确认 | 新 OC 编号出现、默认**不启用**；原 OC 留在另一条记录上；被合并掉的那条**恢复 active**（合并方已经离开）；日志记 `OC_MAPPING_CHANGED` |
@@ -112,6 +112,10 @@ v4.0.0 另有一处变化在重复页：打分从百分比改成**标签**（`HI
 | 40 | 在 `Location ID` 里输入 `LOC-10024, LOC-12194`，再改成空格分隔的三个 ID | 逗号 2 条、空格 3 条；**任一命中即保留**（不是要求同时命中）；输入 `LOC-1002` 也能命中（子串） |
 | 41 | 在 `Name` 里输入 `postal annex`，再输入 `postal annex, box city`；最后粘 26 个条件 | 第一种是**一家店**（两个词都要有），逗号分隔才是两家；26 个条件时标签旁显示 `26 · only 20 used` 并变橙 |
 | 42 | 看侧栏与三个页面标题 | 供应商列表标 `P1`，重复检查与 OC 列表标 `P2`；侧栏底部写明「为什么是这个顺序」 |
+| 43 | 打开 **Duplicate Check**，看 A/B 表第一行 | 每侧都有 `addr_fingerprint`（16 位十六进制），中间是 `=` 或 `≠`；这对是 `≠`，说明它是靠 Zip5 进候选的，不是同指纹 |
+| 44 | 看 OC 列表的 ID 与重复页 A 侧的 OC ID | 形如 `OC-NY-BKN-11210-000003`；同一 `州+城市码+Zip5` 内序号递增（把 Demo 的映射变更点掉，新簇拿到 `000004`） |
+| 45 | 记下一个 OC ID，再跑一次同步、改一次供应商地址 | 该 OC ID **一个字都不变**；变的是 `primary_*` 与指纹 —— 指纹可变、身份不可变 |
+| 46 | 看标签筛选与卡片头部 | 三档 `HIGH_SUSPECT` / `MEDIUM_SUSPECT` / `LOW_SUSPECT`；HIGH 只是排最前，页面写明「必须人工确认后才发 OC ID」 |
 
 这 16 条全对，模型就是通的。剩下的条目用来确认细节和边界。
 
@@ -140,7 +144,7 @@ v4.0.0 另有一处变化在重复页：打分从百分比改成**标签**（`HI
 | # | 怎么做 | 应该看到 | 不该发生 |
 |---|---|---|---|
 | O1 | 看列 | Source / Issues / Sweeper / **Live** / Linked Vendors 都在；列头写 `Live` 不写 `Enable` | 缺 Source 或 Issues；列头还叫 Enable |
-| O2 | 看 Source 列与行数 | `PUDOpoint (PUDO)` / `packagehub (LMS)` / `M&amp;MP` 三种都可能出现；2:1 门店（如 OC-00001）**占两行**，一行一个来源，live 在前 | 两个来源挤在一格里；或备用行看不见 |
+| O2 | 看 Source 列与行数 | `PUDOpoint (PUDO)` / `packagehub (LMS)` / `M&amp;MP` 三种都可能出现；2:1 门店（如 OC-NY-NYC-10036-000001）**占两行**，一行一个来源，live 在前 | 两个来源挤在一格里；或备用行看不见 |
 | O3 | 看 Issues 列 | 第一行是 `N blocking` / `N drift` / `2:1` / `intake`；备用行是 `—`（不重复计数） | 备用行复制同一批异常；或出现 `N data` |
 | O4 | 点 `Not live yet` | 只剩未上线门店，计数与菜单徽章一致 | 两个数字不一致 |
 | O5 | 找一条无异常、未上线的门店点开关 | 弹核对窗（见 2.5），不是直接点亮 | 一点就上线 |
@@ -157,7 +161,7 @@ v4.0.0 另有一处变化在重复页：打分从百分比改成**标签**（`HI
 | D1 | 点 OC 门店 ID | **整页**详情（不是抽屉），有返回列表 | 弹抽屉 |
 | D2 | 看标签页 | Basic Info / Operations / Hours & Services / Issues / Change History | 少于五个 |
 | D3 | Basic Info 看每个字段 | 每个字段后面有来源标记（`LMS` 或 `PUDO`），下方解释"这条记录是怎么拼出来的" | 看不出值是谁给的 |
-| D4 | 找 OC-00001（2:1）看 Basic Info | 每个字段带来源；显示的是一整条记录的值（live 那条），空的也照空 | 一半来自 LMS、一半来自 PUDO |
+| D4 | 找 OC-NY-NYC-10036-000001（2:1）看 Basic Info | 每个字段带来源；显示的是一整条记录的值（live 那条），空的也照空 | 一半来自 LMS、一半来自 PUDO |
 | D5 | Operations | `Live (is_enable)` / `Live source`（哪条记录供数）/ `Source records`（每条标 live 或 standby）/ 可见性 / 映射 / 基线（含从哪条记录取的） | 只说"已启用"，看不出哪条记录在供数 |
 | D6 | Change History | 这家店自己的时间线：时间 / 人 / 类型 / 字段 / 旧 → 新 | 显示全站日志 |
 | D7 | Issues tab | 该门店关联的所有未关闭问题，标出是哪条供应商记录、哪个字段 | 混进无关门店的问题 |
@@ -203,7 +207,7 @@ v4.0.0 另有一处变化在重复页：打分从百分比改成**标签**（`HI
 ## 三、六个必须能走通的完整故事
 
 **故事 1 · 供应商把坐标写错了**
-半夜同步把 `OC-00102` 的坐标挪了 297 公里。第二天运营在 OC 列表看到 `2 drift` → 进 Data Issues 看到旧值 → 新值 → 判断是错的 → 点「标记异常」，写清"坐标与街道地址相距 297 公里"。值**没有被改回来**（OC 改不了），但问题挂在供应商记录上，状态 open；跟进后标 reported；供应商修正后下次同步带回正确值，漂移消失。
+半夜同步把 `OC-FL-BCT-33432-000001` 的坐标挪了 297 公里。第二天运营在 OC 列表看到 `2 drift` → 进 Data Issues 看到旧值 → 新值 → 判断是错的 → 点「标记异常」，写清"坐标与街道地址相距 297 公里"。值**没有被改回来**（OC 改不了），但问题挂在供应商记录上，状态 open；跟进后标 reported；供应商修正后下次同步带回正确值，漂移消失。
 
 **故事 2 · 供应商漏了揽收方**
 某条 LMS 门店同步进来没有 sweeper。运营在供应商详情看到 `missing` → 标记异常（字段 sweeper，原因"未提供揽收方，下游无法路由"）。这家店仍然不能被启用（有未关闭问题），也不会悄悄上线。
@@ -219,7 +223,7 @@ Duplicate Check 里一对 `HIGH_SUSPECT` 的疑似重复（地址一样、邮编
 供应商把某店周六改成全天关闭。下游立刻用新值（数据归供应商），台账出现 `1 drift`。运营确认这是对的 → **什么也不用点**：数据已经是新的，漂移只是告诉你"签收以来变了什么"。如果判断是错的，才点 `Flag as an issue` 让供应商改回去。**OC 层没有"接受变更"这个动作，也没有重新签收。**
 
 **故事 6 · 换一个供应商供数（v4.1.0）**
-OC-00001 挂着两条记录：PUDO 的 `LOC-10024`（正在供数）和 LMS 的 `LOC-00189`（备用，电话更准）。运营点备用那行的开关 → 弹框顶部写着「这家店已经 live 在 LOC-10024 上」，列出来的是 LMS 那条的值（电话 2125550189），按钮写 `Switch live source & sign off`。
+OC-NY-NYC-10036-000001 挂着两条记录：PUDO 的 `LOC-10024`（正在供数）和 LMS 的 `LOC-00189`（备用，电话更准）。运营点备用那行的开关 → 弹框顶部写着「这家店已经 live 在 LOC-10024 上」，列出来的是 LMS 那条的值（电话 2125550189），按钮写 `Switch live source & sign off`。
 勾选、确认后：店**没有下线**，字段整条换成 LMS 那条的值，基线重记一次，日志写 `LIVE_SOURCE_CHANGED`（old → new）。列表里 live 那一行从 PUDO 挪到了 LMS，另一行变成 standby。
 **反过来不成立**：如果运营关掉 live 那一行，店就下线了 —— 不会自动切到备用记录，因为那条从来没被核实过。
 
@@ -276,7 +280,7 @@ OC-00001 挂着两条记录：PUDO 的 `LOC-10024`（正在供数）和 LMS 的 
 
 ## 六、通过判定
 
-**可以上线**：第一节 42 条 + 第三节 6 个故事全部走通，且第四节没有命中任何一条。
+**可以上线**：第一节 45 条 + 第三节 6 个故事全部走通，且第四节没有命中任何一条。
 
 **需要返工**：任一故事走不通，或命中任一"不该发生"。
 

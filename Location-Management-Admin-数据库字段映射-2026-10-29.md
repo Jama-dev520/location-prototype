@@ -1,6 +1,6 @@
-# Location Management Admin Console — Database Field Mapping (v4.3.1)
+# Location Management Admin Console — Database Field Mapping (v5.0.0)
 
-> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v4.3.1)
+> Companion to PRD `Location-Management-Admin-PRD-2026-10-29` (v5.0.0)
 > Feature overview (English, for readers outside the team): `https://jama-dev520.github.io/location-prototype/feature-overview.html`
 >
 > **v3.0.0 model change.** The console no longer writes location fields. `field_lock` is replaced by `data_issue`; `sync_change_set` decisions and `oc_field_baseline` versions used for revert are retired; downstream values are a per-field merge with **LMS first**. The console writes exactly four things: `oc_location.is_enable`, `data_issue` rows, baseline captures, and `change_log`.
@@ -112,6 +112,10 @@ oc_location (OC-owned, downstream-facing)
 | `activated_at` | timestamp | sync | yes | activated time |
 | `deactivated_at` | timestamp | sync | yes | deactivated time |
 | `last_synced_at` | timestamp | system | yes | last successful sync |
+| **`addr_fingerprint`** | varchar(16) | computed | yes | **(v5.0.0)** SHA-256[:16] over the cleaned record — the candidate bucket key. Recomputed when cleaning changes; carries no verdict |
+| **`match_confidence`** | int | computed | yes | **(v5.0.0)** the 0–100 text score, recomputed on every judgement |
+| **`duplicate_tag`** | enum | computed | yes | **(v5.0.0)** `HIGH_SUSPECT` / `MEDIUM_SUSPECT` / `LOW_SUSPECT` |
+| **`review_status`** | enum | human | yes | **(v5.0.0)** `UNREVIEW` / `APPROVED` / `REJECTED` — the only thing that can produce an OC ID |
 
 ### Table 2 — `oc_location` (OC layer)
 
@@ -119,7 +123,9 @@ oc_location (OC-owned, downstream-facing)
 
 | Field | Type | Source | Read-only? | Notes |
 |---|---|---|---|---|
-| `oc_location_id` | varchar(32) PK | system | yes | OC-owned ID; gates downstream sync |
+| `oc_location_id` | **varchar(22)** PK | system | yes | **(v5.0.0)** `OC-{ST2}-{City3}-{Zip5}-{seq6}` — a permanent cluster identity, e.g. `OC-NY-NYC-10036-000001`. Minted **only on human confirmation**, never rewritten: not by a re-run, not by an address correction, not by a cleaning upgrade. The state / city / zip inside the string are a **snapshot** at issuance — query `primary_*` instead. Split mints a new ID, merge keeps the older, a retired ID is marked `is_discarded` and never reused |
+| **`primary_state` / `primary_city` / `primary_city_code` / `primary_zip5`** | varchar(2/64/3/5) | system | yes | **(v5.0.0)** the real address of the cluster, kept beside the ID because the ID's segments are a snapshot. **Every filter, report and API query reads these, never parses the ID** |
+| **`is_discarded`** | bool | system | yes | **(v5.0.0)** set when a cluster is emptied by a split or absorbed by a merge; the ID is never reissued |
 | `name` | varchar | backfill → OC-editable | no | store name (OC can override) |
 | `address_line1` | varchar | backfill → OC-editable | no | address line 1 (OC can override) |
 | `address_line2` | varchar | backfill → OC-editable | no | address line 2 |
@@ -141,6 +147,24 @@ oc_location (OC-owned, downstream-facing)
 | **`propagated_at`** (v2.6.0) | timestamp | system | yes | last push to the downstream (cache invalidated); `null` = never pushed |
 | `created_at` | timestamp | system | yes | created time |
 | `updated_at` | timestamp | system | yes | updated time |
+
+### Table 2b — `oc_sequence` and `city_code_mapping` (v5.0.0)
+
+> The ID allocator. Two small tables, and together they are why an ID can be permanent.
+
+| `oc_sequence` | Type | Notes |
+|---|---|---|
+| `seq_key` | varchar PK | `OC_{ST2}_{City3}_{Zip5}`, e.g. `OC_NY_NYC_10036` |
+| `next_val` | int | read under a row lock, then incremented — two clusters confirmed in the same second must not receive the same number |
+
+| `city_code_mapping` | Type | Notes |
+|---|---|---|
+| `state2` | varchar(2) | part of the unique key `(state2, city3_code)` |
+| `city_name` | varchar | normalised upper case |
+| `city3_code` | varchar(3) | IATA where one exists (`NYC`, `AUS`, `BNA`), otherwise allocated by hand. **Never derived from the first three letters** — `SAN` alone means San Antonio, Santa Ana or San Jose |
+| `source` | enum(iata, manual) | so a reviewer can tell a standard code from an invented one |
+
+> A city with no code yet gets `XXX`; the record is accepted, the code is filled later, and **the ID keeps `XXX`**. Reissuing it would break the only promise the ID makes.
 
 ### Table 3 — `vendor_oc_mapping` (mapping table)
 
@@ -458,6 +482,7 @@ Failure modes the rule deliberately produces:
 | **`/api/vendor-locations/{id}/issues`** (v3.0.0) | POST | `data_issue` + `change_log` | flag a field: `field_name` + `reason` (both required); never writes a value |
 | **`/api/issues/{id}`** (v3.0.0) | PATCH | `data_issue` + `change_log` | move status OPEN → REPORTED → FIXED; closing requires the provider value to have changed or an explicit confirmation |
 | **`list_entry`** (v4.3.1) | — | `whitelist_entry` + `change_log` | — | **One row per (vendor_location, entry), never updated in place.** A record enters the whitelist on sign-off and leaves it on un-sign, on a source switch, or **when the system finds it no longer qualifies** (`is_enable = 0` / `is_active = 0`). Re-entry inserts a new row instead of reviving the old one, so "who put this store in front of customers, when, and who took it out" is a chain, not an overwrite. `removed_reason` is `UNSIGNED` / `SOURCE_SWITCHED` / `BLOCKED` / `PROVIDER_DISABLED` / `RECORD_VOIDED`; the first two are written by an operator, the last two by the sync. `list_type` is mutually exclusive per record — a row that is both white and black is a bug, not a policy. |
+| **OC identity** (v5.0.0) | — | `vendor_location` + `oc_location` + `oc_sequence` + `city_code_mapping` | — | **The ID stops being a counter.** `oc_location_id` becomes `OC-{ST2}-{City3}-{Zip5}-{seq6}`, and the migration is one-way: existing ids keep their value (they are identities, not numbers to renumber). `addr_fingerprint` votes for nothing — it is an index, so it may be recomputed at will; `oc_location_id` may not. The sequence is per `(ST2, City3, Zip5)` and must be allocated under a lock; `City3` must come from the dictionary, and a missing code is written `XXX` rather than guessed. Add `primary_*` beside the ID so no query parses the string, and `is_discarded` so a retired number is never handed out again. |
 | **`oc_location.live_source_vendor_id`** / `baseline_source_vendor_id` (v4.1.0) | — | `oc_location` + `change_log` | — | **The live source is a stored pointer, not a computed ranking.** `is_enable = true` must name a record (`live_source_vendor_id`), and that name beats the merge ranking — otherwise a merge into a live store silently re-points what customers read. Constrain it to a record reachable through `vendor_oc_mapping` (a CHECK or a trigger, not application code alone), and keep at most one per `oc_location` — there is no join table for «which of the two is live», because that question has one answer. `baseline_source_vendor_id` records whose values the baseline holds: with 2:1 the baseline values alone no longer say which record was verified. `live_source` is a filter param, `is_enable` keeps its name, and the UI word everywhere is **Live**. |
 | **`duplicate_pair.text_score` / `distance_m` / `label`** + new `mapping_change` (v4.0.0) | — | `duplicate_pair` + `mapping_change` | — | **The score stops being a percentage and the pair stops being the unit.** `text_score` is proportional over five fields (sorted adjacent pairs, v4.2.0) with Zip5 as a gate; `distance_m` is evidence stored beside it, never folded into it; `label` is derived, so a stored copy is a cache, not a fact. `match_score` is superseded — keep it only as history. The disposition set changes from `confirmed/rejected` to `merged/separate/fix`, with `merged_into` written on the record that lost. The new `mapping_change` table exists because the second layer judges **one source at a time**: without it, a re-point would be a silent write to `vendor_oc_mapping`, and the confirmation step (M5) would have nowhere to live. |
 | *(none)* (v3.14.0) | — | — | — | **The re-check adds one column and removes a habit.** `duplicate_pair.status` gains `split`, and `duplicate_pair.decided_identity` (JSON: score + both identity snapshots) is written at decision time — that snapshot is what a later change is compared with; without it the console can only say "these two differ", not "this one moved". The pair `score` becomes **derived, not trusted**: recompute it from the two `vendor_location` rows on read, and never treat the stored value as evidence — a stored score is exactly what made the old decision look permanent |
