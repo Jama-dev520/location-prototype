@@ -2508,16 +2508,8 @@ function toggleLive(vid){
   }
   renderVendor();renderOC();updateBadges();
 }
-function liveBadge(v){
-  var oc=ocOf(v.id);
-  if(!oc){
-    if(dupOf(v.id))return '<span class="badge badge-gray" title="a duplicate holds no OC id, so it cannot go live">—</span>';
-    return '<span class="badge badge-gray" title="no OC location yet — add it to the live list to mint one">—</span>';
-  }
-  if(oc.blocked)return '<span class="badge badge-red" title="on the system blocklist; the console cannot lift it">Blocked</span>';
-  if(!oc.enable)return '<span class="badge badge-gray">Not live</span>';
-  return '<span class="badge badge-green">Live</span>';
-}
+/* liveBadge() is gone: every row renders liveSwitch(), and a record without an id is
+   no longer a special case. Leaving the old "—" branch behind invited it back. */
 /* v6.0.0 — a store keeps its records together: same OC id adjacent, the record that
    carries the store first, its duplicates right under it. */
 function orderRows(rows){
