@@ -454,7 +454,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
       <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v6.0.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
-    <div class="nav-item active" data-nav="p01" onclick="switchPage('p01')">Vendor Location List</div>
+    <div class="nav-item active" data-nav="p01" onclick="switchPage(\'p01\')">Vendor Location List</div>
     <div class="nav-group-label">Quality</div>
     <div class="nav-item" data-nav="pdi" onclick="switchPage('pdi')">Data Issues <span class="tag" id="nav-issues">4</span></div>
     <div class="nav-item" data-nav="p03" onclick="switchPage('p03')">Change Log</div>
@@ -2069,8 +2069,8 @@ function openVersionModal(){
 }
 
 /* ============ navigation ============ */
-var CRUMBS={p01:['Vendor Location List','provider data · read-only · flags, not edits'],p02:['OC Location List','customers see this · enable + flag only'],pdup:['Duplicate Check','same store or not — 2:1 vs 1:1'],pdi:['Data Issues','provider issues · drift · intake'],p03:['Change Log','every write and every flag'],p04:['Sync Status','daily provider runs'],pd:['Location Detail','vendor and OC share one record shape']};
-var CRUMBS_ZH={p01:['供应商门店列表','供应商数据 · 只读 · 只标记不改'],p02:['OC 门店列表','客户看到的就是这条 · 只能启用和标记'],pdup:['重复门店检查','同一家还是两家 —— 2:1 还是 1:1'],pdi:['数据异常','供应商异常 · 漂移 · 入池失败'],p03:['变更日志','每一次写入、每一次标记'],p04:['同步状态','每日供应商推送'],pd:['门店详情','供应商与 OC 共用同一种记录结构']};
+var CRUMBS={p01:['Vendor Location List','provider data · read-only · flags, not edits'],pdi:['Data Issues','provider issues · drift · intake'],p03:['Change Log','every write and every flag'],p04:['Sync Status','daily provider runs'],pd:['Location Detail','vendor and OC share one record shape']};
+var CRUMBS_ZH={p01:['供应商门店列表','供应商数据 · 只读 · 只标记不改'],pdi:['数据异常','供应商异常 · 漂移 · 入池失败'],p03:['变更日志','每一次写入、每一次标记'],p04:['同步状态','每日供应商推送'],pd:['门店详情','供应商与 OC 共用同一种记录结构']};
 var curPage='p01';
 function switchPage(pid){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
@@ -3750,7 +3750,7 @@ function renderProfile(){
   if(!rec){document.getElementById('pd-panels').innerHTML='<div class="card">Not found</div>';return;}
   var name=isV?rec.name:mergedField(rec,'name').value;
   var sub=isV?rec.id+' · '+rec.provider:rec.ocId+' · '+(rec.vendorIds.length>1?'2:1 · '+rec.vendorIds.join(' + '):rec.vendorIds[0]);
-  var head='<div class="dp-head"><div class="dp-back" onclick="switchPage(\''+(isV?'p01':'p02')+'\')">← Back to list</div>'
+  var head='<div class="dp-head"><div class="dp-back" onclick="switchPage(\'p01\')">← Back to list</div>'
     +'<div class="detail-head">'+esc(name)+(isV?'':' '+statusBadge(statusOf(rec)))+'</div>'
     +'<div class="detail-sub mono">'+esc(sub)+'</div>'
     +'<div class="dp-actions">'
