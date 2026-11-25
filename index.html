@@ -541,75 +541,6 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
         </div>
       </div>
 
-      <div class="page" id="page-p02">
-        <h2 class="page-title">OC Location List <span class="phase p2">P2</span></h2>
-        <p class="page-desc" data-i18n="p02.desc"><b>One Source:</b> <b>packagehub (LMS)</b> · <b>PUDOpoint (PUDO)</b> · <b>M&amp;MP</b> — what it is and who owns it in one field. The record customers see. <b>Two actions only: sign off (which writes the whitelist) and flag an anomaly.</b> A store blocked by the platform shows a dead switch — the console cannot lift it. There is no editing here — a wrong address does not get typed over, it gets flagged back to the provider. Values come from <b>one record, not one value per field</b>: an <b>M&amp;MP</b> self-operated store wins first, then <b>LMS</b>, and whichever record wins supplies <b>every</b> field — including the empty ones. A blank phone on the winning record stays blank: borrowing it from the other record would hide the gap, and the gap is what tells the provider what to fix. <b>A store can carry two records (2:1).</b> Both are listed, one under the other, each with <b>its own</b> values — and only <b>one of them is the live source</b>, the record every downstream system reads. Switching it is a sign-off, not a toggle: the fields are replaced and the baseline is recaptured.</p>
-
-        <div class="card">
-          <div class="filter-grid">
-            <div><label class="f-label">OC Location ID <span class="f-cap" id="o-f-id-cap"></span></label><input id="o-f-id" placeholder="up to 20 — space or comma" oninput="applyOCFilters()"></div>
-            <div><label class="f-label">Vendor Location ID <span class="f-cap" id="o-f-vendorid-cap"></span></label><input id="o-f-vendorid" placeholder="up to 20 — space or comma" oninput="applyOCFilters()"></div>
-            <div><label class="f-label">Name <span class="f-cap" id="o-f-name-cap"></span></label><input id="o-f-name" placeholder="name, or several names with commas" oninput="applyOCFilters()"></div>
-            <div><label class="f-label">Province</label><select id="o-f-prov" onchange="onProvinceChange('o')"></select></div>
-            <div><label class="f-label">City</label><select id="o-f-city" onchange="applyOCFilters()"></select></div>
-            <div><label class="f-label">Source</label><select id="o-f-source" onchange="applyOCFilters()"></select></div>
-            <div><label class="f-label">Status</label><select id="o-f-status" onchange="applyOCFilters()"><option value="">All</option><option value="active">active</option><option value="inactive">inactive</option></select></div>
-            <div><label class="f-label">Live</label><select id="o-f-live" onchange="applyOCFilters()"><option value="">All</option><option value="yes">Live</option><option value="no">Not live</option><option value="blocked">Blocked by system</option></select></div>
-            <div><label class="f-label">Issues <span class="help-dot" onclick="openHelp()" title="What counts as an issue">?</span></label><select id="o-f-issues" onchange="applyOCFilters()"><option value="">All</option><option value="blocking">Blocking data issue</option><option value="drift">Changed since sign-off</option><option value="dup">Duplicate 2:1</option></select></div>
-          </div>
-          <div class="filter-actions">
-            <span class="result-meta" id="o-geo-note" style="margin-right:auto;color:var(--color-warning)"></span>
-            <button class="btn btn-secondary" onclick="resetOCFilters()">Reset</button>
-            <button class="btn btn-primary" onclick="applyOCFilters()">Apply Filters</button>
-          </div>
-          <div class="filter-chips" id="o-chips"></div>
-          <div class="batch-bar" id="o-batch-bar" style="display:none">
-            <span class="sel-count" id="o-sel-count">0 selected</span>
-            <button class="btn btn-primary btn-sm" onclick="openBatchModal('enable')">Batch Enable</button>
-            <button class="btn btn-danger btn-sm" onclick="openBatchModal('disable')">Batch Disable</button>
-            <button class="btn btn-secondary btn-sm" onclick="clearOCSelection()">Clear selection</button>
-          </div>
-          <div class="toolbar">
-            <button class="btn btn-secondary btn-sm" onclick="exportCSV('oc')">Export CSV</button>
-            <button class="btn btn-secondary btn-sm" onclick="filterNotLive()"><span data-i18n="btn.notlive">Not live yet</span> (<span id="o-notlive-count">0</span>)</button>
-            <span class="spacer"></span>
-            <span class="result-meta" id="o-result-meta"></span>
-          </div>
-          <div class="table-wrap">
-            <table class="data">
-              <thead><tr>
-                <th><input type="checkbox" onclick="toggleAllOC(this)"></th><th>OC Location ID</th><th>Name</th><th>Address</th><th>City / Province</th>
-                <th>Source</th><th>Sweeper</th><th>Status</th>
-                <th>Issues</th><th>Live</th><th>Linked Vendors</th><th>Updated</th>
-              </tr></thead>
-              <tbody id="o-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-            <div class="page" id="page-pdup">
-        <h2 class="page-title">Duplicate Check <span class="phase p2">P2</span></h2>
-        <p class="page-desc" data-i18n="pdup.desc">Two layers, one question each. <b>Station layer:</b> are these two records the same physical station? A pair becomes a candidate only through text — <b>same Zip5</b>, or the same cleaned address across zips — and each field then pays the share of <b>adjacent character pairs</b> the two values have in common (sorted first, so word order stops mattering): address 40 · name 10 · postal 25 · province 15 · city 10. That is the whole judgement: <b>coordinates are shown beside the pair and read by a person — they never score, never create a candidate, never move a label</b>. Geography only buys entry: Zip5, province and city are worth 50 points before a single character of the address matches, so <b>a pair also needs its address at 50% or more to enter MEDIUM</b> — below that it is LOW whatever the total says. The result is <b>HIGH</b> / <b>MEDIUM</b> / <b>LOW</b> — a queue position, not a decision. An OC location ID is minted for a record with no candidates, and for a record whose every pair is LOW (nothing looked alike); anything at MEDIUM or above waits for a person. <b>Mapping layer:</b> which OC location does a <b>source_key</b> map to, and what happens when that source's identity moves — <b>one source at a time, never the pair</b>. Nothing merges, disables or blocks by itself.</p>
-
-        <div class="card">
-          <div class="filter-grid">
-            <div><label class="f-label">Pair ID</label><input id="d-f-id" placeholder="e.g. DUP-001" oninput="renderDup()"></div>
-            <div><label class="f-label">Label</label><select id="d-f-label" onchange="renderDup()"><option value="">All</option><option value="HIGH">HIGH_SUSPECT</option><option value="MEDIUM">MEDIUM_SUSPECT</option><option value="LOW">LOW_SUSPECT</option></select></div>
-            <div><label class="f-label">Provider</label><select id="d-f-provider" onchange="renderDup()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option><option>M&amp;MP</option></select></div>
-            <div><label class="f-label">Status</label><select id="d-f-status" onchange="renderDup()"><option value="">All</option><option value="pending">Needs review</option><option value="merged">Merged</option><option value="separate">Kept apart</option><option value="fix">Address to fix</option><option value="moved">Moved by a mapping change</option></select></div>
-          </div>
-          <div class="filter-actions">
-            <button class="btn btn-secondary" onclick="resetDupFilters()">Reset</button>
-          </div>
-          <div class="toolbar"><span class="result-meta" id="d-result-meta"></span><span class="rc-meta" style="margin:0">labels are suggestions · nothing is auto-merged, auto-disabled or blocked</span></div>
-          <div id="d-body"></div>
-        </div>
-
-        <h3 class="sub-head" data-i18n="map.head">Mapping changes — source_key → OC location</h3>
-        <div id="m-body"></div>
-      </div>
-
       <div class="page" id="page-pdi">
         <h2 class="page-title">Data Issues</h2>
         <p class="page-desc" data-i18n="pdi.desc">Everything that is wrong with the data, in one ledger — <b>no review queues</b>. It opens with the <b>four checks</b> operations chases every day — <b>incomplete address</b>, <b>no postal code</b>, <b>no opening hours</b>, <b>a day open under three hours</b> — each counted on open issues and one click from filtering the ledger. Below that, three kinds: what we asked the provider to fix, what changed after sign-off (information, not a decision), and what never passed intake. Nothing here decides whether a value is applied — <b>provider values always go downstream</b>. Marking an issue is how we ask for a correction; the next push is how it lands. <b>Export the list</b> to send it to the provider.</p>
@@ -2874,6 +2805,9 @@ function issueBadges(o){
   return b.length?b.join(' '):'<span style="color:var(--text-tertiary)">—</span>';
 }
 function renderOC(){
+  /* v6.0.0 — the OC list is gone. Calls are kept because the store record still
+     exists; they just have no table to draw into. */
+  if(!document.getElementById('o-tbody'))return;
   var rows=ocFilters();
   var html='',lineCount=0;
   rows.forEach(function(o){
@@ -3488,6 +3422,7 @@ function pairCard(d) {
     + '</div>';
 }
 function renderDup() {
+  if(!document.getElementById('d-f-id'))return;
   var fid = val('d-f-id').toLowerCase(), lb = val('d-f-label'), prov = val('d-f-provider'), st = val('d-f-status');
   var rows = DUPLICATES.filter(function (d) {
     var a = findVendor(d.locA), b = findVendor(d.locB);
