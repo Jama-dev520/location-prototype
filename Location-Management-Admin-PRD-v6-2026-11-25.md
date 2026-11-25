@@ -1,6 +1,6 @@
 # Location Management Admin Console — Product Requirements Document
 
-**Version 7.0.0 ｜ 2026-11-25 ｜ Status: draft for review**
+**Version 7.1.0 ｜ 2026-11-25 ｜ Status: draft for review**
 
 Companion files: clickable prototype (`index.html`), Duplicate check v3.0 (rule document), field mapping (v5.1.0, pending update to this model).
 
@@ -17,7 +17,7 @@ Version 6.0.0 collapses the console into **one list**. Sync state, the whitelist
 | Pages | Vendor list, OC list, Duplicate Check | **Vendor Location List only** |
 | OC identity | separate entity holding a list of vendor records | a value on the vendor record, **one per record**; duplicates hold two different values and are linked by a marker |
 | Change awareness | implied by drift badges on the OC page | explicit **New / Changed** marker against the last snapshot |
-| Pushing to eBay | values flowed downstream on their own | **Apply to eBay**, plus going live, which also applies |
+| Pushing to eBay | values flowed downstream on their own | **going live is the publish**; no separate apply step |
 | Duplicate decision | a dedicated page with a queue | select two rows, **Mark as duplicate** |
 | Whitelist | per-store sign-off on the OC page | **Live switch on the row**, plus batch add/remove |
 | Filters | three text conditions plus facets | adds **Zipcode**, **Live**, **Change**, **Duplicates** |
@@ -253,7 +253,7 @@ This is deliberate. There is no separate "confirm" step; confirming without publ
 
 ### 7.4 Batch
 
-Selecting rows reveals a batch bar: `Add to whitelist`, `Remove from whitelist`, `Mark as duplicate`, `Clear selection`.
+Selecting rows reveals a batch bar: `Add to whitelist & apply`, `Remove from whitelist`, `Mark as duplicate`, `Clear selection`.
 
 Batch add follows the same rules per row: an id is minted when missing, the switch flips, the values are applied, and a row that cannot go live is skipped and counted. The result toast reports processed and skipped counts.
 
@@ -289,19 +289,22 @@ A duplicate is a **record**, not a store. It keeps its own values, its own issue
 
 ---
 
-## 9. Apply to eBay
+## 9. How a value reaches eBay
 
-`Apply to eBay · n` pushes every record whose `sync_state` is `new` or `changed` and marks them `synced`. The counter is the number of pending records; the button is disabled at zero.
+There is one path: **going live**. A record's values are written to eBay when the record is put on the whitelist, and at no other time.
 
-What it does not do: it does not put anything live. A record can be fully in sync and still not be on the whitelist.
+That is the whole publish model. It also answers the question the old screen asked with a button: if a store is not live, eBay has no reason to hold its values; if it is live and the provider moved a field, it was taken off the list on ingest, and putting it back publishes the new value.
+
+Two ways to go live, same effect per row:
 
 | Action | Writes values to eBay | Flips live |
 |---|---|---|
-| `Apply to eBay` | yes, for every pending record | no |
 | Clicking `Live` on a row | yes, for that record | yes |
-| `Add to whitelist` (batch) | yes, for each selected record | yes |
+| `Add to whitelist & apply` (batch, after filtering) | yes, for each selected record | yes |
 
-There is no third push action. An earlier draft had both `Apply to eBay` and `Push differences`; they were the same operation with different filters, and the narrower one was a subset of the wider one.
+The described flow is therefore: filter `Change = New` or `Changed`, select the rows, `Add to whitelist & apply`. Nothing else is needed, and there is nothing to reconcile afterwards.
+
+An earlier draft carried `Apply to eBay` and, before that, `Push differences`. Both were second paths to the same effect, and both allowed a record to be marked clean while eBay still held the previous value. A single path cannot drift from itself.
 
 ---
 
@@ -364,11 +367,11 @@ Two independent dimensions, which is why a single status column was a mistake.
 **Sync state**
 
 ```
-new ──────(apply / go live)──────> synced
+new ──────────(go live)─────────> synced
  │                                   │
  │                          (provider moves a field)
  │                                   v
- └────────(provider moves)──────> changed ──(apply / go live)──> synced
+ └────────(provider moves)──────> changed ──(go live)──> synced
 ```
 
 **Live state**
@@ -390,8 +393,6 @@ not live ──(switch on, sync_state = synced)──> live
 |---|---|---|
 | GET | `/vendor-locations` | list with filters, paging, sort |
 | GET | `/vendor-locations/{id}` | profile, including `sync_fields` and previous values |
-| POST | `/vendor-locations/{id}/apply` | push current values to eBay, mark synced |
-| POST | `/vendor-locations/apply` | bulk apply by id list |
 | POST | `/vendor-locations/{id}/live` | `{ live: true }` — mints an id if missing, applies, flips |
 | POST | `/vendor-locations/live` | bulk, `{ ids, live }` |
 | POST | `/duplicates` | `{ a, b, keep, oc_location_id? }` — mark, mint or reuse, return the id |
@@ -413,7 +414,7 @@ Errors worth designing for: minting a record that already has an id, switching a
 6. Clicking `Live` on a record with `sync_state = changed` publishes the current values and clears the badge in one action.
 7. Two records of a pair cannot both be live. Turning one on unlists the other and logs `DUPLICATE_UNLISTED`.
 8. A blocked store renders a badge, not a switch.
-9. `Apply to eBay` shows the pending count, is disabled at zero, and clears every badge when pressed.
+9. There is no `Apply to eBay` button: filtering `Change = New`, selecting the rows and pressing `Add to whitelist & apply` writes the values, clears the badges and puts the stores live in one action.
 10. Selecting two free records and confirming `Mark as duplicate` mints **two** ids, one per record; the dropped one carries `duplicate_of` and keeps its own id.
 11. Marking a pair whose records already hold different ids leaves both ids untouched — nothing is merged, retired or rewritten.
 12. The `Duplicates` filter returns the pair together, adjacent, primary first.
@@ -455,4 +456,4 @@ Errors worth designing for: minting a record that already has an id, switching a
 
 ---
 
-*End of document. Version 7.0.0, 2026-11-25.*
+*End of document. Version 7.1.0, 2026-11-25.*

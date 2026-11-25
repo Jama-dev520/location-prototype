@@ -1,6 +1,6 @@
 # Location 管理后台 — 产品需求文档（中文版）
 
-**版本 7.0.0 ｜ 2026-11-25 ｜ 状态：待评审**
+**版本 7.1.0 ｜ 2026-11-25 ｜ 状态：待评审**
 
 配套文件：可交互原型（`index.html`）· 判重规则 `Deplicate-check-v3.0-2026-11-23.md` · 数据库字段映射（v5.1.0，尚未按本模型更新）
 
@@ -17,7 +17,7 @@
 | 页面 | 供应商列表 + OC 列表 + 重复检查 | **只有 Vendor Location List** |
 | OC 身份 | 独立实体，持有一组供应商记录 | 供应商记录上的一个值，**一条记录一个**；重复的两条各持不同的号，靠标记关联 |
 | 变更感知 | OC 页面上的 drift 徽章，需自己推断 | 对照上一次快照显式标记 **New / Changed** |
-| 推送 eBay | 值自动流向下游 | **Apply to eBay**；另外点上线也等于应用 |
+| 推送 eBay | 值自动流向下游 | **上线即发布**，没有单独的 apply 步骤 |
 | 判重 | 独立页面 + 队列 | 选中两行，**Mark as duplicate** |
 | 白名单 | 在 OC 页面逐店签收 | **行内 Live 开关**，加批量增删 |
 | 筛选 | 三个文本条件 + facet | 新增 **Zipcode / Live / Change / Duplicates** |
@@ -255,7 +255,7 @@ live = true
 
 ### 7.4 批量
 
-勾选任意行后出现批量条：`Add to whitelist`、`Remove from whitelist`、`Mark as duplicate`、`Clear selection`。
+勾选任意行后出现批量条：`Add to whitelist & apply`、`Remove from whitelist`、`Mark as duplicate`、`Clear selection`。
 
 批量加白名单按行执行同样的规则：缺号先发号、翻转开关、应用值；不能上线的行跳过并计数，结果提示里写明处理了几条、跳过几条。
 
@@ -291,19 +291,22 @@ live = true
 
 ---
 
-## 9. Apply to eBay
+## 9. 值怎么到 eBay
 
-`Apply to eBay · n` 把所有 `sync_state` 为 `new` 或 `changed` 的记录推给 eBay 并标记为 `synced`。角标是待处理条数，为 0 时按钮禁用。
+只有一条路：**上线**。记录被加进白名单的那一刻，它的值才写进 eBay，别的时候都不写。
 
-它**不做**什么：不改变上线状态。一条记录可以完全同步，同时不在白名单上。
+这就是全部的发布模型。它也回答了以前那个按钮在问的问题：店没上线，eBay 没有理由持有它的值；店在上线状态而供应商改了字段，它在入库时就已经被撤下，再上线就是把新值写过去。
+
+两种上线方式，逐行效果相同：
 
 | 动作 | 写入 eBay | 是否上线 |
 |---|---|---|
-| `Apply to eBay` | 是，全部待处理记录 | 否 |
 | 点行内 `Live` | 是，该条 | 是 |
-| 批量 `Add to whitelist` | 是，每条选中记录 | 是 |
+| 批量 `Add to whitelist & apply`（先筛选） | 是，每条选中记录 | 是 |
 
-只有一个推送入口。早期草稿里同时有 `Apply to eBay` 和 `Push differences`，它们是同一动作的两种过滤，后者是前者的子集，已删除。
+所以操作路径就是：筛选 `Change = New` 或 `Changed` → 勾选 → `Add to whitelist & apply`。不需要别的动作，也不存在事后对账。
+
+早期草稿里有 `Apply to eBay`，更早还有 `Push differences`。两者都是同一个效果的第二条路，而且都允许把记录标成「已同步」、eBay 上却还是旧值。只留一条路，它就不会和自己对不上。
 
 ---
 
@@ -368,11 +371,11 @@ Postal code    11210           [changed]
 **同步状态**
 
 ```
-new ──────(应用 / 上线)──────> synced
+new ──────────(上线)─────────> synced
  │                                │
  │                     (供应商改了字段)
  │                                ▼
- └──────(供应商改了字段)──────> changed ──(应用 / 上线)──> synced
+ └──────(供应商改了字段)──────> changed ──(上线)──> synced
 ```
 
 **上线状态**
@@ -394,8 +397,6 @@ new ──────(应用 / 上线)──────> synced
 |---|---|---|
 | GET | `/vendor-locations` | 列表，带筛选、分页、排序 |
 | GET | `/vendor-locations/{id}` | 详情，含 `sync_fields` 与旧值 |
-| POST | `/vendor-locations/{id}/apply` | 推送当前值给 eBay，标记 synced |
-| POST | `/vendor-locations/apply` | 按 id 列表批量推送 |
 | POST | `/vendor-locations/{id}/live` | `{ live: true }`，缺号先发号，再应用、上线 |
 | POST | `/vendor-locations/live` | 批量，`{ ids, live }` |
 | POST | `/duplicates` | `{ a, b, keep, oc_location_id? }`，标记、签发或复用，返回号 |
@@ -417,7 +418,7 @@ new ──────(应用 / 上线)──────> synced
 6. 对 `sync_state = changed` 的记录点 `Live`，一次动作完成「发布当前值 + 清除徽章 + 上线」。
 7. 重复对里的两条不能同时上线；开一条会撤下另一条，并记 `DUPLICATE_UNLISTED`。
 8. 被 block 的店渲染为徽章，不是开关。
-9. `Apply to eBay` 显示待处理条数，为 0 时禁用，点一次清空所有徽章。
+9. 没有 `Apply to eBay` 按钮：筛选 `Change = New`、勾选、点 `Add to whitelist & apply`，写值、清徽章、上线一次完成。
 9b. **没有任何 OC 号的记录也显示 `Not live` 开关**；点它一次即签发号并上线，日志记 `OC_ID_MINTED(auto, no_candidate)`。
 10. 选中两条无号记录并确认 `Mark as duplicate`，产出一个号，两条都写它，被弃那条写 `duplicate_of`。
 11. 标记两条各持不同号的记录，废弃其中一个号，两条都落到存活的号上。
@@ -459,4 +460,4 @@ new ──────(应用 / 上线)──────> synced
 
 ---
 
-*文档结束。版本 7.0.0，2026-11-25。*
+*文档结束。版本 7.1.0，2026-11-25。*

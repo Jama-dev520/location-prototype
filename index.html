@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v7.0.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v7.1.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -456,7 +456,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v7.0.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v7.1.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage(\'p01\')">Vendor Location List</div>
@@ -481,7 +481,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v7.0.0</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v7.1.0</span></div>
       </div>
     </div>
 
@@ -489,7 +489,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 
       <div class="page active" id="page-p01">
         <h2 class="page-title">Vendor Location List</h2>
-        <p class="page-desc" data-i18n="p01.desc"><b>One list, one decision per row.</b> Everything the providers send lands here, marked <b>new</b> or <b>changed</b> against the last snapshot — including what has already reached eBay. Three actions live in this table: <b>apply</b> the differences to eBay, put a store <b>on the whitelist</b> (one or in a batch), and <b>mark a record as the duplicate of another</b> — each record keeps its <b>own</b> OC location ID, and the marker is what ties the pair together. Values stay read-only: when something is wrong you flag it and the provider fixes the source.</p>
+        <p class="page-desc" data-i18n="p01.desc"><b>One list, one decision per row.</b> Everything the providers send lands here, marked <b>new</b> or <b>changed</b> against the last snapshot — including what has already reached eBay. Two actions live in this table: put a store <b>on the whitelist</b> (one or in a batch — this is also how a new or changed value reaches eBay), and <b>mark a record as the duplicate of another</b> — each record keeps its <b>own</b> OC location ID, and the marker is what ties the pair together. Values stay read-only: when something is wrong you flag it and the provider fixes the source.</p>
 
         <div class="card">
           <div class="filter-grid">
@@ -515,7 +515,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
           <div class="filter-chips" id="v-chips"></div>
           <div class="batch-bar" id="v-batch-bar" style="display:none">
             <span class="sel-count" id="v-sel-count">0 selected</span>
-            <button class="btn btn-primary btn-sm" onclick="batchWhitelist('add')">Add to whitelist</button>
+            <button class="btn btn-primary btn-sm" onclick="batchWhitelist('add')" title="Puts the selected stores live and writes their current values to eBay — the only path that publishes a value">Add to whitelist &amp; apply</button>
             <button class="btn btn-danger btn-sm" onclick="batchWhitelist('remove')">Remove from whitelist</button>
             <button class="btn btn-secondary btn-sm" id="btn-mark-dup" onclick="openDupModal()">Mark as duplicate</button>
             <button class="btn btn-secondary btn-sm" onclick="clearVendorSelection()">Clear selection</button>
@@ -524,7 +524,6 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
             <button class="btn btn-secondary btn-sm" onclick="exportCSV('vendor')">Export CSV</button>
             <button class="btn btn-primary btn-sm" id="btn-refresh" onclick="refreshProviders()"
               title="Pull the latest snapshot from all three sources. A pull writes provider values; it never changes a decision.">Refresh from providers</button>
-            <button class="btn btn-primary btn-sm" id="btn-apply-ebay" onclick="applyToEbay()">Apply to eBay<span id="apply-count"></span></button>
             <span class="spacer"></span>
             <span class="result-meta" id="v-result-meta"></span>
           </div>
@@ -677,7 +676,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v7.0.0 (one record, one id)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v7.1.0 (one record, one id)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -1267,7 +1266,7 @@ var I18N_ZH = {
 var I18N_BLOCK = {
   "rollout.title":"<b>上线节奏</b>",
   "rollout.why":"为什么是这个顺序：重复判定决定一家店<b>挂几条记录</b>，所以 OC 列表在它之前做不准。",
-  "p01.desc":"<b>一张表，一行一个决定。</b>供应商推来的记录全在这里，按上一次快照标出 <b>New</b> / <b>Changed</b> —— 包括已经推给 eBay 的那批。三个动作都在这张表里完成：<b>Apply</b> 把差异一次性推给 eBay；把门店<b>加入白名单</b>（单条或批量）；把一条记录<b>标记为另一条的重复</b> —— 每条记录各持自己的 OC location ID，配对靠标记维系。值仍然只读：数据错了就标异常，由供应商改源头。",
+  "p01.desc":"<b>一张表，一行一个决定。</b>供应商推来的记录全在这里，按上一次快照标出 <b>New</b> / <b>Changed</b> —— 包括已经推给 eBay 的那批。三个动作都在这张表里完成：把门店<b>加入白名单</b>（单条或批量）—— 这也就是新值/变更值送到 eBay 的唯一路径；把一条记录<b>标记为另一条的重复</b> —— 每条记录各持自己的 OC location ID，配对靠标记维系。值仍然只读：数据错了就标异常，由供应商改源头。",
   "p02.desc":"<b>只有一个来源：</b><b>packagehub (LMS)</b> · <b>PUDOpoint (PUDO)</b> · <b>M&amp;MP</b> —— 它是什么、谁拥有，一个字段说完。客户看到的就是这条记录。<b>只有两个动作：启用、标记异常。</b>这里不能改数据 —— 地址错了不是拿键盘盖掉，是标给供应商去改。值<b>按记录整条取，不是逐字段拼</b>：<b>M&amp;MP</b>（自营）优先，其次 <b>LMS</b>；谁赢，这条店就整条由谁供数，<b>包括它空着的字段</b>。赢的那条没有电话，电话就是空的 —— 拿另一家补上，等于把「该催谁」这件事藏起来了。<b>一个门店可以挂两条记录（2:1）。</b>两条都列出来，一上一下，各自显示<b>自己</b>的值 —— 但<b>只有一条是供数来源</b>，下游读的就是它。换源不是拨开关，是重新签收：字段整条替换，基线重新记一次。",
   "pdup.desc":"两层，各问一个问题。<b>站点层：</b>这两条记录是不是同一个物理站点？一对记录只能靠<b>文本</b>成为候选 —— <b>Zip5 相同</b>，或清洗后地址完全一致（跨邮编）；每个字段<b>按比例</b>给分 —— 两个值<b>相邻字符对</b>的重合比例（先排序，词的先后不再影响结果）：地址 40 · 名称 10 · 邮编 25 · 州 15 · 城市 10。<b>判定只看文本：坐标并排显示给人看，一不计分、二不生成候选、三不改标签、四不算簇。</b>地理三项只买到入场券：Zip5、州、城市在地址一个字都没对上时就先给 50 分，所以 <b>进 MEDIUM 还要地址本身至少像一半</b>，不然总分再高也是 LOW。结果是 <b>HIGH</b> / <b>MEDIUM</b> / <b>LOW</b> 之一 —— 它只是排队顺序，不是决定。OC location ID 只在两种情况下自动发：桶里没有候选，或这条记录的所有配对都是 LOW（都不像）；MEDIUM 及以上等人确认。<b>映射层：</b>这个 <b>source_key</b> 对应哪个 OC，来源身份变了之后怎么变 —— <b>一次只判一个来源，从不按配对连带</b>。没有任何一步会自己合并、停用或阻断。",
   "pdi.desc":"所有数据问题集中在一个台账里 —— <b>没有审核队列</b>。顶部先给运营每天在追的<b>四项检查</b> —— <b>地址信息不全</b>、<b>缺少邮编</b>、<b>没有营业时间</b>、<b>某天营业不足 3 小时</b> —— 各自按未关闭异常计数，点一下就能筛出这一类。往下是三类：我们已经请供应商修的、签收之后变了的（只是信息，不是待决策），以及从来没通过入池校验的。这里不决定任何值是否被应用 —— <b>供应商的值永远给到下游</b>。标记异常是我们提要求的方式，下一次推送是它落地的方式。<b>导出清单</b>就可以发给供应商。",
@@ -1374,6 +1373,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "7.1.0":"<b>只有一条路能到 eBay。</b>Apply to eBay 去掉了。值是在记录上线的时候写过去的 —— 筛出 <b>New</b> / <b>Changed</b>，勾选，点 <b>Add to whitelist &amp; apply</b>，写值与上线是同一次动作。这个按钮原本是同一个效果的第二条路，而且它允许把记录标成干净、eBay 上却还是旧值。",
   "7.0.0":"<b>一条供应商记录，一个 OC 号 —— 重复的也一样。</b>同一家店的两条记录以前共用一个号；现在各持一个，两者之间只剩 <b>duplicate of</b> 这个标记。这样号代表的是「记录的身份」，不是「店的身份」，下游映射才对得上。也因为号再也不能兜住「一店一源」，这条规则移到了配对上：把其中一条上线，另一条会在同一次点击里被撤下 eBay。",
   "6.1.0":"<b>QR 列回来了。</b>QR 投递是供应商的能力，不是详情页里的一句备注 —— 它应该和 Sweeper 放在一起，因为两者都说明这家店怎么运作。徽章表示客户在柜台扫码完成投递，横杠表示这个来源不支持。值只从上游读，控制台不猜。",
   "6.0.2":"<b>供应商说停业的店，不能释放给 eBay。</b>记录状态为 inactive（或被供应商删除 removed）时，Live 开关直接渲染成禁用态 —— 不弹窗、不报错、点不动；手动调用、批量加白名单同样被拒，也不会为它签发 OC 号。演示数据里加了两条 inactive，一条没有号、一条已经有号，两种情况都能看到。",
@@ -1554,8 +1554,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='7.0.0';
+var APP_VERSION='7.1.0';
 var VERSIONS=[
+ {v:'7.1.0',type:'minor',date:'2026-11-25',desc:'<b>One way to reach eBay.</b> `Apply to eBay` is gone. A value reaches eBay when a record goes live — filter for <b>New</b> or <b>Changed</b>, select the rows, `Add to whitelist`, and the values are written in the same action. The button was a second path to the same effect, and it let a record be marked clean while eBay still held the old value.'},
  {v:'7.0.0',type:'major',date:'2026-11-25',desc:'<b>One vendor record, one OC location id — duplicates included.</b> Two records of the same store used to share one id; now each holds its own, and the only link is the <b>duplicate of</b> marker. That makes the id an identity of a record rather than of a store, which is what the downstream mapping needs. Because the id can no longer enforce it, <b>one live source per store</b> moved onto the pair: putting one record live takes the other off eBay in the same click.'},
  {v:'6.1.0',type:'minor',date:'2026-11-25',desc:'<b>The QR column is back.</b> QR drop-off is a provider capability, not a note in the profile: it belongs beside Sweeper, where the operational facts about a record live. The badge says the customer scans a code at the counter; a dash means this source does not support it. It stays a provider flag: LMS package hubs in the demo carry it, PUDO points do not, and a row without it shows a dash rather than a guess.'},
  {v:'6.0.2',type:'patch',date:'2026-11-25',desc:'<b>An inactive store cannot go live.</b> When the provider reports a store inactive (or removed) the live switch is drawn disabled and the click is refused — no id is minted, no whitelist entry is written. Two inactive records were added to the demo so the rule is visible in the list rather than only in the code.'},
@@ -2662,7 +2663,6 @@ function clearVendorSelection(){
   var all=document.getElementById('v-chk-all'); if(all)all.checked=false;
   updateVendorBatch();
 }
-function pendingSync(){return VENDORS.filter(function(v){var s=syncOf(v);return s.state==='new'||s.state==='changed';});}
 function updateVendorBatch(){
   var sel=selectedVendors(), n=sel.length;
   var bar=document.getElementById('v-batch-bar');
@@ -2673,22 +2673,10 @@ function updateVendorBatch(){
     dupBtn.disabled=(n!==2);
     dupBtn.title=(n===2)?'Mint one OC location for these two records':'Select exactly two records';
   }
-  var pend=pendingSync().length;
-  var ac=document.getElementById('apply-count'); if(ac)ac.textContent=pend?' · '+pend:'';
-  var ab=document.getElementById('btn-apply-ebay'); if(ab)ab.disabled=(pend===0);
 }
-function applyToEbay(){
-  var list=pendingSync(); if(!list.length)return;
-  var created=0,updated=0;
-  list.forEach(function(v){
-    var s=syncOf(v);
-    if(s.state==='new')created++;else updated++;
-    SYNC_STATE[v.id]={state:'synced',at:nowStr(),fields:[]};
-    log('VENDOR',currentUser.name,'EBAY_APPLIED',v.id,'sync_state',s.state,'synced',(s.fields||[]).join(', ')||'new record');
-  });
-  renderVendor();
-  showToast('Applied to eBay',created+' new · '+updated+' updated');
-}
+/* v7.1.0 — Apply to eBay is gone. A value reaches eBay by going live, and nothing
+   else pushes it: one action, one effect, no way to mark a record clean while eBay
+   still holds the old value. */
 function batchWhitelist(action){
   var sel=selectedVendors(); if(!sel.length)return;
   var done=0,skip=0;
