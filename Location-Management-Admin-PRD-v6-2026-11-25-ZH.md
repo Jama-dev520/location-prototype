@@ -1,6 +1,6 @@
 # Location 管理后台 — 产品需求文档（中文版）
 
-**版本 6.0.2 ｜ 2026-11-25 ｜ 状态：待评审**
+**版本 6.1.0 ｜ 2026-11-25 ｜ 状态：待评审**
 
 配套文件：可交互原型（`index.html`）· 判重规则 `Deplicate-check-v3.0-2026-11-23.md` · 数据库字段映射（v5.1.0，尚未按本模型更新）
 
@@ -93,6 +93,7 @@
 | `source` | enum | `PUDOpoint (PUDO)` / `packagehub (LMS)` / `M&MP` |
 | `sweeper` | enum | 实际揽收方：`PUDO Inc` / `LMS` |
 | `status` | enum | `active` / `inactive` / `removed`，来自供应商 |
+| `qr_dropoff` | boolean | 供应商能力：柜台扫客户二维码完成投递 |
 | `oc_location_id` | varchar NULL | 重复的记录共享同一个值 |
 | `duplicate_of` | varchar NULL | 本记录重复的那条；主记录为 `NULL` |
 | `sync_state` | enum | `new` / `changed` / `synced` |
@@ -174,11 +175,14 @@ oc_location.live_source = null
 | 6 | Zip | 前五位 |
 | 7 | Source | `PUDOpoint (PUDO)` 等 |
 | 8 | Sweeper | 徽章，或 `missing` |
-| 9 | Status | 供应商状态徽章 |
-| 10 | Live | 开关（`Live` / `Not live`）；`Blocked` 只读徽章 |
-| 11 | OC Location | OC 号；重复记录下方标注 `duplicate of LOC-xxxxx` |
-| 12 | Issues | 未关闭异常数，可点击 |
-| 13 | Updated | 供应商时间戳 |
+| 9 | **QR** | 来源支持 QR 投递时显示 `QR` 徽章，不支持时显示 `—` |
+| 10 | Status | 供应商状态徽章 |
+| 11 | Live | 开关（`Live` / `Not live`）；`Blocked` 只读徽章 |
+| 12 | OC Location | OC 号；重复记录下方标注 `duplicate of LOC-xxxxx` |
+| 13 | Issues | 未关闭异常数，可点击 |
+| 14 | Updated | 供应商时间戳 |
+
+QR 投递是**供应商的能力**，不是运营写的备注：客户拿到一个码，柜台扫一下完成投递。它和 Sweeper 放在一起，因为两者都是「这家店怎么运作」的事实；值只从上游读，控制台不猜，显示 `—` 就代表这个来源不支持。
 
 > **命名规则**：列表列名与筛选项统一叫 **Vendor Location ID**，与旁边的 `OC Location` / `OC Location ID` 明确区分。任何出现「Location ID」的地方都必须带上前缀，避免运营把两侧的号搞混。
 
@@ -423,6 +427,7 @@ new ──────(应用 / 上线)──────> synced
 17. 导出每条供应商记录一行，带 ID、上线状态与重复标记。
 18. **表头第二列与第一个筛选标签都写作 `Vendor Location ID`**，不出现无前缀的「Location ID」。
 19. **供应商状态为 `inactive`（或 `removed`）的记录渲染禁用开关**，任何路径都无法上线，也不会被发号。
+20. **QR 列就在 Sweeper 旁边**，只有来源支持投递时才显示 `QR`，否则是横杠。
 
 ---
 
@@ -451,4 +456,4 @@ new ──────(应用 / 上线)──────> synced
 
 ---
 
-*文档结束。版本 6.0.2，2026-11-25。*
+*文档结束。版本 6.1.0，2026-11-25。*

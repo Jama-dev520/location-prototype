@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v6.0.2)</title>
+<title>Location Management Admin Console — Interactive Prototype (v6.1.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -456,7 +456,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v6.0.2</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v6.1.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage(\'p01\')">Vendor Location List</div>
@@ -481,7 +481,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v6.0.2</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v6.1.0</span></div>
       </div>
     </div>
 
@@ -538,7 +538,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
               <thead><tr>
                 <th style="width:30px"><input type="checkbox" id="v-chk-all" onchange="toggleAllVendors(this.checked)"></th>
                 <th>Vendor Location ID</th><th>Name</th><th>Address</th><th>City / Province</th><th>Zip</th>
-                <th>Source</th><th>Sweeper</th><th>Status</th><th>Live</th><th>OC Location</th><th>Issues</th><th>Updated</th>
+                <th>Source</th><th>Sweeper</th><th>QR</th><th>Status</th><th>Live</th><th>OC Location</th><th>Issues</th><th>Updated</th>
               </tr></thead>
               <tbody id="v-tbody"></tbody>
             </table>
@@ -677,7 +677,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v6.0.2 (one table, decisions on the row)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v6.1.0 (one table, decisions on the row)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -1370,6 +1370,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "6.1.0":"<b>QR 列回来了。</b>QR 投递是供应商的能力，不是详情页里的一句备注 —— 它应该和 Sweeper 放在一起，因为两者都说明这家店怎么运作。徽章表示客户在柜台扫码完成投递，横杠表示这个来源不支持。值只从上游读，控制台不猜。",
   "6.0.2":"<b>供应商说停业的店，不能释放给 eBay。</b>记录状态为 inactive（或被供应商删除 removed）时，Live 开关直接渲染成禁用态 —— 不弹窗、不报错、点不动；手动调用、批量加白名单同样被拒，也不会为它签发 OC 号。演示数据里加了两条 inactive，一条没有号、一条已经有号，两种情况都能看到。",
   "6.0.1":"<b>每一行都能上线，编号也说明是谁的。</b>没有 OC 号的记录以前在 Live 列显示一个横杠；现在同样给开关 —— 点上线时顺手签发 1:1 的号。筛选与列表里的编号统一叫 <b>Vendor Location ID</b>，不会再和旁边的 OC 号看混。",
   "6.0.0":"<b>一张表，决定都在行上。</b>OC 列表和独立的重复检查页都取消了。每条供应商记录自己带 <b>New</b> / <b>Changed</b> / <b>Synced</b> 标记（对照上一次快照）、白名单状态，以及它所属的 OC 号。<b>Apply to eBay</b> 一次推完所有待应用差异（新记录和变更都算）。选两条点 <b>Mark as duplicate</b>，签发它们共用的 OC 号 —— 这个号不必与任何一条地址一致。白名单支持批量，跟以前的 batch enable 一样。筛选增加五位邮编。",
@@ -1548,8 +1549,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='6.0.2';
+var APP_VERSION='6.1.0';
 var VERSIONS=[
+ {v:'6.1.0',type:'minor',date:'2026-11-25',desc:'<b>The QR column is back.</b> QR drop-off is a provider capability, not a note in the profile: it belongs beside Sweeper, where the operational facts about a record live. The badge says the customer scans a code at the counter; a dash means this source does not support it. It stays a provider flag: LMS package hubs in the demo carry it, PUDO points do not, and a row without it shows a dash rather than a guess.'},
  {v:'6.0.2',type:'patch',date:'2026-11-25',desc:'<b>An inactive store cannot go live.</b> When the provider reports a store inactive (or removed) the live switch is drawn disabled and the click is refused — no id is minted, no whitelist entry is written. Two inactive records were added to the demo so the rule is visible in the list rather than only in the code.'},
  {v:'6.0.1',type:'patch',date:'2026-11-25',desc:'<b>Every row can go live, and the id says whose it is.</b> A record with no OC location used to show a dash where the switch belongs; now it gets the switch too — putting it live mints the 1:1 id in the same click. The id filter and the id column are named <b>Vendor Location ID</b>, so neither can be mistaken for the OC-side id sitting next to them.'},
  {v:'6.0.0',type:'major',date:'2026-11-25',desc:'<b>One table, and the decisions moved onto the row.</b> The OC list and the separate duplicate page are gone. Every provider record carries its own <b>New</b> / <b>Changed</b> / <b>Synced</b> marker against the last snapshot, a <b>Whitelist</b> state, and the OC id it belongs to. <b>Apply to eBay</b> pushes every pending difference in one move — new records and changed ones alike. Select two records and <b>Mark as duplicate</b> mints the OC location they share — the id does not have to match either address. Whitelisting works in bulk, the way batch enable used to. Filters gain a five-digit zip field.'},
@@ -2056,7 +2058,7 @@ function srcShort(x){return x==='PUDO Inc'?'PUDO':x;}
 function qrCell(v){
   return v.qrDropoff
     ? '<span class="qr-badge" title="QR code dropoff — the customer scans a code at the counter">QR</span>'
-    : '<span style="color:var(--text-tertiary)">—</span>';
+    : '<span style="color:var(--text-tertiary)" title="this source does not support QR drop-off">—</span>';
 }
 
 /* v3.10.0 — one Source. Type and owner were never independent: LMS only ships
@@ -2599,6 +2601,7 @@ function renderVendor(){
       +'<td class="mono">'+esc(zip5(v.postal)||'—')+'</td>'
       +'<td>'+srcLabel(v.type,v.provider)+'</td>'
       +'<td>'+(v.sweeper?provBadge(v.sweeper):'<span class="badge badge-orange">missing</span>')+'</td>'
+      +'<td>'+qrCell(v)+'</td>'
       +'<td>'+statusBadge(v.status)+'</td>'
       +'<td>'+liveSwitch(v)+'</td>'
       +'<td>'+(function(){
