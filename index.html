@@ -89,6 +89,7 @@ label.f-label{display:block;font-size:12px;color:var(--text-secondary);margin-bo
 /* ===== Data table ===== */
 .table-wrap{overflow-x:auto}
 table.data{width:100%;border-collapse:collapse;font-size:13px}
+body.show-phases table.data{min-width:1560px}
 table.data th{background:var(--bg-section);color:var(--text-secondary);font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid var(--bg-section);white-space:nowrap;font-size:12.5px}
 table.data td{padding:11px 12px;border-bottom:1px solid var(--bg-section);vertical-align:middle}
 table.data tbody tr{transition:var(--transition)}
@@ -449,9 +450,20 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 .live-toggle[disabled]{opacity:.6;cursor:not-allowed;background:#F1F5F9;border-color:#E2E8F0;color:#94A3B8}
 .live-toggle[disabled]:hover{background:#F1F5F9;border-color:#E2E8F0}
 .live-toggle[disabled] .dot{background:#CBD5E1}
+
+/* v8.0.0 — phase tags: which parts predate 2026-11-25 and which are new in 8.0.0 */
+body.show-phases th[data-phase]::after,
+body.show-phases .f-label[data-phase]::after{content:"P" attr(data-phase);margin-left:8px;padding:1px 4px;line-height:1;white-space:nowrap;
+  border:1px solid #CBD5E1;border-radius:3px;background:#F8FAFC;color:#64748B;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:8px;letter-spacing:.06em;vertical-align:1px}
+body.show-phases th[data-phase="2"]::after,
+body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background:#FFF7ED;color:#B45309}
+.phase-legend{display:inline-flex;align-items:center;gap:8px;font-size:10.5px;color:var(--text-tertiary)}
+.phase-legend b{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9px;padding:1px 4px;border:1px solid #CBD5E1;border-radius:3px;color:#64748B;font-weight:600}
+.phase-legend b:last-of-type{border-color:#FDBA74;background:#FFF7ED;color:#B45309}
 </style>
 </head>
-<body>
+<body class="show-phases">
 <div class="device-admin">
   <aside class="admin-sidebar">
     <div class="brand">
@@ -493,18 +505,18 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 
         <div class="card">
           <div class="filter-grid">
-            <div><label class="f-label">Vendor Location ID <span class="f-cap" id="v-f-id-cap"></span></label><input id="v-f-id" placeholder="up to 20 — space or comma" oninput="applyVendorFilters()"></div>
-            <div><label class="f-label">Name <span class="f-cap" id="v-f-name-cap"></span></label><input id="v-f-name" placeholder="name, or several names with commas" oninput="applyVendorFilters()"></div>
-            <div><label class="f-label">Province</label><select id="v-f-prov" onchange="onProvinceChange('v')"></select></div>
-            <div><label class="f-label">City</label><select id="v-f-city" onchange="applyVendorFilters()"></select></div>
-            <div><label class="f-label">Zipcode <span class="f-cap" id="v-f-zip-cap"></span></label><input id="v-f-zip" placeholder="5-digit, up to 20 — space or comma" oninput="applyVendorFilters()"></div>
-            <div><label class="f-label">Source</label><select id="v-f-source" onchange="applyVendorFilters()"></select></div>
-            <div><label class="f-label">Status</label><select id="v-f-status" onchange="applyVendorFilters()"><option value="">All</option><option value="active">active</option><option value="inactive">inactive</option><option value="removed">removed</option></select></div>
-            <div><label class="f-label">Live</label><select id="v-f-live" onchange="applyVendorFilters()"><option value="">All</option><option value="yes">Live</option><option value="no">Not live</option><option value="blocked">Blocked by system</option></select></div>
-            <div><label class="f-label">Change</label><select id="v-f-change" onchange="applyVendorFilters()"><option value="">All</option><option value="new">New</option><option value="changed">Changed</option><option value="none">No change</option></select></div>
-            <div><label class="f-label">Duplicates</label><select id="v-f-dup" onchange="applyVendorFilters()"><option value="">All</option><option value="yes">Duplicated records</option><option value="no">No duplicate</option></select></div>
-            <div><label class="f-label">Sweeper</label><select id="v-f-sweeper" onchange="applyVendorFilters()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
-            <div><label class="f-label">Issues <span class="help-dot" onclick="openHelp()" title="What counts as an issue">?</span></label><select id="v-f-issues" onchange="applyVendorFilters()"><option value="">All</option><option value="open">Has open issue</option><option value="none">No issue</option></select></div>
+            <div><label class="f-label" data-phase="1">Vendor Location ID <span class="f-cap" id="v-f-id-cap"></span></label><input id="v-f-id" placeholder="up to 20 — space or comma" oninput="applyVendorFilters()"></div>
+            <div><label class="f-label" data-phase="1">Name <span class="f-cap" id="v-f-name-cap"></span></label><input id="v-f-name" placeholder="name, or several names with commas" oninput="applyVendorFilters()"></div>
+            <div><label class="f-label" data-phase="1">Province</label><select id="v-f-prov" onchange="onProvinceChange('v')"></select></div>
+            <div><label class="f-label" data-phase="1">City</label><select id="v-f-city" onchange="applyVendorFilters()"></select></div>
+            <div><label class="f-label" data-phase="2">Zipcode <span class="f-cap" id="v-f-zip-cap"></span></label><input id="v-f-zip" placeholder="5-digit, up to 20 — space or comma" oninput="applyVendorFilters()"></div>
+            <div><label class="f-label" data-phase="1">Source</label><select id="v-f-source" onchange="applyVendorFilters()"></select></div>
+            <div><label class="f-label" data-phase="1">Status</label><select id="v-f-status" onchange="applyVendorFilters()"><option value="">All</option><option value="active">active</option><option value="inactive">inactive</option><option value="removed">removed</option></select></div>
+            <div><label class="f-label" data-phase="2">Live</label><select id="v-f-live" onchange="applyVendorFilters()"><option value="">All</option><option value="yes">Live</option><option value="no">Not live</option><option value="blocked">Blocked by system</option></select></div>
+            <div><label class="f-label" data-phase="2">Change</label><select id="v-f-change" onchange="applyVendorFilters()"><option value="">All</option><option value="new">New</option><option value="changed">Changed</option><option value="none">No change</option></select></div>
+            <div><label class="f-label" data-phase="2">Duplicates</label><select id="v-f-dup" onchange="applyVendorFilters()"><option value="">All</option><option value="yes">Duplicated records</option><option value="no">No duplicate</option></select></div>
+            <div><label class="f-label" data-phase="1">Sweeper</label><select id="v-f-sweeper" onchange="applyVendorFilters()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
+            <div><label class="f-label" data-phase="1">Issues <span class="help-dot" onclick="openHelp()" title="What counts as an issue">?</span></label><select id="v-f-issues" onchange="applyVendorFilters()"><option value="">All</option><option value="open">Has open issue</option><option value="none">No issue</option></select></div>
           </div>
           <div class="filter-actions">
             <span class="result-meta" id="v-geo-note" style="margin-right:auto;color:var(--color-warning)"></span>
@@ -523,6 +535,9 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
             <button class="btn btn-secondary btn-sm" onclick="exportCSV('vendor')">Export CSV</button>
             <button class="btn btn-primary btn-sm" id="btn-refresh" onclick="refreshProviders()"
               title="Pull the latest snapshot from all three sources. A pull writes provider values; it never changes a decision.">Refresh from providers</button>
+            <button class="btn btn-secondary btn-sm" id="btn-phase" onclick="togglePhases()"
+              title="Show which parts existed before 2026-11-25 and which are new in 8.0.0">Phase tags: on</button>
+            <span class="phase-legend" id="phase-legend"><b>P1</b> before 11-25 · <b>P2</b> new in 8.0.0</span>
             <span class="spacer"></span>
             <span class="result-meta" id="v-result-meta"></span>
           </div>
@@ -535,8 +550,8 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
             <table class="data">
               <thead><tr>
                 <th style="width:30px"><input type="checkbox" id="v-chk-all" onchange="toggleAllVendors(this.checked)"></th>
-                <th>Vendor Location ID</th><th>Name</th><th>Address</th><th>City / Province</th><th>Zip</th>
-                <th>Source</th><th>Sweeper</th><th>QR</th><th>Status</th><th>Live</th><th>Duplicate</th><th>Issues</th><th>Updated</th>
+                <th data-phase="1">Vendor Location ID</th><th data-phase="1">Name</th><th data-phase="1">Address</th><th data-phase="1">City / Province</th><th data-phase="2">Zip</th>
+                <th data-phase="1">Source</th><th data-phase="1">Sweeper</th><th data-phase="1">QR</th><th data-phase="1">Status</th><th data-phase="2">Live</th><th data-phase="2">Duplicate</th><th data-phase="1">Issues</th><th data-phase="1">Updated</th>
               </tr></thead>
               <tbody id="v-tbody"></tbody>
             </table>
@@ -3125,6 +3140,17 @@ function downloadCSV(name,rows){
 }
 function stamp(){var d=new Date(),p=function(n){return (n<10?'0':'')+n;};
   return d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds());}
+/* v8.0.0 — phase tags: P1 = already there before 2026-11-25, P2 = new in 8.0.0.
+   They live on the markup (data-phase), so the page can be photographed either way. */
+var PHASES_ON=true;
+function togglePhases(){
+  PHASES_ON=!PHASES_ON;
+  document.body.classList.toggle('show-phases',PHASES_ON);
+  var b=document.getElementById('btn-phase');
+  if(b)b.textContent=PHASES_ON?'Phase tags: on':'Phase tags: off';
+  var lg=document.getElementById('phase-legend');
+  if(lg)lg.style.display=PHASES_ON?'inline-flex':'none';
+}
 function exportCSV(kind){
   var rows=[],name='';
   if(kind==='vendor'){

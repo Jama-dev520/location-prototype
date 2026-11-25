@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Location 管理后台 — 两阶段泳道图</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f5f5f5; --ink:#2d3142; --muted:#4f5d75; --soft:#7a8399;
+    --rule:rgba(45,49,66,0.12); --accent:#eb6c36; --accent-tint:rgba(235,108,54,0.08);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+       font-family:'Geist','Noto Sans SC',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1120px;margin:0 auto;padding:56px 32px 40px}
+  .eyebrow{font-family:'Geist Mono',monospace;font-size:8px;letter-spacing:.18em;
+           text-transform:uppercase;color:var(--soft);margin:0 0 12px}
+  h1{font-family:'Instrument Serif',serif;font-weight:400;font-size:34px;line-height:1.15;margin:0 0 10px}
+  .sub{color:var(--muted);font-size:14px;line-height:1.6;max-width:760px;margin:0 0 40px}
+  section{margin:0 0 8px}
+  h2{font-family:'Instrument Serif',serif;font-weight:400;font-size:22px;margin:0 0 4px}
+  .h2sub{font-size:12.5px;color:var(--muted);margin:0 0 16px}
+  svg{display:block;width:100%;max-width:820px;height:auto;margin:0 auto}
+  .foot{margin-top:32px;padding-top:14px;border-top:1px solid var(--rule);
+        font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.06em;color:var(--soft);
+        display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .lane{font-family:'Geist Mono',monospace;font-size:8px;letter-spacing:.14em;fill:var(--soft)}
+  .step{font-family:'Geist','Noto Sans SC',sans-serif;font-size:12px;font-weight:600;fill:var(--ink)}
+  .tech{font-family:'Geist Mono',monospace;font-size:9px;fill:var(--muted)}
+  .tag{font-family:'Geist Mono',monospace;font-size:7px;letter-spacing:.08em;fill:var(--soft)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Location Admin Console · Swimlane</p>
+  <h1>一条记录怎么走到 eBay：两个阶段</h1>
+  <p class="sub">同样的四个角色，同样的每日同步。区别只有一件事：阶段一运营要在三个页面之间搬记录，阶段二所有动作都落在同一行上。橙色标出的是那一步真正决定「客户能不能看到」。</p>
+
+  <section>
+    <p class="eyebrow">Phase 1 · 2026-11-25 之前</p>
+    <h2>三页：记录、判重、上线各在一处</h2>
+    <p class="h2sub">供应商列表只读；判重在独立页面；上线要换到 OC 列表并签收，指明哪条记录供数。</p>
+
+    <svg viewBox="0 0 780 400" role="img" aria-labelledby="swim-p1-title swim-p1-desc">
+      <title id="swim-p1-title">阶段一泳道图：供应商推送、同步落库、三个运营页面、eBay</title>
+      <desc id="swim-p1-desc">四条泳道。供应商 23:30 推送全量；同步落快照并计算差异；运营在供应商列表只读确认，到重复检查页判定配对，再到 OC 列表签收上线；最后门店在 eBay 可见。上线这一步需要签收，是流程里最重的人工动作。</desc>
+
+      <defs>
+        <marker id="p1-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/>
+        </marker>
+        <marker id="p1-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#eb6c36"/>
+        </marker>
+      </defs>
+
+      <rect width="780" height="400" fill="#f5f5f5"/>
+
+      <!-- lanes -->
+      <line x1="120" y1="56" x2="756" y2="56" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+      <line x1="120" y1="124" x2="756" y2="124" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+      <line x1="120" y1="192" x2="756" y2="192" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+      <line x1="120" y1="260" x2="756" y2="260" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+      <line x1="120" y1="328" x2="756" y2="328" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+
+      <text class="lane" x="24" y="96">PROVIDER</text>
+      <text class="lane" x="24" y="164">SYNC</text>
+      <text class="lane" x="24" y="232">CONSOLE</text>
+      <text class="lane" x="24" y="300">EBAY</text>
+
+      <!-- arrows first -->
+      <line x1="220" y1="112" x2="220" y2="130" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#p1-arrow)"/>
+      <line x1="220" y1="180" x2="220" y2="198" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#p1-arrow)"/>
+      <line x1="310" y1="224" x2="338" y2="224" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#p1-arrow)"/>
+      <line x1="520" y1="224" x2="548" y2="224" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#p1-arrow)"/>
+      <line x1="640" y1="248" x2="640" y2="270" stroke="#eb6c36" stroke-width="1.2" marker-end="url(#p1-arrow-accent)"/>
+
+      <!-- provider -->
+      <rect x="130" y="64" width="180" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+      <text class="step" x="220" y="84" text-anchor="middle">推送全量</text>
+      <text class="tech" x="220" y="100" text-anchor="middle">23:30 · 单批次</text>
+
+      <!-- sync -->
+      <rect x="130" y="132" width="180" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+      <text class="step" x="220" y="152" text-anchor="middle">落快照 + diff</text>
+      <text class="tech" x="220" y="168" text-anchor="middle">new / changed / same</text>
+
+      <!-- console x3 -->
+      <rect x="130" y="200" width="180" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+      <text class="step" x="220" y="220" text-anchor="middle">供应商列表</text>
+      <text class="tech" x="220" y="236" text-anchor="middle">只读 · 筛选</text>
+
+      <rect x="340" y="200" width="180" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+      <text class="step" x="430" y="220" text-anchor="middle">重复检查</text>
+      <text class="tech" x="430" y="236" text-anchor="middle">判定同一站点</text>
+
+      <rect x="550" y="200" width="180" height="48" rx="6" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="1"/>
+      <text class="step" x="640" y="220" text-anchor="middle">OC 列表 · 签收</text>
+      <text class="tech" x="640" y="236" text-anchor="middle">选供数记录 · 上线</text>
+
+      <!-- ebay -->
+      <rect x="550" y="272" width="180" height="48" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+      <text class="step" x="640" y="292" text-anchor="middle">eBay 可见</text>
+      <text class="tech" x="640" y="308" text-anchor="middle">customer-facing</text>
+
+      <!-- legend -->
+      <line x1="120" y1="352" x2="756" y2="352" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <text class="tag" x="120" y="368">LEGEND</text>
+      <line x1="180" y1="364" x2="212" y2="364" stroke="#4f5d75" stroke-width="1.2"/>
+      <text class="tag" x="220" y="368">交接 / 系统推进</text>
+      <line x1="340" y1="364" x2="372" y2="364" stroke="#eb6c36" stroke-width="1.2"/>
+      <text class="tag" x="380" y="368">人工决定 · 决定客户能否看到</text>
+    </svg>
+  </section>
+
+  <section style="margin-top:40px">
+    <p class="eyebrow">Phase 2 · 8.0.0</p>
+    <h2>一页：判重与上线都在行上</h2>
+    <p class="h2sub">同步把变动的记录自动撤下；运营筛出 New / Changed，在行内打开 Live，写值与上线是同一次动作。没有第二个键，也没有第二页。</p>
+
+    <svg viewBox="0 0 780 400" role="img" aria-labelledby="swim-p2-title swim-p2-desc">
+      <title id="swim-p2-title">阶段二泳道图：供应商推送、同步落库、单列表上线、eBay</title>
+      <desc id="swim-p2-desc">四条泳道。供应商 23:30 推送全量；同步落快照、标记新增与变更，并把变动记录自动撤下；运营在一张列表上筛出待处理行，用行内 Live 开关写值并上线；门店在 eBay 可见。判重只是同一行上的一个标记。</desc>
+
+      <defs>
+        <marker id="p2-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/>
+        </marker>
+        <marker id="p2-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#eb6c36"/>
+        </marker>
+      </defs>
+
+      <rect width="780" height="400" fill="#f5f5f5"/>
+
+      <line x1="120" y1="56" x2="756" y2="56" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+      <line x1="120" y1="124" x2="756" y2="124" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+      <line x1="120" y1="192" x2="756" y2="192" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+      <line x1="120" y1="260" x2="756" y2="260" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+      <line x1="120" y1="328" x2="756" y2="328" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+
+      <text class="lane" x="24" y="96">PROVIDER</text>
+      <text class="lane" x="24" y="164">SYNC</text>
+      <text class="lane" x="24" y="232">CONSOLE</text>
+      <text class="lane" x="24" y="300">EBAY</text>
+
+      <line x1="220" y1="112" x2="220" y2="130" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#p2-arrow)"/>
+      <line x1="220" y1="180" x2="220" y2="198" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#p2-arrow)"/>
+      <line x1="310" y1="224" x2="338" y2="224" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#p2-arrow)"/>
+      <line x1="430" y1="248" x2="430" y2="270" stroke="#eb6c36" stroke-width="1.2" marker-end="url(#p2-arrow-accent)"/>
+
+      <rect x="130" y="64" width="180" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+      <text class="step" x="220" y="84" text-anchor="middle">推送全量</text>
+      <text class="tech" x="220" y="100" text-anchor="middle">23:30 · 单批次</text>
+
+      <rect x="130" y="132" width="180" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+      <text class="step" x="220" y="152" text-anchor="middle">落快照 + diff</text>
+      <text class="tech" x="220" y="168" text-anchor="middle">变动记录自动撤下</text>
+
+      <rect x="130" y="200" width="180" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+      <text class="step" x="220" y="220" text-anchor="middle">一张列表</text>
+      <text class="tech" x="220" y="236" text-anchor="middle">筛 New / Changed</text>
+
+      <rect x="340" y="200" width="180" height="48" rx="6" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="1"/>
+      <text class="step" x="430" y="220" text-anchor="middle">行内 Live 开关</text>
+      <text class="tech" x="430" y="236" text-anchor="middle">写值 + 上线</text>
+
+      <rect x="340" y="272" width="180" height="48" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+      <text class="step" x="430" y="292" text-anchor="middle">eBay 可见</text>
+      <text class="tech" x="430" y="308" text-anchor="middle">customer-facing</text>
+
+      <line x1="120" y1="352" x2="756" y2="352" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <text class="tag" x="120" y="368">LEGEND</text>
+      <line x1="180" y1="364" x2="212" y2="364" stroke="#4f5d75" stroke-width="1.2"/>
+      <text class="tag" x="220" y="368">交接 / 系统推进</text>
+      <line x1="340" y1="364" x2="372" y2="364" stroke="#eb6c36" stroke-width="1.2"/>
+      <text class="tag" x="380" y="368">人工决定 · 决定客户能否看到</text>
+    </svg>
+  </section>
+
+  <div class="foot">
+    <span>Location Management Admin Console · phase 1 vs 8.0.0</span>
+    <span>同一个同步、同一个 eBay 契约；差别只在运营碰几个页面</span>
+  </div>
+</div>
+</body>
+</html>
