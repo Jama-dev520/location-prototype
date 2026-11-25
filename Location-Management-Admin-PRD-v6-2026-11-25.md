@@ -1,6 +1,6 @@
 # Location Management Admin Console — Product Requirements Document
 
-**Version 6.1.0 ｜ 2026-11-25 ｜ Status: draft for review**
+**Version 7.0.0 ｜ 2026-11-25 ｜ Status: draft for review**
 
 Companion files: clickable prototype (`index.html`), Duplicate check v3.0 (rule document), field mapping (v5.1.0, pending update to this model).
 
@@ -15,7 +15,7 @@ Version 6.0.0 collapses the console into **one list**. Sync state, the whitelist
 | | v5.1.0 | v6.0.0 |
 |---|---|---|
 | Pages | Vendor list, OC list, Duplicate Check | **Vendor Location List only** |
-| OC identity | separate entity holding a list of vendor records | a value on the vendor record; duplicate records share the same value |
+| OC identity | separate entity holding a list of vendor records | a value on the vendor record, **one per record**; duplicates hold two different values and are linked by a marker |
 | Change awareness | implied by drift badges on the OC page | explicit **New / Changed** marker against the last snapshot |
 | Pushing to eBay | values flowed downstream on their own | **Apply to eBay**, plus going live, which also applies |
 | Duplicate decision | a dedicated page with a queue | select two rows, **Mark as duplicate** |
@@ -76,8 +76,8 @@ Provider sync (23:30, one batch)
 
 Three facts drive every behaviour in this document.
 
-1. **The OC location id is a value on the vendor record, not a container.** One record can hold it, or several can hold the same one when they are the same store. There is no separate "OC record with a list of members" to keep in sync.
-2. **A store has one live source.** Of the records that share an id, exactly one may be live at a time. That is enforced by a single pointer, not by the interface.
+1. **The OC location id is a value on the vendor record, not a container, and it is never shared.** One record holds exactly one id; two records of the same store hold two different ids. The relationship lives in `duplicate_of`, not in the id.
+2. **A store has one live source.** Of the two records in a duplicate pair, exactly one may be live at a time. Because the ids differ, this is enforced on the pair, not by a shared value.
 3. **A changed record is not live.** When the provider moves a value, the record leaves the whitelist until somebody puts it back. Nothing stale reaches a customer.
 
 ---
@@ -94,7 +94,7 @@ Three facts drive every behaviour in this document.
 | `sweeper` | enum | who actually collects; `PUDO Inc` / `LMS` |
 | `status` | enum | `active` / `inactive` / `removed`, from the provider |
 | `qr_dropoff` | boolean | provider capability: the counter scans a customer code |
-| `oc_location_id` | varchar NULL | shared by duplicate records |
+| `oc_location_id` | varchar NULL | one per record, unique; never shared with another record |
 | `duplicate_of` | varchar NULL | the record this one duplicates; `NULL` for the primary |
 | `sync_state` | enum | `new` / `changed` / `synced` |
 | `sync_fields` | json NULL | which fields moved, for the Changed marker |
@@ -114,8 +114,8 @@ Three facts drive every behaviour in this document.
 
 | # | Invariant | Enforced by |
 |---|---|---|
-| I1 | A record with `duplicate_of` set never holds a different id from its primary | duplicate decision |
-| I2 | At most one record per `oc_location_id` is live | `live_source` is a single value |
+| I1 | A duplicate holds its own id, different from its primary's | minting is per record; the decision never moves an id |
+| I2 | At most one record of a duplicate pair is live | going live unlists its counterpart |
 | I3 | `blocked` is never written by this console | no write path exists |
 | I4 | A record with `sync_state != synced` is not live | changed records are taken off the list on ingest |
 | I5 | An id is never rewritten once issued | minting is append-only |
@@ -224,15 +224,17 @@ if oc_location_id is null:
 
 ### 7.2 One source per store
 
-Two records that share an id cannot both be live. Turning one on turns the other off, in the same transaction:
+The two records of a duplicate pair can never both be live. They hold different ids now, so the rule cannot come from the id — it is enforced on the pair. Turning one on turns the other off in the same click:
 
 ```
-live = true, live_source = this record
-if previous source existed and differs:
-    log LIVE_SOURCE_CHANGED(oc_id, previous, current)
-    log WHITELIST_REMOVED(previous, reason = SOURCE_SWITCHED)
-    log WHITELIST_ADDED(current, oc_id)
+live(record A) = true
+if the pair's other record is live:
+    live(record B) = false, live_source(B) = null
+    log DUPLICATE_UNLISTED(B.oc_id, reason = DUPLICATE_SWITCHED)
+    log WHITELIST_REMOVED(B, reason = DUPLICATE_SWITCHED)
 ```
+
+`LIVE_SOURCE_CHANGED` is retired: with one record per id, a store cannot change its supplier within a single id any more. Switching the source is now the pair operation above, and `live_source` on an id always names the one record that holds it.
 
 Turning off the record that is currently live takes the **store** down, not just the record.
 
@@ -264,18 +266,18 @@ Batch add follows the same rules per row: an id is minted when missing, the swit
 Select exactly two rows, then `Mark as duplicate`. The dialog shows both records side by side (id, name, address, city, zip) and the similarity score as **reference only**. Two controls matter:
 
 - **Keep as the store** — a radio choice of A or B, defaulting to whichever record already holds an id.
-- **OC Location ID** — prefilled from the kept record's state, city and zip; editable, and explicitly **not required to match either address**. A store merged across two zips needs an id that describes neither.
+- **OC Location IDs** — two of them, one per record. A record that already holds an id shows it read-only; a record without one gets an input prefilled from its own state, city and zip, editable and explicitly **not required to match its address**. Marking a duplicate never merges or rewrites either id.
 
 ### 8.2 Outcomes
 
 | Situation | Result |
 |---|---|
-| Neither record has an id | mint one; both records carry it |
-| The kept record has an id | the other record adopts it |
-| Both have ids and they differ | keep the one on the kept record, retire the other (`discarded_reason = merged`), both records end on the survivor |
-| Both already share an id | nothing to mint; the dialog says so and the action only re-marks the pair |
+| Neither record has an id | mint one for each — two ids, not one |
+| One has an id | that one keeps it; the other is minted its own |
+| Both have ids | both are kept untouched; nothing is retired |
+| The pair is already marked | re-marking only refreshes the relationship |
 
-After confirmation the dropped record gets `duplicate_of = kept.id`, the store's `live_source` is set to the kept record, and the pair is written to `duplicate_pair` with status `merged`.
+After confirmation the dropped record gets `duplicate_of = kept.id`, and the pair is written to `duplicate_pair` with status `merged`. **No id is rewritten, merged or retired** — the operation writes a relationship, not an identity. If the dropped record was live, it is unlisted, because only one of a pair may supply the store.
 
 ### 8.3 What a duplicate is not
 
@@ -283,7 +285,7 @@ A duplicate is a **record**, not a store. It keeps its own values, its own issue
 
 ### 8.4 Filtering duplicates
 
-`Duplicates` filter: `Duplicated records` returns every record whose id carries more than one record, primary and duplicate together, adjacent. `No duplicate` returns the rest.
+`Duplicates` filter: `Duplicated records` returns both sides of every pair, primary and duplicate together, adjacent. `No duplicate` returns the rest. The filter reads the relationship, not the id.
 
 ---
 
@@ -409,21 +411,22 @@ Errors worth designing for: minting a record that already has an id, switching a
 4. Clicking the badge-bearing id opens a profile where the moved fields are marked `changed` and show the previous value.
 5. The Change History tab lists one `PROVIDER_SYNC` row per moved field, newest first.
 6. Clicking `Live` on a record with `sync_state = changed` publishes the current values and clears the badge in one action.
-7. Two records that share an id cannot both be live. Turning one on turns the other off and logs `LIVE_SOURCE_CHANGED`.
+7. Two records of a pair cannot both be live. Turning one on unlists the other and logs `DUPLICATE_UNLISTED`.
 8. A blocked store renders a badge, not a switch.
 9. `Apply to eBay` shows the pending count, is disabled at zero, and clears every badge when pressed.
-10. Selecting two free records and confirming `Mark as duplicate` produces one id, both records carry it, and the dropped one carries `duplicate_of`.
-11. Marking a pair whose records already hold different ids retires one id and leaves both records on the survivor.
+10. Selecting two free records and confirming `Mark as duplicate` mints **two** ids, one per record; the dropped one carries `duplicate_of` and keeps its own id.
+11. Marking a pair whose records already hold different ids leaves both ids untouched — nothing is merged, retired or rewritten.
 12. The `Duplicates` filter returns the pair together, adjacent, primary first.
 13. A Zipcode lookup returns every record in that zip, most similar first.
 14. Reset clears the text fields, all nine facets and the zip condition; the row count returns to the full list.
-15. A duplicate row can be made live on its own, and doing so takes the previous source off the list.
+15. Either record of a pair can be made live; doing so unlists the other one and logs `DUPLICATE_UNLISTED`.
 16. Batch add skips rows that cannot go live and reports how many were skipped.
 17. Export writes one row per vendor record with its id, live state and duplicate marker.
 18. Every row carries a live switch, including records with no id; clicking one mints the id and puts the store live in a single action.
 20. A record whose provider status is `inactive` (or `removed`) renders a disabled switch, cannot be switched live by any path, and mints no id.
 21. The QR column sits beside Sweeper and shows `QR` only where the source offers drop-off; elsewhere a dash.
 19. The id column and the id filter are both labelled `Vendor Location ID`; no bare "Location ID" survives in the interface.
+20. Every OC location id belongs to exactly one vendor record: no two records share an id, duplicates included.
 
 ---
 
@@ -433,7 +436,7 @@ Errors worth designing for: minting a record that already has an id, switching a
 |---|---|---|
 | 1 | When a changed record is taken off the list, should the store go down immediately or at the end of the sync window? | Operations |
 | 2 | Should going live on a changed record require an explicit confirmation of the diff, rather than doing both in one click? | Product |
-| 3 | For a store merged across two zips, which zip belongs in the id when the operator does not choose one? | Product / Data |
+| 3 | When a store's two records sit in different zips, each id follows its own record's zip — is that the intent, or should the pair share one? | Product / Data |
 | 4 | How long should a retired id keep resolving, for downstream orders that still reference it? | Downstream contract |
 | 5 | Should the duplicate marker be reversible without a merge, i.e. can a pair be un-marked? | Operations |
 | 6 | Do we need a bulk duplicate action (many pairs at once), or is two-at-a-time enough? | Operations |
@@ -444,12 +447,12 @@ Errors worth designing for: minting a record that already has an id, switching a
 
 | Step | Action |
 |---|---|
-| 1 | Backfill `vendor_location.oc_location_id` from the existing mapping table; every member of an OC receives the same value |
-| 2 | Backfill `duplicate_of` for records that share an id: the non-live member points at the live one |
+| 1 | Split shared ids first: an OC that carries several vendor records keeps its id on the earliest record, and every other member is minted a new id of its own |
+| 2 | Backfill `duplicate_of` from the old shared-id group: every member that lost its id points at the record that kept it |
 | 3 | Keep `oc_location` as the store record (`live`, `live_source`, `blocked`); drop the member list, which is now derived |
 | 4 | Leave existing ids untouched. A record's id does not change because the console changed |
 | 5 | Retire the OC list and duplicate page from navigation, keep their APIs until downstream confirms no consumer |
 
 ---
 
-*End of document. Version 6.1.0, 2026-11-25.*
+*End of document. Version 7.0.0, 2026-11-25.*
