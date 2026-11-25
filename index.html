@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v7.1.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v8.0.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -456,7 +456,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v7.1.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v8.0.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage(\'p01\')">Vendor Location List</div>
@@ -481,7 +481,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v7.1.0</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v8.0.0</span></div>
       </div>
     </div>
 
@@ -489,12 +489,11 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 
       <div class="page active" id="page-p01">
         <h2 class="page-title">Vendor Location List</h2>
-        <p class="page-desc" data-i18n="p01.desc"><b>One list, one decision per row.</b> Everything the providers send lands here, marked <b>new</b> or <b>changed</b> against the last snapshot — including what has already reached eBay. Two actions live in this table: put a store <b>on the whitelist</b> (one or in a batch — this is also how a new or changed value reaches eBay), and <b>mark a record as the duplicate of another</b> — each record keeps its <b>own</b> OC location ID, and the marker is what ties the pair together. Values stay read-only: when something is wrong you flag it and the provider fixes the source.</p>
+        <p class="page-desc" data-i18n="p01.desc"><b>One list, one decision per row.</b> Everything the providers send lands here, marked <b>new</b> or <b>changed</b> against the last snapshot — including what has already reached eBay. Two actions live in this table: put a store <b>on the whitelist</b> (one or in a batch — this is also how a new or changed value reaches eBay), and <b>mark a record as the duplicate of another</b> — the marker is the whole link; no id changes hands, because the vendor location ID is the identity. Values stay read-only: when something is wrong you flag it and the provider fixes the source.</p>
 
         <div class="card">
           <div class="filter-grid">
             <div><label class="f-label">Vendor Location ID <span class="f-cap" id="v-f-id-cap"></span></label><input id="v-f-id" placeholder="up to 20 — space or comma" oninput="applyVendorFilters()"></div>
-            <div><label class="f-label">OC Location ID <span class="f-cap" id="v-f-ocid-cap"></span></label><input id="v-f-ocid" placeholder="up to 20 — space or comma" oninput="applyVendorFilters()"></div>
             <div><label class="f-label">Name <span class="f-cap" id="v-f-name-cap"></span></label><input id="v-f-name" placeholder="name, or several names with commas" oninput="applyVendorFilters()"></div>
             <div><label class="f-label">Province</label><select id="v-f-prov" onchange="onProvinceChange('v')"></select></div>
             <div><label class="f-label">City</label><select id="v-f-city" onchange="applyVendorFilters()"></select></div>
@@ -537,7 +536,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
               <thead><tr>
                 <th style="width:30px"><input type="checkbox" id="v-chk-all" onchange="toggleAllVendors(this.checked)"></th>
                 <th>Vendor Location ID</th><th>Name</th><th>Address</th><th>City / Province</th><th>Zip</th>
-                <th>Source</th><th>Sweeper</th><th>QR</th><th>Status</th><th>Live</th><th>OC Location</th><th>Issues</th><th>Updated</th>
+                <th>Source</th><th>Sweeper</th><th>QR</th><th>Status</th><th>Live</th><th>Duplicate</th><th>Issues</th><th>Updated</th>
               </tr></thead>
               <tbody id="v-tbody"></tbody>
             </table>
@@ -556,8 +555,8 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
         <p class="page-desc" data-i18n="p03.desc">Every create, sync write, flag, decision and sign-off, across both layers. Filterable by layer and type.</p>
         <div class="card">
           <div class="filter-grid">
-            <div><label class="f-label">Location or OC ID</label><input id="c-f-id" placeholder="LOC-… / OC-…" oninput="renderLog()"></div>
-            <div><label class="f-label">Layer</label><select id="c-f-layer" onchange="renderLog()"><option value="">All</option><option>VENDOR</option><option>OC</option></select></div>
+            <div><label class="f-label">Vendor Location ID</label><input id="c-f-id" placeholder="LOC-…" oninput="renderLog()"></div>
+            <div><label class="f-label">Layer</label><select id="c-f-layer" onchange="renderLog()"><option value="">All</option><option>VENDOR</option></select></div>
             <div><label class="f-label">Type</label><select id="c-f-type" onchange="renderLog()"><option value="">All</option><option>PROVIDER_FIELD_UPDATE</option><option>DATA_ISSUE_AUTO_CLOSED</option><option>DATA_ISSUE</option><option>ENABLE_SIGNED_OFF</option><option>DISABLE</option><option>OC_LINK_CONFIRMED</option></select></div>
           </div>
           <div class="toolbar"><button class="btn btn-secondary btn-sm" onclick="exportCSV('log')">Export CSV</button><span class="spacer"></span><span class="result-meta" id="c-result-meta"></span></div>
@@ -676,25 +675,20 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v7.1.0 (one record, one id)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+<div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v8.0.0 (one record, one id, one list)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
-      <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
+      <thead><tr><th>#</th><th>Where</th><th>Do</th><th>What it proves</th></tr></thead>
       <tbody>
-        <tr><td>1</td><td>Vendor List</td><td>Look at the Source and QR columns</td><td data-i18n="walk.1.exp">Source reads <b>packagehub (LMS)</b> — what it is and who owns it, in one value; QR marks the counters that can scan, LMS only</td></tr>
-        <tr><td>2</td><td>Vendor Detail</td><td>Report a data issue on an empty sweeper</td><td>Reason required · flag recorded on the vendor record · no value changed</td></tr>
-        <tr><td>3</td><td>OC List</td><td>Read the Source column, then look at OC-NY-NYC-10036-000001</td><td data-i18n="walk.3.exp">One value per record — <b>packagehub (LMS)</b>, <b>PUDOpoint (PUDO)</b>, <b>M&amp;MP</b>. A 2:1 store prints <b>two rows</b>, one per record, each with its own name, address, sweeper and update time — the live one first</td></tr>
-        <tr><td>4</td><td>OC Detail</td><td>Operations → Live source next to is_enable</td><td>One record is <b>live</b>, the other is <b>standby</b>; the fields below are the live record's, empty ones included</td></tr>
-        <tr><td>5</td><td>OC List</td><td>Switch a store on from its standby row</td><td>Sign-off runs over <b>that</b> record — its address, its hours, its issues — and the warning says the store is already live on another source: every field is replaced and the baseline recaptured</td></tr>
-        <tr><td>6</td><td>Duplicate Check</td><td>Read the pair, then pick the keeper</td><td>Two columns, one row per judged field, a binary ✓ or ✕ — same station disables the other and marks merged_into, different stations keep both</td></tr>
-        <tr><td>7</td><td>Data Issues</td><td>The four checks, then the issues split by nature; click the ?</td><td>Missing critical fields (nothing arrived) above Inaccurate data (a value is wrong) · the ? explains what blocks and what closes itself</td></tr>
-        <tr><td>8</td><td>Data Issues</td><td>Open a drifted location</td><td>See which fields moved since sign-off; downstream already has the new values — drift is information, not a decision</td></tr>
-        <tr><td>9</td><td>OC List</td><td>Filter Source = M&amp;MP</td><td>Self-operated stores follow the same rules: same sign-off, same issue ledger — only the data owner differs</td></tr>
-        <tr><td>10</td><td>Both lists</td><td>Open the Source filter</td><td data-i18n="walk.10.exp">Three values, each one a type <b>and</b> its owner: <b>PUDOpoint (PUDO)</b>, <b>packagehub (LMS)</b>, <b>M&amp;MP</b> — with the row count next to each. There is no Type dropdown to keep in sync, because the pair is one field</td></tr>
-        <tr><td>11</td><td>Vendor List</td><td>Source = M&amp;MP, then look at Sweeper</td><td>Both self-operated stores are swept by <b>LMS</b> — the shop is ours, the pickup is not. Sweeper has no M&amp;MP option at all</td></tr>
-        <tr><td>12</td><td>Data Issues</td><td>Click “Apply next provider sync”</td><td data-i18n="walk.12.exp">Two issues close themselves (value changed <b>and</b> valid); one stays open with “changed but still invalid”, one comes back to a human, the rest are untouched — no manual close anywhere</td></tr>
-        <tr><td>13</td><td>Vendor Detail</td><td>Hours &amp; Services on a store with a truncated day</td><td>The Hours tab names the day, the range and the total — and the same day is already an open issue in the ledger</td></tr>
-        <tr><td>14</td><td>Vendor List</td><td>Export CSV, then click “Refresh from providers”</td><td>Two issues close on the spot (the value changed <b>and</b> is valid), one stays open as “changed but still invalid”, one goes back to a human, one is untouched — and the last-pull line keeps the time, the run id and the three counts</td></tr>
-        <tr><td>15</td><td>OC List</td><td>Turn the live row off on a 2:1 store</td><td>The store goes down, not over to the other record: a standby record was never signed off, so there is nothing to fall back to. Filter <b>Not live</b> and it is there</td></tr>
+        <tr><td>1</td><td>Vendor list</td><td>Read the columns left to right</td><td>Source, Sweeper and QR are three different facts; New / Changed hang under the id, and a synced row says nothing at all</td></tr>
+        <tr><td>2</td><td>Vendor list</td><td>Open the record marked <b>Changed</b></td><td>The profile marks the fields that moved and shows the old value; Change History has one line per moved field</td></tr>
+        <tr><td>3</td><td>Vendor list</td><td>Switch <b>LOC-10024</b> from Not live to Live</td><td>Going live is the publish: the badge clears, the value is what eBay receives, and there is no separate apply step</td></tr>
+        <tr><td>4</td><td>Vendor list</td><td>Try the switch on <b>LOC-12206</b> (inactive)</td><td>The switch is disabled — a closed shop cannot be released, and the tooltip names the provider status</td></tr>
+        <tr><td>5</td><td>Vendor list</td><td>Filter <b>Change = Changed</b>, select the rows, <b>Add to whitelist &amp; apply</b></td><td>One action writes the values, clears the badges and puts the stores live</td></tr>
+        <tr><td>6</td><td>Vendor list</td><td>Select <b>LOC-10024</b> and <b>LOC-00189</b>, then <b>Mark as duplicate</b></td><td>Two records, one store: the marker goes on the duplicate, no id changes hands, and only one of the pair can stay live</td></tr>
+        <tr><td>7</td><td>Vendor list</td><td>Filter <b>Duplicates = Duplicated records</b></td><td>The pair comes back together, adjacent, the duplicate labelled with the record it duplicates</td></tr>
+        <tr><td>8</td><td>Vendor list</td><td>Type <b>11210</b> into Zipcode</td><td>Every record in that zip, most similar first — a lookup is a hunt for a duplicate, so the likely pair sits on top</td></tr>
+        <tr><td>9</td><td>Vendor list</td><td>Reset, then <b>Export CSV</b></td><td>One row per record with its live state and duplicate marker — the hand-off to anyone outside the console</td></tr>
+        <tr><td>10</td><td>Data Issues</td><td>Apply the next provider sync</td><td>Issues that close themselves do; the ones that need a person stay open with a reason</td></tr>
       </tbody>
     </table>
   </div>
@@ -764,34 +758,15 @@ var VENDORS=[
   });
 })();
 
-var OC_LOCATIONS=[
- {ocId:'OC-NY-NYC-10036-000001',name:'Time Square News',addr1:'360 W 42nd St',addr2:'',city:'New York',state:'NY',country:'United States',postal:'10036',provider:'PUDO Inc',type:'PUDOpoint',sweeper:'LMS',phone:'8443008533',lat:40.7580804,lng:-73.9923783,timezone:'America/New_York',hoursText:'Mon - Fri: 6:00am to 2:00am\nSat: 6:00am to 2:00am\nSun: 6:00am to 12:00am',hoursOfOp:[['MONDAY','06:00','23:59'],['TUESDAY','06:00','23:59'],['WEDNESDAY','06:00','23:59'],['THURSDAY','06:00','23:59'],['FRIDAY','06:00','23:59'],['SATURDAY','06:00','23:59'],['SUNDAY','06:00','23:59']],enable:true,liveSource:'LOC-10024',vendorIds:['LOC-10024'],created:'2016-06-16 12:22:42',updated:'2026-05-14 12:33:08'},
- {ocId:'OC-NY-BKN-11210-000003',name:'Postal Annex 20018',addr1:'2918 Avenue I',addr2:'',city:'Brooklyn',state:'NY',country:'United States',postal:'11210',provider:'PUDO Inc',type:'PUDOpoint',sweeper:'PUDO Inc',phone:'8443008533',lat:40.628878,lng:-73.947678,timezone:'America/New_York',hoursText:'',hoursOfOp:[['MONDAY','00:00','23:59'],['TUESDAY','00:00','23:59'],['WEDNESDAY','00:00','23:59'],['THURSDAY','00:00','23:59'],['FRIDAY','00:00','23:59'],['SATURDAY','00:00','23:59'],['SUNDAY','00:00','23:59']],enable:true,vendorIds:['LOC-12194'],created:'2025-09-19 15:25:03',updated:'2025-09-19 15:26:01'},
- {ocId:'OC-NY-NYC-10001-000001',name:'Reach Fast Shipping',addr1:'35 W 31st St',addr2:'Unit #1',city:'New York',state:'NY',country:'United States',postal:'10001',provider:'PUDO Inc',type:'PUDOpoint',sweeper:'PUDO Inc',phone:'8443008533',lat:40.7474262,lng:-73.9875328,timezone:'America/New_York',hoursText:'MON - FRI: 07:30am to 08:00pm SAT: 09:00am to 07:30pm SUN: 09:30am to 06:30pm',hoursOfOp:[['MONDAY','07:30','20:00'],['TUESDAY','07:30','20:00'],['WEDNESDAY','07:30','20:00'],['THURSDAY','07:30','20:00'],['FRIDAY','07:30','20:00'],['SATURDAY','09:00','19:30'],['SUNDAY','09:30','18:30']],enable:false,vendorIds:['LOC-10023'],created:'2016-06-15 13:08:40',updated:'2026-10-28 08:15:22'},
- {ocId:'OC-NY-BKN-11221-000001',name:'Ideal Food Basket - Lafayette Ave',addr1:'830 Lafayette Ave',addr2:'',city:'Brooklyn',state:'NY',country:'United States',postal:'11221',provider:'PUDO Inc',type:'PUDOpoint',sweeper:'PUDO Inc',phone:'8443008533',lat:40.6910629,lng:-73.9393812,timezone:'America/New_York',hoursText:'',hoursOfOp:[['MONDAY','00:00','23:59'],['TUESDAY','00:00','23:59'],['WEDNESDAY','00:00','23:59'],['THURSDAY','00:00','23:59'],['FRIDAY','00:00','23:59'],['SATURDAY','00:00','23:59'],['SUNDAY','00:00','23:59']],enable:false,vendorIds:['LOC-12193'],created:'2025-08-22 13:25:38',updated:'2026-10-27 16:41:09'},
- {ocId:'OC-NY-BKN-11203-000001',name:'Ideal Food Basket - Brooklyn Ave',addr1:'1086 Brooklyn Ave',addr2:'',city:'Brooklyn',state:'NY',country:'United States',postal:'11203',provider:'PUDO Inc',type:'PUDOpoint',sweeper:'PUDO Inc',phone:'8443008533',lat:40.6473186,lng:-73.9437891,timezone:'America/New_York',hoursText:'',hoursOfOp:[['MONDAY','00:00','23:59'],['TUESDAY','00:00','23:59'],['WEDNESDAY','00:00','23:59'],['THURSDAY','00:00','23:59'],['FRIDAY','00:00','23:59'],['SATURDAY','00:00','23:59'],['SUNDAY','00:00','23:59']],enable:true,vendorIds:['LOC-12191'],created:'2025-08-22 13:22:59',updated:'2026-10-05 14:22:08'},
- {ocId:'OC-NY-LAR-10538-000001',name:'Pdq Mail Plus',addr1:'2005 Palmer Ave',addr2:'',city:'Larchmont',state:'NY',country:'US',postal:'10538',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:40.930514,lng:-73.762192,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00176'],created:'2024-03-02 08:11:44',updated:'2026-10-05 09:40:17'},
- {ocId:'OC-FL-BCT-33432-000001',name:'Super Postal Center',addr1:'160 W Camino Real',addr2:'',city:'Boca Raton',state:'FL',country:'US',postal:'33432',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:26.340229,lng:-80.090332,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00177'],created:'2024-03-02 08:12:03',updated:'2026-08-19 10:02:51'},
- {ocId:'OC-CO-WST-80021-000001',name:'Pack & Ship North',addr1:'9477 W 104th Ave',addr2:'',city:'Westminster',state:'CO',country:'US',postal:'80021',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:39.886107,lng:-105.103101,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00178'],created:'2024-03-02 08:12:21',updated:'2026-07-11 11:14:36'},
- {ocId:'OC-TX-FTW-76109-000001',name:'The Box',addr1:'3023 S. University Drive',addr2:'',city:'Fort Worth',state:'TX',country:'US',postal:'76109',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:32.707053,lng:-97.360128,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00179'],created:'2024-03-02 08:12:39',updated:'2026-06-30 12:22:08'},
- {ocId:'OC-TX-PRX-75460-000001',name:'Postal Options',addr1:'2448 Lamar Ave',addr2:'',city:'Paris',state:'TX',country:'US',postal:'75460',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:33.660832,lng:-95.530295,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:false,vendorIds:['LOC-00180'],created:'2024-03-02 08:12:57',updated:'2026-10-21 14:30:45'},
- {ocId:'OC-FL-NMI-33181-000001',name:'Private Postal Systems',addr1:'12555 Biscayne Blvd',addr2:'',city:'North Miami',state:'FL',country:'US',postal:'33181',provider:'LMS',type:'packagehub',sweeper:'',phone:'',lat:25.891822,lng:-80.162421,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:false,blocked:true,vendorIds:['LOC-00181'],created:'2024-03-02 08:13:15',updated:'2026-05-02 09:55:19'},
- {ocId:'OC-TX-ARL-76016-000001',name:'Eagle Postal Center #11',addr1:'4101 W Green Oaks Blvd Ste 305',addr2:'',city:'Arlington',state:'TX',country:'US',postal:'76016',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:32.682112,lng:-97.195009,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00182'],created:'2024-03-02 08:13:33',updated:'2026-04-18 10:41:27'},
- {ocId:'OC-CA-OCN-92058-000001',name:'Upost Shipping Center',addr1:'3784 Mission Ave Ste 148',addr2:'',city:'Oceanside',state:'CA',country:'US',postal:'92058',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:33.227719,lng:-117.33188,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00183'],created:'2024-03-02 08:13:51',updated:'2026-03-27 11:08:53'},
- {ocId:'OC-MN-BLM-55437-000001',name:'Postal Dispatch Business Center',addr1:'5123 W 98th St',addr2:'',city:'Bloomington',state:'MN',country:'US',postal:'55437',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:44.824115,lng:-93.347352,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00184'],created:'2024-03-02 08:14:09',updated:'2026-02-14 12:36:40'},
- {ocId:'OC-NY-NYC-10036-000002',name:'Time Square News',addr1:'360 W 42nd St',addr2:'Ste 1',city:'New York',state:'NY',country:'United States',postal:'10036',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'2125550189',lat:40.758088,lng:-73.992371,timezone:'America/New_York',hoursText:'',hoursOfOp:[],enable:false,liveSource:null,vendorIds:['LOC-00189'],created:'2026-11-25 09:00:00',updated:'2026-11-25 09:00:00'},
-];
-
-/* v7.0.0 — one vendor record, one OC id, including duplicates. The link between a
-   duplicate and its primary is duplicate_of, never a shared id. */
-
-/* v6.0.2 — the inactive record that already holds an id: it stays Not live, and the
-   switch is disabled, because the provider says the store is not operating. */
-OC_LOCATIONS.push({ocId:'OC-NY-BKN-11210-000004',name:'Midwood Parcel Point',addr1:'2201 Avenue M',addr2:'',
- city:'Brooklyn',state:'NY',country:'United States',postal:'11210',provider:'LMS',type:'packagehub',sweeper:'LMS',
- phone:'',lat:40.6187,lng:-73.9589,timezone:'America/New_York',cutoffTime:'17:00',cutoffTimezone:'America/New_York',
- services:['returns'],restrictions:[],holidayClosures:[],hoursText:'',hoursOfOp:[],enable:false,
- vendorIds:['LOC-12207'],created:'2026-11-02 09:05:00',updated:'2026-11-24 03:00:00'});
+/* v8.0.0 — there is no OC table any more. A vendor record is the store, so "is this
+   store live" and "is it blocked" are fields on the record. IDs move to
+   vendor_location_id; nothing downstream needs a second key. */
+var LIVE_IDS=['LOC-10024','LOC-12194','LOC-12191','LOC-00176','LOC-00177','LOC-00178','LOC-00179','LOC-00182','LOC-00183','LOC-00184'];
+var BLOCKED_IDS=['LOC-00181'];
+VENDORS.forEach(function(v){
+  v.live=LIVE_IDS.indexOf(v.id)>=0;
+  v.blocked=BLOCKED_IDS.indexOf(v.id)>=0;
+});
 
 var DUP_THRESHOLD=75;
 var DUPLICATES=[
@@ -807,10 +782,10 @@ var CHANGELOG=[
  {time:'2026-10-29 02:31:40',layer:'VENDOR',operator:'System · LMS Sync',type:'PROVIDER_FIELD_UPDATE',locId:'LOC-00176',field:'cutoff_time',old:'16:30',new:'17:00',remark:''},
  {time:'2026-10-28 02:31:18',layer:'VENDOR',operator:'System · LMS Sync',type:'PROVIDER_REMOVED',locId:'LOC-00185',field:'status',old:'active',new:'removed',remark:'location delisted by provider'},
  {time:'2026-10-28 09:12:41',layer:'VENDOR',operator:'System · LMS Sync',type:'PROVIDER_CREATED',locId:'LOC-00186',field:'location',old:'—',new:'created — fuzzy match 75% vs LOC-12194 (pending duplicate, no OC location ID)',remark:''},
- {time:'2026-10-27 16:41:09',layer:'OC',operator:'Sarah Lin',type:'DISABLE',locId:'OC-NY-BKN-11221-000001',field:'is_enable',old:'true',new:'false',remark:''},
- {time:'2026-10-26 10:05:51',layer:'OC',operator:'Alex Chen',type:'BATCH_DISABLE',locId:'OC-TX-PRX-75460-000001',field:'is_enable',old:'true',new:'false',remark:''},
- {time:'2026-10-05 14:22:08',layer:'OC',operator:'Sarah Lin',type:'ENABLE',locId:'OC-NY-BKN-11203-000001',field:'is_enable',old:'false',new:'true',remark:''},
- {time:'2026-10-05 09:30:00',layer:'OC',operator:'Sarah Lin',type:'STORE_DETAIL_EDIT',locId:'OC-NY-NYC-10036-000001',field:'opening_hours',old:'07:00–23:00',new:'06:00–23:59',remark:'ops corrected hours'}
+ {time:'2026-10-27 16:41:09',layer:'VENDOR',operator:'Sarah Lin',type:'DISABLE',locId:'LOC-12193',field:'is_enable',old:'true',new:'false',remark:''},
+ {time:'2026-10-26 10:05:51',layer:'VENDOR',operator:'Alex Chen',type:'BATCH_DISABLE',locId:'LOC-00180',field:'is_enable',old:'true',new:'false',remark:''},
+ {time:'2026-10-05 14:22:08',layer:'VENDOR',operator:'Sarah Lin',type:'ENABLE',locId:'LOC-12191',field:'is_enable',old:'false',new:'true',remark:''},
+ {time:'2026-10-05 09:30:00',layer:'VENDOR',operator:'Sarah Lin',type:'STORE_DETAIL_EDIT',locId:'LOC-10024',field:'opening_hours',old:'07:00–23:00',new:'06:00–23:59',remark:'ops corrected hours'}
 ];
 
 </script>
@@ -1266,7 +1241,7 @@ var I18N_ZH = {
 var I18N_BLOCK = {
   "rollout.title":"<b>上线节奏</b>",
   "rollout.why":"为什么是这个顺序：重复判定决定一家店<b>挂几条记录</b>，所以 OC 列表在它之前做不准。",
-  "p01.desc":"<b>一张表，一行一个决定。</b>供应商推来的记录全在这里，按上一次快照标出 <b>New</b> / <b>Changed</b> —— 包括已经推给 eBay 的那批。三个动作都在这张表里完成：把门店<b>加入白名单</b>（单条或批量）—— 这也就是新值/变更值送到 eBay 的唯一路径；把一条记录<b>标记为另一条的重复</b> —— 每条记录各持自己的 OC location ID，配对靠标记维系。值仍然只读：数据错了就标异常，由供应商改源头。",
+  "p01.desc":"<b>一张表，一行一个决定。</b>供应商推来的记录全在这里，按上一次快照标出 <b>New</b> / <b>Changed</b> —— 包括已经推给 eBay 的那批。表里只有两个动作：把门店<b>加入白名单</b>（单条或批量 —— 这也是新值/变更值送到 eBay 的唯一路径），以及把一条记录<b>标记为另一条的重复</b> —— 标记就是全部关系，没有号会易主，因为 vendor location ID 本身就是身份。值仍然只读：数据错了就标异常，由供应商改源头。",
   "p02.desc":"<b>只有一个来源：</b><b>packagehub (LMS)</b> · <b>PUDOpoint (PUDO)</b> · <b>M&amp;MP</b> —— 它是什么、谁拥有，一个字段说完。客户看到的就是这条记录。<b>只有两个动作：启用、标记异常。</b>这里不能改数据 —— 地址错了不是拿键盘盖掉，是标给供应商去改。值<b>按记录整条取，不是逐字段拼</b>：<b>M&amp;MP</b>（自营）优先，其次 <b>LMS</b>；谁赢，这条店就整条由谁供数，<b>包括它空着的字段</b>。赢的那条没有电话，电话就是空的 —— 拿另一家补上，等于把「该催谁」这件事藏起来了。<b>一个门店可以挂两条记录（2:1）。</b>两条都列出来，一上一下，各自显示<b>自己</b>的值 —— 但<b>只有一条是供数来源</b>，下游读的就是它。换源不是拨开关，是重新签收：字段整条替换，基线重新记一次。",
   "pdup.desc":"两层，各问一个问题。<b>站点层：</b>这两条记录是不是同一个物理站点？一对记录只能靠<b>文本</b>成为候选 —— <b>Zip5 相同</b>，或清洗后地址完全一致（跨邮编）；每个字段<b>按比例</b>给分 —— 两个值<b>相邻字符对</b>的重合比例（先排序，词的先后不再影响结果）：地址 40 · 名称 10 · 邮编 25 · 州 15 · 城市 10。<b>判定只看文本：坐标并排显示给人看，一不计分、二不生成候选、三不改标签、四不算簇。</b>地理三项只买到入场券：Zip5、州、城市在地址一个字都没对上时就先给 50 分，所以 <b>进 MEDIUM 还要地址本身至少像一半</b>，不然总分再高也是 LOW。结果是 <b>HIGH</b> / <b>MEDIUM</b> / <b>LOW</b> 之一 —— 它只是排队顺序，不是决定。OC location ID 只在两种情况下自动发：桶里没有候选，或这条记录的所有配对都是 LOW（都不像）；MEDIUM 及以上等人确认。<b>映射层：</b>这个 <b>source_key</b> 对应哪个 OC，来源身份变了之后怎么变 —— <b>一次只判一个来源，从不按配对连带</b>。没有任何一步会自己合并、停用或阻断。",
   "pdi.desc":"所有数据问题集中在一个台账里 —— <b>没有审核队列</b>。顶部先给运营每天在追的<b>四项检查</b> —— <b>地址信息不全</b>、<b>缺少邮编</b>、<b>没有营业时间</b>、<b>某天营业不足 3 小时</b> —— 各自按未关闭异常计数，点一下就能筛出这一类。往下是三类：我们已经请供应商修的、签收之后变了的（只是信息，不是待决策），以及从来没通过入池校验的。这里不决定任何值是否被应用 —— <b>供应商的值永远给到下游</b>。标记异常是我们提要求的方式，下一次推送是它落地的方式。<b>导出清单</b>就可以发给供应商。",
@@ -1302,7 +1277,7 @@ var I18N_BLOCK = {
   "map.rules":"M2 · 只重判发生变更的那个来源 &nbsp;·&nbsp; M3 · 分配新 OC，旧映射进历史 &nbsp;·&nbsp; M4 · 未变更的一方绝不动 &nbsp;·&nbsp; M5 · 没人确认就不落库 &nbsp;·&nbsp; M6 · 两边在同一次推送里都变了 → 进人工",
   "dup.vs":"对比",
   "pull.hint":"标记 → 导出 → 供应商修正 → 再拉一次",
-  "wt.title":"演示脚本 —— v5.1.0（文本说了算，距离只是给人看）"
+  "wt.title":"演示脚本 —— v8.0.0（一条记录，一个身份，一张表）"
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
@@ -1373,6 +1348,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "8.0.0":"<b>OC location ID 没有了。</b>它原本的用处是「几条来源记录喂一家店时，给这家店一个身份」；一条记录就是一家店之后，它只是同一个东西的第二个名字。现在 vendor location ID 就是身份，<b>live</b> / <b>blocked</b> / 重复标记都落在记录上。随之删掉的是那一列、那个筛选、发号序列和 OC 详情页；重复靠 <b>duplicate of</b> 关联，各自保留自己的号。",
   "7.1.0":"<b>只有一条路能到 eBay。</b>Apply to eBay 去掉了。值是在记录上线的时候写过去的 —— 筛出 <b>New</b> / <b>Changed</b>，勾选，点 <b>Add to whitelist &amp; apply</b>，写值与上线是同一次动作。这个按钮原本是同一个效果的第二条路，而且它允许把记录标成干净、eBay 上却还是旧值。",
   "7.0.0":"<b>一条供应商记录，一个 OC 号 —— 重复的也一样。</b>同一家店的两条记录以前共用一个号；现在各持一个，两者之间只剩 <b>duplicate of</b> 这个标记。这样号代表的是「记录的身份」，不是「店的身份」，下游映射才对得上。也因为号再也不能兜住「一店一源」，这条规则移到了配对上：把其中一条上线，另一条会在同一次点击里被撤下 eBay。",
   "6.1.0":"<b>QR 列回来了。</b>QR 投递是供应商的能力，不是详情页里的一句备注 —— 它应该和 Sweeper 放在一起，因为两者都说明这家店怎么运作。徽章表示客户在柜台扫码完成投递，横杠表示这个来源不支持。值只从上游读，控制台不猜。",
@@ -1554,8 +1530,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='7.1.0';
+var APP_VERSION='8.0.0';
 var VERSIONS=[
+ {v:'8.0.0',type:'major',date:'2026-11-25',desc:'<b>The OC location id is gone.</b> It existed to be one identity for a store that several source records fed; with one record per store it was a second name for the same thing. Now the vendor location id is the identity, and <b>live</b> / <b>blocked</b> / the duplicate marker live on the record. The column, the filter, the minting sequence and the OC profile all go with it; duplicates are linked by <b>duplicate of</b> and each keeps its own id.'},
  {v:'7.1.0',type:'minor',date:'2026-11-25',desc:'<b>One way to reach eBay.</b> `Apply to eBay` is gone. A value reaches eBay when a record goes live — filter for <b>New</b> or <b>Changed</b>, select the rows, `Add to whitelist`, and the values are written in the same action. The button was a second path to the same effect, and it let a record be marked clean while eBay still held the old value.'},
  {v:'7.0.0',type:'major',date:'2026-11-25',desc:'<b>One vendor record, one OC location id — duplicates included.</b> Two records of the same store used to share one id; now each holds its own, and the only link is the <b>duplicate of</b> marker. That makes the id an identity of a record rather than of a store, which is what the downstream mapping needs. Because the id can no longer enforce it, <b>one live source per store</b> moved onto the pair: putting one record live takes the other off eBay in the same click.'},
  {v:'6.1.0',type:'minor',date:'2026-11-25',desc:'<b>The QR column is back.</b> QR drop-off is a provider capability, not a note in the profile: it belongs beside Sweeper, where the operational facts about a record live. The badge says the customer scans a code at the counter; a dash means this source does not support it. It stays a provider flag: LMS package hubs in the demo carry it, PUDO points do not, and a row without it shows a dash rather than a guess.'},
@@ -1598,7 +1575,7 @@ function isMgr(){return MGR_ROLES.indexOf(currentUser.role)>=0;}
 
 var QR_IDS=['LOC-00176','LOC-00177','LOC-00181','LOC-00183','LOC-00184','LOC-00186'];
 VENDORS.forEach(function(v){ v.qrDropoff = (v.provider==='LMS') && QR_IDS.indexOf(v.id)>=0; if(v.sweeper==null)v.sweeper=''; });
-OC_LOCATIONS.forEach(function(o){ o.enable=!!o.enable; o.dup=(o.vendorIds.length>1); });
+VENDORS.forEach(function(v){ v.live=!!v.live; v.blocked=!!v.blocked; });
 
 /* provider-side issues: the only lever OC has over vendor data */
 var ISSUE_TYPES={
@@ -1837,7 +1814,7 @@ function runProviderSync(opts){
     breaker:'normal',autoClosed:closed});
   LAST_PULL={at:nowStr(),run:SYNC_SUMMARY.runId,rows:NEXT_SYNC.pulled,closed:closed,
     updated:NEXT_SYNC.updated,needsHuman:needsHuman,stillInvalid:stillInvalid,unlisted:unlisted};
-  renderIssuesPage();renderSync();renderVendor();renderOC();renderDup();updateBadges();
+  renderIssuesPage();renderSync();renderVendor();updateBadges();
   if(document.getElementById('page-pd').classList.contains('active'))renderProfile();
   if(!opts.quiet)showToast('Sync applied',closed+' closed automatically · '+needsHuman+' need a human · '+stillInvalid+' still invalid · '+unchanged+' unchanged'
     +(rc.proposed.length?' · '+rc.proposed.length+' mapping change waiting for you':''),'success');
@@ -1884,94 +1861,16 @@ function refreshProviders(){
 
 /* baseline = the merged values signed off when the location went live */
 var BASELINE={};
-/* v3.13.0 — a merge picks ONE record, not one value per field.
-   If LMS owns the store it supplies every field, including the ones it leaves
-   empty: a blank phone stays blank, and the gap lands on the provider that has
-   to fix it. Filling it from PUDO would hide exactly the thing we need to chase
-   — and would mean the console quietly answered "who fixes this?" with "nobody,
-   it is already filled". */
-function winnerOf(o){
-  var vs=(o.vendorIds||[]).map(findVendor).filter(Boolean);
-  /* v4.1.0 — one OC, several sources: the live source is chosen, not ranked.
-     The ranking below is a PREVIEW for a store that has never been signed off
-     (it answers "what would customers read once we pick this one"); it never
-     decides that anything is live. A record that arrives with the sync is a
-     candidate until a person signs it off.
-     A chosen source that went inactive is still the source: the store follows
-     its provider down instead of silently borrowing another record's values. */
-  if(o.liveSource){
-    var pick=vs.filter(function(v){return v.id===o.liveSource;})[0];
-    if(pick)return {vendor:pick,src:pick.provider,inactive:pick.status!=='active'};
-  }
-  var rank=function(list){
-    return list.filter(function(v){return v.provider==='M&MP';})[0]
-      || list.filter(function(v){return v.provider==='LMS';})[0]
-      || list[0] || null;
-  };
-  var act=rank(vs.filter(function(v){return v.status==='active';}));
-  if(act)return {vendor:act,src:act.provider,inactive:false};
-  var any=rank(vs);
-  if(any)return {vendor:any,src:any.provider,inactive:true};
-  return null;
-}
-/* v4.1.0 — a live store names the record it reads from, and nothing picks one
-   for it. A record that arrives with the sync is **not live**: it is a
-   candidate, not a source, whatever its rank. 1:1 is the only case with a
-   single possible answer, so it needs no choice. A 2:1 store with no chosen
-   source is simply not live — that is what "waiting for sign-off" looks like. */
-/* v4.3.1 — the provider's flag is not advice. is_enable = 0 (shop closed) or
-   is_active = 0 (record void) takes that record off the whitelist by itself:
-   the live source is cleared and the store falls back to Not live. A store only
-   stays live while the record it reads is open and still valid.
-   Reopening does not put the entry back — a closed-then-open shop may have moved
-   or changed its hours while nobody was watching, so it needs a fresh sign-off. */
-function enforceListOnProviderFlags(logIt){
-  var n=0;
-  OC_LOCATIONS.forEach(function(o){
-    if(!o.enable||!o.liveSource)return;
-    var v=findVendor(o.liveSource); if(!v)return;
-    if(v.status==='active')return;
-    var voided=v.status==='removed';
-    var prev=o.liveSource;
-    o.enable=false;o.liveSource=null;o.listType='none';
-    o.listRemovedReason=voided?'RECORD_VOIDED':'PROVIDER_DISABLED';
-    o.listRemovedAt=nowStr();o.lastLiveSource=prev;o.updated=nowStr();
-    n++;
-    if(logIt){
-      log('OC','Provider sync','SOURCE_CLOSED',o.ocId,'live_source',prev,'—',
-        voided?'record voided (is_active = 0)':'shop closed by the provider (is_enable = 0)');
-      log('VENDOR','Provider sync','WHITELIST_REMOVED',prev,'list_type','white','none',
-        'removed_reason='+(voided?'RECORD_VOIDED':'PROVIDER_DISABLED')+' · '+o.ocId);
-    }
-  });
-  return n;
-}
-function ensureLiveSources(){
-  OC_LOCATIONS.forEach(function(o){
-    var ids=o.vendorIds||[];
-    if(o.liveSource&&ids.indexOf(o.liveSource)<0)o.liveSource=null;
-    if(o.liveSource||!o.enable)return;
-    if(ids.length===1)o.liveSource=ids[0];
-    else o.enable=false;              /* two candidates, nobody chose: not live */
-  });
-}
-function sourcesOf(o){return (o.vendorIds||[]).map(findVendor).filter(Boolean);}
-/* the row that feeds the store comes first; the rest are standby records */
-function orderedSources(o){
-  var vs=sourcesOf(o);
-  var rankF=function(v){return v.provider==='M&MP'?0:v.provider==='LMS'?1:2;};
-  return vs.sort(function(a,b){
-    var la=(o.enable&&o.liveSource===a.id)?0:1, lb=(o.enable&&o.liveSource===b.id)?0:1;
-    if(la!==lb)return la-lb;
-    return rankF(a)-rankF(b);
-  });
-}
-function mergedField(o,f){
-  var w=winnerOf(o);
-  if(w)return {value:valOf(w.vendor,f),src:w.src,vendor:w.vendor,inactive:w.inactive};
-  return {value:valOf(o,f),src:'OC',vendor:null};
-}
+/* v8.0.0 — one record *is* the store. These helpers used to merge several source
+   records into one store and had to rank them; that question is gone, so each one
+   now answers with the record itself. The names stay, so the profile and the issues
+   page read the same way they always did. */
+function winnerOf(o){return o?{vendor:o,src:o.provider,inactive:o.status!=='active'}:null;}
+function sourcesOf(o){return o?[o]:[];}
+function orderedSources(o){return o?[o]:[];}
+function mergedField(o,f){return {value:o?valOf(o,f):'',src:o?o.provider:'—',vendor:o,inactive:o?o.status!=='active':false};}
 function valOf(r,f){
+  if(!r)return '';
   if(f==='hoursText'){
     if(r.hoursOfOp&&r.hoursOfOp.length)return hoursSummary(r.hoursOfOp);
     return r.hoursText||'';
@@ -1986,74 +1885,67 @@ function hoursSummary(hoursOfOp){
   });
   return Object.keys(byDay).map(function(d){return d.slice(0,3)+' '+byDay[d].join(', ');}).join(' · ');
 }
+function mapF(f){return f==='latitude'?'lat':f==='longitude'?'lng':f;}
 function snapshot(o){
   var s={};['name','addr1','city','state','postal','latitude','longitude','sweeper','hoursText'].forEach(function(f){
-    s[f]=mergedField(o,mapF(f)).value;
+    s[f]=valOf(o,mapF(f));
   });
   return s;
 }
-function mapF(f){return f==='latitude'?'lat':f==='longitude'?'lng':f==='postal'?'postal':f==='addr1'?'addr1':f;}
 function baselineOf(o){
-  if(!BASELINE[o.ocId])BASELINE[o.ocId]=snapshot(o);
-  return BASELINE[o.ocId];
+  if(!BASELINE[o.id])BASELINE[o.id]=snapshot(o);
+  return BASELINE[o.id];
 }
-function driftOf(o){
-  if(!o.enable)return [];
-  var b=baselineOf(o),out=[];
-  ['name','addr1','city','postal','latitude','longitude','sweeper','hoursText'].forEach(function(f){
-    var cur=mergedField(o,mapF(f)).value, old=b[f];
-    if(String(cur)!==String(old))out.push({field:f,old:old,new:cur});
-  });
-  return out;
-}
+/* drift compared a store against the record feeding it. With one record there is
+   nothing to compare: a provider change is the Changed badge, not a drift row. */
+function driftOf(o){return [];}
 function issuesOfVendor(id){return ISSUES.filter(function(i){return i.vendorId===id;});}
-function issuesOfOC(o){
-  var out=[];
-  o.vendorIds.forEach(function(vid){issuesOfVendor(vid).forEach(function(i){out.push(i);});});
-  return out;
-}
+function issuesOfOC(o){return o?issuesOfVendor(o.id):[];}
 function openIssues(o){return issuesOfOC(o).filter(function(i){return i.status!=='fixed';});}
-function dupOf(o){
-  var pair=DUPLICATES.filter(function(d){return d.status==='confirmed'&&(o.vendorIds.indexOf(d.locA)>=0||o.vendorIds.indexOf(d.locB)>=0);});
-  return pair.length?pair[0]:null;
-}
 function pendingDupFor(o){
-  var p=DUPLICATES.filter(function(d){return d.status==='pending'&&(o.vendorIds.indexOf(d.locA)>=0||o.vendorIds.indexOf(d.locB)>=0);});
+  if(!o)return null;
+  var p=DUPLICATES.filter(function(d){return d.status!=='rejected'&&(d.locA===o.id||d.locB===o.id);});
   return p.length?p[0]:null;
 }
 function hasHoursOf(v){return v?!!valOf(v,'hoursText'):false;}
-function hasHours(o){var w=winnerOf(o);return w?hasHoursOf(w.vendor):false;}
-/* v4.1.0 — checks are asked about ONE record, because that is what a sign-off
-   signs. With 2:1 the other record's gaps are not this source's problem; the
-   store simply inherits whatever the chosen source has. */
+function hasHours(o){return o?hasHoursOf(o):false;}
 function blockers(o,vid){
   var b=[];
-  var vs=(o.vendorIds||[]).map(findVendor).filter(Boolean);
-  var tgt=vid?findVendor(vid):null;
-  if(tgt){
-    if(tgt.status!=='active')b.push('this source is not active');
-    if(!hasHoursOf(tgt))b.push('opening hours missing from the provider record');
-    var bl=ISSUES.filter(function(i){return i.vendorId===tgt.id&&i.status!=='fixed'&&i.severity==='blocking';}).length;
-    if(bl)b.push(bl+' blocking data issue(s) — see Issues');
-  }else{
-    if(!vs.some(function(v){return v.status==='active';}))b.push('no active vendor location');
-    if(!hasHours(o))b.push('opening hours missing from the provider record');
-    var bl2=openIssues(o).filter(function(i){return i.severity==='blocking';});
-    if(bl2.length)b.push(bl2.length+' blocking data issue(s) — see Issues');
-  }
-  if(o.intake==='overridden')b.push('intake check was overridden');
-  if(pendingDupFor(o))b.push('duplicate pair still undecided');
+  var tgt=vid?findVendor(vid):o;
+  if(!tgt)return b;
+  if(tgt.status!=='active')b.push('this source is not active');
+  if(!hasHoursOf(tgt))b.push('opening hours missing from the provider record');
+  var bl=ISSUES.filter(function(i){return i.vendorId===tgt.id&&i.status!=='fixed'&&i.severity==='blocking';}).length;
+  if(bl)b.push(bl+' blocking data issue(s) — see Issues');
+  if(tgt.intake==='overridden')b.push('intake check was overridden');
+  if(pendingDupFor(tgt))b.push('duplicate pair still undecided');
   return b;
 }
-function statusOf(o){
-  var vs=(o.vendorIds||[]).map(findVendor).filter(Boolean);
-  return vs.some(function(v){return v.status==='active';})?'active':'inactive';
+function statusOf(o){return o&&o.status==='active'?'active':'inactive';}
+/* v4.3.1 kept: the provider's flag is not advice. A shop the provider closed cannot
+   stay live; reopening does not put it back, because it needs a fresh sign-off. */
+function enforceListOnProviderFlags(logIt){
+  var n=0;
+  VENDORS.forEach(function(v){
+    if(!v.live)return;
+    if(v.status==='active')return;
+    var voided=v.status==='removed';
+    v.live=false;v.listRemovedReason=voided?'RECORD_VOIDED':'PROVIDER_DISABLED';v.updated=nowStr();
+    n++;
+    if(logIt){
+      log('VENDOR','Provider sync','SOURCE_CLOSED',v.id,'live',true,false,
+        voided?'record voided (is_active = 0)':'shop closed by the provider (is_enable = 0)');
+      log('VENDOR','Provider sync','WHITELIST_REMOVED',v.id,'list_type','white','none',
+        'removed_reason='+(voided?'RECORD_VOIDED':'PROVIDER_DISABLED'));
+    }
+  });
+  return n;
 }
+function ensureLiveSources(){}
 
 /* ============ helpers ============ */
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');}
 function findVendor(id){return VENDORS.find(function(v){return v.id===id;});}
-function findOC(id){return OC_LOCATIONS.find(function(o){return o.ocId===id;});}
 function nowStr(){var d=new Date(),p=function(n){return (n<10?'0':'')+n;};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());}
 function tickClock(){var el=document.getElementById('clock');if(!el)return;el.textContent=nowStr();}
 setInterval(tickClock,1000);
@@ -2120,7 +2012,7 @@ function switchPage(pid){
   var el=document.getElementById('page-'+pid);if(el)el.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.toggle('active',n.getAttribute('data-nav')===pid);});
   curPage=pid; breadcrumb();
-  if(pid==='p01')renderVendor(); if(pid==='p02')renderOC();
+  if(pid==='p01')renderVendor();
   if(pid==='pdup')renderDup(); if(pid==='pdi')renderIssuesPage();
   if(pid==='p03')renderLog(); if(pid==='p04')renderSync();
   updateBadges();
@@ -2132,7 +2024,7 @@ function setRole(role){
   document.getElementById('user-initials').textContent=currentUser.initials;
   document.getElementById('user-name').textContent=currentUser.name+' · '+(role==='viewer'?'Viewer':'Location Manager');
   ['manager','viewer'].forEach(function(r){document.getElementById('role-'+r).classList.toggle('active',r===role);});
-  renderVendor();renderOC();renderDup();renderIssuesPage();renderLog();
+  renderVendor();renderIssuesPage();renderLog();
   if(document.getElementById('page-pd').classList.contains('active'))renderProfile();
 }
 function updateBadges(){
@@ -2141,10 +2033,9 @@ function updateBadges(){
      The badge and the Not live preset must agree, or the number lies. */
   /* v6.0.0 — the OC list and the duplicate page left the navigation, so their
      badges are optional now. Keep the writers, drop the assumption. */
-  var waiting=OC_LOCATIONS.filter(function(o){return !o.enable&&!o.blocked;}).length;
+  var waiting=VENDORS.filter(function(v){return !v.live&&!v.blocked;}).length;
   var n1=document.getElementById('nav-notlive'); if(n1)n1.textContent=waiting;
-  var n2=document.getElementById('nav-dup'); if(n2)n2.textContent=DUPLICATES.filter(function(d){return d.status==='pending';}).length
-    +MAPPING.filter(function(m){return m.status==='pending';}).length;
+  var n2=document.getElementById('nav-dup'); if(n2)n2.textContent=DUPLICATES.filter(function(d){return d.status==='pending';}).length;
   var n3=document.getElementById('nav-issues'); if(n3)n3.textContent=ISSUES.filter(function(i){return i.status!=='fixed';}).length+INTAKE.filter(function(i){return i.status!=='fixed';}).length;
   var n4=document.getElementById('o-notlive-count'); if(n4)n4.textContent=waiting;
 }
@@ -2313,17 +2204,13 @@ function facetSearch(id,q){
 
 /* ============ vendor list ============ */
 function vendorFilters(skipSource,skipGeo,skipCity){
-  var f={idT:termTokens(val('v-f-id')),ocT:termTokens(val('v-f-ocid')),nameG:termGroups(val('v-f-name')),
+  var f={idT:termTokens(val('v-f-id')),nameG:termGroups(val('v-f-name')),
     zipT:termTokens(val('v-f-zip')),
     prov:vals('v-f-prov'),city:vals('v-f-city'),
     source:skipSource?[]:vals('v-f-source'),status:vals('v-f-status'),live:vals('v-f-live'),change:vals('v-f-change'),dup:vals('v-f-dup'),
     sweeper:vals('v-f-sweeper'),issues:vals('v-f-issues')};
   return VENDORS.filter(function(v){
     if(f.idT.length&&!matchAnyTerm(v.id,f.idT))return false;
-    if(f.ocT.length){
-      var oc=OC_LOCATIONS.filter(function(o){return o.vendorIds.indexOf(v.id)>=0;})[0];
-      if(!oc||!matchAnyTerm(oc.ocId,f.ocT))return false;
-    }
     if(f.nameG.length&&!matchEveryGroup(v.name,f.nameG))return false;
     if(f.zipT.length&&!matchAnyTerm(zip5(v.postal),f.zipT))return false;
     if(!skipGeo&&f.prov.length&&f.prov.indexOf(v.state)<0)return false;
@@ -2334,8 +2221,7 @@ function vendorFilters(skipSource,skipGeo,skipCity){
     if(f.source.length&&f.source.indexOf(v.type)<0)return false;
     if(f.status.length&&f.status.indexOf(v.status)<0)return false;
     if(f.live.length){
-      var loc=ocOf(v.id);
-      var lst=!loc?'no':(loc.blocked?'blocked':((loc.enable&&loc.liveSource===v.id)?'yes':'no'));
+      var lst=v.blocked?'blocked':(v.live?'yes':'no');
       if(f.live.indexOf(lst)<0)return false;
     }
     if(f.change.length){
@@ -2357,7 +2243,7 @@ function vendorFilters(skipSource,skipGeo,skipCity){
   });
 }
 function applyVendorFilters0(){
-  updateTermHint('v-f-id',false);updateTermHint('v-f-ocid',false);updateTermHint('v-f-name',true);
+  updateTermHint('v-f-id',false);updateTermHint('v-f-name',true);
 }
 function applyVendorFilters(){applyVendorFilters0();renderVendor();}
 /* v3.12.0 — province, then city. Both are derived from the rows the *other*
@@ -2367,17 +2253,13 @@ function applyVendorFilters(){applyVendorFilters0();renderVendor();}
    stale pick can never produce an empty list for no visible reason */
 function cityInScope(kind,prov,city){
   if(!prov.length||!city.length)return city;
-  var src=kind==='v'?VENDORS:OC_LOCATIONS,out=[];
-  src.forEach(function(r){
-    var st=kind==='v'?r.state:mergedField(r,'state').value;
-    var ct=kind==='v'?r.city:mergedField(r,'city').value;
-    if(prov.indexOf(st)>=0&&city.indexOf(ct)>=0&&out.indexOf(ct)<0)out.push(ct);
+  var out=[];
+  VENDORS.forEach(function(r){
+    if(prov.indexOf(r.state)>=0&&city.indexOf(r.city)>=0&&out.indexOf(r.city)<0)out.push(r.city);
   });
   return out;
 }
-function geoRows(kind,skipProv,skipCity){
-  return kind==='v'?vendorFilters(false,skipProv,skipCity):ocFilters(false,skipProv,skipCity);
-}
+function geoRows(kind,skipProv,skipCity){return vendorFilters(false,skipProv,skipCity);}
 function geoValue(kind,row,field){
   return kind==='v'?row[field]:mergedField(row,field).value;
 }
@@ -2386,7 +2268,7 @@ function geoValue(kind,row,field){
    while the filter says "All". Works on a set, so a multi-province pick keeps
    the cities that still exist under any of them. */
 function onProvinceChange(kind){
-  if(kind==='v')renderVendor();else renderOC();
+  renderVendor();
 }
 function renderGeoFilters(kind){
   var pSel=document.getElementById(kind+'-f-prov'),cSel=document.getElementById(kind+'-f-city');
@@ -2420,7 +2302,7 @@ function applyGeoDrop(kind,was,keep){
   el.textContent=lost.length?(lost.join(', ')+' dropped — not in the selected province'):'';
 }
 function sourceCounts(kind){
-  var rows=kind==='v'?vendorFilters(true):ocFilters(true),c={};
+  var rows=vendorFilters(true),c={};
   rows.forEach(function(r){
     var ty=kind==='v'?(r.type||''):mergedField(r,'type').value;
     if(ty)c[ty]=(c[ty]||0)+1;
@@ -2431,7 +2313,7 @@ function sourceCounts(kind){
 function renderSourceFilter(kind){
   var sel=document.getElementById(kind+'-f-source'); if(!sel)return;
   var counts=sourceCounts(kind),cur=vals(kind+'-f-source');
-  var total=kind==='v'?vendorFilters(true).length:ocFilters(true).length;
+  var total=vendorFilters(true).length;
   sel.innerHTML='<option value="" data-n="'+total+'">'+tr('All')+' ('+total+')</option>'+SOURCES.map(function(x){
     var n=counts[x.type]||0,label=x.type+(x.short===x.type?'':' ('+x.short+')');
     return '<option value="'+esc(x.type)+'" data-label="'+esc(label)+'" data-n="'+n+'"'
@@ -2440,7 +2322,7 @@ function renderSourceFilter(kind){
   syncFacet(kind+'-f-source');
 }
 function resetVendorFilters(){
-  ['v-f-id','v-f-ocid','v-f-name','v-f-zip'].forEach(function(i){var el=document.getElementById(i);if(el)el.value='';});
+  ['v-f-id','v-f-name','v-f-zip'].forEach(function(i){var el=document.getElementById(i);if(el)el.value='';});
   applyVendorFilters0();
   ['v-f-prov','v-f-city','v-f-source','v-f-status','v-f-live','v-f-change','v-f-dup','v-f-sweeper','v-f-issues'].forEach(function(i){setFacet(i,[]);});
   var g=document.getElementById('v-geo-note');if(g)g.textContent='';
@@ -2469,10 +2351,9 @@ function enforcePendingOffList(){
   VENDORS.forEach(function(v){
     var st=syncOf(v).state;
     if(st!=='changed'&&st!=='new')return;
-    var oc=ocOf(v.id);
-    if(oc&&oc.enable&&oc.liveSource===v.id){
-      oc.enable=false;oc.liveSource=null;oc.listType='none';oc.listRemovedReason='PENDING_CHANGE';oc.updated=nowStr();
-      log('OC',currentUser.name,'PENDING_CHANGE_OFFLINE',oc.ocId,'live_source',v.id,'—','record changed — confirmation required');
+    if(v.live){
+      v.live=false;v.listType='none';v.listRemovedReason='PENDING_CHANGE';v.updated=nowStr();
+      log('VENDOR',currentUser.name,'PENDING_CHANGE_OFFLINE',v.id,'live',true,false,'record changed — confirmation required');
       log('VENDOR',currentUser.name,'WHITELIST_REMOVED',v.id,'list_type','white','none','removed_reason=PENDING_CHANGE');
     }
   });
@@ -2489,9 +2370,8 @@ function seedSyncLog(){
     });
   });
 }
-function ocOf(vid){return OC_LOCATIONS.filter(function(o){return o.vendorIds.indexOf(vid)>=0;})[0];}
-/* v7.0.0 — one vendor record, one OC id, duplicates included. Two records of the same
-   store hold two different ids; what links them is duplicate_of, never a shared id. */
+/* v8.0.0 — the vendor location id is the identity. There is no second key: two records
+   of the same store are linked by duplicate_of and nothing else. */
 function dupOf(vid){return DUPLICATES.filter(function(d){return d.status==='merged'&&d.locB===vid;})[0];}
 function pairOf(vid){
   var d=dupOf(vid);
@@ -2511,20 +2391,14 @@ function syncInline(v){
 }
 function liveSwitch(v){
   /* v6.0.2 — a store the provider calls inactive (or removed) cannot be released to
-     eBay, whatever its id says. The switch is drawn disabled, so the rule is visible
-     before anybody clicks, not only after a refusal. */
+     eBay. The switch is drawn disabled, so the rule is visible before anybody clicks. */
   if(v.status&&v.status!=='active'){
     return '<button class="live-toggle" disabled title="the provider reports this store '+esc(v.status)+' — it cannot go live; the source has to change first">'
       +'<span class="dot"></span>Not live</button>';
   }
-  var oc=ocOf(v.id);
-  if(oc&&oc.blocked)return '<span class="badge badge-red" title="blocked in the database — the console cannot change it">Blocked</span>';
-  var on=!!oc&&oc.enable&&oc.liveSource===v.id;
-  /* v6.0.1 — a record with no id still gets a switch: going live mints its OC
-     location id on the way, so nobody has to whitelist in two steps. */
-  var tip=on?'live for eBay — click to take the store down'
-    :!oc?'not live — putting it live mints its OC location id'
-    :'release this record to eBay (one record per store can be live)';
+  if(v.blocked)return '<span class="badge badge-red" title="blocked in the database — the console cannot change it">Blocked</span>';
+  var on=!!v.live;
+  var tip=on?'live for eBay — click to take the store down':'release this record to eBay; its current values are written in the same click';
   return '<button class="live-toggle'+(on?' on':'')+'" onclick="toggleLive(\''+v.id+'\')" title="'+tip+'">'
     +'<span class="dot"></span>'+(on?'Live':'Not live')+'</button>';
 }
@@ -2532,48 +2406,33 @@ function toggleLive(vid){
   if(!isMgr()){showToast('Permission required','Only the Location Manager can change the live record','error');return;}
   var v=findVendor(vid); if(!v)return;
   if(v.status&&v.status!=='active'){showToast('Cannot go live','The provider reports this store '+v.status+' — it cannot go live until the source changes','error');return;}
-  var oc=ocOf(vid);
-  if(!oc){
-    var ocId=ocIdFor(v.state,v.city,v.postal);
-    oc={ocId:ocId,name:v.name,addr1:v.addr1,addr2:v.addr2||'',city:v.city,state:v.state,postal:v.postal,
-        enable:false,liveSource:null,vendorIds:[v.id],created:nowStr(),updated:nowStr()};
-    OC_LOCATIONS.push(oc);
-    log('OC',currentUser.name,'OC_ID_MINTED',ocId,'vendor','—',vid,'auto, no_candidate');
-  }
-  if(oc.blocked){showToast('Blocked by system','This store is blocked in the database; the console cannot lift it','error');return;}
-  var prev=oc.liveSource;
-  if(oc.enable&&prev===vid){
-    oc.enable=false;oc.liveSource=null;oc.listType='none';oc.listRemovedReason='UNSIGNED';oc.updated=nowStr();
-    log('OC',currentUser.name,'UNSIGNED_OFF',oc.ocId,'live_source',vid,'—','from the list');
+  if(v.blocked){showToast('Blocked by system','This store is blocked in the database; the console cannot lift it','error');return;}
+  if(v.live){
+    v.live=false;v.listType='none';v.listRemovedReason='UNSIGNED';v.updated=nowStr();
+    log('VENDOR',currentUser.name,'UNSIGNED_OFF',vid,'live',true,false,'from the list');
     log('VENDOR',currentUser.name,'WHITELIST_REMOVED',vid,'list_type','white','none','removed_reason=UNSIGNED');
   }else{
-    /* going live is the confirmation: the value that reaches eBay is the current one */
-    var st0=syncOf(findVendor(vid)||{id:vid}).state;
+    /* going live is the publish: the value that reaches eBay is the current one */
+    var st0=syncOf(v).state;
     if(st0!=='synced'){
       SYNC_STATE[vid]={state:'synced',at:nowStr(),fields:[]};
       log('VENDOR',currentUser.name,'CHANGE_APPLIED',vid,'sync_state',st0,'synced','applied by going live');
     }
     releaseSibling(vid);
-    oc.enable=true;oc.liveSource=vid;oc.listType='white';oc.listRemovedReason=null;oc.updated=nowStr();
-    if(prev&&prev!==vid){
-      log('OC',currentUser.name,'LIVE_SOURCE_CHANGED',oc.ocId,'live_source',prev,vid,'from the list');
-      log('VENDOR',currentUser.name,'WHITELIST_ADDED',vid,'list_type','none','white',oc.ocId);
-      log('VENDOR',currentUser.name,'WHITELIST_REMOVED',prev,'list_type','white','none','removed_reason=SOURCE_SWITCHED');
-    }else{
-      log('OC',currentUser.name,'ENABLE_SIGNED_OFF',oc.ocId,'live_source','—',vid,'from the list');
-      log('VENDOR',currentUser.name,'WHITELIST_ADDED',vid,'list_type','none','white',oc.ocId);
-    }
+    v.live=true;v.listType='white';v.listRemovedReason=null;v.updated=nowStr();
+    log('VENDOR',currentUser.name,'ENABLE_SIGNED_OFF',vid,'live',false,true,'from the list');
+    log('VENDOR',currentUser.name,'WHITELIST_ADDED',vid,'list_type','none','white',vid);
   }
-  renderVendor();renderOC();updateBadges();
+  renderVendor();updateBadges();
 }
-/* v7.0.0 — two records of one store hold two ids, so "one source per store" can no
-   longer be enforced by the id. It is enforced here, on the pair. */
+/* v7.0.0 — two records of one store never both supply eBay. With one id per record
+   the rule has to live on the pair, not on a shared value. */
 function releaseSibling(vid){
   var sib=pairOf(vid); if(!sib)return;
-  var ocS=ocOf(sib);
-  if(ocS&&ocS.enable){
-    ocS.enable=false;ocS.liveSource=null;ocS.listType='none';ocS.listRemovedReason='DUPLICATE_SWITCHED';ocS.updated=nowStr();
-    log('OC',currentUser.name,'DUPLICATE_UNLISTED',ocS.ocId,'live_source',sib,'—','the other record of the same store went live');
+  var o=findVendor(sib);
+  if(o&&o.live){
+    o.live=false;o.listType='none';o.listRemovedReason='DUPLICATE_SWITCHED';o.updated=nowStr();
+    log('VENDOR',currentUser.name,'DUPLICATE_UNLISTED',sib,'live',true,false,'the other record of the same store went live');
     log('VENDOR',currentUser.name,'WHITELIST_REMOVED',sib,'list_type','white','none','removed_reason=DUPLICATE_SWITCHED');
   }
 }
@@ -2616,7 +2475,6 @@ function renderVendor(){
   }
   rows=orderRows(rows);
   document.getElementById('v-tbody').innerHTML=rows.map(function(v){
-    var oc=ocOf(v.id);
     var oi=issuesOfVendor(v.id).filter(function(i){return i.status!=='fixed';});
     return '<tr>'
       +'<td><input type="checkbox" class="v-chk" data-vid="'+esc(v.id)+'" onchange="updateVendorBatch()"></td>'
@@ -2631,11 +2489,9 @@ function renderVendor(){
       +'<td>'+statusBadge(v.status)+'</td>'
       +'<td>'+liveSwitch(v)+'</td>'
       +'<td>'+(function(){
-          if(!oc)return '<span style="color:var(--text-tertiary)">—</span>';
-          /* v7.0.0 — each record holds its own id; the marker is the only link */
           var dp=v.duplicateOf||(dupOf(v.id)||{}).locA;
-          return '<span class="mono link" onclick="openOCDetail(\''+oc.ocId+'\')">'+esc(oc.ocId)+'</span>'
-            +(dp?' <span class="badge badge-gray" style="font-size:9.5px" title="marked as a duplicate of '+esc(dp)+'">duplicate of '+esc(dp)+'</span>':'');
+          return dp?'<span class="badge badge-gray" style="font-size:9.5px" title="marked as a duplicate of '+esc(dp)+'">duplicate of '+esc(dp)+'</span>'
+            :'<span style="color:var(--text-tertiary)">—</span>';
         })()+'</td>'
       +'<td>'+(oi.length?'<span class="pending-badge" onclick="openIssuesFor(\''+v.id+'\')">'+oi.length+' flagged</span>':'<span style="color:var(--text-tertiary)">—</span>')+'</td>'
       +'<td class="mono" style="font-size:10.5px;white-space:nowrap">'+esc(v.updated||'—')+'</td>'
@@ -2681,33 +2537,23 @@ function batchWhitelist(action){
   var sel=selectedVendors(); if(!sel.length)return;
   var done=0,skip=0;
   sel.forEach(function(v){
-    var oc=ocOf(v.id);
-    /* v6.0.2 — an inactive store is skipped, not minted and not enabled */
     if(action==='add'&&v.status&&v.status!=='active'){skip++;return;}
     if(action==='add'){
-      if(!oc){
-        var ocId=ocIdFor(v.state,v.city,v.postal);
-        oc={ocId:ocId,name:v.name,addr1:v.addr1,addr2:v.addr2||'',city:v.city,state:v.state,postal:v.postal,
-            enable:false,vendorIds:[v.id],created:nowStr(),updated:nowStr()};
-        OC_LOCATIONS.push(oc);
-        log('OC',currentUser.name,'OC_ID_MINTED',ocId,'vendor','—',v.id,'auto, no_candidate');
-      }
-      if(oc.blocked||oc.enable){skip++;return;}
+      if(v.blocked||v.live){skip++;return;}
       var pst=syncOf(v).state;
       if(pst!=='synced'){
         SYNC_STATE[v.id]={state:'synced',at:nowStr(),fields:[]};
         log('VENDOR',currentUser.name,'CHANGE_APPLIED',v.id,'sync_state',pst,'synced','applied by batch going live');
       }
       releaseSibling(v.id);
-      oc.enable=true;oc.liveSource=v.id;oc.listType='white';oc.listRemovedReason=null;oc.updated=nowStr();
-      log('OC',currentUser.name,'ENABLE_SIGNED_OFF',oc.ocId,'live_source','—',v.id,'baseline captured');
-      log('VENDOR',currentUser.name,'WHITELIST_ADDED',v.id,'list_type','none','white',oc.ocId);
+      v.live=true;v.listType='white';v.listRemovedReason=null;v.updated=nowStr();
+      log('VENDOR',currentUser.name,'ENABLE_SIGNED_OFF',v.id,'live',false,true,'baseline captured');
+      log('VENDOR',currentUser.name,'WHITELIST_ADDED',v.id,'list_type','none','white',v.id);
       done++;
     }else{
-      if(!oc||!oc.enable||oc.blocked){skip++;return;}
-      var prev=oc.liveSource;
-      oc.enable=false;oc.liveSource=null;oc.listType='none';oc.listRemovedReason='UNSIGNED';oc.updated=nowStr();
-      log('OC',currentUser.name,'UNSIGNED_OFF',oc.ocId,'live_source',prev||'—','—','batch');
+      if(!v.live||v.blocked){skip++;return;}
+      v.live=false;v.listType='none';v.listRemovedReason='UNSIGNED';v.updated=nowStr();
+      log('VENDOR',currentUser.name,'UNSIGNED_OFF',v.id,'live',true,false,'batch');
       log('VENDOR',currentUser.name,'WHITELIST_REMOVED',v.id,'list_type','white','none','removed_reason=UNSIGNED');
       done++;
     }
@@ -2715,44 +2561,21 @@ function batchWhitelist(action){
   clearVendorSelection();renderVendor();updateBadges();
   showToast('Whitelist '+(action==='add'?'updated':'cleared'),done+' processed'+(skip?' · '+skip+' skipped':''));
 }
-
 /* ---------- mark as duplicate ---------- */
 var dupSel=null;
-function peekOcId(state,city,postal){
-  var st=String(state||'').toUpperCase().slice(0,2)||'XX';
-  var c3=city3Of(city),z5=zip5(postal)||'00000';
-  var k='OC_'+st+'_'+c3+'_'+z5;
-  return 'OC-'+st+'-'+c3+'-'+z5+'-'+String((OC_SEQ[k]||0)+1).padStart(6,'0');
-}
-function bumpOcId(id){
-  var m=String(id).match(/^(.*-)(\d{6})$/);
-  return m?m[1]+String(parseInt(m[2],10)+1).padStart(6,'0'):String(id)+'-2';
-}
 function openDupModal(){
   var sel=selectedVendors();
   if(sel.length!==2){showToast('Select two records','Mark as duplicate needs exactly two');return;}
   dupSel=sel;
   var a=sel[0],b=sel[1];
-  var ocA=ocOf(a.id),ocB=ocOf(b.id);
-  /* default keep: the one that already holds an id, else A */
-  var keepId=ocA?a.id:(ocB?b.id:a.id);
-  var keep=(keepId===a.id)?a:b, drop=(keepId===a.id)?b:a;
-  /* v7.0.0 — each record carries its own id, so the dialog shows two of them */
-  var idA=ocA?ocA.ocId:peekOcId(a.state,a.city,a.postal);
-  var idB=ocB?ocB.ocId:peekOcId(b.state,b.city,b.postal);
-  if(!ocA&&!ocB&&idA===idB)idB=bumpOcId(idA);
+  /* default keep: whichever one is live, else A */
+  var keep=(a.live&&!b.live)?a:((b.live&&!a.live)?b:a);
   var j=judge(stOf(a),stOf(b));
   var rows=[['Vendor Location ID',a.id,b.id],['Name',a.name,b.name],
     ['Address',[a.addr1,a.addr2].filter(Boolean).join(' '),[b.addr1,b.addr2].filter(Boolean).join(' ')],
     ['City / Province',a.city+', '+a.state,b.city+', '+b.state],
-    ['Zip',zip5(a.postal),zip5(b.postal)]];
-  function idRow(v,oc,id,key){
-    return '<div style="display:flex;align-items:center;gap:10px;margin-top:6px">'
-      +'<span class="mono" style="width:92px">'+esc(v.id)+'</span>'
-      +(oc?'<span class="mono" style="font-size:12px">'+esc(oc.ocId)+'</span><span class="badge badge-gray" style="font-size:9.5px">held</span>'
-          :'<input id="dup-ocid-'+key+'" class="mono" style="width:250px" value="'+esc(id)+'"><span class="rc-meta" style="margin:0">will be minted</span>')
-      +'</div>';
-  }
+    ['Zip',zip5(a.postal),zip5(b.postal)],
+    ['Live',a.live?'Live':'Not live',b.live?'Live':'Not live']];
   var html='<div style="display:grid;grid-template-columns:140px 1fr 1fr;gap:7px 14px;font-size:12.5px">'
     +'<b></b><b class="mono">'+esc(a.id)+'</b><b class="mono">'+esc(b.id)+'</b>'
     +rows.map(function(r){return '<span style="color:var(--text-tertiary)">'+r[0]+'</span><span>'+esc(r[1]||'—')+'</span><span>'+esc(r[2]||'—')+'</span>';}).join('')
@@ -2762,348 +2585,40 @@ function openDupModal(){
       +'<label style="margin-right:18px;font-size:12.5px"><input type="radio" name="dup-keep" value="'+esc(a.id)+'"'+(keep.id===a.id?' checked':'')+'> A · <span class="mono">'+esc(a.id)+'</span></label>'
       +'<label style="font-size:12.5px"><input type="radio" name="dup-keep" value="'+esc(b.id)+'"'+(keep.id===b.id?' checked':'')+'> B · <span class="mono">'+esc(b.id)+'</span></label>'
     +'</div>'
-    +'<div style="margin-top:14px"><label class="f-label">OC Location IDs</label>'
-      +idRow(a,ocA,idA,'a')+idRow(b,ocB,idB,'b')
-      +'<div class="rc-meta" style="margin-top:8px">Each record keeps its own id — marking a duplicate never merges the two.'
-      +' A record without one gets a new id, and it does not have to match the address.</div>'
-    +'</div>'
-    +'<div class="warn-line" style="margin-top:12px"><b>One record, one id.</b> The link is the <b>duplicate of</b> marker, not a shared id. Of the two, only one may be live at a time: putting one live takes the other off eBay.</div>';
+    +'<div class="warn-line" style="margin-top:14px"><b>The marker is the whole decision.</b> Both records keep their own ids and their own values; '
+      +'the duplicate is linked to the kept record. Only one of the two may be live — if the duplicate is live now, it comes off eBay when you confirm.</div>';
   document.getElementById('dup-body').innerHTML=html;
   var btn=document.querySelector('#modal-dup .btn-primary');
   if(btn){btn.disabled=false;btn.textContent='Mark duplicate';}
   openModal('modal-dup');applyLang();
-}
-function ensureOcFor(v,inId){
-  var oc=ocOf(v.id);
-  if(oc)return oc;
-  var ocId=inId||ocIdFor(v.state,v.city,v.postal);
-  /* a preview (or hand-typed id) must advance the counter, or the next mint collides */
-  var m=String(ocId).match(/^OC-([A-Z]{2})-([A-Z]{3})-(\d{5})-(\d{6})$/);
-  if(m){var k='OC_'+m[1]+'_'+m[2]+'_'+m[3];OC_SEQ[k]=Math.max(OC_SEQ[k]||0,parseInt(m[4],10));}
-  oc={ocId:ocId,name:v.name,addr1:v.addr1,addr2:v.addr2||'',city:v.city,state:v.state,postal:v.postal,
-      enable:false,liveSource:null,vendorIds:[v.id],created:nowStr(),updated:nowStr()};
-  OC_LOCATIONS.push(oc);
-  log('OC',currentUser.name,'OC_ID_MINTED',ocId,'vendor','—',v.id,'auto, no_candidate');
-  return oc;
 }
 function confirmDup(){
   if(!dupSel)return;
   var a=dupSel[0],b=dupSel[1];
   var picked=(document.querySelector('input[name="dup-keep"]:checked')||{}).value||a.id;
   var keep=(picked===a.id)?a:b, drop=(picked===a.id)?b:a;
-  var ka=(keep.id===a.id)?'a':'b', da=(drop.id===a.id)?'a':'b';
 
-  /* ---- one record, one id: both sides end up holding an id of their own ---- */
-  var ocKeep=ensureOcFor(keep,val('dup-ocid-'+ka));
-  var ocDrop=ensureOcFor(drop,val('dup-ocid-'+da));
+  drop.duplicateOf=keep.id;
+  if(keep.duplicateOf)keep.duplicateOf=null;
 
-  /* the marker is the link; neither id is rewritten or retired */
-  try{drop.duplicateOf=keep.id;keep.duplicateOf=null;}catch(e){}
-
-  /* only one of a pair may be live */
-  if(ocDrop.enable){
-    ocDrop.enable=false;ocDrop.liveSource=null;ocDrop.listType='none';ocDrop.listRemovedReason='DUPLICATE_SWITCHED';ocDrop.updated=nowStr();
-    log('OC',currentUser.name,'DUPLICATE_UNLISTED',ocDrop.ocId,'live_source',drop.id,'—','the store stays live on the kept record');
+  /* only one of the pair may supply the store */
+  if(drop.live){
+    drop.live=false;drop.listType='none';drop.listRemovedReason='DUPLICATE_SWITCHED';drop.updated=nowStr();
+    log('VENDOR',currentUser.name,'DUPLICATE_UNLISTED',drop.id,'live',true,false,'the store stays live on the kept record');
     log('VENDOR',currentUser.name,'WHITELIST_REMOVED',drop.id,'list_type','white','none','removed_reason=DUPLICATE_SWITCHED');
   }
 
   DUPLICATES.push({pairId:'DUP-'+String(DUPLICATES.length+1).padStart(3,'0'),
     locA:keep.id,locB:drop.id,status:'merged',
     score:judge(stOf(keep),stOf(drop)).score,diff:{},detectedAt:nowStr()});
-  log('VENDOR',currentUser.name,'DUPLICATE_MARKED',drop.id,'duplicate_of','—',keep.id,
-    ocKeep.ocId+' / '+ocDrop.ocId);
+  log('VENDOR',currentUser.name,'DUPLICATE_MARKED',drop.id,'duplicate_of','—',keep.id,'no id changes hands');
 
   closeModal('modal-dup');dupSel=null;
-  clearVendorSelection();renderVendor();renderOC();updateBadges();
-  showToast('Marked as duplicate',drop.id+' duplicates '+keep.id+' · two ids kept');
+  clearVendorSelection();renderVendor();updateBadges();
+  showToast('Marked as duplicate',drop.id+' duplicates '+keep.id+' — ids untouched');
 }
 
-/* ============ OC list ============ */
-function ocFilters(skipSource,skipGeo,skipCity){
-  var f={idT:termTokens(val('o-f-id')),vidT:termTokens(val('o-f-vendorid')),nameG:termGroups(val('o-f-name')),
-    prov:vals('o-f-prov'),city:vals('o-f-city'),
-    source:skipSource?[]:vals('o-f-source'),status:vals('o-f-status'),
-    live:vals('o-f-live'),issues:vals('o-f-issues')};
-  return OC_LOCATIONS.filter(function(o){
-    if(f.idT.length&&!matchAnyTerm(o.ocId,f.idT))return false;
-    if(f.vidT.length&&!matchAnyTerm(o.vendorIds.join(' '),f.vidT))return false;
-    if(f.nameG.length&&!matchEveryGroup(mergedField(o,'name').value,f.nameG))return false;
-    if(!skipGeo&&f.prov.length&&f.prov.indexOf(mergedField(o,'state').value)<0)return false;
-    if(!skipCity&&f.city.length){
-      var inScope=cityInScope('o',f.prov,f.city);
-      if(inScope.length&&inScope.indexOf(mergedField(o,'city').value)<0)return false;
-    }
-    if(f.status.length&&f.status.indexOf(statusOf(o))<0)return false;
-    if(f.source.length&&f.source.indexOf(mergedField(o,'type').value)<0)return false;
-    if(f.live.length){
-      var st=o.blocked?'blocked':(o.enable?'yes':'no');
-      if(f.live.indexOf(st)<0)return false;
-    }
-    if(f.issues.length){
-      var hit=f.issues.some(function(x){
-        if(x==='blocking')return openIssues(o).some(function(i){return i.severity==='blocking';});
-        if(x==='drift')return driftOf(o).length>0;
-        if(x==='dup')return !!o.dup;
-        if(x==='intake')return o.intake==='overridden';
-        return false;
-      });
-      if(!hit)return false;
-    }
-    return true;
-  });
-}
-function applyOCFilters0(){
-  updateTermHint('o-f-id',false);updateTermHint('o-f-vendorid',false);updateTermHint('o-f-name',true);
-}
-function applyOCFilters(){applyOCFilters0();renderOC();}
-function resetOCFilters(){
-  ['o-f-id','o-f-vendorid','o-f-name'].forEach(function(i){var el=document.getElementById(i);if(el)el.value='';});
-  applyOCFilters0();
-  ['o-f-prov','o-f-city','o-f-source','o-f-status','o-f-live','o-f-issues'].forEach(function(i){setFacet(i,[]);});
-  var g=document.getElementById('o-geo-note');if(g)g.textContent='';
-  renderOC();
-}
-function filterNotLive(){
-  /* a preset wins over leftover filters, otherwise the count in the toast and the
-     count on the menu badge would disagree with what is on screen */
-  setFacet('o-f-source',[]);setFacet('o-f-issues',[]);setFacet('o-f-live',['no']);
-  renderOC();
-  var n=OC_LOCATIONS.filter(function(o){return !o.enable&&!o.blocked;}).length;
-  showToast('Waiting for sign-off',n+' location(s) not live yet');
-}
-/* v3.11.0 — an OC row answers "can this go live, and if not why". The provider's
-   full issue count is the vendor list's job; copying it here meant two numbers to
-   keep in step, warnings included, for a decision warnings never change. */
-function issueBadges(o){
-  var b=[];
-  var bl=openIssues(o).filter(function(i){return i.severity==='blocking';}).length;
-  if(bl)b.push('<span class="badge badge-red" title="blocking data issue — sign-off stays locked until the source is fixed">'+bl+' blocking</span>');
-  var dr=driftOf(o).length; if(dr)b.push('<span class="badge badge-orange" title="values changed since sign-off — the customer already has the new ones">'+dr+' drift</span>');
-  if(o.dup)b.push('<span class="badge badge-blue" title="two vendor records feed this store">2:1</span>');
-  if(o.intake==='overridden')b.push('<span class="badge badge-gray">intake</span>');
-  return b.length?b.join(' '):'<span style="color:var(--text-tertiary)">—</span>';
-}
-function renderOC(){
-  /* v6.0.0 — the OC list is gone. Calls are kept because the store record still
-     exists; they just have no table to draw into. */
-  if(!document.getElementById('o-tbody'))return;
-  var rows=ocFilters();
-  var html='',lineCount=0;
-  rows.forEach(function(o){
-    var vs=orderedSources(o);
-    if(!vs.length){
-      html+='<tr><td></td><td class="mono link" onclick="openOCDetail(\''+o.ocId+'\')">'+esc(o.ocId)+'</td>'
-        +'<td colspan="10" style="color:var(--text-tertiary)">no vendor record linked — nothing can go live</td></tr>';
-      lineCount++;return;
-    }
-    /* v4.1.0 — one row per source record, the live one on top. The OC location
-       is still one row's worth of decision, so the checkbox, the issue badges
-       and the vendor list stay on the first line only. */
-    vs.forEach(function(v,i){html+=ocRowHTML(o,v,i===0);lineCount++;});
-  });
-  document.getElementById('o-tbody').innerHTML=html;
-  document.getElementById('o-result-meta').textContent=rows.length+' OC location(s)'
-    +(lineCount>rows.length?' · '+lineCount+' source rows':'');
-  renderGeoFilters('o');renderSourceFilter('o');
-  updateOCSelection();updateBadges();applyLang();
-}
-/* v4.1.0 — a source row prints THAT record's values, not the merged ones.
-   Two records on one OC disagree by definition, otherwise they would not be two
-   records: showing the merged value twice would hide the disagreement that the
-   operator is here to settle. */
-function ocRowHTML(o,v,first){
-  var live=!!(o.enable&&o.liveSource===v.id);
-  var blocked=!!o.blocked;
-  /* v4.3.0 — three list states, not two: white (live), black (blocked by the
-     system, read-only), none (not live). A blocked store cannot be signed off
-     from here — the switch is dead on purpose, because the blocklist is
-     written by the platform, not by an operator. */
-  var sw=(blocked)
-    ? '<span class="switch off blocked" title="blocked by the system — an operator cannot sign this off or lift it"></span>'
-    : (v.status!=='active')
-      ? '<span class="switch disabled" title="this source is not active — nothing to put live"></span>'
-      : (!isMgr()?'<span class="switch '+(live?'on':'')+' disabled" title="requires the Location Manager role"></span>'
-        : '<span class="switch '+(live?'on':'')+'" title="'+(live?'switch this store off':'make this the live source')+'" onclick="toggleSourceLive(\''+o.ocId+'\',\''+v.id+'\')"></span>');
-  var why=(!blocked&&!live&&o.listRemovedReason)
-    ? (o.listRemovedReason==='PROVIDER_DISABLED'?'closed by the provider'
-      :o.listRemovedReason==='RECORD_VOIDED'?'record voided by us'
-      :o.listRemovedReason==='UNSIGNED'?'un-signed by an operator'
-      :o.listRemovedReason==='SOURCE_SWITCHED'?'read from another record now':'')
-    : '';
-  var swp=valOf(v,'sweeper');
-  var badgeCls=v.provider==='LMS'?'badge-blue':v.provider==='M&MP'?'badge-green':'badge-teal';
-  return '<tr data-oc="'+esc(o.ocId)+'" data-src="'+esc(v.id)+'" class="'+(first?'':'oc-sub')+'">'
-    +'<td>'+(first?'<input type="checkbox" class="o-chk" data-ocid="'+esc(o.ocId)+'" onclick="updateOCSelection()">':'')+'</td>'
-    +'<td>'+(first?'<span class="mono link" onclick="openOCDetail(\''+o.ocId+'\')">'+esc(o.ocId)+'</span>'
-      :'<span class="oc-cont">↳</span>')+'</td>'
-    +'<td>'+esc(valOf(v,'name')||'—')+'</td>'
-    +'<td>'+esc(valOf(v,'addr1')||'—')+' <span class="badge '+badgeCls+'" style="font-size:9px">'+esc(srcShort(v.provider))+'</span></td>'
-    +'<td>'+esc(valOf(v,'city'))+(valOf(v,'state')?', '+esc(valOf(v,'state')):'')+'</td>'
-    +'<td>'+srcLabel(v.type,v.provider)+'</td>'
-    +'<td>'+(swp?esc(srcShort(swp)):'<span class="badge badge-orange">missing</span>')+'</td>'
-    +'<td>'+statusBadge(v.status)+'</td>'
-    +'<td>'+(first?issueBadges(o):'<span style="color:var(--text-tertiary)">—</span>')+'</td>'
-    +'<td><div class="live-cell">'+sw+'<span class="live-txt'+(blocked?' block':(live?' on':''))+'"'
-      +(why?' title="'+esc(tr(why))+'" style="text-decoration:underline dotted;cursor:help"':'')+'>'+esc(blocked?'blocked':(live?'live':'not live'))+'</span></div></td>'
-    +'<td>'+(first?'<span class="mono" style="font-size:11px">'+esc(o.vendorIds.join(', '))+'</span>':'')+'</td>'
-    +'<td class="mono" style="font-size:10.5px;white-space:nowrap">'+esc(v.updated||o.updated||'—')+'</td>'
-    +'</tr>';
-}
-function updateOCSelection(){
-  var n=document.querySelectorAll('.o-chk:checked').length;
-  document.getElementById('o-sel-count').textContent=n+' selected';
-  document.getElementById('o-batch-bar').style.display=n?'flex':'none';
-}
-function toggleAllOC(master){document.querySelectorAll('.o-chk').forEach(function(b){b.checked=master.checked;});updateOCSelection();}
-function clearOCSelection(){document.querySelectorAll('.o-chk').forEach(function(b){b.checked=false;});updateOCSelection();}
-
-/* ============ live source / enable / sign-off — v4.1.0 ============
-   One OC location, one live source. With 2:1 the switch is no longer "is this
-   store on" but "which of its records feeds it", and the two answers are
-   mutually exclusive by construction: there is one liveSource field.
-   Turning the live row off switches the store off; there is nothing to fall
-   back to, because a standby record has never been signed off. */
-function defaultSourceOf(o){var w=winnerOf(o);return w?w.vendor.id:((o.vendorIds||[])[0]||null);}
-function toggleSourceLive(ocId,vid){
-  if(!isMgr()){showToast('Permission required','Enable requires the Location Manager role.','error');return;}
-  var o=findOC(ocId),v=findVendor(vid);if(!o||!v)return;
-  if(o.blocked){showToast('Blocked by the system','This store sits on the blocklist — the console cannot sign it off or lift it.','error');return;}
-  if(v.status!=='active'){showToast('Cannot go live','This source record is not active.','error');return;}
-  if(o.enable&&o.liveSource===vid){
-    /* un-sign: the intent is logged on the OC, the removal on the vendor record */
-    o.enable=false;o.listRemovedReason='UNSIGNED';o.updated=nowStr();
-    var prev=o.liveSource;o.liveSource=null;o.listType='none';
-    log('OC',currentUser.name,'UNSIGNED_OFF',o.ocId,'live_source',prev,'—','operator took the store off');
-    log('VENDOR',currentUser.name,'WHITELIST_REMOVED',prev,'list_type','white','none','removed_reason=UNSIGNED · '+o.ocId);
-    renderOC();showToast('Un-signed',o.ocId+' · out of the whitelist, hidden from downstream immediately');
-    return;
-  }
-  soTarget={ocId:ocId,vid:vid};openSignoff(o,vid);
-}
-function toggleEnable(ocId){
-  if(!isMgr()){showToast('Permission required','Enable requires the Location Manager role.','error');return;}
-  var o=findOC(ocId);if(!o)return;
-  if(o.blocked){showToast('Blocked by the system','This store sits on the blocklist — the console cannot lift it.','error');return;}
-  if(o.enable){
-    var prev=o.liveSource;
-    o.enable=false;o.liveSource=null;o.listType='none';o.listRemovedReason='UNSIGNED';o.updated=nowStr();
-    log('OC',currentUser.name,'UNSIGNED_OFF',o.ocId,'live_source',prev||'—','—','operator took the store off');
-    if(prev)log('VENDOR',currentUser.name,'WHITELIST_REMOVED',prev,'list_type','white','none','removed_reason=UNSIGNED · '+o.ocId);
-    renderOC();showToast('Un-signed',o.ocId+' · out of the whitelist, hidden from downstream immediately');
-    return;
-  }
-  soTarget={ocId:ocId,vid:defaultSourceOf(o)};openSignoff(o,soTarget.vid);
-}
-var soTarget=null;
-function openSignoff(o,vid){
-  if(!vid)vid=defaultSourceOf(o);
-  var v=findVendor(vid);
-  if(!v){showToast('Nothing to sign off','No vendor record is linked to this store.','error');return;}
-  var switching=!!(o.enable&&o.liveSource&&o.liveSource!==vid);
-  var b=blockers(o,vid);
-  var rows=[['name','Name'],['addr1','Address'],['city','City / State'],['postal','Postal code'],['phone','Phone'],['latitude','Coordinates'],['sweeper','Sweeper'],['hoursText','Opening hours']];
-  var body='';
-  if(switching){
-    body+='<div class="warn-line" style="margin:0 0 12px"><b>Switching the live source.</b> '+esc(o.ocId)+' is live on <span class="mono">'+esc(o.liveSource)+'</span>; signing off <span class="mono">'+esc(vid)+'</span> replaces <b>every</b> field with that record’s values and recaptures the baseline. The store stays live and downstream is refreshed once.</div>';
-  }
-  body+='<div class="info-line" data-i18n="signoff.intro" style="margin:0 0 12px">Enabling is the <b>only</b> thing the OC layer decides. It freezes the values below as the signed-off baseline — later provider changes are measured against them.</div>';
-  body+='<div class="rc-meta" style="margin:0 0 8px">Values signed off come from <span class="mono">'+esc(vid)+'</span> · '+srcLabel(v.type,v.provider)+(o.vendorIds.length>1?' · one of '+o.vendorIds.length+' records on this store':'')+'</div>';
-  body+='<div class="dp-kv-grid">'+rows.map(function(r){
-    var val=valOf(v,mapF(r[0]));
-    var x=r[0]==='latitude'?(val+', '+valOf(v,'lng')):val;
-    return '<div class="p-kv"'+(r[0]==='hoursText'?' style="grid-column:1/-1"':'')+'><span class="k">'+r[1]+'</span><span class="v">'+esc(x||'—')+'</span></div>';
-  }).join('')+'</div>';
-  body+='<div style="margin-top:14px;font-weight:600;font-size:12.5px">Checks</div><div class="chk-list">';
-  var checks=[
-    ['This source record is active',v.status==='active'],
-    ['Opening hours are present on this record',hasHoursOf(v)],
-    ['Intake checks passed',b.indexOf('intake check was overridden')<0],
-    ['No duplicate pair waiting',b.indexOf('duplicate pair still undecided')<0],
-    ['No blocking data issue on this record',!b.some(function(x){return x.indexOf('blocking data issue')>=0;})]
-  ];
-  body+=checks.map(function(c){return '<div class="chk-item"><span class="'+(c[1]?'ok':'no')+'">'+(c[1]?'✓':'✕')+'</span><span>'+c[0]+'</span></div>';}).join('')+'</div>';
-  if(b.length)body+='<div class="warn-line" style="margin-top:10px">Blocked: '+esc(b.map(tr).join(' · '))+'</div>';
-  body+='<label class="ack-line" style="display:flex;gap:8px;margin-top:12px;font-size:12.5px"><input type="checkbox" id="so-ack" onchange="soAck()"><span>I verified this record’s address, coordinates and opening hours.</span></label>';
-  document.getElementById('so-body').innerHTML=body;
-  applyLang();
-  var btn=document.getElementById('so-confirm');
-  btn.disabled=true;btn.textContent=tr(b.length?'Blocked':(switching?'Switch live source & sign off':'Enable & sign off'));
-  openModal('modal-signoff');
-}
-function soAck(){
-  if(!soTarget)return;
-  var o=findOC(soTarget.ocId);if(!o)return;
-  var b=blockers(o,soTarget.vid);
-  document.getElementById('so-confirm').disabled=!!b.length||!document.getElementById('so-ack').checked;
-}
-function confirmSignoff(){
-  if(!soTarget)return;
-  var o=findOC(soTarget.ocId);if(!o)return;
-  var vid=soTarget.vid;
-  if(blockers(o,vid).length)return;
-  if(!document.getElementById('so-ack').checked)return;
-  var prev=o.liveSource,wasLive=!!o.enable&&!!prev;
-  var switching=wasLive&&prev!==vid;
-  o.liveSource=vid;o.enable=true;o.blocked=false;o.listType='white';o.listRemovedReason=null;o.updated=nowStr();
-  BASELINE[o.ocId]=snapshot(o);
-  /* v4.3.0 — the business act and the list write are logged separately, on the
-     ids they belong to: OC for the decision, the vendor record for the list. */
-  if(switching){
-    log('OC',currentUser.name,'LIVE_SOURCE_CHANGED',o.ocId,'live_source',prev,vid,'baseline captured');
-    log('VENDOR',currentUser.name,'WHITELIST_REMOVED',prev,'list_type','white','none','removed_reason=SOURCE_SWITCHED · '+o.ocId);
-    log('VENDOR',currentUser.name,'WHITELIST_ADDED',vid,'list_type','none','white',o.ocId);
-  }else{
-    log('OC',currentUser.name,'ENABLE_SIGNED_OFF',o.ocId,'live_source','—',vid,'baseline captured');
-    log('VENDOR',currentUser.name,'WHITELIST_ADDED',vid,'list_type','none','white',o.ocId);
-  }
-  closeModal('modal-signoff');renderOC();updateBadges();
-  showToast(switching?'Live source switched':'Signed off · whitelisted',o.ocId+' · every field now reads from '+vid);
-}
-function openEnableFromProfile(){
-  var o=findOC(profile.id);if(!o)return;
-  if(o.enable){toggleEnable(o.ocId);return;}
-  soTarget={ocId:o.ocId,vid:defaultSourceOf(o)};openSignoff(o,soTarget.vid);
-}
-
-/* ============ batch ============ */
-var pendingBatch=null;
-function openBatchModal(action){
-  pendingBatch=action;
-  var ids=Array.from(document.querySelectorAll('.o-chk:checked')).map(function(b){return b.getAttribute('data-ocid');});
-  var willSkip=[];
-  ids.forEach(function(id){
-    var o=findOC(id);if(!o)return;
-    if(action==='enable'&&!o.enable&&blockers(o,defaultSourceOf(o)).length)willSkip.push({id:id,why:blockers(o,defaultSourceOf(o))});
-  });
-  document.getElementById('batch-body').innerHTML='<div class="info-line">'+ids.length+' location(s) selected · <b>'+action+'</b></div>'
-    +(willSkip.length?'<div style="margin-top:10px;font-size:12.5px"><b>'+willSkip.length+' will be skipped</b><div class="chk-list">'+willSkip.map(function(s){
-      return '<div class="chk-item"><span class="no">✕</span><span class="mono">'+s.id+'</span> '+esc(s.why.map(tr).join(' · '))+'</div>';
-    }).join('')+'</div></div>':'<div class="rc-meta" style="margin-top:8px">No skips expected.</div>')
-    +'<div class="warn-line" style="margin-top:10px">Batch enable picks each store’s default source (M&amp;MP → LMS → PUDO Inc), records a baseline for it, and cannot bypass the checks. A store already live on another source is left as it is.</div>';
-  openModal('modal-batch');applyLang();
-}
-function confirmBatch(){
-  var ids=Array.from(document.querySelectorAll('.o-chk:checked')).map(function(b){return b.getAttribute('data-ocid');});
-  var done=0,skip=0;
-  ids.forEach(function(id){
-    var o=findOC(id);if(!o)return;
-    if(pendingBatch==='enable'){
-      if(o.enable)return;
-      var vid=defaultSourceOf(o);
-      if(blockers(o,vid).length){skip++;return;}
-      o.liveSource=vid;o.enable=true;o.blocked=false;o.listType='white';o.updated=nowStr();BASELINE[o.ocId]=snapshot(o);
-      log('OC',currentUser.name,'BATCH_ENABLE',o.ocId,'live_source','—',vid,'baseline captured');
-      log('VENDOR',currentUser.name,'WHITELIST_ADDED',vid,'list_type','none','white',o.ocId);done++;
-    }else{
-      if(!o.enable)return;
-      var bprev=o.liveSource;o.enable=false;o.liveSource=null;o.listType='none';o.listRemovedReason='UNSIGNED';o.updated=nowStr();
-      log('OC',currentUser.name,'BATCH_UNSIGNED_OFF',o.ocId,'live_source',bprev||'—','—','batch');
-      if(bprev)log('VENDOR',currentUser.name,'WHITELIST_REMOVED',bprev,'list_type','white','none','removed_reason=UNSIGNED · '+o.ocId);done++;
-    }
-  });
-  closeModal('modal-batch');renderOC();clearOCSelection();
-  showToast('Batch complete',done+' processed'+(skip?' · '+skip+' skipped (blocked)':''));
-}
+/* v8.0.0 — the OC list page, the sign-off flow and the OC batch modal are gone:/n   a record is the store, so there is no second object to list, sign off or batch. */
 
 /* ============ duplicate check — v5.1.0 ============
    Two layers, per Deplicate check v3.0:
@@ -3156,7 +2671,7 @@ function stOf(v) {
    SHA-256 over the cleaned record, first 16 hex chars. It is a RETRIEVAL key,
    not a verdict: the same fingerprint means "look here first", a different one
    means "the pair exists only because the Zip5 matched". It is recomputed
-   whenever cleaning changes; the OC location ID never is. */
+   whenever cleaning changes; the record id never is. */
 function sha256hex(str){
   var K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
 0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
@@ -3325,317 +2840,9 @@ function labelChip(l, conf) {
 }
 function fmtDist(d) { return d === null ? '<span class="badge badge-gray">coords missing</span>' : d + ' m'; }
 
-/* ============ mapping layer (M1–M6) ============
-   A mapping change is per source_key, never per pair: if PUDO 02 moves, LMS 01
-   must not move with it. Unchanged sources stay where they are (M4). */
-var MAPPING = [];
-var MAP_ROUND = 0;
-function proposalsFor(vid) {
-  return MAPPING.filter(function (m) { return m.vendorId === vid && m.status === 'pending'; });
-}
-function recheckMapping(changes) {
-  var byV = {}, out = { proposed: [], manual: [] };
-  (changes || []).forEach(function (c) {
-    if (TRIGGER_FIELDS.indexOf(c.field) < 0) return;
-    (byV[c.vendorId] = byV[c.vendorId] || []).push(c.field);
-  });
-  Object.keys(byV).forEach(function (id) {
-    var v = findVendor(id); if (!v) return;
-    var d = DUPLICATES.filter(function (x) { return (x.locA === id || x.locB === id) && x.status === 'merged'; })[0];
-    if (!d) return;
-    var other = findVendor(d.locA === id ? d.locB : d.locA);
-    if (!other) return;
-    var j = judge(stOf(v), stOf(other));
-    var both = !!byV[other.id];
-    if (!both && j.label === 'HIGH') return;          /* still the same station — nothing to do */
-    if (proposalsFor(id).length) return;
-    MAP_ROUND++;
-    var oc = OC_LOCATIONS.filter(function (o) { return o.vendorIds.indexOf(id) >= 0; })[0];
-    var m = {
-      id: 'MAP-' + String(MAPPING.length + 1).padStart(3, '0'), round: MAP_ROUND, at: nowStr(),
-      sourceKey: sourceKey(v), vendorId: id, changed: byV[id].join(', '),
-      oldOc: oc ? oc.ocId : '—', newOc: null,
-      basis: j.label + '_SUSPECT · text ' + j.score + ' · ' + (j.dist === null ? 'no coords' : j.dist + ' m'),
-      status: both ? 'manual' : 'pending', actor: ''
-    };
-    MAPPING.unshift(m);
-    out[both ? 'manual' : 'proposed'].push(m.id);
-  });
-  return out;
-}
-function confirmMapping(id) {
-  if (!isMgr()) { showToast('Permission required', 'A mapping change needs the Location Manager role.', 'error'); return; }
-  var m = MAPPING.filter(function (x) { return x.id === id; })[0];
-  if (!m || m.status !== 'pending') return;
-  var v = findVendor(m.vendorId); if (!v) return;
-  var old = OC_LOCATIONS.filter(function (o) { return o.vendorIds.indexOf(v.id) >= 0; })[0];
-  if (old) {
-    old.vendorIds = old.vendorIds.filter(function (x) { return x !== v.id; });
-    /* the records merged into the one that is leaving were only quiet because it
-       held the address — with it gone they are the store at this address again */
-    old.vendorIds.forEach(function (id) {
-      var m = findVendor(id);
-      if (m && m.mergedInto === v.id) { m.status = 'active'; delete m.mergedInto; m.updated = nowStr(); }
-    });
-    old.dup = old.vendorIds.length > 1; old.updated = nowStr();
-  }
-  var fresh = makeOC(v); fresh.intake = 'new'; OC_LOCATIONS.push(fresh);
-  m.newOc = fresh.ocId; m.status = 'effective'; m.actor = currentUser.name; m.at = nowStr();
-  DUPLICATES.forEach(function (d) {
-    if ((d.locA === v.id || d.locB === v.id) && d.status === 'merged') {
-      d.status = 'moved'; d.newOc = fresh.ocId; d.splitVendor = v.id;
-    }
-  });
-  log('OC', currentUser.name, 'OC_MAPPING_CHANGED', m.id, 'source_key',
-    m.oldOc, fresh.ocId, m.sourceKey + ' · ' + m.changed + ' · ' + m.basis);
-  showToast('Mapping updated', m.sourceKey + ' now maps to ' + fresh.ocId + ' (off by default)', 'success');
-  renderDup(); renderOC(); updateBadges();
-}
-
-/* ============ page ============ */
-function resetDupFilters() {
-  ['d-f-id', 'd-f-label', 'd-f-provider', 'd-f-status'].forEach(function (i) {
-    var el = document.getElementById(i); if (el) el.value = '';
-  });
-  renderDup();
-}
-function dupStatusTag(s) {
-  return s === 'merged' ? 'merged · merged_into'
-    : s === 'separate' ? 'separate · same address'
-      : s === 'moved' ? 'moved · mapping changed'
-        : s === 'fix' ? 'address to fix'
-          : 'needs review';
-}
-function pairCard(d) {
-  var a = findVendor(d.locA), b = findVendor(d.locB);
-  if (!a || !b) return '';
-  var sa = stOf(a), sb = stOf(b);
-  var j = judge(sa, sb);
-  d.score = j.score; d.dist = j.dist; d.label = j.label; d.conf = j.conf;
-  var ocA = OC_LOCATIONS.filter(function (o) { return o.vendorIds.indexOf(a.id) >= 0; })[0];
-  var ocB = OC_LOCATIONS.filter(function (o) { return o.vendorIds.indexOf(b.id) >= 0; })[0];
-  var at = atAddress(a);
-  var sug = keepSuggestion(a, b);
-  var done = d.status !== 'pending';
-  /* judged rows compare the *cleaned* value — that is what the score counts —
-     and the rows that carry no weight are shown neutral instead of red */
-  var fpA = fingerOf(a), fpB = fingerOf(b);
-  var rows = [
-    { k: 'Source key', f: 'Source key', a: sourceKey(a), b: sourceKey(b) },
-    { k: 'Fingerprint', f: 'addr_fingerprint', a: fpA, b: fpB, fp: true },
-    { k: 'Name', f: 'Station name', a: a.name, b: b.name, w: W_NAME, ka: sa.name, kb: sb.name },
-    { k: 'Address', f: 'Address', a: [a.addr1, a.addr2].filter(Boolean).join(' '), b: [b.addr1, b.addr2].filter(Boolean).join(' '), w: W_ADDR, ka: sa.addr, kb: sb.addr },
-    { k: 'City', f: 'City', a: a.city, b: b.city, w: W_CITY, ka: sa.city, kb: sb.city },
-    { k: 'Province', f: 'Province', a: a.state, b: b.state, w: W_STATE, ka: sa.state, kb: sb.state },
-    { k: 'Postal', f: 'Postal (Zip5)', a: a.postal, b: b.postal, w: W_ZIP, ka: sa.zip5, kb: sb.zip5 },
-    { k: 'Created', f: 'Created', a: a.created || '—', b: b.created || '—' },
-    { k: 'Status', f: 'Status', a: a.status, b: b.status }
-  ];
-  var body = rows.map(function (r) {
-    if (r.fp) {
-      var eq = !!fpA && fpA === fpB;
-      return '<tr class="' + (eq ? 'st-same' : 'st-flat') + '" data-field="Fingerprint">'
-        + '<td class="f">addr_fingerprint<span class="w-chip">key</span></td>'
-        + '<td class="a mono" style="font-size:11px">' + esc(r.a) + '</td>'
-        + '<td class="m" title="' + (eq ? 'same bucket — the key found this pair' : 'different bucket — only the Zip5 channel brought them together') + '">' + (eq ? '=' : '≠') + '</td>'
-        + '<td class="b mono" style="font-size:11px">' + esc(r.b) + '</td></tr>';
-    }
-    var judged = r.w !== undefined;
-    var same = judged ? (!!r.ka && r.ka === r.kb) : false;
-    /* the middle cell prints the number the score actually used: the share of
-       adjacent pairs the two values have in common. Postal is a gate, so it
-       reads 100 or 0 and never anything in between. */
-    var pct = null;
-    if (judged) pct = (r.k === 'Postal') ? (same ? 100 : 0) : Math.round(sim(String(r.a || ''), String(r.b || '')) * 100);
-    var pair = judged && !same ? dupMark(r.a, r.b) : [esc(r.a || '—'), esc(r.b || '—')];
-    var w = judged ? '<span class="w-chip">' + r.w + '</span>' : '';
-    var cls = !judged ? 'st-flat' : (pct >= 100 ? 'st-same' : (pct === 0 ? 'st-diff' : 'st-part'));
-    var mark = judged
-      ? (pct >= 100 ? '✓' : (pct === 0 ? '✕' : pct + '%'))
-      : '<span class="flat-dot">·</span>';
-    var tip = judged ? ' title="' + pct + '% similar after sorting adjacent pairs → ' + Math.round(r.w * pct / 100) + ' of ' + r.w + ' points"' : '';
-    return '<tr class="' + cls + '" data-field="' + r.k + '"><td class="f">' + r.f + w + '</td>'
-      + '<td class="a">' + pair[0] + '</td>'
-      + '<td class="m"' + tip + '>' + mark + '</td>'
-      + '<td class="b">' + pair[1] + '</td></tr>';
-  }).join('');
-  var keepOpts = [[a, 'A'], [b, 'B']].map(function (x) {
-    var pick = x[0].id === sug.id ? ' data-suggested="1"' : '';
-    return '<option value="' + x[0].id + '"' + pick + '>' + x[1] + ' · ' + x[0].id + (x[0].id === sug.id ? ' ' + tr('(suggested)') : '') + '</option>';
-  }).join('');
-  /* Only speak up at 3+: one address holding one record is not news, and L1 does
-     not strip unit suffixes, so a smaller number would be wrong more often than useful. */
-  var who = at >= 3
-    ? '<span class="rc-meta" style="margin:0"><b><span class="mono">' + at + '</span> <span data-i18n="dup.cluster">records at this address — cluster</span></b></span>'
-    : '';
-  return '<div class="rc-item" data-label="' + j.label + '" data-status="' + d.status + '">'
-    + '<div class="rc-item-head"><b class="mono">' + esc(d.pairId) + '</b>'
-    + labelChip(j.label, j.conf)
-    + '<span class="badge badge-gray">text ' + j.score + '/100</span>'
-    + '<span class="badge badge-gray">' + fmtDist(j.dist) + '</span>'
-    + '<span class="risk ' + (done ? 'risk-auto' : 'risk-review') + '">' + dupStatusTag(d.status) + '</span>'
-    + who
-    + '<span class="rc-meta" style="margin:0"><span data-i18n="dup.detected">detected</span> ' + esc(d.detectedAt || '') + '</span></div>'
-    + (sa.zip5 !== sb.zip5 ? '<div class="warn-line" style="margin:0 0 8px">Postal differs — those 25 points are gone, so an otherwise identical address reads <b>75</b> instead of 100. The pair is here because the cleaned addresses are identical across zips; a person decides.</div>' : '')
-    + '<div class="rc-meta" style="margin:0 0 6px" data-i18n="dup.hint">address 40 · name 10 · postal 25 · province 15 · city 10. Each field scores <b>in proportion</b>: the two values are cut into adjacent character pairs, the pairs are sorted (so word order stops mattering), and the shared share is what counts — 60% similar is 60% of the weight of that field. Postal earns its 25 points only when the Zip5 matches — a different Zip5 simply loses them, which is why an otherwise identical address across two zips lands at 75 and not 100. A total is not enough on its own: Zip5 + province + city already hand two strangers on the same block 50 points, so <b>MEDIUM requires the address at 50% or more</b>; below that the pair is LOW even at 62. The distance on the right is for the person reading this pair; it does not move the score or the label.</div>'
-    + '<table class="dup-cmp"><thead><tr><th class="f"></th>'
-    + '<th class="a"><span class="ab">A</span><b class="mono">' + esc(a.id) + '</b>' + provBadge(a.provider)
-    + (ocA ? '<span class="mono" style="color:var(--text-tertiary)">' + esc(ocA.ocId) + '</span>' : '<span class="badge badge-orange">no OC</span>') + '</th>'
-    + '<th class="m" data-i18n="dup.vs">vs</th>'
-    + '<th class="b"><span class="ab">B</span><b class="mono">' + esc(b.id) + '</b>' + provBadge(b.provider)
-    + (ocB ? '<span class="mono" style="color:var(--text-tertiary)">' + esc(ocB.ocId) + '</span>' : '<span class="badge badge-orange">no OC</span>') + '</th>'
-    + '</tr></thead><tbody>' + body + '</tbody></table>'
-    + (done ? '' : '<div class="rc-meta" style="margin:8px 0 0"><span data-i18n="dup.keep">Suggested keep:</span> <b>' + esc(sug.id) + '</b> · <span data-i18n="dup.keeprule">rule: older record (created_at) — is_primary cannot be used, it is 1 on every record</span></div>')
-    + (done ? '<div class="rc-actions"><span class="rc-meta" style="margin:0">'
-      + (d.status === 'merged' ? 'Merged — kept ' + esc(d.keep || '') + ', the other is inactive and marked merged_into'
-        : d.status === 'separate' ? 'Kept apart — both active, labelled same address'
-        : d.status === 'moved' ? 'Mapping changed — ' + esc(d.splitVendor || '') + ' moved to ' + esc(d.newOc || '') + ' after its identity moved; the other record still maps to its own OC'
-          : 'Address flagged for correction — re-runs on the next sync') + '</span></div>'
-      : '<div class="rc-actions">'
-      + '<span class="rc-meta" style="margin:0">keep</span>'
-      + '<select class="mini-select" id="keep-' + d.pairId + '">' + keepOpts + '</select>'
-      + '<button class="btn btn-primary btn-sm" onclick="resolveDup(\'' + d.pairId + '\',\'confirmed\',document.getElementById(\'keep-' + d.pairId + '\').value)">Same station — disable the other</button>'
-      + '<button class="btn btn-secondary btn-sm" onclick="resolveDup(\'' + d.pairId + '\',\'rejected\')">Not the same — keep both</button>'
-      + '<button class="btn btn-secondary btn-sm" onclick="resolveDup(\'' + d.pairId + '\',\'fix\')">Address is wrong</button>'
-      + '</div>')
-    + '</div>';
-}
-function renderDup() {
-  if(!document.getElementById('d-f-id'))return;
-  var fid = val('d-f-id').toLowerCase(), lb = val('d-f-label'), prov = val('d-f-provider'), st = val('d-f-status');
-  var rows = DUPLICATES.filter(function (d) {
-    var a = findVendor(d.locA), b = findVendor(d.locB);
-    if (!a || !b) return false;
-    if (fid && d.pairId.toLowerCase().indexOf(fid) < 0) return false;
-    if (st && d.status !== st) return false;
-    if (prov && !(a.provider === prov || b.provider === prov)) return false;
-    if (lb && judge(stOf(a), stOf(b)).label !== lb) return false;
-    return true;
-  }).sort(function (x, y) {
-    var rx = findVendor(x.locA), ry = findVendor(y.locA);
-    var lx = judge(stOf(rx), stOf(findVendor(x.locB))).label;
-    var ly = judge(stOf(ry), stOf(findVendor(y.locB))).label;
-    var rank = { HIGH: 0, MEDIUM: 1, LOW: 2 };
-    return rank[lx] - rank[ly];
-  });
-  document.getElementById('d-result-meta').textContent = rows.length + ' pair(s)';
-  document.getElementById('d-body').innerHTML = rows.length ? rows.map(pairCard).join('')
-    : '<div class="card" style="margin:0"><div style="font-size:13px">No pair matches these filters.</div></div>';
-  renderMapping();
-  applyLang();
-}
-function renderMapping() {
-  var el = document.getElementById('m-body'); if (!el) return;
-  var head = '<tr><th>Round</th><th>source_key</th><th>Changed</th><th>Old OC</th><th>New OC</th><th>Basis</th><th>Status</th><th></th></tr>';
-  var body = MAPPING.length ? MAPPING.map(function (m) {
-    var st = m.status === 'effective' ? '<span class="badge badge-green">effective</span>'
-      : m.status === 'manual' ? '<span class="badge badge-orange">both sides changed</span>'
-        : '<span class="badge badge-red">needs confirmation</span>';
-    var act = m.status === 'pending'
-      ? '<button class="btn btn-primary btn-sm" onclick="confirmMapping(\'' + m.id + '\')">Confirm — new OC</button>'
-      : m.status === 'manual'
-        ? '<button class="btn btn-secondary btn-sm" onclick="showToast(\'Manual review\',\'Both sources changed in one run — decide by hand.\',\'info\')">Review</button>'
-        : '<span class="rc-meta" style="margin:0">' + esc(m.actor || '') + '</span>';
-    return '<tr><td class="mono">' + m.round + '</td><td class="mono">' + esc(m.sourceKey) + '</td>'
-      + '<td class="mono" style="font-size:11.5px">' + esc(m.changed) + '</td>'
-      + '<td class="mono">' + esc(m.oldOc) + '</td><td class="mono">' + esc(m.newOc || '—') + '</td>'
-      + '<td style="font-size:11.5px">' + esc(m.basis) + '</td><td>' + st + '</td><td>' + act + '</td></tr>';
-  }).join('') : '<tr><td colspan="8"><span class="rc-meta" data-i18n="map.empty">No mapping change yet. A source only gets a proposal when a judged field on it changes while it shares an OC with another source — one source at a time, never the pair.</span></td></tr>';
-  el.innerHTML = '<div class="card" style="margin:0"><table class="data mapping"><thead>' + head + '</thead><tbody>' + body + '</tbody></table>'
-    + '<div class="rc-meta" style="margin:10px 0 0" data-i18n="map.rules">M2 · only the changed source is re-judged &nbsp;·&nbsp; M3 · a new OC location, old mapping kept in history &nbsp;·&nbsp; M4 · the unchanged side never moves &nbsp;·&nbsp; M5 · nothing is written until a person confirms &nbsp;·&nbsp; M6 · both sides changed in one run → manual</div></div>';
-}
-function resolveDup(pairId, res, keepId) {
-  if (!isMgr()) { showToast('Permission required', 'Duplicate decisions need the Location Manager role.', 'error'); return; }
-  var d = DUPLICATES.filter(function (x) { return x.pairId === pairId; })[0];
-  if (!d || d.status !== 'pending') return;
-  var a = findVendor(d.locA), b = findVendor(d.locB);
-  if (res === 'fix') {
-    d.status = 'fix'; d.at = nowStr();
-    log('OC', currentUser.name, 'DUPLICATE_ADDRESS_FLAGGED', pairId, 'station_address1', d.locA + ' / ' + d.locB, 'pending', 'address to fix', '');
-    showToast('Address flagged', 'Correct the address on the source record — the pair re-runs on the next sync', 'info');
-    renderDup(); updateBadges(); return;
-  }
-  var keep = keepId === d.locB ? b : (keepId === d.locA ? a : findVendor(keepSuggestion(a, b).id));
-  var lose = keep.id === a.id ? b : a;
-  if (res === 'confirmed') {
-    var oc = OC_LOCATIONS.filter(function (o) { return o.vendorIds.indexOf(keep.id) >= 0; })[0];
-    if (!oc) { showToast('Cannot merge', 'No OC location exists for ' + keep.id, 'error'); return; }
-    var other = OC_LOCATIONS.filter(function (o) { return o.vendorIds.indexOf(lose.id) >= 0; })[0];
-    if (other && other !== oc) {
-      other.vendorIds = other.vendorIds.filter(function (x) { return x !== lose.id; });
-      other.dup = other.vendorIds.length > 1; other.updated = nowStr();
-    }
-    if (oc.vendorIds.indexOf(lose.id) < 0) oc.vendorIds.push(lose.id);
-    oc.dup = oc.vendorIds.length > 1; oc.updated = nowStr();
-    lose.status = 'inactive'; lose.mergedInto = keep.id; lose.updated = nowStr();
-    d.status = 'merged'; d.keep = keep.id; d.mergedInto = lose.id;
-    d.atDecision = { a: stOf(a), b: stOf(b), at: nowStr() };
-    /* v4.3.1 — if the record we just withdrew was feeding a store, that store
-       falls back to Not live: the keeper was never signed off, and the console
-       never promotes an unverified record (see §5.22). */
-    var dropped = enforceListOnProviderFlags(true);
-    log('OC', currentUser.name, 'DUPLICATE_MERGED', pairId, 'vendor_oc_mapping', 'pending',
-      'merged_into ' + keep.id, lose.id + ' → ' + keep.id + ' · both map to ' + oc.ocId);
-    showToast('Merged', lose.id + ' is disabled and marked merged_into ' + keep.id + ' · both keep ' + oc.ocId
-      + (dropped ? ' · ' + dropped + ' store(s) dropped to Not live, re-sign on the keeper' : ''));
-  } else {
-    d.status = 'separate'; d.at = nowStr();
-    var lost = OC_LOCATIONS.filter(function (o) { return o.vendorIds.indexOf(b.id) >= 0; })[0];
-    if (!lost) { lost = makeOC(b); lost.intake = 'new'; OC_LOCATIONS.push(lost); }
-    b.sameAddressAs = a.id; a.sameAddressAs = b.id;
-    log('OC', currentUser.name, 'DUPLICATE_SEPARATE', pairId, 'vendor_oc_mapping', 'pending', 'kept apart',
-      a.id + ' → ' + (OC_LOCATIONS.filter(function (o) { return o.vendorIds.indexOf(a.id) >= 0; })[0] || {}).ocId + ' · ' + b.id + ' → ' + lost.ocId);
-    showToast('Kept apart', 'Both stay active, labelled as two tenants at one address', 'info');
-  }
-  renderDup(); renderOC(); updateBadges();
-}
-/* v5.0.0 — the OC location ID is a permanent cluster identity, not a counter:
-   OC-{ST2}-{City3}-{Zip5}-{seq6}, e.g. OC-NY-NYC-10036-000001.
-   The state / city / zip inside the string are a SNAPSHOT of the primary
-   address at issuance. They are never queried — filtering and reporting read
-   primary_state / primary_city / primary_zip5 (red line 1 in the rule doc),
-   because an address correction must not rewrite an ID. */
-var CITY3={'NEW YORK':'NYC','BROOKLYN':'BKN','LARCHMONT':'LAR','BOCA RATON':'BCT','WESTMINSTER':'WST',
-  'FORT WORTH':'FTW','PARIS':'PRX','NORTH MIAMI':'NMI','ARLINGTON':'ARL','OCEANSIDE':'OCN',
-  'BLOOMINGTON':'BLM','AUSTIN':'AUS','NASHVILLE':'BNA'};
-function city3Of(city){
-  var k=String(city||'').toUpperCase().replace(/\s+/g,' ').trim();
-  if(CITY3[k])return CITY3[k];
-  /* the dictionary is the only way in: taking the first three letters collides
-     (SAN = San Antonio / Santa Ana / San Jose). A missing code is XXX until the
-     dictionary is filled — the ID is never rewritten afterwards. */
-  var guess=k.replace(/[^A-Z]/g,'').slice(0,3)||'XXX';
-  CITY3[k]=guess;
-  return guess;
-}
-var OC_SEQ={};
-function nextOcSeq(st,c3,z5){
-  var k='OC_'+st+'_'+c3+'_'+z5;
-  OC_SEQ[k]=(OC_SEQ[k]||0)+1;
-  return OC_SEQ[k];
-}
-function ocIdFor(state,city,postal){
-  var st=String(state||'').toUpperCase().slice(0,2)||'XX';
-  var c3=city3Of(city);
-  var z5=zip5(postal)||'00000';
-  return 'OC-'+st+'-'+c3+'-'+z5+'-'+String(nextOcSeq(st,c3,z5)).padStart(6,'0');
-}
-/* a restart must never re-issue a number that is already in use: seed the
-   per-key counters from the ids the data already holds */
-function primeOcSeq(){
-  OC_LOCATIONS.forEach(function(o){
-    var m=/^OC-([A-Z]{2})-([A-Z0-9]{3})-(\d{5})-(\d{6})$/.exec(o.ocId||'');
-    if(!m)return;
-    var k='OC_'+m[1]+'_'+m[2]+'_'+m[3];
-    OC_SEQ[k]=Math.max(OC_SEQ[k]||0,parseInt(m[4],10));
-  });
-}
-function makeOC(v){
-  var id=ocIdFor(v.state,v.city,v.postal);
-  return {ocId:id,name:v.name,addr1:v.addr1,addr2:v.addr2||'',city:v.city,state:v.state,country:v.country,postal:v.postal,
-    provider:v.provider,type:v.type,sweeper:v.sweeper,phone:v.phone,lat:v.lat,lng:v.lng,timezone:v.timezone,
-    hoursText:v.hoursText||'',hoursOfOp:v.hoursOfOp||[],enable:false,liveSource:null,vendorIds:[v.id],created:nowStr(),updated:nowStr(),intake:'overridden'};
-}
+/* v8.0.0 — the mapping layer and the duplicate page belonged to the two-layer model
+   (a source maps to an OC). With one record per store there is nothing to map and no
+   separate queue to render; the decision lives on the row. */
 
 /* ============ issues page ============ */
 function typeBadge(i){
@@ -3691,8 +2898,6 @@ function renderIssuesPage(){
   var typeFilter=val('di-f-type')||'';
   var open=ISSUES.filter(function(i){return i.status!=='fixed';});
   var shown=open.filter(function(i){return (!typeFilter||i.type===typeFilter)&&(!watchFilter||watchOf(i)===watchFilter);});
-  var drift=[];
-  OC_LOCATIONS.forEach(function(o){driftOf(o).forEach(function(d){drift.push({oc:o,field:d.field,old:d.old,new:d.new});});});
 
   var counts={};
   open.forEach(function(i){counts[i.type]=(counts[i.type]||0)+1;});
@@ -3723,15 +2928,6 @@ function renderIssuesPage(){
     +group('missing','Missing critical fields','nothing arrived where a customer-facing field must exist — blocking by default',missing)
     +group('wrong','Inaccurate data','a value is there and it is wrong — needs a human judgement',wrong)
     +'</div>';
-
-  html+='<div class="card" style="margin-bottom:14px"><div style="display:flex;align-items:center;gap:10px"><b style="font-size:13px">Changed after sign-off</b><span class="badge badge-red">'+drift.length+'</span><span class="rc-meta" style="margin:0">for information only — these values are already downstream</span></div>'
-    +(drift.length?drift.map(function(d){
-      return '<div class="rc-item"><div class="rc-item-head"><b class="mono">'+esc(d.oc.ocId)+'</b><span class="badge badge-gray">'+esc(fieldLabel({field:d.field,subField:''}))+'</span><span class="risk risk-review">differs from baseline</span></div>'
-        +'<div class="rc-meta"><span class="val-old">'+esc(d.old)+'</span> → <span class="val-new">'+esc(d.new)+'</span></div>'
-        +'<div class="rc-meta" data-i18n="drift.note">Customers already have the <b>new</b> value — nothing to approve. The baseline only records what was signed off, so you can see what the provider changed.</div>'
-        +'<div class="rc-actions"><button class="btn btn-secondary btn-sm" onclick="openOCDetail(\''+d.oc.ocId+'\')">Open the location</button>'
-        +'<button class="btn btn-secondary btn-sm" onclick="flagFor(\''+d.oc.ocId+'\',\''+d.field+'\')">Flag as an issue</button></div></div>';
-    }).join(''):'<div class="rc-meta" style="margin-top:8px">No drift.</div>')+'</div>';
 
   html+='<div class="card"><div style="display:flex;align-items:center;gap:10px"><b style="font-size:13px">Failed intake</b><span class="badge badge-gray">'+INTAKE.filter(function(i){return i.status!=='fixed';}).length+'</span><span class="rc-meta" style="margin:0">no OC record exists — nothing can go live</span></div>'
     +INTAKE.map(function(i){
@@ -3795,11 +2991,6 @@ function flagTypeChanged(){
   document.getElementById('flag-hint').innerHTML='<b>'+tr(meta.label)+'</b> — <span>'+meta.hint+'</span>';
   document.getElementById('flag-sev').value=meta.sev;
 }
-function flagFor(ocId,field){
-  var o=findOC(ocId);
-  var m=mergedField(o,mapF(field));
-  openFlag((m.vendor||findVendor(o.vendorIds[0])).id,field);
-}
 function openIssuesFor(vid){openVendorDetail(vid);switchDetailTab('issues');}
 function submitFlag(){
   var field=val('flag-field'),sub=val('flag-sub'),type=val('flag-type'),sev=val('flag-sev'),reason=val('flag-reason');
@@ -3809,7 +3000,7 @@ function submitFlag(){
   ISSUES.push({id:id,vendorId:v.id,field:field,subField:sub,type:type,severity:sev,reason:reason,
     status:'open',raisedBy:currentUser.name,raisedAt:nowStr()});
   log('VENDOR',currentUser.name,'DATA_ISSUE_RAISED',v.id,field+(sub?' · '+sub:''),'—',type+' ('+sev+')',reason);
-  closeModal('modal-flag');renderVendor();renderOC();renderIssuesPage();updateBadges();
+  closeModal('modal-flag');renderVendor();renderIssuesPage();updateBadges();
   if(document.getElementById('page-pd').classList.contains('active'))renderProfile();
   showToast('Flagged to owner',v.id+' · '+field+(sub?' / '+sub:'')+' · '+tr(ISSUE_TYPES[type].label)+' ('+tr(sev)+') · value unchanged');
 }
@@ -3818,32 +3009,24 @@ function submitFlag(){
 var profile=null,detailTab='overview';
 var TABS=[['overview','Basic Info'],['operations','Operations'],['hours','Hours & Services'],['issues','Issues'],['history','Change History']];
 function openVendorDetail(id){profile={layer:'VENDOR',id:id};detailTab='overview';switchPage('pd');renderProfile();}
-function openOCDetail(id){profile={layer:'OC',id:id};detailTab='overview';switchPage('pd');renderProfile();}
 function switchDetailTab(t){detailTab=t;renderProfile();}
 function psec(title,inner,action){return '<div class="p-sec"><div class="p-sec-title">'+title+(action?'<span class="dp-sec-act">'+action+'</span>':'')+'</div>'+inner+'</div>';}
 function kv(k,v){return '<div class="p-kv"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>';}
 function renderProfile(){
   if(!profile)return;
-  var isV=profile.layer==='VENDOR';
-  var rec=isV?findVendor(profile.id):findOC(profile.id);
+  var rec=findVendor(profile.id);
   if(!rec){document.getElementById('pd-panels').innerHTML='<div class="card">Not found</div>';return;}
-  var name=isV?rec.name:mergedField(rec,'name').value;
-  var sub=isV?rec.id+' · '+rec.provider:rec.ocId+' · '+(rec.vendorIds.length>1?'2:1 · '+rec.vendorIds.join(' + '):rec.vendorIds[0]);
   var head='<div class="dp-head"><div class="dp-back" onclick="switchPage(\'p01\')">← Back to list</div>'
-    +'<div class="detail-head">'+esc(name)+(isV?'':' '+statusBadge(statusOf(rec)))+'</div>'
-    +'<div class="detail-sub mono">'+esc(sub)+'</div>'
+    +'<div class="detail-head">'+esc(rec.name)+'</div>'
+    +'<div class="detail-sub mono">'+esc(rec.id+' · '+rec.provider)+'</div>'
     +'<div class="dp-actions">'
-    +((isV&&isMgr())?'<button class="btn btn-secondary btn-sm" onclick="openFlag(\''+rec.id+'\')">Flag a data issue</button>':'')
-    +((!isV&&isMgr())?('<button class="btn '+(rec.enable?'btn-danger':'btn-primary')+' btn-sm" onclick="'+ (rec.enable?'toggleEnable(\''+rec.ocId+'\')':'openEnableFromProfile()') +'">'+(rec.enable?'Disable':'Enable…')+'</button>'):'')
+    +(isMgr()?'<button class="btn btn-secondary btn-sm" onclick="openFlag(\''+rec.id+'\')">Flag a data issue</button>':'')
     +'</div></div>';
-  var tabs='<div class="tabs">'+TABS.map(function(t){return '<div class="tab'+(detailTab===t[0]?' active':'')+'" onclick="switchDetailTab(\''+t[0]+'\')">'+t[1]+(t[0]==='issues'&&issueCount(rec)?' <span class="badge badge-orange">'+issueCount(rec)+'</span>':'')+'</div>';}).join('')+'</div>';
-  document.getElementById('pd-panels').innerHTML=head+tabs+'<div id="pd-body">'+(isV?vendorPanels(rec):ocPanels(rec))+'</div>';
+  var tabs='<div class="tabs">'+TABS.map(function(t){return '<div class="tab'+(detailTab===t[0]?' active':'')+'" onclick="switchDetailTab(\''+t[0]+'\')">'+tr(t[1])+'</div>';}).join('')+'</div>';
+  document.getElementById('pd-panels').innerHTML=head+tabs+'<div id="pd-body">'+vendorPanels(rec)+'</div>';
   applyLang();
 }
-function issueCount(rec){
-  if(profile.layer==='VENDOR')return issuesOfVendor(rec.id).filter(function(i){return i.status!=='fixed';}).length;
-  return openIssues(rec).length;
-}
+function issueCount(rec){return issuesOfVendor(rec.id).filter(function(i){return i.status!=='fixed';}).length;}
 function srcChip(o,f){
   var m=mergedField(o,mapF(f));
   return '<span class="badge '+(m.src==='M&MP'?'badge-green':m.src==='LMS'?'badge-blue':'badge-teal')+'" style="font-size:9.5px">'+esc(m.src==='PUDO Inc'?'PUDO':m.src)+'</span>';
@@ -3887,59 +3070,6 @@ function vendorPanels(v){
     }).join(''):'<div style="font-size:12.5px;color:var(--text-tertiary)">No issue flagged on this record.</div>');
   }
   return historyBlock(v.id);
-}
-function ocPanels(o){
-  if(detailTab==='overview'){
-    var rows=[['Name','name'],['Address','addr1'],['City','city'],['State','state'],['Postal','postal'],['Phone','phone'],['Sweeper','sweeper']];
-    return psec('What customers see','<div class="dp-kv-grid">'+rows.map(function(r){
-      var m=mergedField(o,mapF(r[1]));
-      return kv(r[0],(m.value?esc(m.value):'—')+(r[1]==='sweeper'?'':' '+srcChip(o,r[1])));
-    }).join('')+kv('Coordinates',esc(mergedField(o,'lat').value+', '+mergedField(o,'lng').value)+' '+srcChip(o,'lat'))
-      +kv('Source',srcLabel(mergedField(o,'type').value,srcsOf(o)))+'</div>','')
-      +psec('How this record is assembled','<div data-i18n="oc.assemble" style="font-size:12.5px;line-height:1.7;color:var(--text-secondary)">The whole record comes from <b>one</b> source: <b>M&amp;MP</b> (our own store) → <b>LMS</b> → PUDO Inc, chosen among <b>active</b> records first. The winning record supplies <b>every</b> field, empty ones included — a missing field is shown as missing rather than borrowed, because the gap is what makes it clear who has to fix it. Two records (2:1) still produce one customer-facing store: the row is fed by whichever record is its <b>live source</b>, and the other record stays visible underneath as standby.</div>');
-  }
-  if(detailTab==='operations'){
-    var dr=driftOf(o),oi=openIssues(o);
-    var lv=o.liveSource?findVendor(o.liveSource):null;
-    return psec('Downstream visibility','<div class="dp-kv-grid">'
-      +kv('Provider status (is_enable)',lv?(lv.status==='active'?'<span class="badge badge-green">active</span>':(lv.status==='removed'?'<span class="badge badge-gray">removed</span>':'<span class="badge badge-red">inactive</span>')):'<span style="color:var(--text-tertiary)">—</span>')
-      +kv('List',o.blocked?'<span class="badge badge-red">blocked</span> (system-controlled)'
-        :(o.enable?'<span class="badge badge-green">white</span>'
-          :'<span class="badge badge-gray">none</span>'+(o.listRemovedReason
-            ?' <span class="badge badge-orange">'+(o.listRemovedReason==='PROVIDER_DISABLED'?'closed by the provider'
-              :o.listRemovedReason==='RECORD_VOIDED'?'record voided'
-              :o.listRemovedReason==='UNSIGNED'?'un-signed':'source switched')+'</span>'
-              +(o.lastLiveSource?' <span class="mono" style="font-size:11px">was '+esc(o.lastLiveSource)+'</span>':'')
-            :'')))
-      +kv('Live source',(o.enable&&lv)?('<span class="mono">'+esc(lv.id)+'</span> '+provBadge(lv.provider)+' <span class="badge badge-green">live</span>'):'<span class="badge badge-gray">not chosen</span>')
-      +kv('Source records',o.vendorIds.map(function(id){
-        var isL=!!(o.enable&&o.liveSource===id);
-        var lab=isL?'live':(o.enable?'standby':'not live');
-        return '<span class="mono">'+esc(id)+'</span> <span class="badge '+(isL?'badge-green':'badge-gray')+'">'+lab+'</span>';
-      }).join(' &nbsp; '))
-      +kv('Visible downstream',(o.enable&&statusOf(o)==='active')?'<span class="badge badge-green">Yes</span>':'<span class="badge badge-gray">No</span>')
-      +kv('Mapping',o.vendorIds.length>1?'<span class="badge badge-blue">2:1</span>':'<span class="badge badge-gray">1:1</span>')
-      +kv('Last pushed downstream',o.enable?'cache invalidated on last change':'— never pushed')
-      +kv('Signed-off baseline',o.enable?(BASELINE[o.ocId]?'captured on '+esc(o.liveSource||'—'):'not captured'):'—')
-      +'</div>'+(dr.length?'<div class="warn-line" style="margin-top:10px">'+dr.length+' field(s) changed since sign-off. Customers already see the new values — the baseline is kept only so you can tell what moved.</div>':'')
-      +(oi.length?'<div class="warn-line" style="margin-top:10px">'+oi.length+' open data issue(s) — the provider has to fix the source.</div>':'')
-      +(o.vendorIds.length>1?'<div class="info-line" style="margin-top:10px">Two records feed this store and only one can be live. The other is <b>standby</b>: listed, readable, and never borrowed from — switching to it replaces every field and needs a new sign-off.</div>':''));
-  }
-  if(detailTab==='hours'){
-    var mh=mergedField(o,'hoursText');
-    var sod=shortDaysOC(o);
-    return psec('Opening Hours','<div class="p-hours">'+esc(mh.value||'—')+'</div> '+srcChip(o,'hoursText'),'')
-      +(sod.length?'<div class="warn-line" style="margin-top:10px">'+sod.map(function(d){return '<span>'+d.day+' '+d.at+' — under '+MIN_DAY_HOURS+' hours ('+(d.mins/60).toFixed(1)+'h)</span>';}).join(' · ')+'</div>':'');
-  }
-  if(detailTab==='issues'){
-    var oi2=openIssues(o);
-    return psec('Issues on this store',oi2.length?oi2.map(function(i){
-      var v=findVendor(i.vendorId);
-      return '<div class="rc-item"><div class="rc-item-head"><b>'+esc(v.name)+'</b><span class="mono" style="font-size:11.5px">'+esc(i.vendorId)+'</span><span class="badge badge-gray">'+esc(fieldLabel(i))+'</span>'+typeBadge(i)+'<span class="rc-meta" style="margin:0">'+(i.severity==='blocking'?'blocks sign-off':'warning')+'</span><span class="risk '+(i.status==='reported'?'risk-review':'risk-block')+'">'+esc(i.status)+'</span></div><div class="rc-meta">'+esc(whyOf(i))+'</div></div>';
-    }).join(''):'<div style="font-size:12.5px;color:var(--text-tertiary)">No open issue.</div>')
-      +(isMgr()?'<div style="margin-top:12px"><button class="btn btn-secondary btn-sm" onclick="flagFor(\''+o.ocId+'\',\'addr1\')">Flag an issue on the source record</button></div>':'');
-  }
-  return historyBlock(o.ocId);
 }
 function historyBlock(id){
   var rows=CHANGELOG.filter(function(e){return e.locId===id;})
@@ -3998,26 +3128,13 @@ function stamp(){var d=new Date(),p=function(n){return (n<10?'0':'')+n;};
 function exportCSV(kind){
   var rows=[],name='';
   if(kind==='vendor'){
-    rows.push(['Location ID','Name','Address','City','Province','Postal','Source','Type','Sweeper','Status','Open issues','OC Location ID','Updated']);
+    rows.push(['Vendor Location ID','Name','Address','City','Province','Postal','Source','Type','Sweeper','QR','Status','Live','Duplicate of','Open issues','Updated']);
     vendorFilters().forEach(function(v){
-      var oc=OC_LOCATIONS.filter(function(o){return o.vendorIds.indexOf(v.id)>=0;})[0];
-      rows.push([v.id,v.name,v.addr1,v.city,v.state,v.postal,v.provider,v.type,v.sweeper||'missing',v.status,
-        issuesOfVendor(v.id).filter(function(i){return i.status!=='fixed';}).length,oc?oc.ocId:'',v.updated]);
+      rows.push([v.id,v.name,v.addr1,v.city,v.state,v.postal,v.provider,v.type,v.sweeper||'missing',
+        v.qrDropoff?'QR':'',v.status,v.live?'true':'false',v.duplicateOf||'',
+        issuesOfVendor(v.id).filter(function(i){return i.status!=='fixed';}).length,v.updated]);
     });
     name='vendor-locations-'+stamp()+'.csv';
-  } else if(kind==='oc'){
-    rows.push(['OC Location ID','Name','Address','City','Province','Postal','Source','Type','Sweeper','Status','Live','Live source','Visible downstream','Blocking issues','Other open issues','Changed since sign-off','Mapping','Linked vendors','Updated']);
-    ocFilters().forEach(function(o){
-      var srcs={};o.vendorIds.forEach(function(id){var v=findVendor(id);if(v)srcs[v.provider]=1;});
-      rows.push([o.ocId,mergedField(o,'name').value,mergedField(o,'addr1').value,mergedField(o,'city').value,
-        mergedField(o,'state').value,mergedField(o,'postal').value,Object.keys(srcs).join(' / '),mergedField(o,'type').value,
-        mergedField(o,'sweeper').value||'missing',statusOf(o),o.enable?'true':'false',o.enable?(o.liveSource||''):'',
-        (o.enable&&statusOf(o)==='active')?'yes':'no',
-        openIssues(o).filter(function(i){return i.severity==='blocking';}).length,
-        openIssues(o).filter(function(i){return i.severity!=='blocking';}).length,driftOf(o).length,
-        o.vendorIds.length>1?'2:1':'1:1',o.vendorIds.join(' '),o.updated]);
-    });
-    name='oc-locations-'+stamp()+'.csv';
   } else if(kind==='log'){
     rows.push(['Time','Layer','Type','Location','Field','Old','New','Operator','Remark']);
     var id=val('c-f-id').toLowerCase(),layer=val('c-f-layer'),type=val('c-f-type');
@@ -4035,14 +3152,13 @@ function exportCSV(kind){
 }
 function exportIssues(){
   var typeFilter=val('di-f-type')||'';
-  var rows=[['Issue ID','Vendor Location ID','OC Location ID','Store','Address','City','Province','Postal code','Source','Type',
+  var rows=[['Issue ID','Vendor Location ID','Store','Address','City','Province','Postal code','Source','Type',
     'Field','Sub-field','Issue type','Severity','Status','Reason','Raised by','Raised at','Last checked','What the run saw','Closed by','Closed at']];
   var pool=ISSUES.filter(function(i){return i.status!=='fixed';});
   if(watchFilter)pool=pool.filter(function(i){return watchOf(i)===watchFilter;});
   pool.filter(function(i){return !typeFilter||i.type===typeFilter;}).forEach(function(i){
     var v=findVendor(i.vendorId)||{};
-    var oc=OC_LOCATIONS.filter(function(o){return o.vendorIds.indexOf(i.vendorId)>=0;})[0];
-    rows.push([i.id,i.vendorId,oc?oc.ocId:'',v.name||'',v.addr1||'',v.city||'',v.state||'',v.postal||'',v.provider||'',v.type||'',
+    rows.push([i.id,i.vendorId,v.name||'',v.addr1||'',v.city||'',v.state||'',v.postal||'',v.provider||'',v.type||'',
       fieldLabel(i),i.subField||'',i.type,i.severity,i.status,i.reason,
       i.raisedBy,i.raisedAt,i.lastChecked||'',i.checkNote||'',i.closedBy||'',i.closedAt||'']);
   });
@@ -4059,17 +3175,12 @@ function exportIssues(){
     {id:'LOC-MMP-201',name:'M&MP — Downtown Austin',addr1:'600 Congress Ave',city:'Austin',state:'TX',postal:'78701',status:'active',sweeper:'LMS',type:'M&MP',lat:30.2686,lng:-97.7429,phone:'5125550142',timezone:'America/Chicago',hoursText:'Mon - Sat: 09:00am to 07:00pm',hoursOfOp:[{day:'MONDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'TUESDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'WEDNESDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'THURSDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'FRIDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]},{day:'SATURDAY',timeRanges:[{startTime:'09:00',endTime:'19:00'}]}],created:'2026-02-11 10:00:00',updated:'2026-10-30 18:20:00'},
     {id:'LOC-MMP-202',name:'M&MP — Nashville Gulch',addr1:'1000 Broadway',city:'Nashville',state:'TN',postal:'37203',status:'active',sweeper:'LMS',type:'M&MP',lat:36.1566,lng:-86.7901,phone:'6155550188',timezone:'America/Chicago',hoursText:'Mon - Sat: 08:00am to 08:00pm',hoursOfOp:[{day:'MONDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'TUESDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'WEDNESDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'THURSDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'FRIDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]},{day:'SATURDAY',timeRanges:[{startTime:'08:00',endTime:'20:00'}]}],created:'2026-03-04 09:30:00',updated:'2026-11-01 12:05:00'}
   ];
-  /* the demo mirrors the rule doc's own example: Austin 78701 already had six
-     clusters before this one, so it lands on 000007 */
-  OC_SEQ['OC_TX_AUS_78701']=6;
   mmp.forEach(function(v){
-    v.provider='M&MP';v.country='US';v.qrDropoff=false;v.supports=[];
+    v.provider='M&MP';v.country='US';v.qrDropoff=false;v.supports=[];v.live=false;v.blocked=false;
     VENDORS.push(v);
-    OC_LOCATIONS.push({ocId:ocIdFor(v.state,v.city,v.postal),name:v.name,addr1:v.addr1,addr2:'',city:v.city,state:v.state,country:'US',postal:v.postal,
-      provider:'M&MP',type:v.type,sweeper:'LMS',phone:v.phone,lat:v.lat,lng:v.lng,timezone:v.timezone,
-      hoursText:v.hoursText,hoursOfOp:v.hoursOfOp,enable:false,vendorIds:[v.id],created:v.created,updated:v.updated});
   });
-  var first=OC_LOCATIONS[OC_LOCATIONS.length-2]; first.enable=true;
+  /* one of the two self-operated stores is already on the list */
+  var first=findVendor('LOC-MMP-201'); if(first)first.live=true;
 })();
 (function seed(){
   /* v4.1.0 — a live store must name the record it reads from before any
@@ -4082,16 +3193,7 @@ function exportIssues(){
   var v3=findVendor('LOC-00178'); if(v3)v3.postal='80221';
   var v93=findVendor('LOC-12193'); if(v93)v93.postal='';
   var v9=findVendor('LOC-00184'); if(v9){v9.hoursText='Mon - Fri: 12:00pm to 04:00pm\nSat: closed';v9.hoursOfOp=[];}
-  OC_LOCATIONS.forEach(function(o){ if(o.enable)BASELINE[o.ocId]=null; });
-  OC_LOCATIONS.forEach(function(o){
-    if(!o.enable)return;
-    var snap=snapshot(o);
-    if(o.ocId==='OC-FL-BCT-33432-000001'){snap.latitude='26.340229';snap.longitude='-80.090332';}
-    if(o.ocId==='OC-FL-NMI-33181-000001'){snap.name='Private Postal Systems';}
-    if(o.ocId==='OC-CO-WST-80021-000001'){snap.postal='80021';}
-    if(o.ocId==='OC-MN-BLM-55437-000001'){snap.hoursText='Mon - Fri: 09:00am to 05:00pm\nSat: 10:00am to 02:00pm';}
-    BASELINE[o.ocId]=snap;
-  });
+  VENDORS.forEach(function(v){ if(v.live)BASELINE[v.id]=snapshot(v); });
 })();
 (function seedShortDays(){
   /* three days the provider got wrong in a way a machine can see */
@@ -4103,7 +3205,6 @@ function exportIssues(){
     if(row)row.timeRanges=[{startTime:start,endTime:end}];
     else v.hoursOfOp.push({day:day,timeRanges:[{startTime:start,endTime:end}]});
   }
-  primeOcSeq();
   setDay('LOC-12194','SATURDAY','10:00','12:00');
   setDay('LOC-12193','SUNDAY','11:00','13:00');
   setDay('LOC-10024','WEDNESDAY','06:00','08:30');

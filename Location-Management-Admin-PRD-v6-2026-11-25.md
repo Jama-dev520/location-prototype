@@ -1,6 +1,6 @@
 # Location Management Admin Console — Product Requirements Document
 
-**Version 7.1.0 ｜ 2026-11-25 ｜ Status: draft for review**
+**Version 8.0.0 ｜ 2026-11-25 ｜ Status: draft for review**
 
 Companion files: clickable prototype (`index.html`), Duplicate check v3.0 (rule document), field mapping (v5.1.0, pending update to this model).
 
@@ -15,7 +15,7 @@ Version 6.0.0 collapses the console into **one list**. Sync state, the whitelist
 | | v5.1.0 | v6.0.0 |
 |---|---|---|
 | Pages | Vendor list, OC list, Duplicate Check | **Vendor Location List only** |
-| OC identity | separate entity holding a list of vendor records | a value on the vendor record, **one per record**; duplicates hold two different values and are linked by a marker |
+| Store identity | a second id (`OC-…`) held on a separate record | **the vendor location id itself**; duplicates linked by a marker |
 | Change awareness | implied by drift badges on the OC page | explicit **New / Changed** marker against the last snapshot |
 | Pushing to eBay | values flowed downstream on their own | **going live is the publish**; no separate apply step |
 | Duplicate decision | a dedicated page with a queue | select two rows, **Mark as duplicate** |
@@ -54,30 +54,22 @@ The rule document (Duplicate check v3.0) still governs how similarity is compute
 Provider sync (23:30, one batch)
         |
         v
-+-------------------------------------------+
-|  vendor_location                          |
-|  id, name, address, city, state, zip,     |
-|  source, sweeper, status                  |
-|  oc_location_id  ----------------------+  |
-|  duplicate_of    --------------------+ |  |
-|  sync_state (new | changed | synced) | |  |
-+--------------------------------------|-|-+
-                                       | |
-                        +--------------+ |
-                        v                v
-                 +-------------------------------+
-                 |  oc_location                  |
-                 |  id, name, address            |
-                 |  live (boolean)               |
-                 |  live_source (one vendor id)  |
-                 |  blocked (database only)      |
-                 +-------------------------------+
++------------------------------------------------+
+|  vendor_location                               |
+|  id            <- the only identity            |
+|  name, address, city, state, zip               |
+|  source, sweeper, qr_dropoff, status           |
+|  live, blocked                                 |
+|  duplicate_of  (points at the record it dups)  |
+|  sync_state (new | changed | synced)           |
+|  sync_fields, last_synced_at                   |
++------------------------------------------------+
 ```
 
 Three facts drive every behaviour in this document.
 
-1. **The OC location id is a value on the vendor record, not a container, and it is never shared.** One record holds exactly one id; two records of the same store hold two different ids. The relationship lives in `duplicate_of`, not in the id.
-2. **A store has one live source.** Of the two records in a duplicate pair, exactly one may be live at a time. Because the ids differ, this is enforced on the pair, not by a shared value.
+1. **The vendor location id is the identity.** There is no second key. A record is a store; when two records turn out to be the same store, one carries `duplicate_of` pointing at the other, and both keep their ids.
+2. **A store has one live record.** Of the two records in a duplicate pair, exactly one may be live at a time; putting one live takes the other off.
 3. **A changed record is not live.** When the provider moves a value, the record leaves the whitelist until somebody puts it back. Nothing stale reaches a customer.
 
 ---
@@ -88,33 +80,31 @@ Three facts drive every behaviour in this document.
 
 | Field | Type | Notes |
 |---|---|---|
-| `id` | varchar | `LOC-xxxxx` |
+| `id` | varchar | `LOC-xxxxx`, assigned at intake, never rewritten. The downstream key |
 | `name`, `address_line1`, `address_line2`, `city`, `state`, `postal_code` | varchar | as delivered; never edited here |
 | `source` | enum | `PUDOpoint (PUDO)` / `packagehub (LMS)` / `M&MP` |
 | `sweeper` | enum | who actually collects; `PUDO Inc` / `LMS` |
 | `status` | enum | `active` / `inactive` / `removed`, from the provider |
 | `qr_dropoff` | boolean | provider capability: the counter scans a customer code |
-| `oc_location_id` | varchar NULL | one per record, unique; never shared with another record |
+| `live` | boolean | on the whitelist; being live is how a value reaches eBay |
+| `blocked` | boolean | read-only here; set by the platform |
+| `list_removed_reason` | enum NULL | `UNSIGNED` / `PENDING_CHANGE` / `DUPLICATE_SWITCHED` / `PROVIDER_DISABLED` / `RECORD_VOIDED` |
 | `duplicate_of` | varchar NULL | the record this one duplicates; `NULL` for the primary |
 | `sync_state` | enum | `new` / `changed` / `synced` |
 | `sync_fields` | json NULL | which fields moved, for the Changed marker |
 | `last_synced_at` | timestamp | when eBay last accepted this record |
 
-### 4.2 oc_location
+### 4.2 What is *not* in the model
 
-| Field | Type | Notes |
-|---|---|---|
-| `id` | varchar(22) | `OC-{ST2}-{City3}-{Zip5}-{seq6}` |
-| `live` | boolean | on the whitelist |
-| `live_source` | varchar NULL | the vendor record currently supplying the store |
-| `blocked` | boolean | read-only in this console; set by the platform |
-| `name`, `address`, `city`, `state`, `postal_code` | varchar | snapshot at issuance; never used for filtering |
+**There is no `oc_location` table.** Version 8.0.0 removed it, and with it the `OC-{ST2}-{City3}-{Zip5}-{seq6}` id. The table existed to give a store one identity while several source records fed it; once a record *is* the store, that identity was a second name for the same row, and every rule about it (minting, never rewriting, retiring on merge) was bookkeeping for a duplicate key.
+
+Consequences worth naming: no mint sequence, no "OC Location ID" filter, no store profile separate from the record, and downstream joins on `vendor_location.id` directly.
 
 ### 4.3 Invariants
 
 | # | Invariant | Enforced by |
 |---|---|---|
-| I1 | A duplicate holds its own id, different from its primary's | minting is per record; the decision never moves an id |
+| I1 | A duplicate keeps its own id and never adopts its primary's | the decision writes `duplicate_of` only |
 | I2 | At most one record of a duplicate pair is live | going live unlists its counterpart |
 | I3 | `blocked` is never written by this console | no write path exists |
 | I4 | A record with `sync_state != synced` is not live | changed records are taken off the list on ingest |
@@ -151,9 +141,8 @@ Compared fields: `name`, `address_line1`, `address_line2`, `city`, `state`, `pos
 When a record is classified `changed` or `new` and it is currently supplying a store, the store is taken down as part of ingest:
 
 ```
-oc_location.live = false
-oc_location.live_source = null
-log PENDING_CHANGE_OFFLINE(oc_id, vendor_id)
+vendor_location.live = false
+log PENDING_CHANGE_OFFLINE(vendor_id)
 log WHITELIST_REMOVED(vendor_id, reason = PENDING_CHANGE)
 ```
 
@@ -178,7 +167,7 @@ The id is not touched. The store is simply not live until a person acts. This is
 | 9 | **QR** | `QR` badge when the source supports QR drop-off, `—` when it does not |
 | 10 | Status | provider status badge |
 | 11 | Live | switch on every row; `Blocked` badge when the platform blocks the store |
-| 12 | OC Location | the id, plus `duplicate of LOC-xxxxx` on the duplicate |
+| 12 | Duplicate | `duplicate of LOC-xxxxx` on the duplicate, `—` on a primary |
 | 13 | Issues | count of open issues, clickable |
 | 14 | Updated | provider timestamp |
 
@@ -190,7 +179,7 @@ There is no Sync column. A record that matches eBay carries no badge at all; onl
 
 ### 6.3 Ordering
 
-Rows are grouped by `oc_location_id`. A store and its duplicate sit on adjacent lines, primary first. Within a group the order is stable. Outside a group, the provider order is preserved.
+Rows are grouped by pair: a store and its duplicate sit on adjacent lines, primary first. Within a group the order is stable. Outside a group, the provider order is preserved.
 
 When a Zipcode filter is active and more than one row matches, the result is sorted by similarity to the first match, descending, before grouping. Looking up a zip is an act of hunting for a duplicate; the most similar records belong at the top.
 
@@ -206,21 +195,14 @@ A filter combination with no matches says so and offers a Reset. It does not sil
 
 | Row state | Rendered |
 |---|---|
-| No `oc_location_id` | grey `Not live` switch, tooltip: going live mints its OC location id |
-| `status` is `inactive` or `removed` | disabled `Not live` switch: the store is not operating, so it cannot be released to eBay. No id is minted, no whitelist entry is written |
+| `status` is `inactive` or `removed` | disabled `Not live` switch: the store is not operating, so it cannot be released to eBay |
 | `blocked` | red `Blocked` badge, not clickable |
-| live, this record is the source | green capsule `Live` |
-| not live, or another record is the source | grey capsule `Not live` |
+| `live = true` | green capsule `Live` |
+| `live = false` | grey capsule `Not live` |
 
 Clicking a capsule toggles the store. The operation requires the Operations role.
 
-A record with no id is not special-cased any more: its switch mints the id and flips the store in the same click, so nobody has to whitelist twice.
-
-```
-if oc_location_id is null:
-    oc_location_id = mint(state, city, zip5)
-    log OC_ID_MINTED(auto, no_candidate)
-```
+There is nothing to mint first: a record always has its id, so the switch is a single write on the row.
 
 ### 7.2 One source per store
 
@@ -229,14 +211,14 @@ The two records of a duplicate pair can never both be live. They hold different 
 ```
 live(record A) = true
 if the pair's other record is live:
-    live(record B) = false, live_source(B) = null
-    log DUPLICATE_UNLISTED(B.oc_id, reason = DUPLICATE_SWITCHED)
+    live(record B) = false, list_removed_reason(B) = DUPLICATE_SWITCHED
+    log DUPLICATE_UNLISTED(B.id, reason = DUPLICATE_SWITCHED)
     log WHITELIST_REMOVED(B, reason = DUPLICATE_SWITCHED)
 ```
 
-`LIVE_SOURCE_CHANGED` is retired: with one record per id, a store cannot change its supplier within a single id any more. Switching the source is now the pair operation above, and `live_source` on an id always names the one record that holds it.
+`LIVE_SOURCE_CHANGED` is gone with the concept of a store that can switch supplier: a record either supplies the store or does not.
 
-Turning off the record that is currently live takes the **store** down, not just the record.
+Turning off the record that is currently live takes the **store** down.
 
 ### 7.3 Going live applies the values
 
@@ -265,17 +247,17 @@ Batch add follows the same rules per row: an id is minted when missing, the swit
 
 Select exactly two rows, then `Mark as duplicate`. The dialog shows both records side by side (id, name, address, city, zip) and the similarity score as **reference only**. Two controls matter:
 
-- **Keep as the store** — a radio choice of A or B, defaulting to whichever record already holds an id.
-- **OC Location IDs** — two of them, one per record. A record that already holds an id shows it read-only; a record without one gets an input prefilled from its own state, city and zip, editable and explicitly **not required to match its address**. Marking a duplicate never merges or rewrites either id.
+- **Keep as the store** — a radio choice of A or B, defaulting to whichever record is live.
+- **Nothing else.** There is no id to choose, type or merge: the marker `duplicate_of` is the entire decision, and both records keep their ids.
 
 ### 8.2 Outcomes
 
 | Situation | Result |
 |---|---|
-| Neither record has an id | mint one for each — two ids, not one |
-| One has an id | that one keeps it; the other is minted its own |
-| Both have ids | both are kept untouched; nothing is retired |
-| The pair is already marked | re-marking only refreshes the relationship |
+| Neither is marked | the dropped record gets `duplicate_of = kept.id`; both keep their ids |
+| The pair is already marked | re-marking refreshes the direction; ids never change |
+| The dropped record is live | it is unlisted, because only one of a pair may supply the store |
+| The kept record was `duplicate_of` something else | the marker moves to the new primary |
 
 After confirmation the dropped record gets `duplicate_of = kept.id`, and the pair is written to `duplicate_pair` with status `merged`. **No id is rewritten, merged or retired** — the operation writes a relationship, not an identity. If the dropped record was live, it is unlisted, because only one of a pair may supply the store.
 
@@ -315,7 +297,6 @@ All filters are multi-select with type-to-find. Values within one filter are OR;
 | Filter | Values | Notes |
 |---|---|---|
 | **Vendor Location ID** | up to 20 conditions, space or comma separated | substring; any match |
-| OC Location ID | up to 20 conditions | substring; matches the id on the record |
 | Name | up to 20 conditions | a condition is a phrase, all words required |
 | Province | facet | counts reflect the other filters |
 | City | facet | cascades from Province |
@@ -393,20 +374,19 @@ not live ──(switch on, sync_state = synced)──> live
 |---|---|---|
 | GET | `/vendor-locations` | list with filters, paging, sort |
 | GET | `/vendor-locations/{id}` | profile, including `sync_fields` and previous values |
-| POST | `/vendor-locations/{id}/live` | `{ live: true }` — mints an id if missing, applies, flips |
+| POST | `/vendor-locations/{id}/live` | `{ live: true }` — applies the current values, flips the switch |
 | POST | `/vendor-locations/live` | bulk, `{ ids, live }` |
-| POST | `/duplicates` | `{ a, b, keep, oc_location_id? }` — mark, mint or reuse, return the id |
+| POST | `/duplicates` | `{ a, b, keep }` — write `duplicate_of`, unlist the dropped record if it was live |
 | GET | `/duplicates/{id}` | pair detail |
-| GET | `/oc-locations/{id}` | store detail, live source, members |
 | GET | `/change-log?loc_id=` | history for one record |
 
-Errors worth designing for: minting a record that already has an id, switching a blocked store, going live with `sync_state != synced`, and marking a pair whose two records already sit on different ids (this one needs a merge, not a link).
+Errors worth designing for: switching a blocked store, going live on an `inactive` record, and marking a pair that would leave two live records for one store.
 
 ---
 
 ## 14. Acceptance criteria
 
-1. The sidebar contains exactly one business page. The OC list and the duplicate page are not reachable.
+1. The sidebar contains exactly one business page. No store list, no duplicate page, and no OC id anywhere in the interface.
 2. A record that is new or changed shows a badge under its id. A synced record shows nothing in that position.
 3. A changed record is not live after ingest, and the whitelist shows it as removed with reason `PENDING_CHANGE`.
 4. Clicking the badge-bearing id opens a profile where the moved fields are marked `changed` and show the previous value.
@@ -415,8 +395,8 @@ Errors worth designing for: minting a record that already has an id, switching a
 7. Two records of a pair cannot both be live. Turning one on unlists the other and logs `DUPLICATE_UNLISTED`.
 8. A blocked store renders a badge, not a switch.
 9. There is no `Apply to eBay` button: filtering `Change = New`, selecting the rows and pressing `Add to whitelist & apply` writes the values, clears the badges and puts the stores live in one action.
-10. Selecting two free records and confirming `Mark as duplicate` mints **two** ids, one per record; the dropped one carries `duplicate_of` and keeps its own id.
-11. Marking a pair whose records already hold different ids leaves both ids untouched — nothing is merged, retired or rewritten.
+10. Selecting two records and confirming `Mark as duplicate` writes `duplicate_of` on the dropped one; neither id changes, and nothing is minted.
+11. The duplicate row shows `duplicate of LOC-xxxxx`; the primary shows `—`. Both rows still show their own vendor location id.
 12. The `Duplicates` filter returns the pair together, adjacent, primary first.
 13. A Zipcode lookup returns every record in that zip, most similar first.
 14. Reset clears the text fields, all nine facets and the zip condition; the row count returns to the full list.
@@ -427,7 +407,7 @@ Errors worth designing for: minting a record that already has an id, switching a
 20. A record whose provider status is `inactive` (or `removed`) renders a disabled switch, cannot be switched live by any path, and mints no id.
 21. The QR column sits beside Sweeper and shows `QR` only where the source offers drop-off; elsewhere a dash.
 19. The id column and the id filter are both labelled `Vendor Location ID`; no bare "Location ID" survives in the interface.
-20. Every OC location id belongs to exactly one vendor record: no two records share an id, duplicates included.
+20. No `OC-…` id appears in the list, the filters, the profile, the export or the API. Release history is the only place the old id is still named.
 
 ---
 
@@ -448,12 +428,12 @@ Errors worth designing for: minting a record that already has an id, switching a
 
 | Step | Action |
 |---|---|
-| 1 | Split shared ids first: an OC that carries several vendor records keeps its id on the earliest record, and every other member is minted a new id of its own |
-| 2 | Backfill `duplicate_of` from the old shared-id group: every member that lost its id points at the record that kept it |
-| 3 | Keep `oc_location` as the store record (`live`, `live_source`, `blocked`); drop the member list, which is now derived |
-| 4 | Leave existing ids untouched. A record's id does not change because the console changed |
-| 5 | Retire the OC list and duplicate page from navigation, keep their APIs until downstream confirms no consumer |
+| 1 | Copy `live` and `blocked` from `oc_location` onto the record that supplied it (`live_source`), then drop the table |
+| 2 | Backfill `duplicate_of` from the old shared-id groups: every member except the live one points at the record that kept the group |
+| 3 | Leave `vendor_location.id` untouched — it is now the only key, and downstream joins on it |
+| 4 | Tell downstream once: `MC_LEGACY_OC_ID(vendor_id, legacy_oc_id)` for every record that used to answer to an `OC-…` id, so they can re-key without guessing |
+| 5 | Retire the `/oc-locations` endpoints after the last consumer confirms |
 
 ---
 
-*End of document. Version 7.1.0, 2026-11-25.*
+*End of document. Version 8.0.0, 2026-11-25.*

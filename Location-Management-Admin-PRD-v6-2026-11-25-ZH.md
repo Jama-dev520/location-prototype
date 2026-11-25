@@ -1,6 +1,6 @@
 # Location 管理后台 — 产品需求文档（中文版）
 
-**版本 7.1.0 ｜ 2026-11-25 ｜ 状态：待评审**
+**版本 8.0.0 ｜ 2026-11-25 ｜ 状态：待评审**
 
 配套文件：可交互原型（`index.html`）· 判重规则 `Deplicate-check-v3.0-2026-11-23.md` · 数据库字段映射（v5.1.0，尚未按本模型更新）
 
@@ -10,12 +10,12 @@
 
 5.x 把工作拆成三个页面：供应商列表、OC 列表、独立的重复检查页。实际工作不是这样。运营的每一个决定都从一条供应商记录开始，也落在同一条记录上，拆成三页意味着回答一个问题要点三次导航。
 
-6.0 把控制台收成**一张列表**。同步状态、白名单开关、判重结论、OC location ID，全部挂在这一行上。
+6.0 把控制台收成**一张列表**。同步状态、白名单开关、判重结论，全部挂在这一行上。
 
 | | v5.1.0 | v6.0.x |
 |---|---|---|
 | 页面 | 供应商列表 + OC 列表 + 重复检查 | **只有 Vendor Location List** |
-| OC 身份 | 独立实体，持有一组供应商记录 | 供应商记录上的一个值，**一条记录一个**；重复的两条各持不同的号，靠标记关联 |
+| 店铺身份 | 另一个号（`OC-…`），存在独立的店铺记录上 | **就是 vendor location ID 本身**；重复的两条靠标记关联 |
 | 变更感知 | OC 页面上的 drift 徽章，需自己推断 | 对照上一次快照显式标记 **New / Changed** |
 | 推送 eBay | 值自动流向下游 | **上线即发布**，没有单独的 apply 步骤 |
 | 判重 | 独立页面 + 队列 | 选中两行，**Mark as duplicate** |
@@ -30,11 +30,11 @@
 
 ### 2.1 本期做
 
-- 一张列表承载全部供应商记录，带同步状态、上线状态、OC location ID。
+- 一张列表承载全部供应商记录，带同步状态、上线状态、重复标记。
 - 对照上一次同步快照做变更识别，精确到字段。
 - 把新增/变更记录推给 eBay，单条或批量。
 - 加入白名单（上线）与移出白名单，单条或批量。
-- 把一条记录标成另一条的重复，两条各自保留自己的 OC location ID，用标记关联。
+- 把一条记录标成另一条的重复，两条各自保留自己的 ID，用标记关联。
 - 列表的筛选、排序、导出。
 - 记录详情页：显示哪些字段变了，以及变更历史。
 
@@ -54,30 +54,22 @@
 供应商同步（每天 23:30，单批次）
         │
         ▼
-┌───────────────────────────────────────────┐
-│  vendor_location                          │
-│  id, name, address, city, state, zip,     │
-│  source, sweeper, status                  │
-│  oc_location_id  ──────────────────────┐  │
-│  duplicate_of    ────────────────────┐ │  │
-│  sync_state (new | changed | synced) │ │  │
-└──────────────────────────────────────┼─┼──┘
-                                       │ │
-                        ┌──────────────┘ │
-                        ▼                ▼
-                 ┌───────────────────────────────┐
-                 │  oc_location                  │
-                 │  id, name, address            │
-                 │  live (boolean)               │
-                 │  live_source（一个供应商 id） │
-                 │  blocked（只由数据库控制）    │
-                 └───────────────────────────────┘
+┌────────────────────────────────────────────────┐
+│  vendor_location                               │
+│  id            ← 唯一的身份                     │
+│  name, address, city, state, zip               │
+│  source, sweeper, qr_dropoff, status           │
+│  live, blocked                                 │
+│  duplicate_of（指向它重复的那条）              │
+│  sync_state (new | changed | synced)           │
+│  sync_fields, last_synced_at                   │
+└────────────────────────────────────────────────┘
 ```
 
 三句话决定全文所有行为：
 
-1. **OC location ID 是供应商记录上的一个值，不是容器，也永远不共享。** 一条记录只持有一个号；同一家店的两条记录持有两个不同的号。关系记在 `duplicate_of` 里，不在号里。
-2. **一家店只有一个 live 来源。** 重复对里的两条，同一时刻只能有一条上线。因为号不一样了，这条规则落在「配对」上，不再由共享的号兜住。
+1. **vendor location ID 就是身份。** 没有第二个键。一条记录就是一家店；两条记录其实是同一家店时，其中一条带 `duplicate_of` 指向另一条，两条各自保留自己的号。
+2. **一家店只有一条 live 记录。** 重复对里的两条，同一时刻只能有一条上线；打开一条就把另一条撤下。
 3. **有变更的记录不上线。** 供应商把值改了，记录就离开白名单，等人把它放回去。客户永远拿不到运营没看过的值。
 
 ---
@@ -88,33 +80,31 @@
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
-| `id` | varchar | `LOC-xxxxx`，页面文案统一叫 **Vendor Location ID** |
+| `id` | varchar | `LOC-xxxxx`，入库时分配、永不改写。下游用的就是这个键 |
 | `name`、`address_line1`、`address_line2`、`city`、`state`、`postal_code` | varchar | 供应商原样，此处不编辑 |
 | `source` | enum | `PUDOpoint (PUDO)` / `packagehub (LMS)` / `M&MP` |
 | `sweeper` | enum | 实际揽收方：`PUDO Inc` / `LMS` |
 | `status` | enum | `active` / `inactive` / `removed`，来自供应商 |
 | `qr_dropoff` | boolean | 供应商能力：柜台扫客户二维码完成投递 |
-| `oc_location_id` | varchar NULL | 一条记录一个，唯一；不与任何其他记录共享 |
+| `live` | boolean | 是否在白名单；上线就是把值送到 eBay 的那个动作 |
+| `blocked` | boolean | 本控制台只读，由平台写入 |
+| `list_removed_reason` | enum NULL | `UNSIGNED` / `PENDING_CHANGE` / `DUPLICATE_SWITCHED` / `PROVIDER_DISABLED` / `RECORD_VOIDED` |
 | `duplicate_of` | varchar NULL | 本记录重复的那条；主记录为 `NULL` |
 | `sync_state` | enum | `new` / `changed` / `synced` |
 | `sync_fields` | json NULL | 变了哪些字段，供 Changed 徽章与详情页使用 |
 | `last_synced_at` | timestamp | eBay 最后一次接受这条记录的时间 |
 
-### 4.2 oc_location
+### 4.2 模型里**没有**什么
 
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `id` | varchar(22) | `OC-{ST2}-{City3}-{Zip5}-{seq6}` |
-| `live` | boolean | 是否在白名单 |
-| `live_source` | varchar NULL | 当前供数的供应商记录 |
-| `blocked` | boolean | 本控制台只读，由平台写入 |
-| `name`、`address`、`city`、`state`、`postal_code` | varchar | 发号时的快照，不参与筛选 |
+**没有 `oc_location` 表。** 8.0.0 把它删了，连带 `OC-{ST2}-{City3}-{Zip5}-{seq6}` 这个号。它存在的理由是「几条来源记录喂一家店时，给这家店一个身份」；一条记录本身就是一家店之后，那个身份只是同一行数据的第二个名字，围绕它的规则（发号、永不改写、合并时废弃）都只是在维护一个重复的键。
+
+需要点明的连带结果：没有发号序列，「OC Location ID」筛选消失，没有独立于记录的店铺详情页，下游直接按 `vendor_location.id` 关联。
 
 ### 4.3 不变量
 
 | # | 不变量 | 由什么保证 |
 |---|---|---|
-| I1 | 重复记录持有自己的号，且与主记录不同 | 发号按记录进行，判重不改号 |
+| I1 | 重复记录保留自己的号，绝不采用主记录的号 | 判重只写 `duplicate_of` |
 | I2 | 一个重复对里最多一条记录处于上线 | 上线时把另一端撤下 |
 | I3 | `blocked` 永远不由本控制台写入 | 不存在写路径 |
 | I4 | `sync_state != synced` 的记录不上线 | 变更记录在入库时即被移出白名单 |
@@ -178,13 +168,13 @@ oc_location.live_source = null
 | 9 | **QR** | 来源支持 QR 投递时显示 `QR` 徽章，不支持时显示 `—` |
 | 10 | Status | 供应商状态徽章 |
 | 11 | Live | 开关（`Live` / `Not live`）；`Blocked` 只读徽章 |
-| 12 | OC Location | OC 号；重复记录下方标注 `duplicate of LOC-xxxxx` |
+| 12 | Duplicate | 重复记录的该列标 `duplicate of LOC-xxxxx`，主记录显示 `—` |
 | 13 | Issues | 未关闭异常数，可点击 |
 | 14 | Updated | 供应商时间戳 |
 
 QR 投递是**供应商的能力**，不是运营写的备注：客户拿到一个码，柜台扫一下完成投递。它和 Sweeper 放在一起，因为两者都是「这家店怎么运作」的事实；值只从上游读，控制台不猜，显示 `—` 就代表这个来源不支持。
 
-> **命名规则**：列表列名与筛选项统一叫 **Vendor Location ID**，与旁边的 `OC Location` / `OC Location ID` 明确区分。任何出现「Location ID」的地方都必须带上前缀，避免运营把两侧的号搞混。
+> **命名规则**：列表列名与筛选项统一叫 **Vendor Location ID**。任何出现「Location ID」的地方都必须带上前缀。
 
 ### 6.2 徽章不占列
 
@@ -192,7 +182,7 @@ QR 投递是**供应商的能力**，不是运营写的备注：客户拿到一�
 
 ### 6.3 排序
 
-按 `oc_location_id` 分组：一家店和它的重复记录上下相邻，主记录在前，组内顺序稳定；没有号的记录按供应商原顺序。
+按「配对」分组：一家店和它的重复记录上下相邻，主记录在前，组内顺序稳定；不成对的记录按供应商原顺序。
 
 **Zipcode 筛选生效且命中多于一行时**，先按与该组第一条的文本相似度降序，再分组。查邮编本质是在找重复，最像的应该浮在最上面。
 
@@ -206,23 +196,16 @@ QR 投递是**供应商的能力**，不是运营写的备注：客户拿到一�
 
 ### 7.1 开关
 
-**每一行都有开关**，没有号的记录也有 —— 点上线时顺手发号，不需要先单独加白名单。
+**每一行都有开关**，状态直接读记录上的 `live`。
 
 | 行状态 | 渲染 |
 |---|---|
-| 无 `oc_location_id` | 灰色胶囊 `Not live`，hover 提示「上线时会签发 OC location ID」 |
-| `status` 为 `inactive` 或 `removed` | **禁用态** `Not live` 开关：供应商说这家店没在营业，不能释放给 eBay；不发号、不写白名单 |
+| `status` 为 `inactive` 或 `removed` | **禁用态** `Not live` 开关：供应商说这家店没在营业，不能释放给 eBay |
 | `blocked` | 红色 `Blocked` 徽章，不可点 |
-| 已上线，且本记录是供数方 | 绿色胶囊 `● Live` |
-| 未上线，或供数方是同店另一条 | 灰色胶囊 `○ Not live` |
+| `live = true` | 绿色胶囊 `● Live` |
+| `live = false` | 灰色胶囊 `○ Not live` |
 
-点胶囊切换整店状态，需要 Operations 角色。无号的记录点上线时，签发号的动作与上线是**同一次点击**：
-
-```
-if oc_location_id is null:
-    oc_location_id = mint(state, city, zip5)
-    log OC_ID_MINTED(auto, no_candidate)
-```
+点胶囊切换上线状态，需要 Operations 角色。开关只写这一行，没有要先发生的发号动作。
 
 ### 7.2 一店一源
 
@@ -267,17 +250,17 @@ live = true
 
 正好选中两行，点 `Mark as duplicate`。弹框并排显示两条记录（ID、名称、地址、城市、邮编），相似度分数**仅供参考**。两个控件决定结果：
 
-- **Keep as the store** —— A / B 单选，默认选中已经持有号的那条。
-- **OC Location IDs** —— 两个，一条记录一个。已经有号的显示为只读；没有号的给一个输入框，默认用**它自己的**州、市、邮编生成，可编辑，**不要求与地址一致**。标记重复不会合并、也不会改写任何一个号。
+- **Keep as the store** —— A / B 单选，默认选中当前在线的那条。
+- **没有别的了。** 没有要选、要填、要合并的号：标记 `duplicate_of` 就是全部决定，两条各自保留自己的 ID。
 
 ### 8.2 四种结果
 
 | 情形 | 结果 |
 |---|---|
-| 两条都没有号 | **各签发一个**，不是共用一个 |
-| 一条有号 | 有号的那条保留，另一条领自己的新号 |
-| 两条都有号 | 两个号都不动，不废弃、不改写 |
-| 这对已经标记过 | 只刷新一次关系，号不变 |
+| 还没标记过 | 被弃那条写入 `duplicate_of = 保留方.id`，两条的 ID 都不变 |
+| 已经标记过 | 重标只刷新方向，ID 永远不变 |
+| 被弃那条正在上线 | 它被撤下，因为一对里只能有一条供数 |
+| 保留方原本是别人的重复 | 标记转移到新的主记录 |
 
 确认后，被弃那条写 `duplicate_of = 保留方.id`，pair 以 `merged` 状态写入 `duplicate_pair`。**没有任何一个号被改写、合并或废弃**——这个动作写的是关系，不是身份。如果被弃那条正在上线，它会被撤下，因为一对里只能有一条供数。
 
@@ -317,7 +300,6 @@ live = true
 | 筛选 | 取值 | 说明 |
 |---|---|---|
 | **Vendor Location ID** | 最多 20 个条件，空格或逗号分隔 | 子串匹配，任一命中即可 |
-| OC Location ID | 最多 20 个条件 | 子串匹配，匹配记录上的号 |
 | Name | 最多 20 个条件 | 一个条件是一个短语，词需全中 |
 | Province | facet | 计数随其他筛选联动 |
 | City | facet | 随 Province 级联 |
@@ -330,7 +312,7 @@ live = true
 | Sweeper | facet | `PUDO Inc` / `LMS` |
 | Issues | facet | 有未关闭异常 / 无 |
 
-筛选区顺序：`Vendor Location ID · OC Location ID · Name · Province · City · Zipcode · Source · Status · Live · Change · Duplicates · Sweeper · Issues`。
+筛选区顺序：`Vendor Location ID · Name · Province · City · Zipcode · Source · Status · Live · Change · Duplicates · Sweeper · Issues`。
 
 ---
 
@@ -399,7 +381,7 @@ new ──────────(上线)─────────> synced
 | GET | `/vendor-locations/{id}` | 详情，含 `sync_fields` 与旧值 |
 | POST | `/vendor-locations/{id}/live` | `{ live: true }`，缺号先发号，再应用、上线 |
 | POST | `/vendor-locations/live` | 批量，`{ ids, live }` |
-| POST | `/duplicates` | `{ a, b, keep, oc_location_id? }`，标记、签发或复用，返回号 |
+| POST | `/duplicates` | `{ a, b, keep }`，写 `duplicate_of`，必要时把被弃那条撤下 |
 | GET | `/duplicates/{id}` | pair 详情 |
 | GET | `/oc-locations/{id}` | 店铺详情、live 来源、成员 |
 | GET | `/change-log?loc_id=` | 单条记录的历史 |
@@ -419,7 +401,7 @@ new ──────────(上线)─────────> synced
 7. 重复对里的两条不能同时上线；开一条会撤下另一条，并记 `DUPLICATE_UNLISTED`。
 8. 被 block 的店渲染为徽章，不是开关。
 9. 没有 `Apply to eBay` 按钮：筛选 `Change = New`、勾选、点 `Add to whitelist & apply`，写值、清徽章、上线一次完成。
-9b. **没有任何 OC 号的记录也显示 `Not live` 开关**；点它一次即签发号并上线，日志记 `OC_ID_MINTED(auto, no_candidate)`。
+9b. 每一行都有开关；点一次即上线并把当前值写进 eBay，没有发号这一步。
 10. 选中两条无号记录并确认 `Mark as duplicate`，产出一个号，两条都写它，被弃那条写 `duplicate_of`。
 11. 标记两条各持不同号的记录，废弃其中一个号，两条都落到存活的号上。
 12. `Duplicates` 筛选把一对记录一起返回、相邻、主记录在前。
@@ -429,7 +411,7 @@ new ──────────(上线)─────────> synced
 16. 批量加白名单跳过不能上线的行，并在提示里报告跳过条数。
 17. 导出每条供应商记录一行，带 ID、上线状态与重复标记。
 18. **表头第二列与第一个筛选标签都写作 `Vendor Location ID`**，不出现无前缀的「Location ID」。
-18b. **每个 OC location ID 只属于一条供应商记录**：任意两条记录都不共享同一个号，重复的也不行。
+18b. **列表、筛选、详情页、导出、接口里都不出现 `OC-…` 编号**（只有版本历史里还会提到旧的号）。
 19. **供应商状态为 `inactive`（或 `removed`）的记录渲染禁用开关**，任何路径都无法上线，也不会被发号。
 20. **QR 列就在 Sweeper 旁边**，只有来源支持投递时才显示 `QR`，否则是横杠。
 
@@ -452,12 +434,12 @@ new ──────────(上线)─────────> synced
 
 | 步骤 | 动作 |
 |---|---|
-| 1 | 先把共享号拆开：一个 OC 下挂着多条记录的，号留给最早那条，其余各领一个新号 |
-| 2 | 由旧的分组回填 `duplicate_of`：被拆出去的那条指向保留号的那条 |
-| 3 | `oc_location` 保留为店铺记录（`live`、`live_source`、`blocked`），成员列表删除（已可由 `oc_location_id` 派生） |
-| 4 | 已有号一律不动。控制台改版不构成改号理由 |
-| 5 | 导航里下线 OC 列表与判重页；接口保留，直到下游确认无消费方 |
+| 1 | 把 `oc_location` 上的 `live`、`blocked` 复制到当时供数的那条记录，然后删除这张表 |
+| 2 | 由旧的共享号分组回填 `duplicate_of`：除上线方以外，其余成员都指向保留号的那条 |
+| 3 | `vendor_location.id` 一律不动 —— 它现在是唯一的键，下游改按它关联 |
+| 4 | 一次性告知下游：`MC_LEGACY_OC_ID(vendor_id, legacy_oc_id)`，让它们能换键而不是靠猜 |
+| 5 | 最后一个消费方确认后，下线 `/oc-locations` 接口 |
 
 ---
 
-*文档结束。版本 7.1.0，2026-11-25。*
+*文档结束。版本 8.0.0，2026-11-25。*
