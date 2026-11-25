@@ -1,0 +1,451 @@
+# Location 管理后台 — 产品需求文档（中文版）
+
+**版本 6.0.1 ｜ 2026-11-25 ｜ 状态：待评审**
+
+配套文件：可交互原型（`index.html`）· 判重规则 `Deplicate-check-v3.0-2026-11-23.md` · 数据库字段映射（v5.1.0，尚未按本模型更新）
+
+---
+
+## 1. 这一版改了什么，为什么改
+
+5.x 把工作拆成三个页面：供应商列表、OC 列表、独立的重复检查页。实际工作不是这样。运营的每一个决定都从一条供应商记录开始，也落在同一条记录上，拆成三页意味着回答一个问题要点三次导航。
+
+6.0 把控制台收成**一张列表**。同步状态、白名单开关、判重结论、OC location ID，全部挂在这一行上。
+
+| | v5.1.0 | v6.0.x |
+|---|---|---|
+| 页面 | 供应商列表 + OC 列表 + 重复检查 | **只有 Vendor Location List** |
+| OC 身份 | 独立实体，持有一组供应商记录 | 供应商记录上的一个值；重复的两条共享同一个值 |
+| 变更感知 | OC 页面上的 drift 徽章，需自己推断 | 对照上一次快照显式标记 **New / Changed** |
+| 推送 eBay | 值自动流向下游 | **Apply to eBay**；另外点上线也等于应用 |
+| 判重 | 独立页面 + 队列 | 选中两行，**Mark as duplicate** |
+| 白名单 | 在 OC 页面逐店签收 | **行内 Live 开关**，加批量增删 |
+| 筛选 | 三个文本条件 + facet | 新增 **Zipcode / Live / Change / Duplicates** |
+
+判重规则（v3.0）仍然管「相似度怎么算」。本 PRD 管「运营看到什么、能做什么」。两者在身份问题上冲突时，以本文为准：原型就是这一版的契约。
+
+---
+
+## 2. 范围
+
+### 2.1 本期做
+
+- 一张列表承载全部供应商记录，带同步状态、上线状态、OC location ID。
+- 对照上一次同步快照做变更识别，精确到字段。
+- 把新增/变更记录推给 eBay，单条或批量。
+- 加入白名单（上线）与移出白名单，单条或批量。
+- 把两条记录标成同一家店，产出它们共用的 OC location ID。
+- 列表的筛选、排序、导出。
+- 记录详情页：显示哪些字段变了，以及变更历史。
+
+### 2.2 本期不做
+
+- 编辑供应商值。控制台不改地址，只标异常，由供应商改源头。
+- 自动判重。相似度可以作提示，结论必须由人给。
+- 自动上线。任何记录都不会自己进白名单。
+- 按区域/活动做多店批量。批量操作只作用于勾选的行。
+- 两个角色（Operations / Viewer）之外的权限体系。
+
+---
+
+## 3. 一页看懂模型
+
+```
+供应商同步（每天 23:30，单批次）
+        │
+        ▼
+┌───────────────────────────────────────────┐
+│  vendor_location                          │
+│  id, name, address, city, state, zip,     │
+│  source, sweeper, status                  │
+│  oc_location_id  ──────────────────────┐  │
+│  duplicate_of    ────────────────────┐ │  │
+│  sync_state (new | changed | synced) │ │  │
+└──────────────────────────────────────┼─┼──┘
+                                       │ │
+                        ┌──────────────┘ │
+                        ▼                ▼
+                 ┌───────────────────────────────┐
+                 │  oc_location                  │
+                 │  id, name, address            │
+                 │  live (boolean)               │
+                 │  live_source（一个供应商 id） │
+                 │  blocked（只由数据库控制）    │
+                 └───────────────────────────────┘
+```
+
+三句话决定全文所有行为：
+
+1. **OC location ID 是供应商记录上的一个值，不是一个容器。** 可以一条记录持有，也可以几条共享（同一家店）。没有「OC 记录 + 成员列表」这种需要同步的东西。
+2. **一家店只有一个 live 来源。** 共享同一个号的记录里，同一时刻只有一条能上线。这由 `live_source` 单指针保证，不靠界面约束。
+3. **有变更的记录不上线。** 供应商把值改了，记录就离开白名单，等人把它放回去。客户永远拿不到运营没看过的值。
+
+---
+
+## 4. 数据模型
+
+### 4.1 vendor_location
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `id` | varchar | `LOC-xxxxx`，页面文案统一叫 **Vendor Location ID** |
+| `name`、`address_line1`、`address_line2`、`city`、`state`、`postal_code` | varchar | 供应商原样，此处不编辑 |
+| `source` | enum | `PUDOpoint (PUDO)` / `packagehub (LMS)` / `M&MP` |
+| `sweeper` | enum | 实际揽收方：`PUDO Inc` / `LMS` |
+| `status` | enum | `active` / `inactive` / `removed`，来自供应商 |
+| `oc_location_id` | varchar NULL | 重复的记录共享同一个值 |
+| `duplicate_of` | varchar NULL | 本记录重复的那条；主记录为 `NULL` |
+| `sync_state` | enum | `new` / `changed` / `synced` |
+| `sync_fields` | json NULL | 变了哪些字段，供 Changed 徽章与详情页使用 |
+| `last_synced_at` | timestamp | eBay 最后一次接受这条记录的时间 |
+
+### 4.2 oc_location
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `id` | varchar(22) | `OC-{ST2}-{City3}-{Zip5}-{seq6}` |
+| `live` | boolean | 是否在白名单 |
+| `live_source` | varchar NULL | 当前供数的供应商记录 |
+| `blocked` | boolean | 本控制台只读，由平台写入 |
+| `name`、`address`、`city`、`state`、`postal_code` | varchar | 发号时的快照，不参与筛选 |
+
+### 4.3 不变量
+
+| # | 不变量 | 由什么保证 |
+|---|---|---|
+| I1 | 设了 `duplicate_of` 的记录，其 OC 号必然与主记录相同 | 判重动作 |
+| I2 | 同一个 `oc_location_id` 最多一条记录处于上线 | `live_source` 单值 |
+| I3 | `blocked` 永远不由本控制台写入 | 不存在写路径 |
+| I4 | `sync_state != synced` 的记录不上线 | 变更记录在入库时即被移出白名单 |
+| I5 | 号一旦签发永不改写 | 发号只追加 |
+
+---
+
+## 5. 同步与变更识别
+
+### 5.1 快照
+
+每次同步先把供应商全量落一份快照，再应用。下一次与这份快照比对，而不是与行上残留的旧值比。
+
+```
+第 N 次：snapshot_N = 供应商原始数据
+         diff(N, N-1) → 每条记录：new | changed(字段) | unchanged
+第 N+1 次：snapshot_{N+1} = 供应商原始数据
+         diff(N+1, N) → …
+```
+
+### 5.2 分类
+
+| 条件 | `sync_state` | 列表表现 |
+|---|---|---|
+| 上一次快照里没有这条记录 | `new` | ID 下方 `New` 徽章 |
+| 存在，且至少一个比对字段不同 | `changed` | `Changed` 徽章；差异在详情页逐字段列出 |
+| 存在，且比对字段全部相同 | `synced` | 不显示任何徽章 |
+
+比对字段：`name`、`address_line1`、`address_line2`、`city`、`state`、`postal_code`、`phone`、`opening_hours`、`services`、`sweeper`、`status`。坐标照存照显示，但不单独产生变更信号。
+
+### 5.3 连带后果：变更记录立即掉线
+
+记录被判为 `changed` 或 `new`，且它当前正在为某家店供数时，整店在入库阶段就下线：
+
+```
+oc_location.live = false
+oc_location.live_source = null
+记日志 PENDING_CHANGE_OFFLINE(oc_id, vendor_id)
+记日志 WHITELIST_REMOVED(vendor_id, reason = PENDING_CHANGE)
+```
+
+号不动。只是这家店在有人处理之前不处于上线状态。这是本控制台唯一一处「故意不贴心」：客户绝不能收到运营没看过的值。
+
+---
+
+## 6. 列表
+
+### 6.1 列
+
+| # | 列 | 内容 |
+|---|---|---|
+| 1 | 勾选 | 批量操作用 |
+| 2 | **Vendor Location ID** | 编号，点击进详情；有变更时下方挂 `New` / `Changed` 徽章 |
+| 3 | Name | 供应商名称 |
+| 4 | Address | 第一行；第二行（单元号）浅色显示 |
+| 5 | City / Province | `Brooklyn, NY` |
+| 6 | Zip | 前五位 |
+| 7 | Source | `PUDOpoint (PUDO)` 等 |
+| 8 | Sweeper | 徽章，或 `missing` |
+| 9 | Status | 供应商状态徽章 |
+| 10 | Live | 开关（`Live` / `Not live`）；`Blocked` 只读徽章 |
+| 11 | OC Location | OC 号；重复记录下方标注 `duplicate of LOC-xxxxx` |
+| 12 | Issues | 未关闭异常数，可点击 |
+| 13 | Updated | 供应商时间戳 |
+
+> **命名规则**：列表列名与筛选项统一叫 **Vendor Location ID**，与旁边的 `OC Location` / `OC Location ID` 明确区分。任何出现「Location ID」的地方都必须带上前缀，避免运营把两侧的号搞混。
+
+### 6.2 徽章不占列
+
+没有 Sync 列。与 eBay 一致的记录**不带任何徽章**，只有真的动过的才标记。每一行都在喊的列表，没人会去扫。
+
+### 6.3 排序
+
+按 `oc_location_id` 分组：一家店和它的重复记录上下相邻，主记录在前，组内顺序稳定；没有号的记录按供应商原顺序。
+
+**Zipcode 筛选生效且命中多于一行时**，先按与该组第一条的文本相似度降序，再分组。查邮编本质是在找重复，最像的应该浮在最上面。
+
+### 6.4 空态
+
+筛选组合无命中时明确告知，并提供 Reset，不偷偷回落到全量。
+
+---
+
+## 7. Live 与白名单
+
+### 7.1 开关
+
+**每一行都有开关**，没有号的记录也有 —— 点上线时顺手发号，不需要先单独加白名单。
+
+| 行状态 | 渲染 |
+|---|---|
+| 无 `oc_location_id` | 灰色胶囊 `Not live`，hover 提示「上线时会签发 OC location ID」 |
+| `blocked` | 红色 `Blocked` 徽章，不可点 |
+| 已上线，且本记录是供数方 | 绿色胶囊 `● Live` |
+| 未上线，或供数方是同店另一条 | 灰色胶囊 `○ Not live` |
+
+点胶囊切换整店状态，需要 Operations 角色。无号的记录点上线时，签发号的动作与上线是**同一次点击**：
+
+```
+if oc_location_id is null:
+    oc_location_id = mint(state, city, zip5)
+    log OC_ID_MINTED(auto, no_candidate)
+```
+
+### 7.2 一店一源
+
+共享同一个号的两条记录不能同时上线。打开一条，另一条在同一次事务里被关掉：
+
+```
+live = true, live_source = 本记录
+if 之前存在来源且不同:
+    记日志 LIVE_SOURCE_CHANGED(oc_id, 原来源, 现来源)
+    记日志 WHITELIST_REMOVED(原来源, reason = SOURCE_SWITCHED)
+    记日志 WHITELIST_ADDED(现来源, oc_id)
+```
+
+关掉当前正在供数的那条，是**整店下线**，不是换条记录。
+
+### 7.3 上线即应用
+
+`sync_state` 不是 `synced` 的记录不能上线（I4）。所以点上线一次做两件事：把当前值写给 eBay，并翻转开关。
+
+```
+if sync_state != synced:
+    sync_state = synced
+    记日志 CHANGE_APPLIED(vendor_id, 原状态, synced)
+live = true
+```
+
+这是刻意的：没有单独的「确认」步骤。只确认不发布，会留下一条标着干净、eBay 上却是旧值的记录。
+
+### 7.4 批量
+
+勾选任意行后出现批量条：`Add to whitelist`、`Remove from whitelist`、`Mark as duplicate`、`Clear selection`。
+
+批量加白名单按行执行同样的规则：缺号先发号、翻转开关、应用值；不能上线的行跳过并计数，结果提示里写明处理了几条、跳过几条。
+
+---
+
+## 8. 判重
+
+### 8.1 动作
+
+正好选中两行，点 `Mark as duplicate`。弹框并排显示两条记录（ID、名称、地址、城市、邮编），相似度分数**仅供参考**。两个控件决定结果：
+
+- **Keep as the store** —— A / B 单选，默认选中已经持有号的那条。
+- **OC Location ID** —— 默认用保留方的州、市、邮编生成；**可编辑，且不要求与任何一条地址一致**。跨邮编合并的店，号描述的可能两个邮编都不是。
+
+### 8.2 四种结果
+
+| 情形 | 结果 |
+|---|---|
+| 两条都没有号 | 签发一个，两条都写这个号 |
+| 保留方有号 | 另一条采用它 |
+| 各有号且不同 | 保留保留方的号，废弃另一个（`discarded_reason = merged`），两条都落到存活的号上 |
+| 两条已经同号 | 无需签发；弹框说明情况，动作只重写一次标记 |
+
+确认后，被弃那条写 `duplicate_of = 保留方.id`，店的 `live_source` 设为保留方，pair 以 `merged` 状态写入 `duplicate_pair`。
+
+### 8.3 重复记录不是店
+
+重复是一条**记录**，不是一家店。它保留自己的值、自己的异常、自己的历史。运营愿意的话，它可以成为 live 来源（见 7.2）。但它不能脱离主记录存在。
+
+### 8.4 筛选重复
+
+`Duplicates` 筛选：`Duplicated records` 返回所有「号下不止一条记录」的行，主记录与从属方一起返回、上下相邻；`No duplicate` 返回其余。
+
+---
+
+## 9. Apply to eBay
+
+`Apply to eBay · n` 把所有 `sync_state` 为 `new` 或 `changed` 的记录推给 eBay 并标记为 `synced`。角标是待处理条数，为 0 时按钮禁用。
+
+它**不做**什么：不改变上线状态。一条记录可以完全同步，同时不在白名单上。
+
+| 动作 | 写入 eBay | 是否上线 |
+|---|---|---|
+| `Apply to eBay` | 是，全部待处理记录 | 否 |
+| 点行内 `Live` | 是，该条 | 是 |
+| 批量 `Add to whitelist` | 是，每条选中记录 | 是 |
+
+只有一个推送入口。早期草稿里同时有 `Apply to eBay` 和 `Push differences`，它们是同一动作的两种过滤，后者是前者的子集，已删除。
+
+---
+
+## 10. 筛选
+
+全部多选 + 内嵌搜索。同一筛选内取 OR，筛选之间取 AND。已选项以 chip 显示；Reset 清空所有控件（含本版新增的每一项）。
+
+| 筛选 | 取值 | 说明 |
+|---|---|---|
+| **Vendor Location ID** | 最多 20 个条件，空格或逗号分隔 | 子串匹配，任一命中即可 |
+| OC Location ID | 最多 20 个条件 | 子串匹配，匹配记录上的号 |
+| Name | 最多 20 个条件 | 一个条件是一个短语，词需全中 |
+| Province | facet | 计数随其他筛选联动 |
+| City | facet | 随 Province 级联 |
+| Zipcode | 最多 20 个条件 | 取前五位；**命中后按相似度排序** |
+| Source | facet | 三个值 |
+| Status | facet | 供应商状态 |
+| Live | facet | `Live` / `Not live` / `Blocked by system` |
+| Change | facet | `New` / `Changed` / `No change` |
+| Duplicates | facet | `Duplicated records` / `No duplicate` |
+| Sweeper | facet | `PUDO Inc` / `LMS` |
+| Issues | facet | 有未关闭异常 / 无 |
+
+筛选区顺序：`Vendor Location ID · OC Location ID · Name · Province · City · Zipcode · Source · Status · Live · Change · Duplicates · Sweeper · Issues`。
+
+---
+
+## 11. 记录详情页
+
+点 Vendor Location ID 进入。五个标签页：Basic Info、Operations、Hours and Services、Issues、Change History。
+
+### 11.1 字段级变更
+
+Basic Info 里，自上一次快照以来变过的字段带 `changed` 徽章，并显示旧值：
+
+```
+Address        2918 Avenue I   [changed]
+               was 2908 Avenue I
+Postal code    11210           [changed]
+               was 11210-2214
+```
+
+只有真的变了的字段才标记。没变过的详情页看起来就是一个普通详情页。
+
+### 11.2 变更历史
+
+历史页按时间倒序列出该记录的全部条目，包括同步产生的每字段一行：
+
+| 时间 | 类型 | 字段 | 旧值 | 新值 |
+|---|---|---|---|---|
+| 2026-11-25 02:14 | PROVIDER_SYNC | addr1 | 2908 Avenue I | 2918 Avenue I |
+| 2026-11-25 02:14 | PROVIDER_SYNC | postal | 11210-2214 | 11210 |
+
+运营动作也在同一条时间线里：白名单变更、应用值、判重结论。
+
+---
+
+## 12. 状态机
+
+两个互相独立的维度，这就是为什么「一个状态列」是错的。
+
+**同步状态**
+
+```
+new ──────(应用 / 上线)──────> synced
+ │                                │
+ │                     (供应商改了字段)
+ │                                ▼
+ └──────(供应商改了字段)──────> changed ──(应用 / 上线)──> synced
+```
+
+**上线状态**
+
+```
+未上线 ──(开关打开，sync_state = synced)──> 上线
+   ▲                                          │
+   │                              (供应商改了字段)
+   └────────────── live = false ──────────────┘
+```
+
+`blocked` 独立于两者之外：它是平台状态，此处只读。被 block 的店无法开启，尝试会明确报错而不是静默失败。
+
+---
+
+## 13. 接口草案
+
+| 方法 | 路径 | 用途 |
+|---|---|---|
+| GET | `/vendor-locations` | 列表，带筛选、分页、排序 |
+| GET | `/vendor-locations/{id}` | 详情，含 `sync_fields` 与旧值 |
+| POST | `/vendor-locations/{id}/apply` | 推送当前值给 eBay，标记 synced |
+| POST | `/vendor-locations/apply` | 按 id 列表批量推送 |
+| POST | `/vendor-locations/{id}/live` | `{ live: true }`，缺号先发号，再应用、上线 |
+| POST | `/vendor-locations/live` | 批量，`{ ids, live }` |
+| POST | `/duplicates` | `{ a, b, keep, oc_location_id? }`，标记、签发或复用，返回号 |
+| GET | `/duplicates/{id}` | pair 详情 |
+| GET | `/oc-locations/{id}` | 店铺详情、live 来源、成员 |
+| GET | `/change-log?loc_id=` | 单条记录的历史 |
+
+需要专门设计的错误：给已有号的记录再发号、切换被 block 的店、`sync_state != synced` 时上线、以及标记两条已经各持不同号的记录（这种需要合并，不是建立关联）。
+
+---
+
+## 14. 验收标准
+
+1. 侧栏只有一个业务页面，OC 列表与判重页不可达。
+2. 新增或变更的记录在 ID 下方显示徽章；已同步的记录该位置没有东西。
+3. 变更记录在入库后不处于上线，白名单记录显示为已移除，原因 `PENDING_CHANGE`。
+4. 点带徽章的 ID 进入详情，变动字段带 `changed` 徽章并显示旧值。
+5. Change History 每个变动字段一行 `PROVIDER_SYNC`，时间倒序。
+6. 对 `sync_state = changed` 的记录点 `Live`，一次动作完成「发布当前值 + 清除徽章 + 上线」。
+7. 共享同一个号的两条记录不能同时上线；开一条关另一条，并记 `LIVE_SOURCE_CHANGED`。
+8. 被 block 的店渲染为徽章，不是开关。
+9. `Apply to eBay` 显示待处理条数，为 0 时禁用，点一次清空所有徽章。
+9b. **没有任何 OC 号的记录也显示 `Not live` 开关**；点它一次即签发号并上线，日志记 `OC_ID_MINTED(auto, no_candidate)`。
+10. 选中两条无号记录并确认 `Mark as duplicate`，产出一个号，两条都写它，被弃那条写 `duplicate_of`。
+11. 标记两条各持不同号的记录，废弃其中一个号，两条都落到存活的号上。
+12. `Duplicates` 筛选把一对记录一起返回、相邻、主记录在前。
+13. 按 Zipcode 查询返回该邮编全部记录，最像的排最前。
+14. Reset 清空文本条件、九个 facet 与邮编条件，行数回到全量。
+15. 重复记录可以单独上线，上线后原来的供数方变为未上线。
+16. 批量加白名单跳过不能上线的行，并在提示里报告跳过条数。
+17. 导出每条供应商记录一行，带 ID、上线状态与重复标记。
+18. **表头第二列与第一个筛选标签都写作 `Vendor Location ID`**，不出现无前缀的「Location ID」。
+
+---
+
+## 15. 待定
+
+| # | 问题 | 归属 |
+|---|---|---|
+| 1 | 变更记录掉线，是即时生效还是等同步窗口结束？ | 运营 |
+| 2 | 变更记录上线，要不要先弹窗列出差异让人确认，而不是一次点完？ | 产品 |
+| 3 | 跨邮编合并的店，运营不指定时号里该用哪个邮编？ | 产品 / 数据 |
+| 4 | 被废弃的号，对仍引用它的下游订单要保留多久的解析能力？ | 下游契约 |
+| 5 | 重复标记能否撤销（不经过合并，直接解除）？ | 运营 |
+| 6 | 是否需要批量判重（一次处理多对），还是两条一次就够？ | 运营 |
+
+---
+
+## 16. 从 5.x 迁移
+
+| 步骤 | 动作 |
+|---|---|
+| 1 | 由现有映射表回填 `vendor_location.oc_location_id`，同一 OC 的全部成员写同一个值 |
+| 2 | 回填 `duplicate_of`：共享同号的记录里，非上线方指向上线方 |
+| 3 | `oc_location` 保留为店铺记录（`live`、`live_source`、`blocked`），成员列表删除（已可由 `oc_location_id` 派生） |
+| 4 | 已有号一律不动。控制台改版不构成改号理由 |
+| 5 | 导航里下线 OC 列表与判重页；接口保留，直到下游确认无消费方 |
+
+---
+
+*文档结束。版本 6.0.1，2026-11-25。*

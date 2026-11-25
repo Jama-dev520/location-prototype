@@ -1,6 +1,6 @@
 # Location Management Admin Console — Product Requirements Document
 
-**Version 6.0.0 ｜ 2026-11-25 ｜ Status: draft for review**
+**Version 6.0.1 ｜ 2026-11-25 ｜ Status: draft for review**
 
 Companion files: clickable prototype (`index.html`), Duplicate check v3.0 (rule document), field mapping (v5.1.0, pending update to this model).
 
@@ -166,7 +166,7 @@ The id is not touched. The store is simply not live until a person acts. This is
 | # | Column | Content |
 |---|---|---|
 | 1 | Select | checkbox for batch actions |
-| 2 | Location ID | id, clickable to the profile; `New` or `Changed` badge underneath when applicable |
+| 2 | **Vendor Location ID** | id, clickable to the profile; `New` or `Changed` badge underneath when applicable |
 | 3 | Name | provider name |
 | 4 | Address | line 1, line 2 in a lighter tone |
 | 5 | City / Province | `Brooklyn, NY` |
@@ -174,7 +174,7 @@ The id is not touched. The store is simply not live until a person acts. This is
 | 7 | Source | `PUDOpoint (PUDO)` etc. |
 | 8 | Sweeper | badge, or `missing` |
 | 9 | Status | provider status badge |
-| 10 | Live | switch, `Blocked`, or `—` |
+| 10 | Live | switch on every row; `Blocked` badge when the platform blocks the store |
 | 11 | OC Location | the id, plus `duplicate of LOC-xxxxx` on the duplicate |
 | 12 | Issues | count of open issues, clickable |
 | 13 | Updated | provider timestamp |
@@ -201,12 +201,20 @@ A filter combination with no matches says so and offers a Reset. It does not sil
 
 | Row state | Rendered |
 |---|---|
-| No `oc_location_id` | `—` with a tooltip: adding it to the whitelist mints one |
+| No `oc_location_id` | grey `Not live` switch, tooltip: going live mints its OC location id |
 | `blocked` | red `Blocked` badge, not clickable |
 | live, this record is the source | green capsule `Live` |
 | not live, or another record is the source | grey capsule `Not live` |
 
 Clicking a capsule toggles the store. The operation requires the Operations role.
+
+A record with no id is not special-cased any more: its switch mints the id and flips the store in the same click, so nobody has to whitelist twice.
+
+```
+if oc_location_id is null:
+    oc_location_id = mint(state, city, zip5)
+    log OC_ID_MINTED(auto, no_candidate)
+```
 
 ### 7.2 One source per store
 
@@ -295,7 +303,7 @@ All filters are multi-select with type-to-find. Values within one filter are OR;
 
 | Filter | Values | Notes |
 |---|---|---|
-| Location ID | up to 20 conditions, space or comma separated | substring; any match |
+| **Vendor Location ID** | up to 20 conditions, space or comma separated | substring; any match |
 | OC Location ID | up to 20 conditions | substring; matches the id on the record |
 | Name | up to 20 conditions | a condition is a phrase, all words required |
 | Province | facet | counts reflect the other filters |
@@ -406,6 +414,8 @@ Errors worth designing for: minting a record that already has an id, switching a
 15. A duplicate row can be made live on its own, and doing so takes the previous source off the list.
 16. Batch add skips rows that cannot go live and reports how many were skipped.
 17. Export writes one row per vendor record with its id, live state and duplicate marker.
+18. Every row carries a live switch, including records with no id; clicking one mints the id and puts the store live in a single action.
+19. The id column and the id filter are both labelled `Vendor Location ID`; no bare "Location ID" survives in the interface.
 
 ---
 
@@ -434,4 +444,4 @@ Errors worth designing for: minting a record that already has an id, switching a
 
 ---
 
-*End of document. Version 6.0.0, 2026-11-25.*
+*End of document. Version 6.0.1, 2026-11-25.*

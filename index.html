@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v6.0.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v6.0.1)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -451,7 +451,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v6.0.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v6.0.1</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage(\'p01\')">Vendor Location List</div>
@@ -476,7 +476,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v6.0.0</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v6.0.1</span></div>
       </div>
     </div>
 
@@ -488,7 +488,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 
         <div class="card">
           <div class="filter-grid">
-            <div><label class="f-label">Location ID <span class="f-cap" id="v-f-id-cap"></span></label><input id="v-f-id" placeholder="up to 20 — space or comma" oninput="applyVendorFilters()"></div>
+            <div><label class="f-label">Vendor Location ID <span class="f-cap" id="v-f-id-cap"></span></label><input id="v-f-id" placeholder="up to 20 — space or comma" oninput="applyVendorFilters()"></div>
             <div><label class="f-label">OC Location ID <span class="f-cap" id="v-f-ocid-cap"></span></label><input id="v-f-ocid" placeholder="up to 20 — space or comma" oninput="applyVendorFilters()"></div>
             <div><label class="f-label">Name <span class="f-cap" id="v-f-name-cap"></span></label><input id="v-f-name" placeholder="name, or several names with commas" oninput="applyVendorFilters()"></div>
             <div><label class="f-label">Province</label><select id="v-f-prov" onchange="onProvinceChange('v')"></select></div>
@@ -532,7 +532,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
             <table class="data">
               <thead><tr>
                 <th style="width:30px"><input type="checkbox" id="v-chk-all" onchange="toggleAllVendors(this.checked)"></th>
-                <th>Location ID</th><th>Name</th><th>Address</th><th>City / Province</th><th>Zip</th>
+                <th>Vendor Location ID</th><th>Name</th><th>Address</th><th>City / Province</th><th>Zip</th>
                 <th>Source</th><th>Sweeper</th><th>Status</th><th>Live</th><th>OC Location</th><th>Issues</th><th>Updated</th>
               </tr></thead>
               <tbody id="v-tbody"></tbody>
@@ -672,7 +672,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v6.0.0 (one table, decisions on the row)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v6.0.1 (one table, decisions on the row)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -1516,8 +1516,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='6.0.0';
+var APP_VERSION='6.0.1';
 var VERSIONS=[
+ {v:'6.0.1',type:'patch',date:'2026-11-25',desc:'<b>Every row can go live, and the id says whose it is.</b> A record with no OC location used to show a dash where the switch belongs; now it gets the switch too — putting it live mints the 1:1 id in the same click. The id filter and the id column are named <b>Vendor Location ID</b>, so neither can be mistaken for the OC-side id sitting next to them.'},
  {v:'6.0.0',type:'major',date:'2026-11-25',desc:'<b>One table, and the decisions moved onto the row.</b> The OC list and the separate duplicate page are gone. Every provider record carries its own <b>New</b> / <b>Changed</b> / <b>Synced</b> marker against the last snapshot, a <b>Whitelist</b> state, and the OC id it belongs to. <b>Apply to eBay</b> pushes every pending difference in one move — new records and changed ones alike. Select two records and <b>Mark as duplicate</b> mints the OC location they share — the id does not have to match either address. Whitelisting works in bulk, the way batch enable used to. Filters gain a five-digit zip field.'},
  {v:'5.1.0',type:'minor',date:'2026-11-23',desc:'<b>Coordinates left the jury, and LOW stopped waiting.</b> A pair is judged by text alone now — same Zip5 or the same cleaned address across zips, then address 40 · name 10 · postal 25 · province 15 · city 10 on adjacent character pairs. Distance is still printed beside the pair, because a person wants to see it, but it no longer promotes a label, no longer marks a grey zone, and no longer counts records into a cluster. Two consequences: <b>MEDIUM became a real queue</b> (the coordinate upgrade used to carry it), and <b>a record whose every pair is LOW gets its OC ID straight away</b> — nothing looked alike, so the system says "not a duplicate" on the person\'s behalf. HIGH still waits: merging two stores by threshold cannot be undone, splitting one can.'},
  {v:'5.0.0',type:'major',date:'2026-11-24',desc:'<b>The duplicate check got a second identity layer, and the OC ID stopped being a counter.</b> Per the rule doc, every record now carries an <b>addr_fingerprint</b> (SHA-256 of the cleaned record, first 16 hex) as its candidate bucket key, and an <b>OC location ID</b> is only minted once a person confirms a cluster — then it is permanent: <code>OC-NY-NYC-10036-000001</code>, <code>OC-TX-AUS-78701-000007</code>. Address corrections, cleaning upgrades and re-runs never rewrite it; a split mints a new one and leaves the old one <i>discarded</i>, a merge keeps the older. The station layer now labels <b>HIGH / MEDIUM / LOW</b>, and a pair can only become a candidate through text — same Zip5, or the same cleaned address across zips. Coordinates never pull a pair in; they only promote one (≤30 m) or hand it to a human (30–100 m). Nothing auto-assigns: HIGH is first in the queue, not a verdict.'},
@@ -2461,17 +2462,27 @@ function syncInline(v){
 }
 function liveSwitch(v){
   var oc=ocOf(v.id);
-  if(!oc)return '<span class="badge badge-gray" title="no OC location yet — adding it to the live list mints one">—</span>';
-  if(oc.blocked)return '<span class="badge badge-red" title="blocked in the database — the console cannot change it">Blocked</span>';
-  var on=oc.enable&&oc.liveSource===v.id;
-  return '<button class="live-toggle'+(on?' on':'')+'" onclick="toggleLive(\''+v.id+'\')" title="'
-    +(on?'live for eBay — click to take the store down':'release this record to eBay (one record per store can be live)')+'">'
+  if(oc&&oc.blocked)return '<span class="badge badge-red" title="blocked in the database — the console cannot change it">Blocked</span>';
+  var on=!!oc&&oc.enable&&oc.liveSource===v.id;
+  /* v6.0.1 — a record with no id still gets a switch: going live mints its OC
+     location id on the way, so nobody has to whitelist in two steps. */
+  var tip=on?'live for eBay — click to take the store down'
+    :!oc?'not live — putting it live mints its OC location id'
+    :'release this record to eBay (one record per store can be live)';
+  return '<button class="live-toggle'+(on?' on':'')+'" onclick="toggleLive(\''+v.id+'\')" title="'+tip+'">'
     +'<span class="dot"></span>'+(on?'Live':'Not live')+'</button>';
 }
 function toggleLive(vid){
   if(!isMgr()){showToast('Permission required','Only the Location Manager can change the live record','error');return;}
+  var v=findVendor(vid); if(!v)return;
   var oc=ocOf(vid);
-  if(!oc){showToast('No OC location','Whitelist the record first — that mints its id','error');return;}
+  if(!oc){
+    var ocId=ocIdFor(v.state,v.city,v.postal);
+    oc={ocId:ocId,name:v.name,addr1:v.addr1,addr2:v.addr2||'',city:v.city,state:v.state,postal:v.postal,
+        enable:false,liveSource:null,vendorIds:[v.id],created:nowStr(),updated:nowStr()};
+    OC_LOCATIONS.push(oc);
+    log('OC',currentUser.name,'OC_ID_MINTED',ocId,'vendor','—',vid,'auto, no_candidate');
+  }
   if(oc.blocked){showToast('Blocked by system','This store is blocked in the database; the console cannot lift it','error');return;}
   var prev=oc.liveSource;
   if(oc.enable&&prev===vid){
@@ -2674,7 +2685,7 @@ function openDupModal(){
   var suggested=(ocKeep?ocKeep.ocId:(ocDrop?ocDrop.ocId:peekOcId(keep.state,keep.city,keep.postal)));
   var locked=!!(ocKeep||ocDrop);
   var j=judge(stOf(a),stOf(b));
-  var rows=[['Location ID',a.id,b.id],['Name',a.name,b.name],
+  var rows=[['Vendor Location ID',a.id,b.id],['Name',a.name,b.name],
     ['Address',[a.addr1,a.addr2].filter(Boolean).join(' '),[b.addr1,b.addr2].filter(Boolean).join(' ')],
     ['City / Province',a.city+', '+a.state,b.city+', '+b.state],
     ['Zip',zip5(a.postal),zip5(b.postal)]];
