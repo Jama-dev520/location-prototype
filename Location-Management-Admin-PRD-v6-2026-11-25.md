@@ -1,6 +1,6 @@
 # Location Management Admin Console — Product Requirements Document
 
-**Version 6.0.1 ｜ 2026-11-25 ｜ Status: draft for review**
+**Version 6.0.2 ｜ 2026-11-25 ｜ Status: draft for review**
 
 Companion files: clickable prototype (`index.html`), Duplicate check v3.0 (rule document), field mapping (v5.1.0, pending update to this model).
 
@@ -118,6 +118,7 @@ Three facts drive every behaviour in this document.
 | I3 | `blocked` is never written by this console | no write path exists |
 | I4 | A record with `sync_state != synced` is not live | changed records are taken off the list on ingest |
 | I5 | An id is never rewritten once issued | minting is append-only |
+| I6 | A record whose provider status is not `active` is never live | the switch is disabled, the API refuses, batch add skips |
 
 ---
 
@@ -202,6 +203,7 @@ A filter combination with no matches says so and offers a Reset. It does not sil
 | Row state | Rendered |
 |---|---|
 | No `oc_location_id` | grey `Not live` switch, tooltip: going live mints its OC location id |
+| `status` is `inactive` or `removed` | disabled `Not live` switch: the store is not operating, so it cannot be released to eBay. No id is minted, no whitelist entry is written |
 | `blocked` | red `Blocked` badge, not clickable |
 | live, this record is the source | green capsule `Live` |
 | not live, or another record is the source | grey capsule `Not live` |
@@ -415,6 +417,7 @@ Errors worth designing for: minting a record that already has an id, switching a
 16. Batch add skips rows that cannot go live and reports how many were skipped.
 17. Export writes one row per vendor record with its id, live state and duplicate marker.
 18. Every row carries a live switch, including records with no id; clicking one mints the id and puts the store live in a single action.
+20. A record whose provider status is `inactive` (or `removed`) renders a disabled switch, cannot be switched live by any path, and mints no id.
 19. The id column and the id filter are both labelled `Vendor Location ID`; no bare "Location ID" survives in the interface.
 
 ---
@@ -444,4 +447,4 @@ Errors worth designing for: minting a record that already has an id, switching a
 
 ---
 
-*End of document. Version 6.0.1, 2026-11-25.*
+*End of document. Version 6.0.2, 2026-11-25.*

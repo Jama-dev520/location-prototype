@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v6.0.1)</title>
+<title>Location Management Admin Console — Interactive Prototype (v6.0.2)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -444,6 +444,11 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 /* v6.0.0 — a moved record cannot go live until someone confirms it */
 .live-confirm{border:1px solid #FCD34D;background:#FFFBEB;color:#B45309;border-radius:999px;padding:3px 10px;font-size:11.5px;cursor:pointer;white-space:nowrap}
 .live-confirm:hover{background:#FEF3C7}
+
+/* v6.0.2 — an inactive store cannot go live, and the switch says so */
+.live-toggle[disabled]{opacity:.6;cursor:not-allowed;background:#F1F5F9;border-color:#E2E8F0;color:#94A3B8}
+.live-toggle[disabled]:hover{background:#F1F5F9;border-color:#E2E8F0}
+.live-toggle[disabled] .dot{background:#CBD5E1}
 </style>
 </head>
 <body>
@@ -451,7 +456,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v6.0.1</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v6.0.2</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage(\'p01\')">Vendor Location List</div>
@@ -476,7 +481,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v6.0.1</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v6.0.2</span></div>
       </div>
     </div>
 
@@ -672,7 +677,7 @@ table.dup-cmp tr.st-flat td.f{color:var(--text-tertiary)}
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v6.0.1 (one table, decisions on the row)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+    <div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v6.0.2 (one table, decisions on the row)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Page</th><th>Action</th><th>Expected</th></tr></thead>
       <tbody>
@@ -743,6 +748,23 @@ var VENDORS=[
   });
 })();
 
+/* v6.0.2 — two records the provider reports as inactive. One has no OC id, one already
+   has one: neither may be released to eBay, and the switch says so before a click. */
+(function(){
+  var HOURS=[['MONDAY','09:00','18:00'],['TUESDAY','09:00','18:00'],['WEDNESDAY','09:00','18:00'],
+             ['THURSDAY','09:00','18:00'],['FRIDAY','09:00','18:00']];
+  [['LOC-12206','Coney Island Freight','1500 Coney Island Ave',40.620500,-73.964700,'PUDO Inc','PUDOpoint','PUDO Inc',1],
+   ['LOC-12207','Midwood Parcel Point','2201 Avenue M',40.618700,-73.958900,'LMS','packagehub','LMS',2]
+  ].forEach(function(r){
+    VENDORS.push({id:r[0],name:r[1],provider:r[5],sweeper:r[7],type:r[6],typeId:r[8],
+      ref:'dealerNo '+r[0].slice(4),addr1:r[2],addr2:'',city:'Brooklyn',state:'NY',country:'United States',
+      postal:'11210',status:'inactive',phone:'8443008533',lat:r[3],lng:r[4],timezone:'America/New_York',
+      open24:false,supports:['FX','CP'],hoursText:'Mon - Fri: 9:00am to 6:00pm',
+      hoursOfOp:HOURS,directions:'',created:'2026-11-02 09:00:00',updated:'2026-11-24 03:00:00',
+      activated:''});
+  });
+})();
+
 var OC_LOCATIONS=[
  {ocId:'OC-NY-NYC-10036-000001',name:'Time Square News',addr1:'360 W 42nd St',addr2:'',city:'New York',state:'NY',country:'United States',postal:'10036',provider:'PUDO Inc',type:'PUDOpoint',sweeper:'LMS',phone:'8443008533',lat:40.7580804,lng:-73.9923783,timezone:'America/New_York',hoursText:'Mon - Fri: 6:00am to 2:00am\nSat: 6:00am to 2:00am\nSun: 6:00am to 12:00am',hoursOfOp:[['MONDAY','06:00','23:59'],['TUESDAY','06:00','23:59'],['WEDNESDAY','06:00','23:59'],['THURSDAY','06:00','23:59'],['FRIDAY','06:00','23:59'],['SATURDAY','06:00','23:59'],['SUNDAY','06:00','23:59']],enable:true,liveSource:'LOC-10024',vendorIds:['LOC-10024','LOC-00189'],created:'2016-06-16 12:22:42',updated:'2026-05-14 12:33:08'},
  {ocId:'OC-NY-BKN-11210-000003',name:'Postal Annex 20018',addr1:'2918 Avenue I',addr2:'',city:'Brooklyn',state:'NY',country:'United States',postal:'11210',provider:'PUDO Inc',type:'PUDOpoint',sweeper:'PUDO Inc',phone:'8443008533',lat:40.628878,lng:-73.947678,timezone:'America/New_York',hoursText:'',hoursOfOp:[['MONDAY','00:00','23:59'],['TUESDAY','00:00','23:59'],['WEDNESDAY','00:00','23:59'],['THURSDAY','00:00','23:59'],['FRIDAY','00:00','23:59'],['SATURDAY','00:00','23:59'],['SUNDAY','00:00','23:59']],enable:true,vendorIds:['LOC-12194'],created:'2025-09-19 15:25:03',updated:'2025-09-19 15:26:01'},
@@ -759,6 +781,14 @@ var OC_LOCATIONS=[
  {ocId:'OC-CA-OCN-92058-000001',name:'Upost Shipping Center',addr1:'3784 Mission Ave Ste 148',addr2:'',city:'Oceanside',state:'CA',country:'US',postal:'92058',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:33.227719,lng:-117.33188,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00183'],created:'2024-03-02 08:13:51',updated:'2026-03-27 11:08:53'},
  {ocId:'OC-MN-BLM-55437-000001',name:'Postal Dispatch Business Center',addr1:'5123 W 98th St',addr2:'',city:'Bloomington',state:'MN',country:'US',postal:'55437',provider:'LMS',type:'packagehub',sweeper:'LMS',phone:'',lat:44.824115,lng:-93.347352,timezone:'America/Chicago',cutoffTime:'17:00',cutoffTimezone:'America/Chicago',services:['returns','platform_dropoff','retail'],restrictions:['hazmat','prohibited_item','live_animal','over_dimension','overweight'],holidayClosures:[['2026-11-26','Thanksgiving Day'],['2026-12-25','Christmas Day'],['2027-01-01','New Year\'s Day']],hoursText:'',hoursOfOp:[],enable:true,vendorIds:['LOC-00184'],created:'2024-03-02 08:14:09',updated:'2026-02-14 12:36:40'}
 ];
+
+/* v6.0.2 — the inactive record that already holds an id: it stays Not live and the
+   switch is disabled, because the provider says the store is not operating. */
+OC_LOCATIONS.push({ocId:'OC-NY-BKN-11210-000004',name:'Midwood Parcel Point',addr1:'2201 Avenue M',addr2:'',
+ city:'Brooklyn',state:'NY',country:'United States',postal:'11210',provider:'LMS',type:'packagehub',sweeper:'LMS',
+ phone:'',lat:40.6187,lng:-73.9589,timezone:'America/New_York',cutoffTime:'17:00',cutoffTimezone:'America/New_York',
+ services:['returns'],restrictions:[],holidayClosures:[],hoursText:'',hoursOfOp:[],enable:false,
+ vendorIds:['LOC-12207'],created:'2026-11-02 09:05:00',updated:'2026-11-24 03:00:00'});
 
 var DUP_THRESHOLD=75;
 var DUPLICATES=[
@@ -1340,6 +1370,8 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "6.0.2":"<b>供应商说停业的店，不能释放给 eBay。</b>记录状态为 inactive（或被供应商删除 removed）时，Live 开关直接渲染成禁用态 —— 不弹窗、不报错、点不动；手动调用、批量加白名单同样被拒，也不会为它签发 OC 号。演示数据里加了两条 inactive，一条没有号、一条已经有号，两种情况都能看到。",
+  "6.0.1":"<b>每一行都能上线，编号也说明是谁的。</b>没有 OC 号的记录以前在 Live 列显示一个横杠；现在同样给开关 —— 点上线时顺手签发 1:1 的号。筛选与列表里的编号统一叫 <b>Vendor Location ID</b>，不会再和旁边的 OC 号看混。",
   "6.0.0":"<b>一张表，决定都在行上。</b>OC 列表和独立的重复检查页都取消了。每条供应商记录自己带 <b>New</b> / <b>Changed</b> / <b>Synced</b> 标记（对照上一次快照）、白名单状态，以及它所属的 OC 号。<b>Apply to eBay</b> 一次推完所有待应用差异（新记录和变更都算）。选两条点 <b>Mark as duplicate</b>，签发它们共用的 OC 号 —— 这个号不必与任何一条地址一致。白名单支持批量，跟以前的 batch enable 一样。筛选增加五位邮编。",
   "5.1.0":"<b>坐标退出判定，LOW 不再等人。</b>一对记录现在只看文本 —— Zip5 相同或清洗后地址完全一致，再按相邻字符对给分（地址 40 · 名称 10 · 邮编 25 · 州 15 · 城市 10）。距离还印在配对旁边，因为人要看，但它不再升档、不再标灰区，也不再参与「同址几条算簇」。两个连带结果：<b>MEDIUM 变成了真正的队列</b>（以前靠坐标升档把它捞出来），<b>所有配对都是 LOW 的记录直接发号</b> —— 既然都不像，系统就替人确认「不重复」。HIGH 仍然等人：靠阈值把两家店并成一个号收不回来，把一家拆成两个号能收。",
   "5.0.0":"<b>重复检查多了一层身份，OC ID 不再是流水号。</b>按规则文档：每条记录都带 <b>addr_fingerprint</b>（清洗后整条记录的 SHA-256 前 16 位），用来分桶捞候选；<b>OC location ID 只在人工确认同一簇之后才发</b>，而且此后永久不变 —— <code>OC-NY-NYC-10036-000001</code>、<code>OC-TX-AUS-78701-000007</code>。地址更正、清洗规则升级、重跑任务都不改它；拆簇发新号、旧号标废弃，合并簇保留较早的那个。站点层标签变成 <b>HIGH / MEDIUM / LOW</b>，而且一对记录只能靠文本成为候选 —— Zip5 相同，或清洗后地址完全一致（跨邮编）。坐标不生成候选，只做升档（≤30 m）或交给人工（30–100 m）。没有任何自动发号：HIGH 只是排在最前面，不是结论。",
@@ -1516,8 +1548,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='6.0.1';
+var APP_VERSION='6.0.2';
 var VERSIONS=[
+ {v:'6.0.2',type:'patch',date:'2026-11-25',desc:'<b>An inactive store cannot go live.</b> When the provider reports a store inactive (or removed) the live switch is drawn disabled and the click is refused — no id is minted, no whitelist entry is written. Two inactive records were added to the demo so the rule is visible in the list rather than only in the code.'},
  {v:'6.0.1',type:'patch',date:'2026-11-25',desc:'<b>Every row can go live, and the id says whose it is.</b> A record with no OC location used to show a dash where the switch belongs; now it gets the switch too — putting it live mints the 1:1 id in the same click. The id filter and the id column are named <b>Vendor Location ID</b>, so neither can be mistaken for the OC-side id sitting next to them.'},
  {v:'6.0.0',type:'major',date:'2026-11-25',desc:'<b>One table, and the decisions moved onto the row.</b> The OC list and the separate duplicate page are gone. Every provider record carries its own <b>New</b> / <b>Changed</b> / <b>Synced</b> marker against the last snapshot, a <b>Whitelist</b> state, and the OC id it belongs to. <b>Apply to eBay</b> pushes every pending difference in one move — new records and changed ones alike. Select two records and <b>Mark as duplicate</b> mints the OC location they share — the id does not have to match either address. Whitelisting works in bulk, the way batch enable used to. Filters gain a five-digit zip field.'},
  {v:'5.1.0',type:'minor',date:'2026-11-23',desc:'<b>Coordinates left the jury, and LOW stopped waiting.</b> A pair is judged by text alone now — same Zip5 or the same cleaned address across zips, then address 40 · name 10 · postal 25 · province 15 · city 10 on adjacent character pairs. Distance is still printed beside the pair, because a person wants to see it, but it no longer promotes a label, no longer marks a grey zone, and no longer counts records into a cluster. Two consequences: <b>MEDIUM became a real queue</b> (the coordinate upgrade used to carry it), and <b>a record whose every pair is LOW gets its OC ID straight away</b> — nothing looked alike, so the system says "not a duplicate" on the person\'s behalf. HIGH still waits: merging two stores by threshold cannot be undone, splitting one can.'},
@@ -2461,6 +2494,13 @@ function syncInline(v){
   return '';
 }
 function liveSwitch(v){
+  /* v6.0.2 — a store the provider calls inactive (or removed) cannot be released to
+     eBay, whatever its id says. The switch is drawn disabled, so the rule is visible
+     before anybody clicks, not only after a refusal. */
+  if(v.status&&v.status!=='active'){
+    return '<button class="live-toggle" disabled title="the provider reports this store '+esc(v.status)+' — it cannot go live; the source has to change first">'
+      +'<span class="dot"></span>Not live</button>';
+  }
   var oc=ocOf(v.id);
   if(oc&&oc.blocked)return '<span class="badge badge-red" title="blocked in the database — the console cannot change it">Blocked</span>';
   var on=!!oc&&oc.enable&&oc.liveSource===v.id;
@@ -2475,6 +2515,7 @@ function liveSwitch(v){
 function toggleLive(vid){
   if(!isMgr()){showToast('Permission required','Only the Location Manager can change the live record','error');return;}
   var v=findVendor(vid); if(!v)return;
+  if(v.status&&v.status!=='active'){showToast('Cannot go live','The provider reports this store '+v.status+' — it cannot go live until the source changes','error');return;}
   var oc=ocOf(vid);
   if(!oc){
     var ocId=ocIdFor(v.state,v.city,v.postal);
@@ -2625,6 +2666,8 @@ function batchWhitelist(action){
   var done=0,skip=0;
   sel.forEach(function(v){
     var oc=ocOf(v.id);
+    /* v6.0.2 — an inactive store is skipped, not minted and not enabled */
+    if(action==='add'&&v.status&&v.status!=='active'){skip++;return;}
     if(action==='add'){
       if(!oc){
         var ocId=ocIdFor(v.state,v.city,v.postal);
