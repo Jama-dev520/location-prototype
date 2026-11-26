@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location 功能泳道图 · v8.1.0</title>
+<title>Location 功能泳道图 · v8.2.0</title>
 <style>
   :root { color-scheme: light; }
   * { box-sizing: border-box; }
@@ -41,7 +41,7 @@
 <div class="wrap">
   <header>
     <h1>Location 功能泳道图 · 一张列表，一条记录就是一家店</h1>
-    <p class="sub">四条泳道 = 四个角色；五列 = 一条记录从进来、判重、被催、上线到离名单的五个阶段。v8.0.0 之后判重和上线都落在<b>同一条记录</b>上，所以「运营」泳道里不再有换页 —— 只有一行。节点右下角的 <b style="color:#94A3B8">P1</b> 是 2026-11-25 之前就有的，<b style="color:#EB6C36">P2</b> 是 8.x 新增的。</p>
+    <p class="sub">四条泳道 = 四个角色；五列 = 一条记录从进来、判重、被催、上线到离名单的五个阶段。v8.0.0 之后判重和上线都落在<b>同一条记录</b>上，所以「运营」泳道里不再有换页 —— 只有一行；8.2.0 又多了一个入口：疑似重复不铺成行，而是一块<b>配对面板</b>。节点右下角的 <b style="color:#94A3B8">P1</b> 是 2026-11-25 之前就有的，<b style="color:#EB6C36">P2</b> 是 8.x 新增的。</p>
   </header>
 
   <div class="legend">
@@ -108,6 +108,8 @@
 <path d="M 970.0 609.5 L 985.0 609.5 L 985.0 181.5 L 970.0 181.5" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
 <path d="M 382.0 387.5 L 397.0 387.5 L 397.0 549.0 L 1156.0 549.0 L 1156.0 578.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
 <path d="M 1450.0 341.0 L 1327.0 341.0 L 1327.0 838.0 L 1450.0 838.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
+<path d="M 382.0 611.5 L 397.0 611.5 L 397.0 697.5 L 382.0 697.5" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
+<path d="M 382.0 697.5 L 445.0 697.5 L 445.0 727.5 L 460.0 727.5" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
 <path d="M 862.0 213.0 L 862.0 272.0" fill="none" stroke="#94A3B8" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#ar)"/>
 <rect x="166.0" y="150.0" width="216.0" height="79.0" rx="8" fill="#FFFFFF" stroke="#F59E0B" stroke-width="1.5"/>
 <text x="180.0" y="170.0" font-size="12.5" fill="#1E293B">23:30 推送全量</text>
@@ -181,6 +183,12 @@
 <text x="180.0" y="616.0" font-size="12.5" fill="#1E293B">都在行上（原三页合成一张）</text>
 <rect x="350.8" y="626.5" width="22.2" height="12.5" rx="3" fill="#FFF1E9" stroke="none"/>
 <text x="361.9" y="635.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#EB6C36">P2</text>
+<rect x="166.0" y="658.0" width="216.0" height="79.0" rx="8" fill="#FFFFFF" stroke="#10B981" stroke-width="1.5"/>
+<text x="180.0" y="678.0" font-size="12.5" fill="#1E293B">疑似重复 → 配对面板</text>
+<text x="180.0" y="694.0" font-size="12.5" fill="#1E293B">城市 → 邮编 tab → 配对</text>
+<text x="180.0" y="710.0" font-size="12.5" fill="#1E293B">HIGH 先看，MEDIUM 折叠</text>
+<rect x="314.0" y="720.5" width="59.0" height="12.5" rx="3" fill="#FFF1E9" stroke="none"/>
+<text x="343.5" y="729.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#EB6C36">P2 · 8.2.0</text>
 <rect x="460.0" y="578.0" width="216.0" height="95.0" rx="8" fill="#FFF7ED" stroke="#EB6C36" stroke-width="1.5"/>
 <text x="474.0" y="598.0" font-size="12.5" fill="#1E293B">查 Zipcode 找重复</text>
 <text x="474.0" y="614.0" font-size="12.5" fill="#1E293B">按判重分数排序</text>
@@ -236,12 +244,12 @@
     </div>
     <div class="note">
       <b>查邮编是在找重复</b>
-      <p>Zipcode 命中多行时，按<b>判重同款分数</b>（地址 40 · 邮编 25 · 州 15 · 城市 10 · 名称 10）与「结果里建档最早那条」排序，分数印在行上。基准不随其他筛选漂移，所以越筛越窄时顺序是稳的；名称只破平局。</p>
+      <p>两种找法，同一个问题。<b>查邮编</b>：命中多行时按判重同款分数（地址 40 · 邮编 25 · 州 15 · 城市 10 · 名称 10）与「结果里建档最早那条」排序，分数印在行上，基准不随筛选漂移。<b>筛疑似</b>：换成配对面板，城市 → 邮编 tab → 配对，HIGH 先看、MEDIUM 折叠 —— 一盘散沙的 11 对关系不会装成 11 家店。</p>
     </div>
   </div>
 
   <footer>
-    对应原型 v8.1.0 ·
+    对应原型 v8.2.0 ·
     <a href="https://jama-dev520.github.io/location-prototype/" target="_blank" rel="noopener">jama-dev520.github.io/location-prototype</a>
     · 两阶段对照见 <code>diagrams/location-swimlane-phase1-2.html</code> · 判重口径见 <code>Deplicate-check-v3.0-2026-11-23.md</code>
   </footer>
