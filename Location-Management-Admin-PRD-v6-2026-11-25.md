@@ -1,6 +1,6 @@
 # Location Management Admin Console — Product Requirements Document
 
-**Version 8.0.0 ｜ 2026-11-25 ｜ Status: draft for review**
+**Version 8.1.0 ｜ 2026-11-26 ｜ Status: draft for review**
 
 Companion files: clickable prototype (`index.html`), Duplicate check v3.0 (rule document), field mapping (v5.1.0, pending update to this model).
 
@@ -181,7 +181,11 @@ There is no Sync column. A record that matches eBay carries no badge at all; onl
 
 Rows are grouped by pair: a store and its duplicate sit on adjacent lines, primary first. Within a group the order is stable. Outside a group, the provider order is preserved.
 
-When a Zipcode filter is active and more than one row matches, the result is sorted by similarity to the first match, descending, before grouping. Looking up a zip is an act of hunting for a duplicate; the most similar records belong at the top.
+When a Zipcode filter is active and more than one row matches, the rows are ranked by **Address Line 1 similarity to one anchor**, before grouping. The anchor is the **oldest record in the result set** — earliest `created`, tie-broken by id. Similarity is Dice over adjacent character pairs, the same measure the duplicate check uses, and it is printed on every other row as a percentage; the anchor carries an `anchor` chip in place of a score.
+
+Only Address Line 1 ranks. The zip is identical by definition, and city, province and name are already implied by it — the question a zip lookup asks is *"is this the same storefront?"*, and the street line is the only field that answers it. Name similarity breaks ties, then the id, so the order is total and stable.
+
+The anchor is deliberately not "the first row". A base that depends on the current sort re-ranks the whole list whenever another filter changes, which reads as if the data moved. The oldest record is fixed, and it is also the row every later record could be a duplicate of. Grouping happens after ranking, so a **marked** duplicate still sits next to its primary.
 
 ### 6.4 Empty state
 
@@ -300,7 +304,7 @@ All filters are multi-select with type-to-find. Values within one filter are OR;
 | Name | up to 20 conditions | a condition is a phrase, all words required |
 | Province | facet | counts reflect the other filters |
 | City | facet | cascades from Province |
-| Zipcode | up to 20 conditions | first five digits; activates similarity ordering |
+| Zipcode | up to 20 conditions | first five digits; a multi-row result is ranked by Address Line 1 against the oldest record, and the score is printed on the row |
 | Source | facet | three values |
 | Status | facet | provider status |
 | Live | facet | `Live` / `Not live` / `Blocked by system` |
@@ -398,7 +402,7 @@ Errors worth designing for: switching a blocked store, going live on an `inactiv
 10. Selecting two records and confirming `Mark as duplicate` writes `duplicate_of` on the dropped one; neither id changes, and nothing is minted.
 11. The duplicate row shows `duplicate of LOC-xxxxx`; the primary shows `—`. Both rows still show their own vendor location id.
 12. The `Duplicates` filter returns the pair together, adjacent, primary first.
-13. A Zipcode lookup returns every record in that zip, most similar first.
+13. A Zipcode lookup returns every record of that zip, ranked by Address Line 1 similarity to the oldest record in the result; the percentage is printed on each other row and the anchor is labelled. Narrowing the same zip with another filter changes neither the anchor nor the relative order.
 14. Reset clears the text fields, all nine facets and the zip condition; the row count returns to the full list.
 15. Either record of a pair can be made live; doing so unlists the other one and logs `DUPLICATE_UNLISTED`.
 16. Batch add skips rows that cannot go live and reports how many were skipped.
@@ -436,4 +440,4 @@ Errors worth designing for: switching a blocked store, going live on an `inactiv
 
 ---
 
-*End of document. Version 8.0.0, 2026-11-25.*
+*End of document. Version 8.1.0, 2026-11-26.*

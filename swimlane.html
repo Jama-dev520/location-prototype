@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location 功能泳道图 · v4.2.0</title>
+<title>Location 功能泳道图 · v8.1.0</title>
 <style>
   :root { color-scheme: light; }
   * { box-sizing: border-box; }
@@ -12,20 +12,23 @@
     font-family: -apple-system, "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 1620px; margin: 0 auto; }
+  .wrap { max-width: 1640px; margin: 0 auto; }
   header { margin: 0 0 18px; }
   h1 { font-size: 22px; letter-spacing: -.01em; margin: 0 0 6px; }
-  .sub { font-size: 13px; color: #64748B; line-height: 1.6; margin: 0; }
+  .sub { font-size: 13px; color: #64748B; line-height: 1.7; margin: 0; max-width: 1080px; }
   .legend { display: flex; flex-wrap: wrap; gap: 16px; margin: 14px 0 16px; font-size: 12px; color: #475569; }
   .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: 0; }
+  .legend b { font-family: ui-monospace, Menlo, monospace; font-size: 10px; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
   .canvas { background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; padding: 6px 4px; overflow: auto; }
   .canvas svg { display: block; max-width: 100%; height: auto; }
-  .notes { margin: 20px 0 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .notes { margin: 20px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
   .note { background: #fff; border: 1px solid #E2E8F0; border-radius: 10px; padding: 13px 15px; }
   .note b { display: block; font-size: 12.5px; margin-bottom: 5px; }
   .note p { margin: 0; font-size: 12px; line-height: 1.65; color: #475569; }
-  footer { margin-top: 18px; font-size: 11.5px; color: #94A3B8; }
+  footer { margin-top: 18px; font-size: 11.5px; color: #94A3B8; line-height: 1.8; }
   footer a { color: #2563EB; text-decoration: none; }
+  footer code { font-family: ui-monospace, Menlo, monospace; font-size: 10.5px; }
+  @media (max-width: 1100px) { .notes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (max-width: 900px) { .notes { grid-template-columns: 1fr; } }
   @media print {
     body { background: #fff; padding: 0; }
@@ -37,162 +40,215 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Location 功能泳道图</h1>
-    <p class="sub">四条泳道 = 四个角色；五列 = 一条门店记录从进来到上线的五个阶段。箭头是主链路：供应商推 → 系统判 → 运营定 → 上线 → 值继续流动。</p>
+    <h1>Location 功能泳道图 · 一张列表，一条记录就是一家店</h1>
+    <p class="sub">四条泳道 = 四个角色；五列 = 一条记录从进来、判重、被催、上线到离名单的五个阶段。v8.0.0 之后判重和上线都落在<b>同一条记录</b>上，所以「运营」泳道里不再有换页 —— 只有一行。节点右下角的 <b style="color:#94A3B8">P1</b> 是 2026-11-25 之前就有的，<b style="color:#EB6C36">P2</b> 是 8.x 新增的。</p>
   </header>
 
   <div class="legend">
     <span><i style="background:#F59E0B"></i>供应商（PUDO Inc / LMS / M&amp;MP）</span>
-    <span><i style="background:#3B82F6"></i>系统（同步与规则）</span>
+    <span><i style="background:#3B82F6"></i>系统（同步、判重、白名单）</span>
     <span><i style="background:#10B981"></i>运营（Location Manager）</span>
-    <span><i style="background:#94A3B8"></i>下游（客户与路由）</span>
-    <span style="color:#94A3B8">虚线框 = 自动判定，没有人工入口</span>
+    <span><i style="background:#94A3B8"></i>eBay 与下游</span>
+    <span style="color:#EB6C36">橙色实线框 = 8.1.0 新增的排序规则</span>
+    <span style="color:#94A3B8">虚线 = 回流（下次推送 / 重新打开）</span>
   </div>
 
   <div class="canvas">
-<svg viewBox="0 0 1586 956" width="1586" height="956" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, 'Segoe UI', 'Microsoft YaHei', system-ui, sans-serif">
+<svg viewBox="0 0 1606 944" width="1606" height="944" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, 'Segoe UI', 'Microsoft YaHei', system-ui, sans-serif">
 <defs>
 <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B"/></marker>
-<marker id="ard" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#94A3B8"/></marker>
 </defs>
-<rect x="0" y="0" width="1586" height="956" fill="#FFFFFF"/>
-<rect x="128" y="74" width="288" height="870" fill="#FBFCFE"/>
-<text x="140" y="96" font-size="13.5" font-weight="700" fill="#0F172A">01 · 数据进来</text>
-<text x="140" y="113" font-size="10.5" fill="#94A3B8" letter-spacing="0.02em">sync · validate · score</text>
-<rect x="418" y="74" width="288" height="870" fill="#FFFFFF"/>
-<text x="430" y="96" font-size="13.5" font-weight="700" fill="#0F172A">02 · 判定与归属</text>
-<text x="430" y="113" font-size="10.5" fill="#94A3B8" letter-spacing="0.02em">one store or two</text>
-<rect x="708" y="74" width="288" height="870" fill="#FBFCFE"/>
-<text x="720" y="96" font-size="13.5" font-weight="700" fill="#0F172A">03 · 异常与催办</text>
-<text x="720" y="113" font-size="10.5" fill="#94A3B8" letter-spacing="0.02em">flag · export · re-pull</text>
-<rect x="998" y="74" width="288" height="870" fill="#FFFFFF"/>
-<text x="1010" y="96" font-size="13.5" font-weight="700" fill="#0F172A">04 · 上线（签收）</text>
-<text x="1010" y="113" font-size="10.5" fill="#94A3B8" letter-spacing="0.02em">the only decision</text>
-<rect x="1288" y="74" width="288" height="870" fill="#FBFCFE"/>
-<text x="1300" y="96" font-size="13.5" font-weight="700" fill="#0F172A">05 · 上线之后</text>
-<text x="1300" y="113" font-size="10.5" fill="#94A3B8" letter-spacing="0.02em">value flows · drift</text>
-<rect x="22" y="120" width="1542" height="150" fill="#FFF7E6" opacity="0.55"/>
-<line x1="22" y1="120" x2="1564" y2="120" stroke="#E2E8F0"/>
-<rect x="22" y="120" width="4" height="150" fill="#B45309"/>
-<text x="38" y="150" font-size="14" font-weight="700" fill="#B45309">供应商</text>
-<text x="38" y="167" font-size="10" fill="#94A3B8">Providers</text>
-<rect x="22" y="270" width="1542" height="250" fill="#EFF6FF" opacity="0.55"/>
-<line x1="22" y1="270" x2="1564" y2="270" stroke="#E2E8F0"/>
-<rect x="22" y="270" width="4" height="250" fill="#1D4ED8"/>
-<text x="38" y="300" font-size="14" font-weight="700" fill="#1D4ED8">系统</text>
-<text x="38" y="317" font-size="10" fill="#94A3B8">Console rules</text>
-<rect x="22" y="520" width="1542" height="250" fill="#ECFDF5" opacity="0.55"/>
-<line x1="22" y1="520" x2="1564" y2="520" stroke="#E2E8F0"/>
-<rect x="22" y="520" width="4" height="250" fill="#047857"/>
-<text x="38" y="550" font-size="14" font-weight="700" fill="#047857">运营</text>
-<text x="38" y="567" font-size="10" fill="#94A3B8">Location Manager</text>
-<rect x="22" y="770" width="1542" height="156" fill="#F8FAFC" opacity="0.55"/>
-<line x1="22" y1="770" x2="1564" y2="770" stroke="#E2E8F0"/>
-<rect x="22" y="770" width="4" height="156" fill="#475569"/>
-<text x="38" y="800" font-size="14" font-weight="700" fill="#475569">下游</text>
-<text x="38" y="817" font-size="10" fill="#94A3B8">Customers / routing</text>
-<path d="M 272.0 206.0 L 272.0 290.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
-<path d="M 272.0 354.0 L 272.0 384.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
-<path d="M 378.0 416.0 L 393.0 416.0 L 393.0 580.0 L 456.0 580.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
-<path d="M 562.0 620.0 L 562.0 290.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
-<path d="M 668.0 322.0 L 683.0 322.0 L 683.0 572.0 L 746.0 572.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
-<path d="M 852.0 604.0 L 852.0 628.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
-<path d="M 958.0 652.0 L 973.0 652.0 L 973.0 166.0 L 958.0 166.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
-<path d="M 852.0 190.0 L 852.0 290.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
-<path d="M 958.0 322.0 L 997.0 322.0 L 997.0 338.0 L 1036.0 338.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
-<path d="M 1142.0 386.0 L 1142.0 540.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
-<path d="M 1248.0 572.0 L 1248.0 800.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
-<path d="M 1432.0 190.0 L 1432.0 290.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
-<path d="M 1432.0 370.0 L 1311.0 370.0 L 1311.0 800.0 L 1432.0 800.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ard)" stroke-linejoin="round"/>
-<path d="M 482.0 402.0 L 482.0 364.0" fill="none" stroke="#94A3B8" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#ard)"/>
-<rect x="166.0" y="142.0" width="212.0" height="64.0" rx="8" fill="#FFFFFF" stroke="#F59E0B" stroke-width="1.4"/>
-<text x="180.0" y="162.0" font-size="12.5" fill="#1E293B">推送门店数据</text>
-<text x="180.0" y="178.0" font-size="12.5" fill="#1E293B">新增 · 变更 · 下架</text>
-<text x="180.0" y="194.0" font-size="12.5" fill="#1E293B">PUDO Inc / LMS / M&amp;MP</text>
-<rect x="746.0" y="142.0" width="212.0" height="48.0" rx="8" fill="#FFFFFF" stroke="#F59E0B" stroke-width="1.4"/>
-<text x="760.0" y="162.0" font-size="12.5" fill="#1E293B">按清单修源头</text>
-<text x="760.0" y="178.0" font-size="12.5" fill="#1E293B">下次推送带上正确值</text>
-<rect x="1326.0" y="142.0" width="212.0" height="48.0" rx="8" fill="#FFFFFF" stroke="#F59E0B" stroke-width="1.4"/>
-<text x="1340.0" y="162.0" font-size="12.5" fill="#1E293B">上线后继续推值</text>
-<text x="1340.0" y="178.0" font-size="12.5" fill="#1E293B">或把记录下架</text>
-<rect x="166.0" y="290.0" width="212.0" height="64.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.4"/>
-<text x="180.0" y="310.0" font-size="12.5" fill="#1E293B">校验 + 算相似度</text>
-<text x="180.0" y="326.0" font-size="12.5" fill="#1E293B">相邻字符对 · 排序后比重合</text>
-<text x="180.0" y="342.0" font-size="12.5" fill="#1E293B">权重 40·10·25·15·10</text>
-<rect x="166.0" y="384.0" width="212.0" height="64.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.4" stroke-dasharray="5 4"/>
-<text x="180.0" y="404.0" font-size="12.5" fill="#1E293B">HIGH ≥80 · MEDIUM 50–79</text>
-<text x="180.0" y="420.0" font-size="12.5" fill="#1E293B">进待判定，先不给 OC</text>
-<text x="180.0" y="436.0" font-size="12.5" fill="#1E293B">其余直接生成 OC（1:1）</text>
-<rect x="456.0" y="290.0" width="212.0" height="64.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.4"/>
-<text x="470.0" y="310.0" font-size="12.5" fill="#1E293B">2:1：一个 OC 挂多条记录</text>
-<text x="470.0" y="326.0" font-size="12.5" fill="#1E293B">只有一个 live source 供数</text>
-<text x="470.0" y="342.0" font-size="12.5" fill="#1E293B">其余 standby：看得见、不供数</text>
-<rect x="456.0" y="402.0" width="212.0" height="80.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.4" stroke-dasharray="5 4"/>
-<text x="470.0" y="422.0" font-size="12.5" fill="#1E293B">身份字段变了 → 只重判这条来</text>
-<text x="470.0" y="438.0" font-size="12.5" fill="#1E293B">源</text>
-<text x="470.0" y="454.0" font-size="12.5" fill="#1E293B">出「映射变更」提案，等人确认</text>
-<text x="470.0" y="470.0" font-size="12.5" fill="#1E293B">两边同时变 → 进人工</text>
-<rect x="746.0" y="290.0" width="212.0" height="64.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.4"/>
-<text x="760.0" y="310.0" font-size="12.5" fill="#1E293B">下次同步重判异常</text>
-<text x="760.0" y="326.0" font-size="12.5" fill="#1E293B">变了且合法 → 自动关闭</text>
-<text x="760.0" y="342.0" font-size="12.5" fill="#1E293B">（限缺失/格式/矛盾/超范围）</text>
-<rect x="1036.0" y="290.0" width="212.0" height="96.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.4"/>
-<text x="1050.0" y="310.0" font-size="12.5" fill="#1E293B">签收检查针对「一条记录」</text>
-<text x="1050.0" y="326.0" font-size="12.5" fill="#1E293B">该记录 active · 有营业时间</text>
-<text x="1050.0" y="342.0" font-size="12.5" fill="#1E293B">无 blocking 异常 · 无待判重</text>
-<text x="1050.0" y="358.0" font-size="12.5" fill="#1E293B">复</text>
-<text x="1050.0" y="374.0" font-size="12.5" fill="#1E293B">换源 = 带换源的签收</text>
-<rect x="1326.0" y="290.0" width="212.0" height="80.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.4"/>
-<text x="1340.0" y="310.0" font-size="12.5" fill="#1E293B">值直通下游，记漂移</text>
-<text x="1340.0" y="326.0" font-size="12.5" fill="#1E293B">（漂移只回答变了什么）</text>
-<text x="1340.0" y="342.0" font-size="12.5" fill="#1E293B">记录 inactive → OC 自动停用</text>
-<text x="1340.0" y="358.0" font-size="12.5" fill="#1E293B">关掉 live 行 = 整店下线</text>
-<rect x="456.0" y="540.0" width="212.0" height="80.0" rx="8" fill="#FFFFFF" stroke="#10B981" stroke-width="1.4"/>
-<text x="470.0" y="560.0" font-size="12.5" fill="#1E293B">A/B 逐字段读一遍</text>
-<text x="470.0" y="576.0" font-size="12.5" fill="#1E293B">每行印重合比例，不是对勾</text>
-<text x="470.0" y="592.0" font-size="12.5" fill="#1E293B">三种处置：同一站点 / 同址两家</text>
-<text x="470.0" y="608.0" font-size="12.5" fill="#1E293B"> / 地址待纠正</text>
-<rect x="746.0" y="540.0" width="212.0" height="64.0" rx="8" fill="#FFFFFF" stroke="#10B981" stroke-width="1.4"/>
-<text x="760.0" y="560.0" font-size="12.5" fill="#1E293B">标记异常</text>
-<text x="760.0" y="576.0" font-size="12.5" fill="#1E293B">字段 → 子字段 → 7 类</text>
-<text x="760.0" y="592.0" font-size="12.5" fill="#1E293B">→ 阻塞 / 提醒</text>
-<rect x="746.0" y="628.0" width="212.0" height="48.0" rx="8" fill="#FFFFFF" stroke="#10B981" stroke-width="1.4"/>
-<text x="760.0" y="648.0" font-size="12.5" fill="#1E293B">导出 CSV 发给供应商</text>
-<text x="760.0" y="664.0" font-size="12.5" fill="#1E293B">（带店名地址，不只单号）</text>
-<rect x="1036.0" y="540.0" width="212.0" height="64.0" rx="8" fill="#FFFFFF" stroke="#10B981" stroke-width="1.4"/>
-<text x="1050.0" y="560.0" font-size="12.5" fill="#1E293B">勾选 + 启用并签收</text>
-<text x="1050.0" y="576.0" font-size="12.5" fill="#1E293B">（针对所选的那条记录）</text>
-<text x="1050.0" y="592.0" font-size="12.5" fill="#1E293B">记基线；下线永远一键</text>
-<rect x="1036.0" y="628.0" width="212.0" height="64.0" rx="8" fill="#FFFFFF" stroke="#10B981" stroke-width="1.4"/>
-<text x="1050.0" y="648.0" font-size="12.5" fill="#1E293B">换源：点另一条记录的开关</text>
-<text x="1050.0" y="664.0" font-size="12.5" fill="#1E293B">字段整条替换、基线重记</text>
-<text x="1050.0" y="680.0" font-size="12.5" fill="#1E293B">店不中断</text>
-<rect x="166.0" y="800.0" width="792.0" height="32.0" rx="8" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
-<text x="180.0" y="820.0" font-size="12.5" fill="#1E293B">签收之前：客户看不到这家店 —— 数据异常不会把它「推上线」，只有签收会。这也是为什么异常再多，也不影响已经上线的那批店</text>
-<rect x="1036.0" y="800.0" width="502.0" height="32.0" rx="8" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
-<text x="1050.0" y="820.0" font-size="12.5" fill="#1E293B">签收之后：可见 —— 客户拿到的永远是当前值；OC 停用或记录下架就消失</text>
+<rect x="0" y="0" width="1606" height="944" fill="#FFFFFF"/>
+<rect x="128" y="78" width="292" height="854" fill="#FBFCFE"/>
+<text x="140" y="100" font-size="13.5" font-weight="700" fill="#0F172A">01 · 数据进来</text>
+<text x="140" y="118" font-size="10.5" fill="#94A3B8" letter-spacing="0.01em">P1 · 23:30 全量 · 快照 diff</text>
+<rect x="422" y="78" width="292" height="854" fill="#FFFFFF"/>
+<text x="434" y="100" font-size="13.5" font-weight="700" fill="#0F172A">02 · 判重</text>
+<text x="434" y="118" font-size="10.5" fill="#94A3B8" letter-spacing="0.01em">P1 · 只靠文本 · 三档排队</text>
+<rect x="716" y="78" width="292" height="854" fill="#FBFCFE"/>
+<text x="728" y="100" font-size="13.5" font-weight="700" fill="#0F172A">03 · 异常与催办</text>
+<text x="728" y="118" font-size="10.5" fill="#94A3B8" letter-spacing="0.01em">P1 · 标记 · 导出 · 重推</text>
+<rect x="1010" y="78" width="292" height="854" fill="#FFFFFF"/>
+<text x="1022" y="100" font-size="13.5" font-weight="700" fill="#0F172A">04 · 上线</text>
+<text x="1022" y="118" font-size="10.5" fill="#94A3B8" letter-spacing="0.01em">P2 · 行内开关 = 发布</text>
+<rect x="1304" y="78" width="292" height="854" fill="#FBFCFE"/>
+<text x="1316" y="100" font-size="13.5" font-weight="700" fill="#0F172A">05 · 上线之后</text>
+<text x="1316" y="118" font-size="10.5" fill="#94A3B8" letter-spacing="0.01em">P1/P2 · 继续流动 · 离开名单</text>
+<rect x="22" y="126" width="1562" height="132" fill="#FFF7E6" opacity="0.55"/>
+<line x1="22" y1="126" x2="1584" y2="126" stroke="#E2E8F0"/>
+<rect x="22" y="126" width="4" height="132" fill="#B45309"/>
+<text x="38" y="156" font-size="14" font-weight="700" fill="#B45309">供应商</text>
+<text x="38" y="173" font-size="10" fill="#94A3B8">Providers</text>
+<rect x="22" y="258" width="1562" height="300" fill="#EFF6FF" opacity="0.55"/>
+<line x1="22" y1="258" x2="1584" y2="258" stroke="#E2E8F0"/>
+<rect x="22" y="258" width="4" height="300" fill="#1D4ED8"/>
+<text x="38" y="288" font-size="14" font-weight="700" fill="#1D4ED8">系统</text>
+<text x="38" y="305" font-size="10" fill="#94A3B8">Sync &amp; rules</text>
+<rect x="22" y="558" width="1562" height="240" fill="#ECFDF5" opacity="0.55"/>
+<line x1="22" y1="558" x2="1584" y2="558" stroke="#E2E8F0"/>
+<rect x="22" y="558" width="4" height="240" fill="#047857"/>
+<text x="38" y="588" font-size="14" font-weight="700" fill="#047857">运营</text>
+<text x="38" y="605" font-size="10" fill="#94A3B8">Location Manager</text>
+<rect x="22" y="798" width="1562" height="118" fill="#F8FAFC" opacity="0.55"/>
+<line x1="22" y1="798" x2="1584" y2="798" stroke="#E2E8F0"/>
+<rect x="22" y="798" width="4" height="118" fill="#475569"/>
+<text x="38" y="828" font-size="14" font-weight="700" fill="#475569">eBay 与下游</text>
+<text x="38" y="845" font-size="10" fill="#94A3B8">Customers / routing</text>
+<path d="M 274.0 229.0 L 274.0 278.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
+<path d="M 382.0 309.5 L 397.0 309.5 L 397.0 387.5 L 382.0 387.5" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
+<path d="M 382.0 465.5 L 445.0 465.5 L 445.0 309.5 L 460.0 309.5" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
+<path d="M 676.0 309.5 L 691.0 309.5 L 691.0 387.5 L 676.0 387.5" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
+<path d="M 676.0 387.5 L 691.0 387.5 L 691.0 473.5 L 676.0 473.5" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
+<path d="M 568.0 513.0 L 568.0 578.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
+<path d="M 676.0 625.5 L 691.0 625.5 L 691.0 727.5 L 676.0 727.5" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
+<path d="M 676.0 727.5 L 1033.0 727.5 L 1033.0 609.5 L 1048.0 609.5" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
+<path d="M 1156.0 578.0 L 1156.0 419.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
+<path d="M 1264.0 387.5 L 1279.0 387.5 L 1279.0 828.0 L 1303.0 828.0 L 1303.0 838.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
+<path d="M 862.0 341.0 L 862.0 578.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
+<path d="M 970.0 609.5 L 985.0 609.5 L 985.0 181.5 L 970.0 181.5" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
+<path d="M 382.0 387.5 L 397.0 387.5 L 397.0 549.0 L 1156.0 549.0 L 1156.0 578.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
+<path d="M 1450.0 341.0 L 1327.0 341.0 L 1327.0 838.0 L 1450.0 838.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
+<path d="M 862.0 213.0 L 862.0 272.0" fill="none" stroke="#94A3B8" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#ar)"/>
+<rect x="166.0" y="150.0" width="216.0" height="79.0" rx="8" fill="#FFFFFF" stroke="#F59E0B" stroke-width="1.5"/>
+<text x="180.0" y="170.0" font-size="12.5" fill="#1E293B">23:30 推送全量</text>
+<text x="180.0" y="186.0" font-size="12.5" fill="#1E293B">新增 · 变更 · 下架</text>
+<text x="180.0" y="202.0" font-size="12.5" fill="#1E293B">PUDO Inc / LMS / M&amp;MP</text>
+<rect x="350.8" y="212.5" width="22.2" height="12.5" rx="3" fill="#F1F5F9" stroke="none"/>
+<text x="361.9" y="221.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#94A3B8">P1</text>
+<rect x="754.0" y="150.0" width="216.0" height="63.0" rx="8" fill="#FFFFFF" stroke="#F59E0B" stroke-width="1.5"/>
+<text x="768.0" y="170.0" font-size="12.5" fill="#1E293B">按导出的清单改源头</text>
+<text x="768.0" y="186.0" font-size="12.5" fill="#1E293B">下次推送带上正确值</text>
+<rect x="938.8" y="196.5" width="22.2" height="12.5" rx="3" fill="#F1F5F9" stroke="none"/>
+<text x="949.9" y="205.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#94A3B8">P1</text>
+<rect x="1342.0" y="150.0" width="216.0" height="63.0" rx="8" fill="#FFFFFF" stroke="#F59E0B" stroke-width="1.5"/>
+<text x="1356.0" y="170.0" font-size="12.5" fill="#1E293B">上线后继续推值</text>
+<text x="1356.0" y="186.0" font-size="12.5" fill="#1E293B">或 is_enable=0 下架</text>
+<rect x="1526.8" y="196.5" width="22.2" height="12.5" rx="3" fill="#F1F5F9" stroke="none"/>
+<text x="1537.9" y="205.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#94A3B8">P1</text>
+<rect x="166.0" y="278.0" width="216.0" height="63.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5"/>
+<text x="180.0" y="298.0" font-size="12.5" fill="#1E293B">落快照 + 逐字段 diff</text>
+<text x="180.0" y="314.0" font-size="12.5" fill="#1E293B">new / changed / synced</text>
+<rect x="350.8" y="324.5" width="22.2" height="12.5" rx="3" fill="#F1F5F9" stroke="none"/>
+<text x="361.9" y="333.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#94A3B8">P1</text>
+<rect x="166.0" y="356.0" width="216.0" height="63.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5"/>
+<text x="180.0" y="376.0" font-size="12.5" fill="#1E293B">变动即撤下白名单</text>
+<text x="180.0" y="392.0" font-size="12.5" fill="#1E293B">回 Not live，等运营重开</text>
+<rect x="350.8" y="402.5" width="22.2" height="12.5" rx="3" fill="#FFF1E9" stroke="none"/>
+<text x="361.9" y="411.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#EB6C36">P2</text>
+<rect x="166.0" y="434.0" width="216.0" height="63.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5"/>
+<text x="180.0" y="454.0" font-size="12.5" fill="#1E293B">清洗后算指纹</text>
+<text x="180.0" y="470.0" font-size="12.5" fill="#1E293B">addr_fingerprint 只分桶</text>
+<rect x="350.8" y="480.5" width="22.2" height="12.5" rx="3" fill="#F1F5F9" stroke="none"/>
+<text x="361.9" y="489.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#94A3B8">P1</text>
+<rect x="460.0" y="278.0" width="216.0" height="63.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5"/>
+<text x="474.0" y="298.0" font-size="12.5" fill="#1E293B">全量两两比，不预生成候选</text>
+<text x="474.0" y="314.0" font-size="12.5" fill="#1E293B">Dice：相邻字符对重合度</text>
+<rect x="644.8" y="324.5" width="22.2" height="12.5" rx="3" fill="#F1F5F9" stroke="none"/>
+<text x="655.9" y="333.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#94A3B8">P1</text>
+<rect x="460.0" y="356.0" width="216.0" height="63.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5"/>
+<text x="474.0" y="376.0" font-size="12.5" fill="#1E293B">地址 40 · 邮编 25 · 州 15</text>
+<text x="474.0" y="392.0" font-size="12.5" fill="#1E293B">城市 10 · 名称 10</text>
+<rect x="644.8" y="402.5" width="22.2" height="12.5" rx="3" fill="#F1F5F9" stroke="none"/>
+<text x="655.9" y="411.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#94A3B8">P1</text>
+<rect x="460.0" y="434.0" width="216.0" height="79.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5"/>
+<text x="474.0" y="454.0" font-size="12.5" fill="#1E293B">HIGH ≥80 排队</text>
+<text x="474.0" y="470.0" font-size="12.5" fill="#1E293B">MEDIUM 50–79 且地址 ≥50%</text>
+<text x="474.0" y="486.0" font-size="12.5" fill="#1E293B">LOW：自动判「不是重复」</text>
+<rect x="644.8" y="496.5" width="22.2" height="12.5" rx="3" fill="#F1F5F9" stroke="none"/>
+<text x="655.9" y="505.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#94A3B8">P1</text>
+<rect x="754.0" y="278.0" width="216.0" height="63.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5"/>
+<text x="768.0" y="298.0" font-size="12.5" fill="#1E293B">7 类异常 → 阻塞 / 提醒</text>
+<text x="768.0" y="314.0" font-size="12.5" fill="#1E293B">下次同步变且合法就自动关闭</text>
+<rect x="938.8" y="324.5" width="22.2" height="12.5" rx="3" fill="#F1F5F9" stroke="none"/>
+<text x="949.9" y="333.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#94A3B8">P1</text>
+<rect x="1048.0" y="278.0" width="216.0" height="63.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5"/>
+<text x="1062.0" y="298.0" font-size="12.5" fill="#1E293B">白名单三态</text>
+<text x="1062.0" y="314.0" font-size="12.5" fill="#1E293B">white / black / none</text>
+<rect x="1232.8" y="324.5" width="22.2" height="12.5" rx="3" fill="#F1F5F9" stroke="none"/>
+<text x="1243.9" y="333.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#94A3B8">P1</text>
+<rect x="1048.0" y="356.0" width="216.0" height="63.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5"/>
+<text x="1062.0" y="376.0" font-size="12.5" fill="#1E293B">上线即发布：写 live、</text>
+<text x="1062.0" y="392.0" font-size="12.5" fill="#1E293B">白名单、基线，一次动作</text>
+<rect x="1232.8" y="402.5" width="22.2" height="12.5" rx="3" fill="#FFF1E9" stroke="none"/>
+<text x="1243.9" y="411.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#EB6C36">P2</text>
+<rect x="1342.0" y="278.0" width="216.0" height="63.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5"/>
+<text x="1356.0" y="298.0" font-size="12.5" fill="#1E293B">is_enable=0 / is_active=0</text>
+<text x="1356.0" y="314.0" font-size="12.5" fill="#1E293B">自动离名单，不自动恢复</text>
+<rect x="1526.8" y="324.5" width="22.2" height="12.5" rx="3" fill="#F1F5F9" stroke="none"/>
+<text x="1537.9" y="333.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#94A3B8">P1</text>
+<rect x="1342.0" y="356.0" width="216.0" height="63.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5"/>
+<text x="1356.0" y="376.0" font-size="12.5" fill="#1E293B">配对互斥：一条 live，</text>
+<text x="1356.0" y="392.0" font-size="12.5" fill="#1E293B">另一条自动撤下</text>
+<rect x="1526.8" y="402.5" width="22.2" height="12.5" rx="3" fill="#FFF1E9" stroke="none"/>
+<text x="1537.9" y="411.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#EB6C36">P2</text>
+<rect x="166.0" y="580.0" width="216.0" height="63.0" rx="8" fill="#FFFFFF" stroke="#10B981" stroke-width="1.5"/>
+<text x="180.0" y="600.0" font-size="12.5" fill="#1E293B">一张列表：筛选、判重、上线</text>
+<text x="180.0" y="616.0" font-size="12.5" fill="#1E293B">都在行上（原三页合成一张）</text>
+<rect x="350.8" y="626.5" width="22.2" height="12.5" rx="3" fill="#FFF1E9" stroke="none"/>
+<text x="361.9" y="635.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#EB6C36">P2</text>
+<rect x="460.0" y="578.0" width="216.0" height="95.0" rx="8" fill="#FFF7ED" stroke="#EB6C36" stroke-width="1.5"/>
+<text x="474.0" y="598.0" font-size="12.5" fill="#1E293B">查 Zipcode 找重复</text>
+<text x="474.0" y="614.0" font-size="12.5" fill="#1E293B">按 Address Line 1 排序</text>
+<text x="474.0" y="630.0" font-size="12.5" fill="#1E293B">基准＝建档最早那条，分数印在</text>
+<text x="474.0" y="646.0" font-size="12.5" fill="#1E293B">行上</text>
+<rect x="608.0" y="656.5" width="59.0" height="12.5" rx="3" fill="#FFF1E9" stroke="none"/>
+<text x="637.5" y="665.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#EB6C36">P2 · 8.1.0</text>
+<rect x="460.0" y="688.0" width="216.0" height="79.0" rx="8" fill="#FFFFFF" stroke="#10B981" stroke-width="1.5"/>
+<text x="474.0" y="708.0" font-size="12.5" fill="#1E293B">选中两条 → Mark as</text>
+<text x="474.0" y="724.0" font-size="12.5" fill="#1E293B">duplicate</text>
+<text x="474.0" y="740.0" font-size="12.5" fill="#1E293B">只写 duplicate of，不换号</text>
+<rect x="644.8" y="750.5" width="22.2" height="12.5" rx="3" fill="#FFF1E9" stroke="none"/>
+<text x="655.9" y="759.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#EB6C36">P2</text>
+<rect x="754.0" y="578.0" width="216.0" height="63.0" rx="8" fill="#FFFFFF" stroke="#10B981" stroke-width="1.5"/>
+<text x="768.0" y="598.0" font-size="12.5" fill="#1E293B">标异常 → 导出 CSV</text>
+<text x="768.0" y="614.0" font-size="12.5" fill="#1E293B">带店名地址，不只单号</text>
+<rect x="938.8" y="624.5" width="22.2" height="12.5" rx="3" fill="#F1F5F9" stroke="none"/>
+<text x="949.9" y="633.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#94A3B8">P1</text>
+<rect x="1048.0" y="578.0" width="216.0" height="63.0" rx="8" fill="#FFFFFF" stroke="#10B981" stroke-width="1.5"/>
+<text x="1062.0" y="598.0" font-size="12.5" fill="#1E293B">行内 Live 开关</text>
+<text x="1062.0" y="614.0" font-size="12.5" fill="#1E293B">上线一键，下线也一键</text>
+<rect x="1232.8" y="624.5" width="22.2" height="12.5" rx="3" fill="#FFF1E9" stroke="none"/>
+<text x="1243.9" y="633.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#EB6C36">P2</text>
+<rect x="1048.0" y="656.0" width="216.0" height="63.0" rx="8" fill="#FFFFFF" stroke="#10B981" stroke-width="1.5"/>
+<text x="1062.0" y="676.0" font-size="12.5" fill="#1E293B">换源：点另一条的开关</text>
+<text x="1062.0" y="692.0" font-size="12.5" fill="#1E293B">字段整条替换，店不中断</text>
+<rect x="1232.8" y="702.5" width="22.2" height="12.5" rx="3" fill="#FFF1E9" stroke="none"/>
+<text x="1243.9" y="711.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#EB6C36">P2</text>
+<rect x="1342.0" y="578.0" width="216.0" height="63.0" rx="8" fill="#FFFFFF" stroke="#10B981" stroke-width="1.5"/>
+<text x="1356.0" y="598.0" font-size="12.5" fill="#1E293B">改店铺信息 = 最终裁决</text>
+<text x="1356.0" y="614.0" font-size="12.5" fill="#1E293B">立即推下游、刷基线、锁字段</text>
+<rect x="1526.8" y="624.5" width="22.2" height="12.5" rx="3" fill="#F1F5F9" stroke="none"/>
+<text x="1537.9" y="633.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#94A3B8">P1</text>
+<rect x="166.0" y="838.0" width="804.0" height="34.0" rx="8" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/>
+<text x="180.0" y="858.0" font-size="12.5" fill="#1E293B">没有 live：客户看不到 —— 异常再多也不会把它推上线，只有那个开关会</text>
+<rect x="1048.0" y="838.0" width="510.0" height="34.0" rx="8" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/>
+<text x="1062.0" y="858.0" font-size="12.5" fill="#1E293B">live 之后：可见 —— 撤下、关店或作废，立刻消失</text>
 </svg>
   </div>
 
   <div class="notes">
     <div class="note">
-      <b>只有两个动作是人做的</b>
-      <p>启用（签收）和标记异常。没有编辑框 —— 地址错了不是拿键盘盖掉，是标给拥有这条记录的人去改。</p>
+      <b>人只做三件事：判重、上线、必要时改店</b>
+      <p>地址错了先标异常，让拥有这条记录的人去改；运营自己发现不对可以直接改，改完立即推下游、刷基线、锁字段 —— 不再过 review。没有「应用变更」这一步：上线就是发布。</p>
     </div>
     <div class="note">
-      <b>值永远往下走，判断永远留给人</b>
-      <p>供应商推来的值直接给下游；控制台不决定「应用不应用」，只决定「标不标、催不催、上不上线」。</p>
+      <b>名单才是上线开关，开关在行上</b>
+      <p>写进白名单 = 上线 = 当前值发到 eBay，一次动作。黑名单仍由开发侧控制，控制台只读。供应商关店（is_enable=0）或记录作废，系统自动把它移出名单，重开不会自己回来。</p>
     </div>
     <div class="note">
-      <b>一条记录供整店，且只能有一条</b>
-      <p>2:1 时由 live source 那条记录供全部字段（空的也照空），其余是 standby；新同步进来的记录默认不 live，换源要重新签收。数据异常只影响能不能签收，不影响已经上线的店。</p>
+      <b>判重只看文本，一条记录只服从一个开关</b>
+      <p>候选来自文本：同一个 Zip5，或清洗后地址完全相同。坐标只印距离，不参与判定。一对重复记录里只能有一条 live —— 打开一条，另一条自动撤下。</p>
+    </div>
+    <div class="note">
+      <b>查邮编是在找重复</b>
+      <p>Zipcode 命中多行时，按 <b>Address Line 1</b> 与「结果里建档最早那条」的相似度排序，分数印在行上。基准不随其他筛选漂移，所以越筛越窄时顺序是稳的；名称只破平局。</p>
     </div>
   </div>
 
   <footer>
-    对应原型 v4.2.0 ·
+    对应原型 v8.1.0 ·
     <a href="https://jama-dev520.github.io/location-prototype/" target="_blank" rel="noopener">jama-dev520.github.io/location-prototype</a>
-    · 细分流程见 <code>diagrams/flow4-duplicate.png</code>（站点层）、<code>flow12-duplicate-cycle.png</code>（映射层）、<code>flow13-location-state.png</code>（状态机）
+    · 两阶段对照见 <code>diagrams/location-swimlane-phase1-2.html</code> · 判重口径见 <code>Deplicate-check-v3.0-2026-11-23.md</code>
   </footer>
 </div>
 </body>

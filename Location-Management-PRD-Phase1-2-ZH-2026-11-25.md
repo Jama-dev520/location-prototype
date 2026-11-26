@@ -2,7 +2,7 @@
 
 **版本 1.1 ｜ 2026-11-25 ｜ 状态：待评审**
 
-配套文件：可交互原型（`index.html`，v8.0.0）· 判重规则 `Deplicate-check-v3.0` · **泳道图** `diagrams/location-swimlane-phase1-2.html` —— 两个阶段并排，同样的四条泳道（Provider / Sync / Console / eBay），橙色那一格就是决定客户能否看到的那一步。
+配套文件：可交互原型（`index.html`，v8.1.0）· 判重规则 `Deplicate-check-v3.0` · **泳道图** `diagrams/location-swimlane-phase1-2.html` —— 两个阶段并排，同样的四条泳道（Provider / Sync / Console / eBay），橙色那一格就是决定客户能否看到的那一步。
 
 这份文档故意把同一个产品写两遍。**阶段一**是 **2026-11-25 之前**的控制台（v5.x 形态，线上发布版本为 v5.0.0）；**阶段二**是 **8.0.0**，用「一张列表」取代它。两个阶段共享数据模型与 eBay 契约，差别在于**运营要碰几个页面**、以及**有没有第二个身份键**。文档把这个差别摆出来，而不是把历史改写掉。
 
@@ -156,7 +156,7 @@
 | Name | 最多 20 个条件，短语 |
 | Province | facet，级联 |
 | City | facet |
-| Zipcode | 最多 20 个条件；命中后按相似度排序 |
+| Zipcode | 最多 20 个条件；命中多行时按 Address Line 1 对「结果中建档最早那条」的相似度排序，分数印在行上 |
 | Source | facet |
 | Status | facet |
 | Live | `Live` / `Not live` / `Blocked by system` |
@@ -166,6 +166,8 @@
 | Issues | facet |
 
 `OC Location ID` 没有了：这个号不存在了，而 `Vendor Location ID` 回答的是同一个问题。
+
+**Zipcode 命中的排序（8.1.0）**：查邮编是运营找重复的动作，所以命中多行时按 Address Line 1 与基准行的 Dice 相似度降序。基准行取**结果里 `created` 最早的那条**，而不是当前第一行 —— 基准不随其他筛选漂移，顺序才不会看起来像数据在动。名称只破平局，邮编在同一个查询里恒等，两者都不进排序。
 
 ### 3.4 运营能做什么
 

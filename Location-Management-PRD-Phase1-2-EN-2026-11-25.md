@@ -2,7 +2,7 @@
 
 **Version 1.1 ｜ 2026-11-25 ｜ Status: draft for review**
 
-Companion files: clickable prototype (`index.html`, v8.0.0) · Duplicate check v3.0 (similarity rules) · **swimlane** `diagrams/location-swimlane-phase1-2.html` — the two phases side by side, same four lanes (Provider / Sync / Console / eBay), with the one step that decides customer visibility marked.
+Companion files: clickable prototype (`index.html`, v8.1.0) · Duplicate check v3.0 (similarity rules) · **swimlane** `diagrams/location-swimlane-phase1-2.html` — the two phases side by side, same four lanes (Provider / Sync / Console / eBay), with the one step that decides customer visibility marked.
 
 This document describes the same product twice. **Phase 1** is the console as it stood **before 2026-11-25** (the v5.x build; the published snapshot is v5.0.0). **Phase 2** is **8.0.0**, the single-list model that replaces it. The two phases share the data and the eBay contract; they differ in how many pages an operator touches, and in whether a second identity key exists. This document keeps that difference visible instead of rewriting history.
 
@@ -156,7 +156,7 @@ Multi-select facets, OR inside a filter, AND between filters; `Reset` clears eve
 | Name | up to 20 conditions, phrase |
 | Province | facet, cascades |
 | City | facet |
-| Zipcode | up to 20 conditions; activates similarity ordering |
+| Zipcode | up to 20 conditions; a multi-row hit is ranked by Address Line 1 against the oldest record, score printed on the row |
 | Source | facet |
 | Status | facet |
 | Live | `Live` / `Not live` / `Blocked by system` |
@@ -166,6 +166,8 @@ Multi-select facets, OR inside a filter, AND between filters; `Reset` clears eve
 | Issues | facet |
 
 `OC Location ID` is gone: the id no longer exists, and `Vendor Location ID` answers the same question.
+
+**How a zip lookup orders its rows (8.1.0).** Looking up a zip is how an operator hunts for a duplicate, so a multi-row hit is ranked by **Address Line 1 Dice similarity** against one anchor — the **oldest record in the result** (earliest `created`, tie-broken by id). The score is printed on every other row; the anchor carries a label instead. The anchor is not "the first row" on purpose: a base that follows the current sort re-ranks the list whenever another filter changes, which reads as if the data moved. Name breaks ties, and the zip — identical by definition — plays no part.
 
 ### 3.4 What the operator can do
 
