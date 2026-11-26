@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v8.1.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v8.2.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -467,6 +467,48 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
 .phase-legend{display:inline-flex;align-items:center;gap:8px;font-size:10.5px;color:var(--text-tertiary)}
 .phase-legend b{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9px;padding:1px 4px;border:1px solid #CBD5E1;border-radius:3px;color:#64748B;font-weight:600}
 .phase-legend b:last-of-type{border-color:#FDBA74;background:#FFF7ED;color:#B45309}
+
+/* v8.1.1 — suspected duplicates: a board of pairs, not rows in the record table.
+   A record can sit in many unconfirmed pairs; a pair is the unit a person decides on,
+   so it gets a row of its own, and the board is always scoped to one zip. */
+.suspect{background:var(--bg-card);border:1px solid var(--bg-section);border-radius:var(--radius);padding:var(--space-4)}
+.sus-head{display:flex;gap:var(--space-4);align-items:flex-start;justify-content:space-between;border-bottom:1px solid var(--bg-section);padding-bottom:var(--space-3);margin-bottom:var(--space-3)}
+.sus-head h3{font-size:15px;margin:0 0 4px}
+.sus-head p{font-size:12px;color:var(--text-tertiary);max-width:660px;line-height:1.6}
+.sus-count{font-size:12px;color:var(--text-secondary);white-space:nowrap}
+.sus-count b{font-family:var(--font-mono);font-size:14px;color:var(--text-primary)}
+.sus-note{font-size:12px;color:var(--text-tertiary);margin:0 0 var(--space-3)}
+.sus-cities{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:var(--space-3)}
+.sus-city{text-align:left;background:var(--bg-card);border:1px solid var(--bg-section);border-radius:var(--radius-sm);padding:12px 14px;cursor:pointer;transition:var(--transition);display:flex;flex-direction:column;gap:3px}
+.sus-city:hover{border-color:var(--color-primary);background:var(--color-primary-light)}
+.sus-city b{font-size:13.5px}
+.sus-city span{font-size:11.5px;color:var(--text-secondary)}
+.sus-city em{font-family:var(--font-mono);font-style:normal;font-size:10.5px;color:var(--text-tertiary)}
+.sus-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 var(--space-3)}
+.sus-tab{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--bg-section);background:var(--bg-card);border-radius:999px;padding:5px 10px;cursor:pointer;font-size:12px;color:var(--text-secondary)}
+.sus-tab:hover{border-color:#CBD5E1}
+.sus-tab.active{background:var(--color-primary-light);border-color:var(--color-primary);color:var(--color-primary);font-weight:600}
+.sus-tab i{font-style:normal;font-family:var(--font-mono);font-size:10px;background:var(--bg-section);border-radius:999px;padding:0 5px;color:var(--text-secondary)}
+.sus-sec{display:flex;align-items:baseline;gap:8px;margin:var(--space-3) 0 var(--space-2)}
+.sus-sec b{font-size:11px;letter-spacing:.06em;color:var(--text-secondary)}
+.sus-sec span{font-size:11.5px;color:var(--text-tertiary)}
+.sus-pair{display:grid;grid-template-columns:1fr 96px 1fr auto;gap:10px;align-items:center;border:1px solid var(--bg-section);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:8px;background:var(--bg-card);transition:var(--transition)}
+.sus-pair:hover{border-color:#CBD5E1;box-shadow:var(--shadow-xs)}
+.sus-side{display:flex;flex-direction:column;gap:2px;text-align:left;background:none;border:0;cursor:pointer;padding:0;min-width:0;font-family:inherit}
+.sus-side .mono{font-size:11px;color:var(--color-primary)}
+.sus-side b{font-size:12.5px;font-weight:600;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sus-side em{font-style:normal;font-size:11.5px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sus-mid{display:flex;flex-direction:column;align-items:center;gap:2px}
+.sus-score{font-family:var(--font-mono);font-size:15px;font-weight:600}
+.sus-tag{font-size:9.5px;letter-spacing:.06em;padding:0 5px;border-radius:3px}
+.sus-tag.hi{background:#FEF3C7;color:#B45309}
+.sus-tag.md{background:var(--bg-section);color:var(--text-secondary)}
+.sus-dist{font-size:10px;color:var(--text-tertiary)}
+.sus-act{white-space:nowrap}
+.sus-more{margin-top:var(--space-3);border-top:1px dashed var(--bg-section);padding-top:var(--space-2)}
+.sus-more summary{cursor:pointer;font-size:12px;color:var(--text-secondary);margin-bottom:var(--space-2)}
+.sus-empty{padding:var(--space-8);text-align:center;color:var(--text-tertiary);font-size:12.5px}
+.sus-empty span{display:block;margin-top:4px;font-size:11.5px}
 </style>
 </head>
 <body class="show-phases">
@@ -474,7 +516,7 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v8.1.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v8.2.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage(\'p01\')">Vendor Location List</div>
@@ -499,7 +541,7 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v8.1.0</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v8.2.0</span></div>
       </div>
     </div>
 
@@ -520,7 +562,7 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
             <div><label class="f-label" data-phase="1">Status</label><select id="v-f-status" onchange="applyVendorFilters()"><option value="">All</option><option value="active">active</option><option value="inactive">inactive</option><option value="removed">removed</option></select></div>
             <div><label class="f-label" data-phase="2">Live</label><select id="v-f-live" onchange="applyVendorFilters()"><option value="">All</option><option value="yes">Live</option><option value="no">Not live</option><option value="blocked">Blocked by system</option></select></div>
             <div><label class="f-label" data-phase="2">Change</label><select id="v-f-change" onchange="applyVendorFilters()"><option value="">All</option><option value="new">New</option><option value="changed">Changed</option><option value="none">No change</option></select></div>
-            <div><label class="f-label" data-phase="2">Duplicates</label><select id="v-f-dup" onchange="applyVendorFilters()"><option value="">All</option><option value="yes">Duplicated records</option><option value="no">No duplicate</option></select></div>
+            <div><label class="f-label" data-phase="2">Duplicates</label><select id="v-f-dup" onchange="applyVendorFilters()"><option value="">All</option><option value="yes">Duplicated records</option><option value="no">No duplicate</option><option value="suspect">Suspected duplicates</option></select></div>
             <div><label class="f-label" data-phase="1">Sweeper</label><select id="v-f-sweeper" onchange="applyVendorFilters()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
             <div><label class="f-label" data-phase="1">Issues <span class="help-dot" onclick="openHelp()" title="What counts as an issue">?</span></label><select id="v-f-issues" onchange="applyVendorFilters()"><option value="">All</option><option value="open">Has open issue</option><option value="none">No issue</option></select></div>
           </div>
@@ -552,7 +594,7 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
             <span class="spacer"></span>
             <span class="pull-hint" data-i18n="pull.hint">flag → export → the provider fixes it → pull again</span>
           </div>
-          <div class="table-wrap">
+          <div class="table-wrap" id="v-table-wrap">
             <table class="data">
               <thead><tr>
                 <th style="width:30px"><input type="checkbox" id="v-chk-all" onchange="toggleAllVendors(this.checked)"></th>
@@ -562,6 +604,7 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
               <tbody id="v-tbody"></tbody>
             </table>
           </div>
+          <div id="v-suspect" class="suspect" style="display:none"></div>
         </div>
       </div>
 
@@ -696,7 +739,7 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-<div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v8.1.0 (one record, one id, one list)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+<div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v8.2.0 (one record, one id, one list)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Where</th><th>Do</th><th>What it proves</th></tr></thead>
       <tbody>
@@ -708,8 +751,9 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
         <tr><td>6</td><td>Vendor list</td><td>Select <b>LOC-10024</b> and <b>LOC-00189</b>, then <b>Mark as duplicate</b></td><td>Two records, one store: the marker goes on the duplicate, no id changes hands, and only one of the pair can stay live</td></tr>
         <tr><td>7</td><td>Vendor list</td><td>Filter <b>Duplicates = Duplicated records</b></td><td>The pair comes back together, adjacent, the duplicate labelled with the record it duplicates</td></tr>
         <tr><td>8</td><td>Vendor list</td><td>Type <b>11210</b> into Zipcode</td><td>Every record in that zip, ranked by the duplicate-check score against the oldest record there — a lookup is a hunt for a duplicate, so the likely pair sits on top</td></tr>
-        <tr><td>9</td><td>Vendor list</td><td>Reset, then <b>Export CSV</b></td><td>One row per record with its live state and duplicate marker — the hand-off to anyone outside the console</td></tr>
-        <tr><td>10</td><td>Data Issues</td><td>Apply the next provider sync</td><td>Issues that close themselves do; the ones that need a person stay open with a reason</td></tr>
+        <tr><td>9</td><td>Vendor list</td><td>Set <b>Duplicates = Suspected duplicates</b></td><td>The table is replaced by a board of pairs: pick a city, then a zip tab, then confirm one — it leaves the board and lands in the Duplicate column</td></tr>
+        <tr><td>10</td><td>Vendor list</td><td>Reset, then <b>Export CSV</b></td><td>One row per record with its live state and duplicate marker — the hand-off to anyone outside the console</td></tr>
+        <tr><td>11</td><td>Data Issues</td><td>Apply the next provider sync</td><td>Issues that close themselves do; the ones that need a person stay open with a reason</td></tr>
       </tbody>
     </table>
   </div>
@@ -756,6 +800,27 @@ var VENDORS=[
     VENDORS.push({id:r[0],name:r[1],provider:'PUDO Inc',sweeper:'PUDO Inc',type:'PUDOpoint',typeId:1,
       ref:'dealerNo '+r[0].slice(4),addr1:r[2],addr2:'',city:'Brooklyn',state:'NY',country:'United States',
       postal:'11210',status:'active',phone:'8443008533',lat:r[3],lng:r[4],timezone:'America/New_York',
+      open24:false,supports:['FX','CP'],hoursText:'Mon - Fri: 9:00am to 6:00pm  Sat: 10:00am to 4:00pm',
+      hoursOfOp:HOURS,directions:'',created:'2026-11-01 10:00:00',updated:'2026-11-24 03:00:00',
+      activated:'2026-11-01 10:05:00'});
+  });
+})();
+
+/* v8.1.1 — two more neighbourhoods with an unconfirmed pair of their own, so the
+   suspected board has a city to pick and a city with two zips to tab through. Kept a
+   few blocks away from the marked 10036 pair: a primary record may still be suspected
+   against a third address, and that is a queue entry, not a duplicate. */
+(function(){
+  var HOURS=[['MONDAY','09:00','18:00'],['TUESDAY','09:00','18:00'],['WEDNESDAY','09:00','18:00'],
+             ['THURSDAY','09:00','18:00'],['FRIDAY','09:00','18:00'],['SATURDAY','10:00','16:00']];
+  [['LOC-12208','Eighth Ave Postal','700 8th Ave','New York','NY','10036',40.759500,-73.989900],
+   ['LOC-12209','Eighth Ave Shipping','704 8th Ave','New York','NY','10036',40.759600,-73.989800],
+   ['LOC-12210','Kensington Mailbox','501 Church Ave','Brooklyn','NY','11218',40.644800,-73.979200],
+   ['LOC-12211','Kensington Postal Plus','505 Church Ave','Brooklyn','NY','11218',40.644900,-73.979100]
+  ].forEach(function(r){
+    VENDORS.push({id:r[0],name:r[1],provider:'PUDO Inc',sweeper:'PUDO Inc',type:'PUDOpoint',typeId:1,
+      ref:'dealerNo '+r[0].slice(4),addr1:r[2],addr2:'',city:r[3],state:r[4],country:'United States',
+      postal:r[5],status:'active',phone:'8443008533',lat:r[6],lng:r[7],timezone:'America/New_York',
       open24:false,supports:['FX','CP'],hoursText:'Mon - Fri: 9:00am to 6:00pm  Sat: 10:00am to 4:00pm',
       hoursOfOp:HOURS,directions:'',created:'2026-11-01 10:00:00',updated:'2026-11-24 03:00:00',
       activated:'2026-11-01 10:05:00'});
@@ -822,6 +887,22 @@ var CHANGELOG=[
    provider names, ids) — data is not translated, only the interface.
    ===================================================================== */
 var I18N_ZH = {
+  "Suspected duplicates":"疑似重复",
+  "pair":"组配对",
+  "pairs":"组配对",
+  "zip":"个邮编",
+  "zips":"个邮编",
+  "Unconfirmed pairs at HIGH or MEDIUM. The list stays a table of records; a pair is the decision unit, so it gets its own board. Confirm one and it leaves this board.":"未确认的 HIGH / MEDIUM 配对。列表仍然是一张记录表 —— 一次判定的单位是「一对」，所以配对有自己的面板。确认一对，它就从这里消失。",
+  "No suspected duplicate in this scope.":"这个范围里没有疑似重复。",
+  "Clear the Duplicates filter to go back to the record list.":"清掉 Duplicates 筛选就能回到记录列表。",
+  "No city selected — pick one. Suspected pairs are reviewed one city at a time, which is what keeps this board short.":"还没选城市 —— 先选一个。疑似重复一次只看一个城市，这块面板才不会又变成一堵墙。",
+  "same street, same zip — read these first":"同一条街、同一个邮编 —— 先看这些",
+  "weak leads":"弱线索",
+  "Mark as duplicate":"标记为重复",
+  "anchor":"基准",
+  "the anchor row — the oldest record in this zip":"基准行 —— 这个邮编下建档最早的那条",
+  "duplicate-check score against the anchor row":"与基准行的判重分数（地址 40 · 邮编 25 · 州 15 · 城市 10 · 名称 10）",
+
   /* ---- shell ---- */
   "Locations":"门店",
   "Quality":"数据质量",
@@ -1298,14 +1379,12 @@ var I18N_BLOCK = {
   "map.rules":"M2 · 只重判发生变更的那个来源 &nbsp;·&nbsp; M3 · 分配新 OC，旧映射进历史 &nbsp;·&nbsp; M4 · 未变更的一方绝不动 &nbsp;·&nbsp; M5 · 没人确认就不落库 &nbsp;·&nbsp; M6 · 两边在同一次推送里都变了 → 进人工",
   "dup.vs":"对比",
   "pull.hint":"标记 → 导出 → 供应商修正 → 再拉一次",
-  "wt.title":"演示脚本 —— v8.1.0（一条记录，一个身份，一张表）",
-  "anchor":"基准",
-  "the anchor row — the oldest record in this zip":"基准行 —— 这个邮编下建档最早的那条",
-  "duplicate-check score against the anchor row":"与基准行的判重分数（地址 40 · 邮编 25 · 州 15 · 城市 10 · 名称 10）"
+  "wt.title":"演示脚本 —— v8.2.0（一条记录，一个身份，一张表）",
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
 var I18N_RULES = [
+  [/^Suspected duplicates · (\d+)$/, "疑似重复 · $1"],
   [/^text score · anchor (LOC-\d+)$/, "文本分 · 基准 $1"],
   [/^(\d+) flagged field\(s\) are covered by this run\.$/, "本次推送覆盖 $1 个已标记字段。"],
   [/^No OC location exists for (.+)$/, "$1 还没有 OC 门店"],
@@ -1373,6 +1452,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "8.2.0":"<b>Duplicates 筛选多了第三个值，而且它不是过滤表格，是换一块面板。</b>已标记的重复是记录上的事实；<b>疑似</b>重复是<i>配对</i>上的事实，一条记录可以同时出现在好几对里。铺成行的话，一个 9 条记录、11 对关系的邮编看起来就像 11 家店。所以 <b>疑似重复</b>会把表格收起来、直接给配对：永远带范围 —— 先城市，再「只给有配对的邮编」开标签，最后是配对本身，HIGH 在上、MEDIUM 折叠成一行。标记一对，确认后它就从这块面板消失。",
   "8.1.0":"<b>查邮编改成按判重分数排序，指纹删掉。</b>指纹（<code>addr_fingerprint</code>）原本是「先分桶再比」的召回手段；现在判定范围是全量，它成了一个没人打开的键 —— 删掉，而且没有任何规则挂在它上面。Zipcode 命中多行时，按<b>与配对弹框里同一个分数</b>降序：地址 40 · 邮编 25 · 州 15 · 城市 10 · 名称 10，分数直接印在行上。基准取<b>结果里建档最早的那条</b>，不是「当前第一行」—— 那个基准会随别的筛选漂移，整个列表看起来像数据变了。名称破平局，再按 ID；同一个邮编里邮编那 25 分是常数，不会影响排序。",
   "8.0.0":"<b>OC location ID 没有了。</b>它原本的用处是「几条来源记录喂一家店时，给这家店一个身份」；一条记录就是一家店之后，它只是同一个东西的第二个名字。现在 vendor location ID 就是身份，<b>live</b> / <b>blocked</b> / 重复标记都落在记录上。随之删掉的是那一列、那个筛选、发号序列和 OC 详情页；重复靠 <b>duplicate of</b> 关联，各自保留自己的号。",
   "7.1.0":"<b>只有一条路能到 eBay。</b>Apply to eBay 去掉了。值是在记录上线的时候写过去的 —— 筛出 <b>New</b> / <b>Changed</b>，勾选，点 <b>Add to whitelist &amp; apply</b>，写值与上线是同一次动作。这个按钮原本是同一个效果的第二条路，而且它允许把记录标成干净、eBay 上却还是旧值。",
@@ -1556,8 +1636,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='8.1.0';
+var APP_VERSION='8.2.0';
 var VERSIONS=[
+ {v:'8.2.0',type:'minor',date:'2026-11-26',desc:'<b>The Duplicates filter learned a third value, and it opens a board instead of filtering rows.</b> A marked duplicate is a fact about a record; a <b>suspected</b> one is a fact about a <i>pair</i>, and one record can sit in several. Drawn as rows, a nine-record zip with eleven pairs looks like eleven stores. So <b>Suspected duplicates</b> hides the table and shows the pairs, always scoped: a city first, then one tab per zip that actually has a pair, then the pairs — HIGH on top, MEDIUM folded behind one line. Marking one confirms it and it leaves the board.'},
  {v:'8.1.0',type:'minor',date:'2026-11-26',desc:'<b>A zip lookup now ranks by the duplicate score, and the fingerprint is gone.</b> The hash (`addr_fingerprint`) existed to bucket candidates before the scan; the scan covers the whole table now, so it was a key nobody turned — deleted, with no rule attached to it. A multi-row zip is ranked by <b>the same score the pair modal prints</b> — address 40 · zip 25 · state 15 · city 10 · name 10 — against <b>the oldest record in the result</b>, and the score is printed on the row. The anchor is not "the first row" on purpose: that base moves whenever another filter changes, which reads as if the data moved. Name breaks ties, then the id; the zip points are constant inside one lookup, so they cannot distort it.'},
  {v:'8.0.0',type:'major',date:'2026-11-25',desc:'<b>The OC location id is gone.</b> It existed to be one identity for a store that several source records fed; with one record per store it was a second name for the same thing. Now the vendor location id is the identity, and <b>live</b> / <b>blocked</b> / the duplicate marker live on the record. The column, the filter, the minting sequence and the OC profile all go with it; duplicates are linked by <b>duplicate of</b> and each keeps its own id.'},
  {v:'7.1.0',type:'minor',date:'2026-11-25',desc:'<b>One way to reach eBay.</b> `Apply to eBay` is gone. A value reaches eBay when a record goes live — filter for <b>New</b> or <b>Changed</b>, select the rows, `Add to whitelist`, and the values are written in the same action. The button was a second path to the same effect, and it let a record be marked clean while eBay still held the old value.'},
@@ -2230,7 +2311,7 @@ function facetSearch(id,q){
 }
 
 /* ============ vendor list ============ */
-function vendorFilters(skipSource,skipGeo,skipCity){
+function vendorFilters(skipSource,skipGeo,skipCity,skipDup){
   var f={idT:termTokens(val('v-f-id')),nameG:termGroups(val('v-f-name')),
     zipT:termTokens(val('v-f-zip')),
     prov:vals('v-f-prov'),city:vals('v-f-city'),
@@ -2256,10 +2337,14 @@ function vendorFilters(skipSource,skipGeo,skipCity){
       var ck=ss==='new'?'new':(ss==='changed'?'changed':'none');
       if(f.change.indexOf(ck)<0)return false;
     }
-    if(f.dup.length){
+    if(f.dup.length&&!skipDup){
       /* both sides of a pair come back, so the relationship stays readable */
       var isDup=!!pairOf(v.id);
-      if(f.dup.indexOf(isDup?'yes':'no')<0)return false;
+      /* v8.1.1 — a third value: a record inside an unconfirmed HIGH / MEDIUM pair.
+         It answers "what should I look at", not "what is already decided". */
+      var hit=!!(SUSPECT_IDS[v.id]&&f.dup.indexOf('suspect')>=0)
+             || f.dup.indexOf(isDup?'yes':'no')>=0;
+      if(!hit)return false;
     }
     if(f.sweeper.length&&f.sweeper.indexOf(v.sweeper||'')<0)return false;
     if(f.issues.length){
@@ -2347,6 +2432,21 @@ function renderSourceFilter(kind){
       +(cur.indexOf(x.type)>=0?' selected':'')+'>'+esc(label)+' · '+n+'</option>';
   }).join('');
   syncFacet(kind+'-f-source');
+}
+/* the Duplicates filter is the only static select, and its label carries a count, so
+   it is rebuilt rather than patched: replacing an <option>'s text under the browser
+   leaves the closed control showing the old label until the next real interaction. */
+function renderDupFilter(n){
+  var sel=document.getElementById('v-f-dup'); if(!sel)return;
+  var cur=vals('v-f-dup');
+  var opts=[['','All'],['yes','Duplicated records'],['no','No duplicate'],
+            ['suspect','Suspected duplicates'+(n?' · '+n:'')]];
+  sel.innerHTML=opts.map(function(o){
+    return '<option value="'+o[0]+'"'+(o[0]&&cur.indexOf(o[0])>=0?' selected':'')+'>'+esc(tr(o[1]))+'</option>';
+  }).join('');
+  /* the visible control is the facet's own label, not the native select: without this
+     the closed facet keeps painting the previous value after the options are rebuilt */
+  syncFacet('v-f-dup');
 }
 function resetVendorFilters(){
   ['v-f-id','v-f-name','v-f-zip'].forEach(function(i){var el=document.getElementById(i);if(el)el.value='';});
@@ -2487,9 +2587,108 @@ function orderRows(rows){
 }
 /* v8.1.0 — the address-1 ranking a zip lookup produces, kept for the render. */
 var ZIP_SCORE={}, ZIP_ANCHOR=null;
+/* v8.1.1 — suspected duplicates.
+   A confirmed duplicate is a property of a record: the row says `duplicate of`.
+   A SUSPECTED one is a property of a PAIR, and there can be many per record. Dumping
+   those rows into the table is how a 9-record zip becomes 11 pair-rows pretending to be
+   records. So the filter opens a board instead: city first, then a tab per zip, then the
+   pairs themselves — never more than one zip's worth of decisions on screen. */
+var SUSPECT_IDS={}, SUS_TAB=null;
+function computeSuspects(){
+  SUSPECT_IDS={};
+  for(var i=0;i<VENDORS.length;i++)for(var j=i+1;j<VENDORS.length;j++){
+    var a=VENDORS[i],b=VENDORS[j];
+    if(a.duplicateOf||b.duplicateOf)continue;
+    if(judge(stOf(a),stOf(b)).label==='LOW')continue;
+    SUSPECT_IDS[a.id]=1; SUSPECT_IDS[b.id]=1;
+  }
+}
+function suspectPairs(rows){
+  var out=[];
+  for(var i=0;i<rows.length;i++)for(var j=i+1;j<rows.length;j++){
+    var a=rows[i],b=rows[j];
+    if(a.duplicateOf||b.duplicateOf)continue;
+    var d=judge(stOf(a),stOf(b));
+    if(d.label==='LOW')continue;
+    out.push({a:a,b:b,score:d.score,label:d.label,dist:d.dist,
+      city:a.city||'—',zip:zip5(a.postal)||'—'});
+  }
+  return out.sort(function(x,y){return y.score-x.score||String(x.a.id).localeCompare(String(y.a.id));});
+}
+function pickSuspectCity(city){SUS_TAB=null;setFacet('v-f-city',[city]);applyVendorFilters();}
+function pickSuspectZip(z){SUS_TAB=z;renderVendor();}
+function openDupPair(a,b){openDupModal([a,b]);}
+function suspectPairCard(p){
+  var a=p.a,b=p.b;
+  function side(x){
+    return '<button class="sus-side" onclick="openVendorDetail(\''+esc(x.id)+'\')">'
+      +'<span class="mono">'+esc(x.id)+'</span><b>'+esc(x.name)+'</b>'
+      +'<em>'+esc(x.addr1||'—')+(x.addr2?' · '+esc(x.addr2):'')+'</em></button>';
+  }
+  return '<div class="sus-pair">'+side(a)
+    +'<div class="sus-mid"><span class="sus-score">'+p.score+'</span>'
+    +'<span class="sus-tag '+(p.label==='HIGH'?'hi':'md')+'">'+p.label+'</span>'
+    +(p.dist!=null?'<span class="sus-dist">'+p.dist+' m</span>':'')+'</div>'
+    +side(b)
+    +'<div class="sus-act"><button class="btn btn-secondary btn-sm" onclick="openDupPair(\''+esc(a.id)+'\',\''+esc(b.id)+'\')">'+tr('Mark as duplicate')+'</button></div>'
+    +'</div>';
+}
+function renderSuspectBoard(pairs){
+  var el=document.getElementById('v-suspect'); if(!el)return;
+  var zipsAll=[]; pairs.forEach(function(p){if(zipsAll.indexOf(p.zip)<0)zipsAll.push(p.zip);});
+  var head='<div class="sus-head"><div><h3>'+tr('Suspected duplicates')+'</h3>'
+    +'<p>'+tr('Unconfirmed pairs at HIGH or MEDIUM. The list stays a table of records; a pair is the decision unit, so it gets its own board. Confirm one and it leaves this board.')+'</p></div>'
+    +'<div class="sus-count"><b>'+pairs.length+'</b> '+tr(pairs.length===1?'pair':'pairs')
+    +' · <b>'+zipsAll.length+'</b> '+tr(zipsAll.length===1?'zip':'zips')+'</div></div>';
+  var citySel=vals('v-f-city');
+  if(!pairs.length){
+    el.innerHTML=head+'<div class="sus-empty">'+tr('No suspected duplicate in this scope.')
+      +'<span>'+tr('Clear the Duplicates filter to go back to the record list.')+'</span></div>';
+    return;
+  }
+  if(!citySel.length){
+    var byCity={};
+    pairs.forEach(function(p){(byCity[p.city]=byCity[p.city]||[]).push(p);});
+    var cards=Object.keys(byCity).sort(function(x,y){return byCity[y].length-byCity[x].length;}).map(function(c){
+      var ps=byCity[c], zs=[];
+      ps.forEach(function(p){if(zs.indexOf(p.zip)<0)zs.push(p.zip);});
+      return '<button class="sus-city" onclick="pickSuspectCity(\''+esc(c)+'\')">'
+        +'<b>'+esc(c)+'</b>'
+        +'<span>'+zs.length+' '+tr(zs.length===1?'zip':'zips')+' · '+ps.length+' '+tr(ps.length===1?'pair':'pairs')+'</span>'
+        +'<em>'+zs.map(esc).join(' · ')+'</em></button>';
+    }).join('');
+    el.innerHTML=head+'<div class="sus-note">'+tr('No city selected — pick one. Suspected pairs are reviewed one city at a time, which is what keeps this board short.')+'</div>'
+      +'<div class="sus-cities">'+cards+'</div>';
+    return;
+  }
+  var zips=[]; pairs.forEach(function(p){if(zips.indexOf(p.zip)<0)zips.push(p.zip);});
+  var active=(SUS_TAB&&zips.indexOf(SUS_TAB)>=0)?SUS_TAB:zips[0];
+  var tabs=zips.map(function(z){
+    var n=pairs.filter(function(p){return p.zip===z;}).length;
+    return '<button class="sus-tab'+(z===active?' active':'')+'" onclick="pickSuspectZip(\''+esc(z)+'\')">'
+      +'<span class="mono">'+esc(z)+'</span><i>'+n+'</i></button>';
+  }).join('');
+  var list=pairs.filter(function(p){return p.zip===active;});
+  var high=list.filter(function(p){return p.label==='HIGH';});
+  var mid=list.filter(function(p){return p.label==='MEDIUM';});
+  el.innerHTML=head+'<div class="sus-tabs">'+tabs+'</div><div class="sus-list">'
+    +(high.length?'<div class="sus-sec"><b>HIGH</b><span>'+tr('same street, same zip — read these first')+'</span></div>'+high.map(suspectPairCard).join(''):'')
+    +(mid.length?'<details class="sus-more"'+(high.length?'':' open')+'><summary><b>MEDIUM</b> · '+mid.length+' '+tr('weak leads')+' — address overlap, likely different shops</summary>'+mid.map(suspectPairCard).join('')+'</details>':'')
+    +'</div>';
+}
 function renderVendor(){
   seedSyncLog();
   enforcePendingOffList();
+  computeSuspects();
+  var susMode=vals('v-f-dup').indexOf('suspect')>=0;
+  /* one pair list for both the board and the filter's own count, so the number on the
+     option can never disagree with what opening it shows */
+  var susPairs=suspectPairs(vendorFilters(false,false,false,true));
+  if(susMode)renderSuspectBoard(susPairs);
+  var tw=document.getElementById('v-table-wrap'), sb=document.getElementById('v-suspect');
+  if(tw)tw.style.display=susMode?'none':'';
+  if(sb)sb.style.display=susMode?'':'none';
+  renderDupFilter(susPairs.length);
   var rows=vendorFilters();
   /* v8.1.0 — a zip lookup is a hunt for a duplicate, so the rows are ranked by the
      duplicate check's own score against one anchor: address 40 · zip 25 · state 15 ·
@@ -2548,8 +2747,10 @@ function renderVendor(){
       +'</tr>';
   }).join('');
   var meta=document.getElementById('v-result-meta');
-  meta.innerHTML=esc(tr(rows.length+' vendor location(s)'))
-    +(ZIP_ANCHOR?' · <span class="sort-note">'+esc(tr('text score · anchor '+ZIP_ANCHOR.id))+'</span>':'');
+  meta.innerHTML=susMode
+    ? esc(tr(susPairs.length+' pair(s)'))+' · '+esc(tr(rows.length+' vendor location(s)'))
+    : esc(tr(rows.length+' vendor location(s)'))
+      +(ZIP_ANCHOR?' · <span class="sort-note">'+esc(tr('text score · anchor '+ZIP_ANCHOR.id))+'</span>':'');
   var pn=document.getElementById('v-pull-note'); if(pn)pn.innerHTML=pullNote();
   renderGeoFilters('v');renderSourceFilter('v');
   updateVendorBatch();
@@ -2615,8 +2816,8 @@ function batchWhitelist(action){
 }
 /* ---------- mark as duplicate ---------- */
 var dupSel=null;
-function openDupModal(){
-  var sel=selectedVendors();
+function openDupModal(ids){
+  var sel=(ids&&ids.length===2)?ids.map(findVendor).filter(Boolean):selectedVendors();
   if(sel.length!==2){showToast('Select two records','Mark as duplicate needs exactly two');return;}
   dupSel=sel;
   var a=sel[0],b=sel[1];

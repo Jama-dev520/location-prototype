@@ -161,7 +161,7 @@ Multi-select facets, OR inside a filter, AND between filters; `Reset` clears eve
 | Status | facet |
 | Live | `Live` / `Not live` / `Blocked by system` |
 | Change | `New` / `Changed` / `No change` |
-| Duplicates | `Duplicated records` / `No duplicate` |
+| Duplicates | `Duplicated records` / `Suspected duplicates` / `No duplicate`; suspect opens a pair board, scoped city → zip |
 | Sweeper | facet |
 | Issues | facet |
 

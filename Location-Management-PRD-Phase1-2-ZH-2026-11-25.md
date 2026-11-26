@@ -161,7 +161,7 @@
 | Status | facet |
 | Live | `Live` / `Not live` / `Blocked by system` |
 | Change | `New` / `Changed` / `No change` |
-| Duplicates | `Duplicated records` / `No duplicate` |
+| Duplicates | `Duplicated records` / `Suspected duplicates` / `No duplicate`；疑似会打开配对面板，按城市 → 邮编限定 |
 | Sweeper | facet |
 | Issues | facet |
 

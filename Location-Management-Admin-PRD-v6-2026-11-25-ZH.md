@@ -1,6 +1,6 @@
 # Location 管理后台 — 产品需求文档（中文版）
 
-**版本 8.1.0 ｜ 2026-11-26 ｜ 状态：待评审**
+**版本 8.2.0 ｜ 2026-11-26 ｜ 状态：待评审**
 
 配套文件：可交互原型（`index.html`）· 判重规则 `Deplicate-check-v3.0-2026-11-23.md` · 数据库字段映射（v5.1.0，尚未按本模型更新）
 
@@ -312,11 +312,31 @@ live = true
 | Status | facet | 供应商状态 |
 | Live | facet | `Live` / `Not live` / `Blocked by system` |
 | Change | facet | `New` / `Changed` / `No change` |
-| Duplicates | facet | `Duplicated records` / `No duplicate` |
+| Duplicates | facet | `Duplicated records` / `Suspected duplicates` / `No duplicate`；选项上带配对数 |
 | Sweeper | facet | `PUDO Inc` / `LMS` |
 | Issues | facet | 有未关闭异常 / 无 |
 
 筛选区顺序：`Vendor Location ID · Name · Province · City · Zipcode · Source · Status · Live · Change · Duplicates · Sweeper · Issues`。
+
+### 10.1 疑似重复（8.2.0）
+
+**已标记**的重复是记录上的事实 —— 行上写着 `duplicate of`，它就该待在表里。**疑似**重复是**配对**上的事实，一条记录可以同时出现在好几对里。把它们铺成行，就是把「一个邮编 9 条记录、11 对关系」渲染成 11 行、看起来像 11 家店。所以 `Duplicates = Suspected duplicates` 不是过滤表格，而是**换一块面板**。
+
+面板永远是有范围的，三步：
+
+| 步骤 | 看到什么 | 为什么 |
+|---|---|---|
+| 还没选城市 | 一个城市一张卡：`Brooklyn · 2 zips · 12 pairs` | 城市层不做决定，但它是运营真正负责的最小单位，也让下一屏足够短 |
+| 选中城市 | **只给有配对的邮编**开标签，带条数；没有配对的邮编不出现 | 邮编是人真正读得懂的一片街区；一个点进去是空白的标签就是死路 |
+| 选中邮编 | 配对本身：HIGH 在前，MEDIUM 折叠在一行摘要里 | 一次判定的单位是「一对」，所以它占一行：两边记录并排、分数、距离、一个 `Mark as duplicate` |
+
+规则：
+
+- 配对列表用的是**和表格同一套筛选**（Source / Status / Live / Change / Issues）。城市卡与邮编标签都由这个结果推出来，所以标签点进去不可能为空。
+- 任一方已被标记的配对一律排除 —— 已决的事离开面板，回到 `Duplicate` 列。
+- 这个筛选打开时，City facet 只列出**有疑似配对的城市**，因此不存在「选了一个城市却是空面板」。
+- 分数就是判重的分数，与配对弹框里读到的是同一个数。
+- 清掉筛选，表格回来。面板与表格不共存 —— 它们回答的不是同一个问题。
 
 ---
 
@@ -416,6 +436,8 @@ new ──────────(上线)─────────> synced
 17. 导出每条供应商记录一行，带 ID、上线状态与重复标记。
 18. **表头第二列与第一个筛选标签都写作 `Vendor Location ID`**，不出现无前缀的「Location ID」。
 18b. **列表、筛选、详情页、导出、接口里都不出现 `OC-…` 编号**（只有版本历史里还会提到旧的号）。
+19. `Duplicates = Suspected duplicates` 隐藏记录表、显示配对面板；未选城市时列出有配对的城市，选中城市后每个**有**配对的邮编一个标签，没有配对的邮编不出标签。
+20. 面板只列未标记的配对，HIGH 在前、MEDIUM 折叠；每行带两边 ID、分数与一个 `Mark as duplicate`；确认之后这对从面板消失并写入 `duplicate_of`。
 19. **供应商状态为 `inactive`（或 `removed`）的记录渲染禁用开关**，任何路径都无法上线，也不会被发号。
 20. **QR 列就在 Sweeper 旁边**，只有来源支持投递时才显示 `QR`，否则是横杠。
 
@@ -446,4 +468,4 @@ new ──────────(上线)─────────> synced
 
 ---
 
-*文档结束。版本 8.1.0，2026-11-26。*
+*文档结束。版本 8.2.0，2026-11-26。*

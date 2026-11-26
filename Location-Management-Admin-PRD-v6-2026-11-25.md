@@ -1,6 +1,6 @@
 # Location Management Admin Console — Product Requirements Document
 
-**Version 8.1.0 ｜ 2026-11-26 ｜ Status: draft for review**
+**Version 8.2.0 ｜ 2026-11-26 ｜ Status: draft for review**
 
 Companion files: clickable prototype (`index.html`), Duplicate check v3.0 (rule document), field mapping (v5.1.0, pending update to this model).
 
@@ -309,9 +309,29 @@ All filters are multi-select with type-to-find. Values within one filter are OR;
 | Status | facet | provider status |
 | Live | facet | `Live` / `Not live` / `Blocked by system` |
 | Change | facet | `New` / `Changed` / `No change` |
-| Duplicates | facet | `Duplicated records` / `No duplicate` |
+| Duplicates | facet | `Duplicated records` / `Suspected duplicates` / `No duplicate`; the option carries the pair count |
 | Sweeper | facet | `PUDO Inc` / `LMS` |
 | Issues | facet | has open issue / none |
+
+### 10.1 Suspected duplicates (8.2.0)
+
+A **marked** duplicate is a fact about a record — the row says `duplicate of` and the table is the right place for it. A **suspected** one is a fact about a *pair*, and one record can sit in several. Listing those as rows is what turns a nine-record zip into eleven rows that look like eleven stores, so `Duplicates = Suspected duplicates` opens a **board** instead of filtering the table.
+
+The board is always scoped, in three steps:
+
+| Step | Shown | Why |
+|---|---|---|
+| No city chosen | one card per city: `Brooklyn · 2 zips · 12 pairs` | Nothing is decided at city level, but it is the smallest unit an operator owns — and it keeps the next screen short |
+| City chosen | one tab per zip that **has** a pair, with the count; no tab for an empty zip | The zip is the neighbourhood a person can actually read; a tab that leads nowhere is a dead end |
+| Zip chosen | the pairs, HIGH first, MEDIUM collapsed behind one summary line | A pair is the decision unit, so it gets a row: both records side by side, the score, the distance, one `Mark as duplicate` |
+
+Rules:
+
+- The pair list is computed on **the same filters as the table** (source, status, live, change, issues). The city list and the zip tabs are derived from that result, so a tab can never open onto nothing.
+- Pairs where either record is already marked are excluded — a confirmed decision leaves the board and lives in the `Duplicate` column.
+- The city facet narrows itself to cities that have suspected pairs while this filter is on; it is therefore impossible to select a city that renders an empty board.
+- The score is the duplicate check's score, the same number the pair dialog prints.
+- Clearing the filter brings the table back. The board never coexists with the table: they answer different questions.
 
 ---
 
@@ -412,6 +432,8 @@ Errors worth designing for: switching a blocked store, going live on an `inactiv
 21. The QR column sits beside Sweeper and shows `QR` only where the source offers drop-off; elsewhere a dash.
 19. The id column and the id filter are both labelled `Vendor Location ID`; no bare "Location ID" survives in the interface.
 20. No `OC-…` id appears in the list, the filters, the profile, the export or the API. Release history is the only place the old id is still named.
+21. `Duplicates = Suspected duplicates` hides the record table and shows the pair board. With no city selected it lists cities that have pairs; with a city it lists one tab per zip that has a pair, and no tab otherwise.
+22. The board lists unmarked pairs only, HIGH before MEDIUM, each with both ids, the score and one `Mark as duplicate`; confirming a pair removes it from the board and writes `duplicate_of`.
 
 ---
 
@@ -440,4 +462,4 @@ Errors worth designing for: switching a blocked store, going live on an `inactiv
 
 ---
 
-*End of document. Version 8.1.0, 2026-11-26.*
+*End of document. Version 8.2.0, 2026-11-26.*
