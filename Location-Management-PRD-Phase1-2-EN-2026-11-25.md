@@ -156,7 +156,7 @@ Multi-select facets, OR inside a filter, AND between filters; `Reset` clears eve
 | Name | up to 20 conditions, phrase |
 | Province | facet, cascades |
 | City | facet |
-| Zipcode | up to 20 conditions; a multi-row hit is ranked by Address Line 1 against the oldest record, score printed on the row |
+| Zipcode | up to 20 conditions; a multi-row hit is ranked by the duplicate score against the oldest record, that score printed on the row |
 | Source | facet |
 | Status | facet |
 | Live | `Live` / `Not live` / `Blocked by system` |
@@ -167,7 +167,7 @@ Multi-select facets, OR inside a filter, AND between filters; `Reset` clears eve
 
 `OC Location ID` is gone: the id no longer exists, and `Vendor Location ID` answers the same question.
 
-**How a zip lookup orders its rows (8.1.0).** Looking up a zip is how an operator hunts for a duplicate, so a multi-row hit is ranked by **Address Line 1 Dice similarity** against one anchor — the **oldest record in the result** (earliest `created`, tie-broken by id). The score is printed on every other row; the anchor carries a label instead. The anchor is not "the first row" on purpose: a base that follows the current sort re-ranks the list whenever another filter changes, which reads as if the data moved. Name breaks ties, and the zip — identical by definition — plays no part.
+**How a zip lookup orders its rows (8.1.0).** Looking up a zip is how an operator hunts for a duplicate, so a multi-row hit is ranked by **the duplicate check's own score** against one anchor — the **oldest record in the result** (earliest `created`, tie-broken by id). Address 40 · zip 25 · state 15 · city 10 · name 10: the same number the pair dialog prints, so the list and the dialog never disagree. The anchor is not "the first row" on purpose: a base that follows the current sort re-ranks the list whenever another filter changes, which reads as if the data moved. Name breaks ties; the zip points are constant inside one lookup. The `addr_fingerprint` bucket key is gone — with the scan covering the whole table it had nothing left to do.
 
 ### 3.4 What the operator can do
 

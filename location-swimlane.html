@@ -96,7 +96,7 @@
 <text x="38" y="845" font-size="10" fill="#94A3B8">Customers / routing</text>
 <path d="M 274.0 229.0 L 274.0 278.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
 <path d="M 382.0 309.5 L 397.0 309.5 L 397.0 387.5 L 382.0 387.5" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
-<path d="M 382.0 465.5 L 445.0 465.5 L 445.0 309.5 L 460.0 309.5" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
+<path d="M 382.0 309.5 L 445.0 309.5 L 445.0 309.5 L 460.0 309.5" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
 <path d="M 676.0 309.5 L 691.0 309.5 L 691.0 387.5 L 676.0 387.5" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
 <path d="M 676.0 387.5 L 691.0 387.5 L 691.0 473.5 L 676.0 473.5" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
 <path d="M 568.0 513.0 L 568.0 578.0" fill="none" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)" stroke-linejoin="round"/>
@@ -135,11 +135,6 @@
 <text x="180.0" y="392.0" font-size="12.5" fill="#1E293B">回 Not live，等运营重开</text>
 <rect x="350.8" y="402.5" width="22.2" height="12.5" rx="3" fill="#FFF1E9" stroke="none"/>
 <text x="361.9" y="411.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#EB6C36">P2</text>
-<rect x="166.0" y="434.0" width="216.0" height="63.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5"/>
-<text x="180.0" y="454.0" font-size="12.5" fill="#1E293B">清洗后算指纹</text>
-<text x="180.0" y="470.0" font-size="12.5" fill="#1E293B">addr_fingerprint 只分桶</text>
-<rect x="350.8" y="480.5" width="22.2" height="12.5" rx="3" fill="#F1F5F9" stroke="none"/>
-<text x="361.9" y="489.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#94A3B8">P1</text>
 <rect x="460.0" y="278.0" width="216.0" height="63.0" rx="8" fill="#FFFFFF" stroke="#3B82F6" stroke-width="1.5"/>
 <text x="474.0" y="298.0" font-size="12.5" fill="#1E293B">全量两两比，不预生成候选</text>
 <text x="474.0" y="314.0" font-size="12.5" fill="#1E293B">Dice：相邻字符对重合度</text>
@@ -188,7 +183,7 @@
 <text x="361.9" y="635.5" font-size="8.5" text-anchor="middle" letter-spacing="0.04em" font-family="ui-monospace,Menlo,monospace" fill="#EB6C36">P2</text>
 <rect x="460.0" y="578.0" width="216.0" height="95.0" rx="8" fill="#FFF7ED" stroke="#EB6C36" stroke-width="1.5"/>
 <text x="474.0" y="598.0" font-size="12.5" fill="#1E293B">查 Zipcode 找重复</text>
-<text x="474.0" y="614.0" font-size="12.5" fill="#1E293B">按 Address Line 1 排序</text>
+<text x="474.0" y="614.0" font-size="12.5" fill="#1E293B">按判重分数排序</text>
 <text x="474.0" y="630.0" font-size="12.5" fill="#1E293B">基准＝建档最早那条，分数印在</text>
 <text x="474.0" y="646.0" font-size="12.5" fill="#1E293B">行上</text>
 <rect x="608.0" y="656.5" width="59.0" height="12.5" rx="3" fill="#FFF1E9" stroke="none"/>
@@ -241,7 +236,7 @@
     </div>
     <div class="note">
       <b>查邮编是在找重复</b>
-      <p>Zipcode 命中多行时，按 <b>Address Line 1</b> 与「结果里建档最早那条」的相似度排序，分数印在行上。基准不随其他筛选漂移，所以越筛越窄时顺序是稳的；名称只破平局。</p>
+      <p>Zipcode 命中多行时，按<b>判重同款分数</b>（地址 40 · 邮编 25 · 州 15 · 城市 10 · 名称 10）与「结果里建档最早那条」排序，分数印在行上。基准不随其他筛选漂移，所以越筛越窄时顺序是稳的；名称只破平局。</p>
     </div>
   </div>
 

@@ -707,7 +707,7 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
         <tr><td>5</td><td>Vendor list</td><td>Filter <b>Change = Changed</b>, select the rows, <b>Add to whitelist &amp; apply</b></td><td>One action writes the values, clears the badges and puts the stores live</td></tr>
         <tr><td>6</td><td>Vendor list</td><td>Select <b>LOC-10024</b> and <b>LOC-00189</b>, then <b>Mark as duplicate</b></td><td>Two records, one store: the marker goes on the duplicate, no id changes hands, and only one of the pair can stay live</td></tr>
         <tr><td>7</td><td>Vendor list</td><td>Filter <b>Duplicates = Duplicated records</b></td><td>The pair comes back together, adjacent, the duplicate labelled with the record it duplicates</td></tr>
-        <tr><td>8</td><td>Vendor list</td><td>Type <b>11210</b> into Zipcode</td><td>Every record in that zip, ranked by how closely its Address Line 1 matches the oldest record there — a lookup is a hunt for a duplicate, so the likely pair sits on top</td></tr>
+        <tr><td>8</td><td>Vendor list</td><td>Type <b>11210</b> into Zipcode</td><td>Every record in that zip, ranked by the duplicate-check score against the oldest record there — a lookup is a hunt for a duplicate, so the likely pair sits on top</td></tr>
         <tr><td>9</td><td>Vendor list</td><td>Reset, then <b>Export CSV</b></td><td>One row per record with its live state and duplicate marker — the hand-off to anyone outside the console</td></tr>
         <tr><td>10</td><td>Data Issues</td><td>Apply the next provider sync</td><td>Issues that close themselves do; the ones that need a person stay open with a reason</td></tr>
       </tbody>
@@ -1301,12 +1301,12 @@ var I18N_BLOCK = {
   "wt.title":"演示脚本 —— v8.1.0（一条记录，一个身份，一张表）",
   "anchor":"基准",
   "the anchor row — the oldest record in this zip":"基准行 —— 这个邮编下建档最早的那条",
-  "Address Line 1 similarity to the anchor row":"与基准行的 Address Line 1 相似度"
+  "duplicate-check score against the anchor row":"与基准行的判重分数（地址 40 · 邮编 25 · 州 15 · 城市 10 · 名称 10）"
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
 var I18N_RULES = [
-  [/^Address Line 1 · anchor (LOC-\d+)$/, "Address Line 1 相似度 · 基准 $1"],
+  [/^text score · anchor (LOC-\d+)$/, "文本分 · 基准 $1"],
   [/^(\d+) flagged field\(s\) are covered by this run\.$/, "本次推送覆盖 $1 个已标记字段。"],
   [/^No OC location exists for (.+)$/, "$1 还没有 OC 门店"],
   [/^OC location (OC-\d+) auto-disabled$/, "OC 门店 $1 已自动停用"],
@@ -1373,7 +1373,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
-  "8.1.0":"<b>按邮编查店，改成按 Address Line 1 排序。</b>查邮编本来就是找重复的动作，而列表过去是按「整条记录的分数」排的，基准取的是结果里的第一行 —— 地址、名称、城市、州全混在一起，基准还会随筛选漂移。现在基准固定为<b>结果里建档最早的那条</b>（别的记录最可能是它的重复），排序只看 <b>Address Line 1</b>，用的还是判重那套相邻字符对重合度，分数直接印在行上。名称只用来破平局，邮编在同一个查询里本来就相同，两者都不该进排序。基准不随其他筛选变化，所以你越筛越窄时顺序是稳的。",
+  "8.1.0":"<b>查邮编改成按判重分数排序，指纹删掉。</b>指纹（<code>addr_fingerprint</code>）原本是「先分桶再比」的召回手段；现在判定范围是全量，它成了一个没人打开的键 —— 删掉，而且没有任何规则挂在它上面。Zipcode 命中多行时，按<b>与配对弹框里同一个分数</b>降序：地址 40 · 邮编 25 · 州 15 · 城市 10 · 名称 10，分数直接印在行上。基准取<b>结果里建档最早的那条</b>，不是「当前第一行」—— 那个基准会随别的筛选漂移，整个列表看起来像数据变了。名称破平局，再按 ID；同一个邮编里邮编那 25 分是常数，不会影响排序。",
   "8.0.0":"<b>OC location ID 没有了。</b>它原本的用处是「几条来源记录喂一家店时，给这家店一个身份」；一条记录就是一家店之后，它只是同一个东西的第二个名字。现在 vendor location ID 就是身份，<b>live</b> / <b>blocked</b> / 重复标记都落在记录上。随之删掉的是那一列、那个筛选、发号序列和 OC 详情页；重复靠 <b>duplicate of</b> 关联，各自保留自己的号。",
   "7.1.0":"<b>只有一条路能到 eBay。</b>Apply to eBay 去掉了。值是在记录上线的时候写过去的 —— 筛出 <b>New</b> / <b>Changed</b>，勾选，点 <b>Add to whitelist &amp; apply</b>，写值与上线是同一次动作。这个按钮原本是同一个效果的第二条路，而且它允许把记录标成干净、eBay 上却还是旧值。",
   "7.0.0":"<b>一条供应商记录，一个 OC 号 —— 重复的也一样。</b>同一家店的两条记录以前共用一个号；现在各持一个，两者之间只剩 <b>duplicate of</b> 这个标记。这样号代表的是「记录的身份」，不是「店的身份」，下游映射才对得上。也因为号再也不能兜住「一店一源」，这条规则移到了配对上：把其中一条上线，另一条会在同一次点击里被撤下 eBay。",
@@ -1558,7 +1558,7 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 /* ============ v3 model ============ */
 var APP_VERSION='8.1.0';
 var VERSIONS=[
- {v:'8.1.0',type:'minor',date:'2026-11-26',desc:'<b>A zip lookup now ranks by address line 1.</b> Looking up a zip is how a person hunts for a duplicate, and the list used to order those rows by the whole-record score against whichever row happened to come first — a mix of address, name, city and state, anchored to nothing stable. Now the anchor is the <b>oldest record in the result</b> (the one every later record could be a duplicate of), the ranking is <b>Address Line 1 alone</b> using the same adjacent-character-pair overlap as the duplicate check, and the score is printed on the row. Name only breaks ties, and the zip is identical by definition, so neither belongs in the ranking. The anchor does not move when other filters change, so the order stays still while you narrow the list.'},
+ {v:'8.1.0',type:'minor',date:'2026-11-26',desc:'<b>A zip lookup now ranks by the duplicate score, and the fingerprint is gone.</b> The hash (`addr_fingerprint`) existed to bucket candidates before the scan; the scan covers the whole table now, so it was a key nobody turned — deleted, with no rule attached to it. A multi-row zip is ranked by <b>the same score the pair modal prints</b> — address 40 · zip 25 · state 15 · city 10 · name 10 — against <b>the oldest record in the result</b>, and the score is printed on the row. The anchor is not "the first row" on purpose: that base moves whenever another filter changes, which reads as if the data moved. Name breaks ties, then the id; the zip points are constant inside one lookup, so they cannot distort it.'},
  {v:'8.0.0',type:'major',date:'2026-11-25',desc:'<b>The OC location id is gone.</b> It existed to be one identity for a store that several source records fed; with one record per store it was a second name for the same thing. Now the vendor location id is the identity, and <b>live</b> / <b>blocked</b> / the duplicate marker live on the record. The column, the filter, the minting sequence and the OC profile all go with it; duplicates are linked by <b>duplicate of</b> and each keeps its own id.'},
  {v:'7.1.0',type:'minor',date:'2026-11-25',desc:'<b>One way to reach eBay.</b> `Apply to eBay` is gone. A value reaches eBay when a record goes live — filter for <b>New</b> or <b>Changed</b>, select the rows, `Add to whitelist`, and the values are written in the same action. The button was a second path to the same effect, and it let a record be marked clean while eBay still held the old value.'},
  {v:'7.0.0',type:'major',date:'2026-11-25',desc:'<b>One vendor record, one OC location id — duplicates included.</b> Two records of the same store used to share one id; now each holds its own, and the only link is the <b>duplicate of</b> marker. That makes the id an identity of a record rather than of a store, which is what the downstream mapping needs. Because the id can no longer enforce it, <b>one live source per store</b> moved onto the pair: putting one record live takes the other off eBay in the same click.'},
@@ -2486,22 +2486,23 @@ function orderRows(rows){
   return out;
 }
 /* v8.1.0 — the address-1 ranking a zip lookup produces, kept for the render. */
-var ADDR_SIM={}, ZIP_ANCHOR=null;
+var ZIP_SCORE={}, ZIP_ANCHOR=null;
 function renderVendor(){
   seedSyncLog();
   enforcePendingOffList();
   var rows=vendorFilters();
-  /* v8.1.0 — a zip lookup is a hunt for a duplicate, so the rows are ranked by
-     Address Line 1: Dice on adjacent character pairs, the same overlap the duplicate
-     check uses, against one anchor. The anchor is the OLDEST record in the result —
-     the one every later record could be a duplicate of — not whichever row happens to
-     sort first. That matters: with rows[0] as the base, adding a province filter moved
-     the base and the whole list re-ordered, which looks like the data changed.
-     Only address line 1 ranks. The zip is identical by definition and a name is not an
-     address; both would blur the one question being asked ("is this the same storefront?").
+  /* v8.1.0 — a zip lookup is a hunt for a duplicate, so the rows are ranked by the
+     duplicate check's own score against one anchor: address 40 · zip 25 · state 15 ·
+     city 10 · name 10 on adjacent character pairs. Same number the pair modal prints,
+     so "why is this row first" has one answer everywhere in the console.
+     The anchor is the OLDEST record in the result — the one every later record could be
+     a duplicate of — not whichever row happens to sort first. That matters: with rows[0]
+     as the base, adding a province filter moved the base and the whole list re-ordered,
+     which looks like the data changed. Same zip means the 25 zip points are constant,
+     so the ranking is carried by address, name and the odd city mismatch.
      Name only breaks ties, then the id, so the order is total. */
   var zt=termTokens(val('v-f-zip'));
-  ADDR_SIM={}; ZIP_ANCHOR=null;
+  ZIP_SCORE={}; ZIP_ANCHOR=null;
   if(zt.length&&rows.length>1){
     ZIP_ANCHOR=rows.slice().sort(function(a,b){
       var ca=String(a.created||'9999'), cb=String(b.created||'9999');
@@ -2509,12 +2510,10 @@ function renderVendor(){
       return String(a.id).localeCompare(String(b.id));
     })[0];
     var base=stOf(ZIP_ANCHOR);
-    rows.forEach(function(v){ADDR_SIM[v.id]=sim(stOf(v).addr, base.addr);});
+    rows.forEach(function(v){ZIP_SCORE[v.id]=textScore(stOf(v), base);});
     rows.sort(function(a,b){
-      var d=ADDR_SIM[b.id]-ADDR_SIM[a.id];
+      var d=ZIP_SCORE[b.id]-ZIP_SCORE[a.id];
       if(d)return d;
-      var na=sim(stOf(a).name,base.name), nb=sim(stOf(b).name,base.name);
-      if(nb!==na)return nb-na;
       return String(a.id).localeCompare(String(b.id));
     });
   }
@@ -2526,10 +2525,10 @@ function renderVendor(){
       +'<td><span class="mono link" onclick="openVendorDetail(\''+v.id+'\')">'+esc(v.id)+'</span>'+syncInline(v)+'</td>'
       +'<td>'+esc(v.name)+'</td>'
       +'<td>'+esc(v.addr1||'—')+(v.addr2?' <span style="color:var(--text-tertiary)">'+esc(v.addr2)+'</span>':'')
-        +(ADDR_SIM[v.id]!==undefined
+        +(ZIP_SCORE[v.id]!==undefined
           ? (v.id===ZIP_ANCHOR.id
               ? ' <span class="sim-chip anchor" title="'+esc(tr('the anchor row — the oldest record in this zip'))+'">'+esc(tr('anchor'))+'</span>'
-              : ' <span class="sim-chip" title="'+esc(tr('Address Line 1 similarity to the anchor row'))+'">'+Math.round(ADDR_SIM[v.id]*100)+'%</span>')
+              : ' <span class="sim-chip" title="'+esc(tr('duplicate-check score against the anchor row'))+'">'+ZIP_SCORE[v.id]+'</span>')
           : '')
         +'</td>'
       +'<td>'+esc(v.city)+(v.state?', '+esc(v.state):'')+'</td>'
@@ -2550,7 +2549,7 @@ function renderVendor(){
   }).join('');
   var meta=document.getElementById('v-result-meta');
   meta.innerHTML=esc(tr(rows.length+' vendor location(s)'))
-    +(ZIP_ANCHOR?' · <span class="sort-note">'+esc(tr('Address Line 1 · anchor '+ZIP_ANCHOR.id))+'</span>':'');
+    +(ZIP_ANCHOR?' · <span class="sort-note">'+esc(tr('text score · anchor '+ZIP_ANCHOR.id))+'</span>':'');
   var pn=document.getElementById('v-pull-note'); if(pn)pn.innerHTML=pullNote();
   renderGeoFilters('v');renderSourceFilter('v');
   updateVendorBatch();
@@ -2720,60 +2719,9 @@ function stOf(v) {
     created: v.created, provider: v.provider
   };
 }
-/* v5.0.0 — addr_fingerprint: the candidate bucket key.
-   SHA-256 over the cleaned record, first 16 hex chars. It is a RETRIEVAL key,
-   not a verdict: the same fingerprint means "look here first", a different one
-   means "the pair exists only because the Zip5 matched". It is recomputed
-   whenever cleaning changes; the record id never is. */
-function sha256hex(str){
-  var K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
-0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
-0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
-0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
-0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
-0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
-0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
-0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
-  var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
-  function rotr(x,n){return (x>>>n)|(x<<(32-n));}
-  var bytes=[],i,c;
-  for(i=0;i<str.length;i++){c=str.charCodeAt(i);
-    if(c<128)bytes.push(c);
-    else if(c<2048){bytes.push(192|(c>>6),128|(c&63));}
-    else{bytes.push(224|(c>>12),128|((c>>6)&63),128|(c&63));}}
-  var bitLen=bytes.length*8;
-  bytes.push(0x80);while(bytes.length%64!==56)bytes.push(0);
-  bytes.push(0,0,0,0,(bitLen>>>24)&255,(bitLen>>>16)&255,(bitLen>>>8)&255,bitLen&255);
-  var w=new Array(64);
-  for(var off=0;off<bytes.length;off+=64){
-    for(i=0;i<16;i++)w[i]=(bytes[off+i*4]<<24)|(bytes[off+i*4+1]<<16)|(bytes[off+i*4+2]<<8)|bytes[off+i*4+3];
-    for(i=16;i<64;i++){
-      var s0=rotr(w[i-15],7)^rotr(w[i-15],18)^(w[i-15]>>>3);
-      var s1=rotr(w[i-2],17)^rotr(w[i-2],19)^(w[i-2]>>>10);
-      w[i]=(w[i-16]+s0+w[i-7]+s1)|0;
-    }
-    var a=H[0],b=H[1],cc=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];
-    for(i=0;i<64;i++){
-      var S1=rotr(e,6)^rotr(e,11)^rotr(e,25),ch=(e&f)^(~e&g);
-      var t1=(h+S1+ch+K[i]+w[i])|0;
-      var S0=rotr(a,2)^rotr(a,13)^rotr(a,22),mj=(a&b)^(a&cc)^(b&cc);
-      var t2=(S0+mj)|0;
-      h=g;g=f;f=e;e=(d+t1)|0;d=cc;cc=b;b=a;a=(t1+t2)|0;
-    }
-    H[0]=(H[0]+a)|0;H[1]=(H[1]+b)|0;H[2]=(H[2]+cc)|0;H[3]=(H[3]+d)|0;
-    H[4]=(H[4]+e)|0;H[5]=(H[5]+f)|0;H[6]=(H[6]+g)|0;H[7]=(H[7]+h)|0;
-  }
-  return H.map(function(x){return ('00000000'+(x>>>0).toString(16)).slice(-8);}).join('');
-}
-var _FP={};
-function fingerOf(v){
-  var s=stOf(v);
-  if(!s)return '';
-  var lat=(isNaN(s.lat)?'':s.lat.toFixed(4)),lng=(isNaN(s.lng)?'':s.lng.toFixed(4));
-  var key=[s.name,s.addr,s.city,s.state,s.zip5,lat,lng].join('|');
-  if(!_FP[key])_FP[key]=sha256hex(key).slice(0,16).toUpperCase();
-  return _FP[key];
-}
+/* v8.1.0 — no addr_fingerprint. It existed to bucket candidates before the scan;
+   the scan is the whole table now, so the hash was a key nobody opened. Nothing was
+   ever decided by it: the score is computed from the five fields directly. */
 /* v4.2.0 — similarity is read off SORTED ADJACENT PAIRS, not off equality.
    Cut each string into adjacent character pairs (bigrams), sort the pairs so
    that word order stops mattering ("STE 2 2918 AVENUE I" and "2918 AVENUE I
