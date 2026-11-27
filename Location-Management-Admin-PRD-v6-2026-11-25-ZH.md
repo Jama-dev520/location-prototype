@@ -1,6 +1,6 @@
 # Location 管理后台 — 产品需求文档（中文版）
 
-**版本 8.3.0 ｜ 2026-11-27 ｜ 状态：待评审**
+**版本 8.3.1 ｜ 2026-11-27 ｜ 状态：待评审**
 
 配套文件：可交互原型（`index.html`）· 判重规则 `Deplicate-check-v3.0-2026-11-23.md` · 数据库字段映射（v5.1.0，尚未按本模型更新）
 
@@ -19,8 +19,8 @@
 | 变更感知 | OC 页面上的 drift 徽章，需自己推断 | 对照上一次快照显式标记 **New / Changed** |
 | 推送 eBay | 值自动流向下游 | **上线即发布**，没有单独的 apply 步骤 |
 | 判重 | 独立页面 + 队列 | 选中两行，**Mark as duplicate** |
-| 白名单 | 在 OC 页面逐店签收 | **行内 Live 开关**，加批量增删 |
-| 筛选 | 三个文本条件 + facet | 新增 **Zipcode / Live / Change / Duplicates** |
+| 白名单 | 在 OC 页面逐店签收 | **行内 Enable 开关**，加批量增删 |
+| 筛选 | 三个文本条件 + facet | 新增 **Zipcode / Enable / Change / Duplicates** |
 
 判重规则（v3.0）仍然管「相似度怎么算」。本 PRD 管「运营看到什么、能做什么」。两者在身份问题上冲突时，以本文为准：原型就是这一版的契约。
 
@@ -167,7 +167,7 @@ oc_location.live_source = null
 | 8 | Sweeper | 徽章，或 `missing` |
 | 9 | **QR** | 来源支持 QR 投递时显示 `QR` 徽章，不支持时显示 `—` |
 | 10 | Status | 供应商状态徽章 |
-| 11 | Live | 开关（`Live` / `Not live`）；`Blocked` 只读徽章 |
+| 11 | Enable | 开关，读作 `Enable` / `Disable`；`Blocked` 只读徽章 |
 | 12 | Duplicate | 重复记录的该列标 `duplicate of LOC-xxxxx`，主记录显示 `—` |
 | 13 | Issues | 未关闭异常数，可点击 |
 | 14 | Updated | 供应商时间戳 |
@@ -196,7 +196,7 @@ QR 投递是**供应商的能力**，不是运营写的备注：客户拿到一�
 
 ---
 
-## 7. Live 与白名单
+## 7. Enable 与白名单
 
 ### 7.1 开关
 
@@ -204,10 +204,10 @@ QR 投递是**供应商的能力**，不是运营写的备注：客户拿到一�
 
 | 行状态 | 渲染 |
 |---|---|
-| `status` 为 `inactive` 或 `removed` | **禁用态** `Not live` 开关：供应商说这家店没在营业，不能释放给 eBay |
+| `status` 为 `inactive` 或 `removed` | **禁用态** `Disable` 开关：供应商说这家店没在营业，不能释放给 eBay |
 | `blocked` | 红色 `Blocked` 徽章，不可点 |
-| `live = true` | 绿色胶囊 `● Live` |
-| `live = false` | 灰色胶囊 `○ Not live` |
+| `live = true` | 绿色胶囊 `Enable` |
+| `live = false` | 灰色胶囊 `Disable` |
 
 点胶囊切换上线状态，需要 Operations 角色。开关只写这一行，没有要先发生的发号动作。
 
@@ -302,7 +302,7 @@ live = true
 
 | 动作 | 写入 eBay | 是否上线 |
 |---|---|---|
-| 点行内 `Live` | 是，该条 | 是 |
+| 点行内 `Enable` | 是，该条 | 是 |
 | 批量 `Add to whitelist & apply`（先筛选） | 是，每条选中记录 | 是 |
 
 所以操作路径就是：筛选 `Change = New` 或 `Changed` → 勾选 → `Add to whitelist & apply`。不需要别的动作，也不存在事后对账。
@@ -324,13 +324,13 @@ live = true
 | Zipcode | 最多 20 个条件 | 取前五位；**命中多行时按判重分数对基准行排序**，该分数印在行上 |
 | Source | facet | 三个值 |
 | Status | facet | 供应商状态 |
-| Live | facet | `Live` / `Not live` / `Blocked by system` |
+| Enable | facet | `Enable` / `Disable` / `Blocked by system` |
 | Change | facet | `New` / `Changed` / `No change` |
 | Duplicates | facet | `Duplicated records` / `Suspected duplicates` / `No duplicate`；选项上带配对数 |
 | Sweeper | facet | `PUDO Inc` / `LMS` |
 | Issues | facet | 有未关闭异常 / 无 |
 
-筛选区顺序：`Vendor Location ID · Name · Province · City · Zipcode · Source · Status · Live · Change · Duplicates · Sweeper · Issues`。
+筛选区顺序：`Vendor Location ID · Name · Province · City · Zipcode · Source · Status · Enable · Change · Duplicates · Sweeper · Issues`。
 
 ### 10.1 疑似重复（8.2.0）
 
@@ -346,7 +346,7 @@ live = true
 
 规则：
 
-- 配对列表用的是**和表格同一套筛选**（Source / Status / Live / Change / Issues）。城市卡与邮编标签都由这个结果推出来，所以标签点进去不可能为空。
+- 配对列表用的是**和表格同一套筛选**（Source / Status / Enable / Change / Issues）。城市卡与邮编标签都由这个结果推出来，所以标签点进去不可能为空。
 - 任一方已被标记的配对一律排除 —— 已决的事离开面板，回到 `Duplicate` 列。
 - 这个筛选打开时，City facet 只列出**有疑似配对的城市**，因此不存在「选了一个城市却是空面板」。
 - 分数就是判重的分数，与配对弹框里读到的是同一个数。
@@ -436,7 +436,7 @@ new ──────────(上线)─────────> synced
 3. 变更记录在入库后不处于上线，白名单记录显示为已移除，原因 `PENDING_CHANGE`。
 4. 点带徽章的 ID 进入详情，变动字段带 `changed` 徽章并显示旧值。
 5. Change History 每个变动字段一行 `PROVIDER_SYNC`，时间倒序。
-6. 对 `sync_state = changed` 的记录点 `Live`，一次动作完成「发布当前值 + 清除徽章 + 上线」。
+6. 对 `sync_state = changed` 的记录点 `Enable`，一次动作完成「发布当前值 + 清除徽章 + 上线」。
 7. 重复对里的两条不能同时上线；开一条会撤下另一条，并记 `DUPLICATE_UNLISTED`。
 8. 被 block 的店渲染为徽章，不是开关。
 9. 没有 `Apply to eBay` 按钮：筛选 `Change = New`、勾选、点 `Add to whitelist & apply`，写值、清徽章、上线一次完成。
@@ -485,4 +485,4 @@ new ──────────(上线)─────────> synced
 
 ---
 
-*文档结束。版本 8.3.0，2026-11-27。*
+*文档结束。版本 8.3.1，2026-11-27。*

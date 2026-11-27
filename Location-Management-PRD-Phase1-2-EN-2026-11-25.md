@@ -139,7 +139,7 @@ Phase 1's shape came from the two-layer model: a record is what a provider sent,
 | 7 | Sweeper | badge, or `missing` |
 | 8 | QR | `QR` badge or `—` |
 | 9 | Status | provider status |
-| 10 | Live | switch; `Blocked` badge when the platform blocks the store |
+| 10 | Enable | switch reading `Enable` / `Disable`; `Blocked` badge when the platform blocks the store |
 | 11 | Duplicate | `duplicate of LOC-xxxxx` on the duplicate, `—` on the primary |
 | 12 | Issues | open issue count |
 | 13 | Updated | provider timestamp |
@@ -159,7 +159,7 @@ Multi-select facets, OR inside a filter, AND between filters; `Reset` clears eve
 | Zipcode | up to 20 conditions; a multi-row hit is ranked by the duplicate score against the oldest record, that score printed on the row |
 | Source | facet |
 | Status | facet |
-| Live | `Live` / `Not live` / `Blocked by system` |
+| Enable | `Enable` / `Disable` / `Blocked by system` |
 | Change | `New` / `Changed` / `No change` |
 | Duplicates | `Duplicated records` / `Suspected duplicates` / `No duplicate`; suspect opens a pair board, scoped city → zip |
 | Sweeper | facet |
@@ -174,7 +174,7 @@ Multi-select facets, OR inside a filter, AND between filters; `Reset` clears eve
 | Action | Where | Effect |
 |---|---|---|
 | Filter for what moved | `Change = New` / `Changed` | the pending work, as a view |
-| Go live | the `Live` switch | writes the current values to eBay, flips the switch |
+| Go live | the `Enable` switch | writes the current values to eBay, flips the switch |
 | Batch go live / take down | select rows → `Add to whitelist & apply` / `Remove from whitelist` | per row, with processed and skipped counts |
 | Mark records as one store | select two or more → `Mark as duplicate` | writes `duplicate_of`; with a group, one keeper is picked and the rest point at it; nothing is minted or merged |
 | Open a record | click the id | profile, five tabs |
@@ -199,13 +199,13 @@ There is no separate publish action: a value reaches eBay because a record goes 
 2. No `OC-…` id appears in the list, the filters, the profile, the export or the API. Release history is the only place it is still named.
 3. The list has thirteen data columns; the eleventh reads `Duplicate`.
 4. The filter bar has twelve filters and no `OC Location ID`.
-5. `Live` is the only thing that decides eBay visibility.
+5. `Enable` is the only thing that decides eBay visibility.
 6. Two records of a pair cannot both be live; turning one on unlists the other.
 7. `Mark as duplicate` mints nothing and changes no id.
 8. An inactive record renders a disabled switch; a blocked store renders a badge.
 9. Filtering `Change = New`, selecting the rows and pressing `Add to whitelist & apply` writes, clears the badge and goes live in one action.
 10. Reset clears every control and restores the full list.
-11. Export carries `Vendor Location ID`, `Live`, `Duplicate of` and QR, and no OC column.
+11. Export carries `Vendor Location ID`, `Enable`, `Duplicate of` and QR, and no OC column.
 
 ---
 

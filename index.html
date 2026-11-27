@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v8.3.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v8.3.1)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -539,7 +539,7 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v8.3.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v8.3.1</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage(\'p01\')">Vendor Location List</div>
@@ -564,7 +564,7 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v8.3.0</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v8.3.1</span></div>
       </div>
     </div>
 
@@ -583,7 +583,7 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
             <div><label class="f-label" data-phase="2">Zipcode <span class="f-cap" id="v-f-zip-cap"></span></label><input id="v-f-zip" placeholder="5-digit, up to 20 — space or comma" oninput="applyVendorFilters()"></div>
             <div><label class="f-label" data-phase="1">Source</label><select id="v-f-source" onchange="applyVendorFilters()"></select></div>
             <div><label class="f-label" data-phase="1">Status</label><select id="v-f-status" onchange="applyVendorFilters()"><option value="">All</option><option value="active">active</option><option value="inactive">inactive</option><option value="removed">removed</option></select></div>
-            <div><label class="f-label" data-phase="2">Live</label><select id="v-f-live" onchange="applyVendorFilters()"><option value="">All</option><option value="yes">Live</option><option value="no">Not live</option><option value="blocked">Blocked by system</option></select></div>
+            <div><label class="f-label" data-phase="2">Enable</label><select id="v-f-live" onchange="applyVendorFilters()"><option value="">All</option><option value="yes">Enable</option><option value="no">Disable</option><option value="blocked">Blocked by system</option></select></div>
             <div><label class="f-label" data-phase="2">Change</label><select id="v-f-change" onchange="applyVendorFilters()"><option value="">All</option><option value="new">New</option><option value="changed">Changed</option><option value="none">No change</option></select></div>
             <div><label class="f-label" data-phase="2">Duplicates</label><select id="v-f-dup" onchange="applyVendorFilters()"><option value="">All</option><option value="yes">Duplicated records</option><option value="no">No duplicate</option><option value="suspect">Suspected duplicates</option></select></div>
             <div><label class="f-label" data-phase="1">Sweeper</label><select id="v-f-sweeper" onchange="applyVendorFilters()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
@@ -622,7 +622,7 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
               <thead><tr>
                 <th style="width:30px"><input type="checkbox" id="v-chk-all" onchange="toggleAllVendors(this.checked)"></th>
                 <th data-phase="1">Vendor Location ID</th><th data-phase="1">Name</th><th data-phase="1">Address</th><th data-phase="1">City / Province</th><th data-phase="2">Zip</th>
-                <th data-phase="1">Source</th><th data-phase="1">Sweeper</th><th data-phase="1">QR</th><th data-phase="1">Status</th><th data-phase="2">Live</th><th data-phase="2">Duplicate</th><th data-phase="1">Issues</th><th data-phase="1">Updated</th>
+                <th data-phase="1">Source</th><th data-phase="1">Sweeper</th><th data-phase="1">QR</th><th data-phase="1">Status</th><th data-phase="2">Enable</th><th data-phase="2">Duplicate</th><th data-phase="1">Issues</th><th data-phase="1">Updated</th>
               </tr></thead>
               <tbody id="v-tbody"></tbody>
             </table>
@@ -762,13 +762,13 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-<div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v8.3.0 (one record, one id, one list)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+<div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v8.3.1 (one record, one id, one list)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Where</th><th>Do</th><th>What it proves</th></tr></thead>
       <tbody>
         <tr><td>1</td><td>Vendor list</td><td>Read the columns left to right</td><td>Source, Sweeper and QR are three different facts; New / Changed hang under the id, and a synced row says nothing at all</td></tr>
         <tr><td>2</td><td>Vendor list</td><td>Open the record marked <b>Changed</b></td><td>The profile marks the fields that moved and shows the old value; Change History has one line per moved field</td></tr>
-        <tr><td>3</td><td>Vendor list</td><td>Switch <b>LOC-10024</b> from Not live to Live</td><td>Going live is the publish: the badge clears, the value is what eBay receives, and there is no separate apply step</td></tr>
+        <tr><td>3</td><td>Vendor list</td><td>Switch <b>LOC-10024</b> from Disable to Enable</td><td>Going live is the publish: the badge clears, the value is what eBay receives, and there is no separate apply step</td></tr>
         <tr><td>4</td><td>Vendor list</td><td>Try the switch on <b>LOC-12206</b> (inactive)</td><td>The switch is disabled — a closed shop cannot be released, and the tooltip names the provider status</td></tr>
         <tr><td>5</td><td>Vendor list</td><td>Filter <b>Change = Changed</b>, select the rows, <b>Add to whitelist &amp; apply</b></td><td>One action writes the values, clears the badges and puts the stores live</td></tr>
         <tr><td>6</td><td>Vendor list</td><td>Select <b>LOC-10024</b> and <b>LOC-00189</b>, then <b>Mark as duplicate</b></td><td>Two records, one store: the marker goes on the duplicate, no id changes hands, and only one of the pair can stay live</td></tr>
@@ -1036,6 +1036,8 @@ var I18N_ZH = {
   "Not same (1:1)":"非同一门店 (1:1)",
   "Live":"已上线",
   "Not live":"未上线",
+  "Enable":"启用",
+  "Disable":"禁用",
   "live":"已上线",
   "not live":"未上线",
   "standby":"备用",
@@ -1414,7 +1416,7 @@ var I18N_BLOCK = {
   "map.rules":"M2 · 只重判发生变更的那个来源 &nbsp;·&nbsp; M3 · 分配新 OC，旧映射进历史 &nbsp;·&nbsp; M4 · 未变更的一方绝不动 &nbsp;·&nbsp; M5 · 没人确认就不落库 &nbsp;·&nbsp; M6 · 两边在同一次推送里都变了 → 进人工",
   "dup.vs":"对比",
   "pull.hint":"标记 → 导出 → 供应商修正 → 再拉一次",
-  "wt.title":"演示脚本 —— v8.3.0（一条记录，一个身份，一张表）",
+  "wt.title":"演示脚本 —— v8.3.1（一条记录，一个身份，一张表）",
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
@@ -1489,6 +1491,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "8.3.1":"<b>开关读作 Enable / Disable，不再是 Live / Not live。</b>旧的那对词描述的是一种运营并不掌握的状态：控制台手里是一个开关，eBay 手里是可见性。现在行、列、筛选、两个判重弹框和导出 CSV 用同一套词 —— 这条记录在给 eBay 供数就是 <b>Enable</b>，不在供数就是 <b>Disable</b>。供应商关掉的店也显示同一个 <b>Disable</b>，只是置灰：读起来是「同一个开关，只是不能按」，而不是另一种状态。",
   "8.3.0":"<b>三条记录也可以是一家店，而且一次就能定。</b>`Mark as duplicate` 过去只收两行，第三条只能再做一遍，还得记住谁才是保留方。现在三条以上是一次决定：疑似面板上「共用同一条记录」的 HIGH 配对合成一张<b>簇卡片</b>（<i>3 条记录 · 3 组配对 · 最高 90</i>），点开是列出全部成员的<b>选择器</b>，确认后其余每条都写 <code>duplicate_of</code> —— 指向<b>保留方</b>，不是互相指，所以这一组始终是星形。组内任意一条上线，会把同组其余成员一起撤下，而不是只撤一条。",
   "8.2.0":"<b>Duplicates 筛选多了第三个值，而且它不是过滤表格，是换一块面板。</b>已标记的重复是记录上的事实；<b>疑似</b>重复是<i>配对</i>上的事实，一条记录可以同时出现在好几对里。铺成行的话，一个 9 条记录、11 对关系的邮编看起来就像 11 家店。所以 <b>疑似重复</b>会把表格收起来、直接给配对：永远带范围 —— 先城市，再「只给有配对的邮编」开标签，最后是配对本身，HIGH 在上、MEDIUM 折叠成一行。标记一对，确认后它就从这块面板消失。",
   "8.1.0":"<b>查邮编改成按判重分数排序，指纹删掉。</b>指纹（<code>addr_fingerprint</code>）原本是「先分桶再比」的召回手段；现在判定范围是全量，它成了一个没人打开的键 —— 删掉，而且没有任何规则挂在它上面。Zipcode 命中多行时，按<b>与配对弹框里同一个分数</b>降序：地址 40 · 邮编 25 · 州 15 · 城市 10 · 名称 10，分数直接印在行上。基准取<b>结果里建档最早的那条</b>，不是「当前第一行」—— 那个基准会随别的筛选漂移，整个列表看起来像数据变了。名称破平局，再按 ID；同一个邮编里邮编那 25 分是常数，不会影响排序。",
@@ -1674,8 +1677,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='8.3.0';
+var APP_VERSION='8.3.1';
 var VERSIONS=[
+ {v:'8.3.1',type:'patch',date:'2026-11-27',desc:'<b>The switch says Enable / Disable, not Live / Not live.</b> The old pair described a state the operator does not hold: the console holds a switch, eBay holds the visibility. Now the row, its column, the filter, both duplicate dialogs and the CSV export use one vocabulary — <b>Enable</b> when the record is supplying eBay, <b>Disable</b> when it is not. A store the provider closed shows the same <b>Disable</b>, greyed out, so it reads as one control that cannot be used rather than a different state.'},
  {v:'8.3.0',type:'minor',date:'2026-11-27',desc:'<b>Three records can be one store, in one move.</b> `Mark as duplicate` used to take exactly two rows, so a third record meant doing the same thing twice and remembering which one was the keeper. Now a group of three or more is one decision: on the suspected board the HIGH pairs that share a record render as a <b>cluster card</b> (<i>3 records · 3 pairs · strongest 90</i>), its button opens a <b>picker</b> listing every member, and confirming writes <code>duplicate_of</code> on all the others — at the <b>keeper</b>, never at each other, so the group stays a star. Going live on any member takes every other member off eBay, not just one.'},
  {v:'8.2.0',type:'minor',date:'2026-11-26',desc:'<b>The Duplicates filter learned a third value, and it opens a board instead of filtering rows.</b> A marked duplicate is a fact about a record; a <b>suspected</b> one is a fact about a <i>pair</i>, and one record can sit in several. Drawn as rows, a nine-record zip with eleven pairs looks like eleven stores. So <b>Suspected duplicates</b> hides the table and shows the pairs, always scoped: a city first, then one tab per zip that actually has a pair, then the pairs — HIGH on top, MEDIUM folded behind one line. Marking one confirms it and it leaves the board.'},
  {v:'8.1.0',type:'minor',date:'2026-11-26',desc:'<b>A zip lookup now ranks by the duplicate score, and the fingerprint is gone.</b> The hash (`addr_fingerprint`) existed to bucket candidates before the scan; the scan covers the whole table now, so it was a key nobody turned — deleted, with no rule attached to it. A multi-row zip is ranked by <b>the same score the pair modal prints</b> — address 40 · zip 25 · state 15 · city 10 · name 10 — against <b>the oldest record in the result</b>, and the score is printed on the row. The anchor is not "the first row" on purpose: that base moves whenever another filter changes, which reads as if the data moved. Name breaks ties, then the id; the zip points are constant inside one lookup, so they cannot distort it.'},
@@ -2572,14 +2576,14 @@ function liveSwitch(v){
   /* v6.0.2 — a store the provider calls inactive (or removed) cannot be released to
      eBay. The switch is drawn disabled, so the rule is visible before anybody clicks. */
   if(v.status&&v.status!=='active'){
-    return '<button class="live-toggle" disabled title="the provider reports this store '+esc(v.status)+' — it cannot go live; the source has to change first">'
-      +'<span class="dot"></span>Not live</button>';
+    return '<button class="live-toggle" disabled title="the provider reports this store '+esc(v.status)+' — it cannot be enabled; the source has to change first">'
+      +'<span class="dot"></span>Disable</button>';
   }
   if(v.blocked)return '<span class="badge badge-red" title="blocked in the database — the console cannot change it">Blocked</span>';
   var on=!!v.live;
-  var tip=on?'live for eBay — click to take the store down':'release this record to eBay; its current values are written in the same click';
+  var tip=on?'enabled for eBay — click to disable it and take the store down':'enable this record; its current values are written to eBay in the same click';
   return '<button class="live-toggle'+(on?' on':'')+'" onclick="toggleLive(\''+v.id+'\')" title="'+tip+'">'
-    +'<span class="dot"></span>'+(on?'Live':'Not live')+'</button>';
+    +'<span class="dot"></span>'+(on?'Enable':'Disable')+'</button>';
 }
 function toggleLive(vid){
   if(!isMgr()){showToast('Permission required','Only the Location Manager can change the live record','error');return;}
@@ -2714,7 +2718,7 @@ function suspectClusterCard(c){
     return '<button class="sus-member" onclick="openVendorDetail(\''+esc(v.id)+'\')">'
       +'<span class="mono">'+esc(v.id)+'</span><b>'+esc(v.name)+'</b>'
       +'<em>'+esc([v.addr1,v.addr2].filter(Boolean).join(' '))+'</em>'
-      +(v.live?'<i class="live">Live</i>':'')+'</button>';
+      +(v.live?'<i class="live">Enable</i>':'')+'</button>';
   }).join('');
   var ids=c.ids.map(function(id){return "\'"+esc(id)+"\'";}).join(',');
   return '<div class="sus-cluster">'
@@ -2941,7 +2945,7 @@ function dupPairBody(a,b){
     ['Address',[a.addr1,a.addr2].filter(Boolean).join(' '),[b.addr1,b.addr2].filter(Boolean).join(' ')],
     ['City / Province',a.city+', '+a.state,b.city+', '+b.state],
     ['Zip',zip5(a.postal),zip5(b.postal)],
-    ['Live',a.live?'Live':'Not live',b.live?'Live':'Not live']];
+    ['Enable',a.live?'Enable':'Disable',b.live?'Enable':'Disable']];
   return '<div style="display:grid;grid-template-columns:140px 1fr 1fr;gap:7px 14px;font-size:12.5px">'
     +'<b></b><b class="mono">'+esc(a.id)+'</b><b class="mono">'+esc(b.id)+'</b>'
     +rows.map(function(r){return '<span style="color:var(--text-tertiary)">'+r[0]+'</span><span>'+esc(r[1]||'—')+'</span><span>'+esc(r[2]||'—')+'</span>';}).join('')
@@ -2971,7 +2975,7 @@ function dupClusterBody(sel){
       +'<span class="mono">'+esc(v.id)+'</span>'
       +'<b>'+esc(v.name)+'</b>'
       +'<em>'+esc([v.addr1,v.addr2].filter(Boolean).join(' '))+', '+esc(v.city)+' '+esc(v.state)+'</em>'
-      +'<i class="'+(v.live?'on':'')+'">'+esc(v.live?'Live':'Not live')+'</i>'
+      +'<i class="'+(v.live?'on':'')+'">'+esc(v.live?'Enable':'Disable')+'</i>'
       +'</label>';
   }).join('');
   return '<div class="info-line">'+sel.length+' '+tr('records, one store')+'. '+tr('The one you keep stays the store; the others become duplicates of it — and anything live comes off eBay.')
@@ -3481,7 +3485,7 @@ function togglePhases(){
 function exportCSV(kind){
   var rows=[],name='';
   if(kind==='vendor'){
-    rows.push(['Vendor Location ID','Name','Address','City','Province','Postal','Source','Type','Sweeper','QR','Status','Live','Duplicate of','Open issues','Updated']);
+    rows.push(['Vendor Location ID','Name','Address','City','Province','Postal','Source','Type','Sweeper','QR','Status','Enable','Duplicate of','Open issues','Updated']);
     vendorFilters().forEach(function(v){
       rows.push([v.id,v.name,v.addr1,v.city,v.state,v.postal,v.provider,v.type,v.sweeper||'missing',
         v.qrDropoff?'QR':'',v.status,v.live?'true':'false',v.duplicateOf||'',

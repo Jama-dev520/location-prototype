@@ -1,6 +1,6 @@
 # Location Management Admin Console — Product Requirements Document
 
-**Version 8.3.0 ｜ 2026-11-27 ｜ Status: draft for review**
+**Version 8.3.1 ｜ 2026-11-27 ｜ Status: draft for review**
 
 Companion files: clickable prototype (`index.html`), Duplicate check v3.0 (rule document), field mapping (v5.1.0, pending update to this model).
 
@@ -19,8 +19,8 @@ Version 6.0.0 collapses the console into **one list**. Sync state, the whitelist
 | Change awareness | implied by drift badges on the OC page | explicit **New / Changed** marker against the last snapshot |
 | Pushing to eBay | values flowed downstream on their own | **going live is the publish**; no separate apply step |
 | Duplicate decision | a dedicated page with a queue | select two rows, **Mark as duplicate** |
-| Whitelist | per-store sign-off on the OC page | **Live switch on the row**, plus batch add/remove |
-| Filters | three text conditions plus facets | adds **Zipcode**, **Live**, **Change**, **Duplicates** |
+| Whitelist | per-store sign-off on the OC page | **Enable switch on the row**, plus batch add/remove |
+| Filters | three text conditions plus facets | adds **Zipcode**, **Enable**, **Change**, **Duplicates** |
 
 The rule document (Duplicate check v3.0) still governs how similarity is computed. This PRD governs what the operator sees and does. Where the two disagree about identity, this document wins: the prototype is the contract for this release.
 
@@ -166,7 +166,7 @@ The id is not touched. The store is simply not live until a person acts. This is
 | 8 | Sweeper | badge, or `missing` |
 | 9 | **QR** | `QR` badge when the source supports QR drop-off, `—` when it does not |
 | 10 | Status | provider status badge |
-| 11 | Live | switch on every row; `Blocked` badge when the platform blocks the store |
+| 11 | Enable | switch on every row, reading `Enable` / `Disable`; `Blocked` badge when the platform blocks the store |
 | 12 | Duplicate | `duplicate of LOC-xxxxx` on the duplicate, `—` on a primary |
 | 13 | Issues | count of open issues, clickable |
 | 14 | Updated | provider timestamp |
@@ -193,16 +193,16 @@ A filter combination with no matches says so and offers a Reset. It does not sil
 
 ---
 
-## 7. Live and the whitelist
+## 7. Enable and the whitelist
 
 ### 7.1 The switch
 
 | Row state | Rendered |
 |---|---|
-| `status` is `inactive` or `removed` | disabled `Not live` switch: the store is not operating, so it cannot be released to eBay |
+| `status` is `inactive` or `removed` | disabled `Disable` switch: the store is not operating, so it cannot be released to eBay |
 | `blocked` | red `Blocked` badge, not clickable |
-| `live = true` | green capsule `Live` |
-| `live = false` | grey capsule `Not live` |
+| `live = true` | green capsule `Enable` |
+| `live = false` | grey capsule `Disable` |
 
 Clicking a capsule toggles the store. The operation requires the Operations role.
 
@@ -299,7 +299,7 @@ Two ways to go live, same effect per row:
 
 | Action | Writes values to eBay | Flips live |
 |---|---|---|
-| Clicking `Live` on a row | yes, for that record | yes |
+| Clicking `Enable` on a row | yes, for that record | yes |
 | `Add to whitelist & apply` (batch, after filtering) | yes, for each selected record | yes |
 
 The described flow is therefore: filter `Change = New` or `Changed`, select the rows, `Add to whitelist & apply`. Nothing else is needed, and there is nothing to reconcile afterwards.
@@ -321,7 +321,7 @@ All filters are multi-select with type-to-find. Values within one filter are OR;
 | Zipcode | up to 20 conditions | first five digits; a multi-row result is ranked by the duplicate score against the oldest record, and that score is printed on the row |
 | Source | facet | three values |
 | Status | facet | provider status |
-| Live | facet | `Live` / `Not live` / `Blocked by system` |
+| Enable | facet | `Enable` / `Disable` / `Blocked by system` |
 | Change | facet | `New` / `Changed` / `No change` |
 | Duplicates | facet | `Duplicated records` / `Suspected duplicates` / `No duplicate`; the option carries the pair count |
 | Sweeper | facet | `PUDO Inc` / `LMS` |
@@ -430,7 +430,7 @@ Errors worth designing for: switching a blocked store, going live on an `inactiv
 3. A changed record is not live after ingest, and the whitelist shows it as removed with reason `PENDING_CHANGE`.
 4. Clicking the badge-bearing id opens a profile where the moved fields are marked `changed` and show the previous value.
 5. The Change History tab lists one `PROVIDER_SYNC` row per moved field, newest first.
-6. Clicking `Live` on a record with `sync_state = changed` publishes the current values and clears the badge in one action.
+6. Clicking `Enable` on a record with `sync_state = changed` publishes the current values and clears the badge in one action.
 7. Two records of a pair cannot both be live. Turning one on unlists the other and logs `DUPLICATE_UNLISTED`.
 8. A blocked store renders a badge, not a switch.
 9. There is no `Apply to eBay` button: filtering `Change = New`, selecting the rows and pressing `Add to whitelist & apply` writes the values, clears the badges and puts the stores live in one action.
@@ -479,4 +479,4 @@ Errors worth designing for: switching a blocked store, going live on an `inactiv
 
 ---
 
-*End of document. Version 8.3.0, 2026-11-27.*
+*End of document. Version 8.3.1, 2026-11-27.*

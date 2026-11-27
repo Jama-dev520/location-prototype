@@ -139,7 +139,7 @@
 | 7 | Sweeper | 徽章，或 `missing` |
 | 8 | QR | `QR` 或 `—` |
 | 9 | Status | 供应商状态 |
-| 10 | Live | 开关；被平台 block 时显示 `Blocked` 徽章 |
+| 10 | Enable | 开关，读作 `Enable` / `Disable`；被平台 block 时显示 `Blocked` 徽章 |
 | 11 | Duplicate | 重复记录显示 `duplicate of LOC-xxxxx`，主记录 `—` |
 | 12 | Issues | 未关闭异常数 |
 | 13 | Updated | 供应商时间戳 |
@@ -159,7 +159,7 @@
 | Zipcode | 最多 20 个条件；命中多行时按判重分数对「结果中建档最早那条」排序，该分数印在行上 |
 | Source | facet |
 | Status | facet |
-| Live | `Live` / `Not live` / `Blocked by system` |
+| Enable | `Enable` / `Disable` / `Blocked by system` |
 | Change | `New` / `Changed` / `No change` |
 | Duplicates | `Duplicated records` / `Suspected duplicates` / `No duplicate`；疑似会打开配对面板，按城市 → 邮编限定 |
 | Sweeper | facet |
@@ -174,7 +174,7 @@
 | 动作 | 位置 | 效果 |
 |---|---|---|
 | 筛出待处理的 | `Change = New` / `Changed` | 把待处理项当成一个视图 |
-| 上线 | `Live` 开关 | 把当前值写进 eBay 并翻转开关 |
+| 上线 | `Enable` 开关 | 把当前值写进 eBay 并翻转开关 |
 | 批量上线 / 下线 | 勾选 → `Add to whitelist & apply` / `Remove from whitelist` | 逐行，提示处理与跳过条数 |
 | 标成同一家店 | 选两条（或多条）→ `Mark as duplicate` | 写 `duplicate_of`；多条时一次选一条保留，其余都指向它；不发号、不合并 |
 | 打开记录 | 点 ID | 详情页，五个标签 |
@@ -199,13 +199,13 @@
 2. `OC-…` 号不出现在列表、筛选、详情页、导出和接口里；只有版本历史还会提到。
 3. 列表 13 个数据列，第 11 列是 `Duplicate`。
 4. 筛选区 12 个，没有 `OC Location ID`。
-5. `Live` 是决定 eBay 可见性的唯一开关。
+5. `Enable` 是决定 eBay 可见性的唯一开关。
 6. 同一家店里只能有一条上线；打开一条会撤下同组其余成员（2 条或 3 条以上都一样）。
 7. `Mark as duplicate` 不发号、不改号。
 8. inactive 记录渲染禁用开关；blocked 的店渲染徽章。
 9. 筛 `Change = New`、勾选、点 `Add to whitelist & apply`：写值、清徽章、上线一次完成。
 10. Reset 清空所有控件，行数回到全量。
-11. 导出带 `Vendor Location ID`、`Live`、`Duplicate of`、QR，没有 OC 列。
+11. 导出带 `Vendor Location ID`、`Enable`、`Duplicate of`、QR，没有 OC 列。
 
 ---
 
@@ -243,7 +243,7 @@
 
 | 步骤 | 动作 | 阶段 |
 |---|---|---|
-| 1 | 上线单列表（带 `Live` 与 `Mark as duplicate`），OC 两页保留一个周期、只读 | 一 → 二 |
+| 1 | 上线单列表（带 `Enable` 与 `Mark as duplicate`），OC 两页保留一个周期、只读 | 一 → 二 |
 | 2 | 把 `oc_location` 上的 `live`、`blocked` 复制到当时供数的那条记录（`live_source`），然后删表 | 二 |
 | 3 | 一次性告知下游：`MC_LEGACY_OC_ID(vendor_id, legacy_oc_id)` | 二 |
 | 4 | 最后一个消费方确认后，下线 `/oc-locations` 接口 | 二 |
