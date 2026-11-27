@@ -176,7 +176,7 @@
 | 筛出待处理的 | `Change = New` / `Changed` | 把待处理项当成一个视图 |
 | 上线 | `Enable` 开关 | 把当前值写进 eBay 并翻转开关 |
 | 批量上线 / 下线 | 勾选 → `Add to whitelist & apply` / `Remove from whitelist` | 逐行，提示处理与跳过条数 |
-| 标成同一家店 | 选两条（或多条）→ `Mark as duplicate` | 写 `duplicate_of`；多条时一次选一条保留，其余都指向它；不发号、不合并 |
+| 标成同一家店 | 选两条（或多条）→ `Mark as duplicate` | 写 `duplicate_of`；多条时一次选一条保留，其余都指向它；保留方同时被启用；不发号、不合并 |
 | 打开记录 | 点 ID | 详情页，五个标签 |
 | 标记数据异常 | 详情页 | 不变 |
 | 导出 | `Export CSV` | ID、live、重复标记、QR、异常数 |

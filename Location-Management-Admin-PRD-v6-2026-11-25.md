@@ -1,6 +1,6 @@
 # Location Management Admin Console — Product Requirements Document
 
-**Version 8.3.1 ｜ 2026-11-27 ｜ Status: draft for review**
+**Version 8.4.0 ｜ 2026-11-27 ｜ Status: draft for review**
 
 Companion files: clickable prototype (`index.html`), Duplicate check v3.0 (rule document), field mapping (v5.1.0, pending update to this model).
 
@@ -259,6 +259,8 @@ A store may arrive as **two records or three or four**. The decision is the same
 - **Keep as the store** is the only control — a radio, defaulting to the record that is live, else the one with the earliest `created`, else the lowest id.
 - There is no id to choose, type or merge: `duplicate_of` **is** the decision, and every record keeps its own id.
 
+**Keeping a record also enables it.** The keeper is the record eBay receives, so the same confirmation enables it and publishes its current values. Without that, keeping the non-live record of a pair would take the store off eBay at the exact moment a person decided which record represents it. The dialog states the outcome for whichever record is selected, and the gate is the same one the switch uses: a record the provider reports `inactive`, or one blocked in the database, is **not** enabled — the dialog says so and the store stays off.
+
 ### 8.2 Outcomes
 
 | Situation | Result |
@@ -267,6 +269,7 @@ A store may arrive as **two records or three or four**. The decision is the same
 | Group of 3+ | **every** other record gets `duplicate_of = kept.id` — a star, never a chain |
 | A dropped record is live | it is unlisted, because only one record of a store may supply eBay |
 | The kept record was itself a duplicate | that old link is cleared first, so the keeper becomes the root of its group |
+| The keeper is not enabled | it is enabled by the same confirmation, publishing its current values; if the gate refuses (inactive / blocked), it stays off and the dialog has already said so |
 | Re-marking an already-marked group | the direction is refreshed; no id ever changes |
 
 `duplicate_of` always points at the **keeper**, never at another duplicate. That is a rule, not a preference: "who is the store" has to be one hop away, because ordering, the `Duplicate` column, live exclusivity and the export all read it. A chain would make each of them walk.
@@ -451,6 +454,7 @@ Errors worth designing for: switching a blocked store, going live on an `inactiv
 22. The board lists unmarked pairs only, HIGH before MEDIUM, each with both ids, the score and one `Mark as duplicate`; confirming a pair removes it from the board and writes `duplicate_of`.
 23. Three or more records connected by HIGH pairs appear as **one cluster card** with N members and one action; the action opens a picker listing every member, and confirming writes `duplicate_of = keeper` on all the others — never on another duplicate.
 24. Going live on any member of a group unlists every other member, and each unlist is logged with its own id.
+25. Confirming `Mark as duplicate` enables the keeper in the same action — including when the live record was the duplicate, so the store never goes dark. A keeper the provider reports `inactive`, or one blocked in the database, is not enabled, and the dialog states that before the click.
 
 ---
 
@@ -479,4 +483,4 @@ Errors worth designing for: switching a blocked store, going live on an `inactiv
 
 ---
 
-*End of document. Version 8.3.1, 2026-11-27.*
+*End of document. Version 8.4.0, 2026-11-27.*

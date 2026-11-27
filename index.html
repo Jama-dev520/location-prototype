@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v8.3.1)</title>
+<title>Location Management Admin Console — Interactive Prototype (v8.4.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -539,7 +539,7 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v8.3.1</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v8.4.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage(\'p01\')">Vendor Location List</div>
@@ -564,7 +564,7 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v8.3.1</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v8.4.0</span></div>
       </div>
     </div>
 
@@ -762,7 +762,7 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-<div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v8.3.1 (one record, one id, one list)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+<div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v8.4.0 (one record, one id, one list)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Where</th><th>Do</th><th>What it proves</th></tr></thead>
       <tbody>
@@ -934,6 +934,12 @@ var I18N_ZH = {
   "Every record keeps its own id and its own values; the others point at the keeper with":"每条记录都保留自己的号和自己的值；其余的用",
   "Only one of them may be live.":"同一家店只允许一条在线。",
   "Mark duplicate":"标记为重复",
+  "is already the live record — it stays live after this.":"已经是线上记录 —— 确认后仍然保持启用。",
+  "is the store: confirming enables it and publishes its current values to eBay.":"就是这家店：确认后会启用它，并把当前值发布到 eBay。",
+  "cannot be enabled":"无法启用",
+  "the store will not be on eBay after this.":"确认后这家店不会出现在 eBay 上。",
+  "blocked in the database":"在数据库里被拉黑",
+  "provider reports":"供应商状态为",
   "anchor":"基准",
   "the anchor row — the oldest record in this zip":"基准行 —— 这个邮编下建档最早的那条",
   "duplicate-check score against the anchor row":"与基准行的判重分数（地址 40 · 邮编 25 · 州 15 · 城市 10 · 名称 10）",
@@ -1416,7 +1422,7 @@ var I18N_BLOCK = {
   "map.rules":"M2 · 只重判发生变更的那个来源 &nbsp;·&nbsp; M3 · 分配新 OC，旧映射进历史 &nbsp;·&nbsp; M4 · 未变更的一方绝不动 &nbsp;·&nbsp; M5 · 没人确认就不落库 &nbsp;·&nbsp; M6 · 两边在同一次推送里都变了 → 进人工",
   "dup.vs":"对比",
   "pull.hint":"标记 → 导出 → 供应商修正 → 再拉一次",
-  "wt.title":"演示脚本 —— v8.3.1（一条记录，一个身份，一张表）",
+  "wt.title":"演示脚本 —— v8.4.0（一条记录，一个身份，一张表）",
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
@@ -1491,6 +1497,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "8.4.0":"<b>留下这家店，就等于启用这家店。</b>`Mark as duplicate` 以前把保留方原样放着 —— 于是当在线的那条正好是被弃的一条时，运营刚定完「这家店是哪条记录」，店反而从 eBay 掉了。现在确认动作会**启用保留方**并发布它的当前值，闸门和开关是同一个：供应商报 <b>inactive</b> 的、数据库里被 block 的不会发布，弹框在点击前就写明。弹框还会按当前选中的记录写清结果，单选不再是盲选。",
   "8.3.1":"<b>开关读作 Enable / Disable，不再是 Live / Not live。</b>旧的那对词描述的是一种运营并不掌握的状态：控制台手里是一个开关，eBay 手里是可见性。现在行、列、筛选、两个判重弹框和导出 CSV 用同一套词 —— 这条记录在给 eBay 供数就是 <b>Enable</b>，不在供数就是 <b>Disable</b>。供应商关掉的店也显示同一个 <b>Disable</b>，只是置灰：读起来是「同一个开关，只是不能按」，而不是另一种状态。",
   "8.3.0":"<b>三条记录也可以是一家店，而且一次就能定。</b>`Mark as duplicate` 过去只收两行，第三条只能再做一遍，还得记住谁才是保留方。现在三条以上是一次决定：疑似面板上「共用同一条记录」的 HIGH 配对合成一张<b>簇卡片</b>（<i>3 条记录 · 3 组配对 · 最高 90</i>），点开是列出全部成员的<b>选择器</b>，确认后其余每条都写 <code>duplicate_of</code> —— 指向<b>保留方</b>，不是互相指，所以这一组始终是星形。组内任意一条上线，会把同组其余成员一起撤下，而不是只撤一条。",
   "8.2.0":"<b>Duplicates 筛选多了第三个值，而且它不是过滤表格，是换一块面板。</b>已标记的重复是记录上的事实；<b>疑似</b>重复是<i>配对</i>上的事实，一条记录可以同时出现在好几对里。铺成行的话，一个 9 条记录、11 对关系的邮编看起来就像 11 家店。所以 <b>疑似重复</b>会把表格收起来、直接给配对：永远带范围 —— 先城市，再「只给有配对的邮编」开标签，最后是配对本身，HIGH 在上、MEDIUM 折叠成一行。标记一对，确认后它就从这块面板消失。",
@@ -1677,8 +1684,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='8.3.1';
+var APP_VERSION='8.4.0';
 var VERSIONS=[
+ {v:'8.4.0',type:'minor',date:'2026-11-27',desc:'<b>Keeping the store is enabling the store.</b> `Mark as duplicate` used to leave the keeper exactly as it was — so when the live record happened to be the one being dropped, the store went off eBay at the moment a person decided which record represented it. The confirmation now <b>enables the keeper</b> and publishes its current values, through the same gate as the switch: a record the provider calls <b>inactive</b>, or one blocked in the database, is not published and the dialog says so before the click. The dialog also names the outcome for whichever record is selected, so the radio is not a leap of faith.'},
  {v:'8.3.1',type:'patch',date:'2026-11-27',desc:'<b>The switch says Enable / Disable, not Live / Not live.</b> The old pair described a state the operator does not hold: the console holds a switch, eBay holds the visibility. Now the row, its column, the filter, both duplicate dialogs and the CSV export use one vocabulary — <b>Enable</b> when the record is supplying eBay, <b>Disable</b> when it is not. A store the provider closed shows the same <b>Disable</b>, greyed out, so it reads as one control that cannot be used rather than a different state.'},
  {v:'8.3.0',type:'minor',date:'2026-11-27',desc:'<b>Three records can be one store, in one move.</b> `Mark as duplicate` used to take exactly two rows, so a third record meant doing the same thing twice and remembering which one was the keeper. Now a group of three or more is one decision: on the suspected board the HIGH pairs that share a record render as a <b>cluster card</b> (<i>3 records · 3 pairs · strongest 90</i>), its button opens a <b>picker</b> listing every member, and confirming writes <code>duplicate_of</code> on all the others — at the <b>keeper</b>, never at each other, so the group stays a star. Going live on any member takes every other member off eBay, not just one.'},
  {v:'8.2.0',type:'minor',date:'2026-11-26',desc:'<b>The Duplicates filter learned a third value, and it opens a board instead of filtering rows.</b> A marked duplicate is a fact about a record; a <b>suspected</b> one is a fact about a <i>pair</i>, and one record can sit in several. Drawn as rows, a nine-record zip with eleven pairs looks like eleven stores. So <b>Suspected duplicates</b> hides the table and shows the pairs, always scoped: a city first, then one tab per zip that actually has a pair, then the pairs — HIGH on top, MEDIUM folded behind one line. Marking one confirms it and it leaves the board.'},
@@ -2585,26 +2593,37 @@ function liveSwitch(v){
   return '<button class="live-toggle'+(on?' on':'')+'" onclick="toggleLive(\''+v.id+'\')" title="'+tip+'">'
     +'<span class="dot"></span>'+(on?'Enable':'Disable')+'</button>';
 }
+/* v8.4.0 — one gate, two callers. The switch and "keep as the store" must publish
+   exactly the same way, or the console would have two meanings for enabled. */
+function enableBlock(v){
+  if(v.status&&v.status!=='active')return v.status;
+  if(v.blocked)return 'blocked';
+  return null;
+}
+function enableRecord(v){
+  /* going live is the publish: the value that reaches eBay is the current one */
+  var st0=syncOf(v).state;
+  if(st0!=='synced'){
+    SYNC_STATE[v.id]={state:'synced',at:nowStr(),fields:[]};
+    log('VENDOR',currentUser.name,'CHANGE_APPLIED',v.id,'sync_state',st0,'synced','applied by going live');
+  }
+  releaseSibling(v.id);
+  v.live=true;v.listType='white';v.listRemovedReason=null;v.updated=nowStr();
+  log('VENDOR',currentUser.name,'ENABLE_SIGNED_OFF',v.id,'live',false,true,'from the list');
+  log('VENDOR',currentUser.name,'WHITELIST_ADDED',v.id,'list_type','none','white',v.id);
+}
 function toggleLive(vid){
   if(!isMgr()){showToast('Permission required','Only the Location Manager can change the live record','error');return;}
   var v=findVendor(vid); if(!v)return;
-  if(v.status&&v.status!=='active'){showToast('Cannot go live','The provider reports this store '+v.status+' — it cannot go live until the source changes','error');return;}
-  if(v.blocked){showToast('Blocked by system','This store is blocked in the database; the console cannot lift it','error');return;}
+  var blockedWhy=enableBlock(v);
+  if(blockedWhy==='blocked'){showToast('Blocked by system','This store is blocked in the database; the console cannot lift it','error');return;}
+  if(blockedWhy){showToast('Cannot go live','The provider reports this store '+blockedWhy+' — it cannot go live until the source changes','error');return;}
   if(v.live){
     v.live=false;v.listType='none';v.listRemovedReason='UNSIGNED';v.updated=nowStr();
     log('VENDOR',currentUser.name,'UNSIGNED_OFF',vid,'live',true,false,'from the list');
     log('VENDOR',currentUser.name,'WHITELIST_REMOVED',vid,'list_type','white','none','removed_reason=UNSIGNED');
   }else{
-    /* going live is the publish: the value that reaches eBay is the current one */
-    var st0=syncOf(v).state;
-    if(st0!=='synced'){
-      SYNC_STATE[vid]={state:'synced',at:nowStr(),fields:[]};
-      log('VENDOR',currentUser.name,'CHANGE_APPLIED',vid,'sync_state',st0,'synced','applied by going live');
-    }
-    releaseSibling(vid);
-    v.live=true;v.listType='white';v.listRemovedReason=null;v.updated=nowStr();
-    log('VENDOR',currentUser.name,'ENABLE_SIGNED_OFF',vid,'live',false,true,'from the list');
-    log('VENDOR',currentUser.name,'WHITELIST_ADDED',vid,'list_type','none','white',vid);
+    enableRecord(v);
   }
   renderVendor();updateBadges();
 }
@@ -2926,12 +2945,30 @@ function batchWhitelist(action){
 }
 /* ---------- mark as duplicate ---------- */
 var dupSel=null;
+/* v8.4.0 — picking the keeper is picking the record eBay receives, so the dialog
+   states that outcome before the click, for whichever record is selected. */
+function dupKeepChanged(){
+  var el=document.getElementById('dup-outcome'); if(!el)return;
+  var picked=(document.querySelector('input[name="dup-keep"]:checked')||{}).value;
+  var v=picked?findVendor(picked):null;
+  if(!v){el.innerHTML='';return;}
+  var why=enableBlock(v);
+  if(v.live){
+    el.innerHTML='<b>'+esc(v.id)+'</b> '+tr('is already the live record — it stays live after this.');
+  }else if(!why){
+    el.innerHTML='<b>'+esc(v.id)+'</b> '+tr('is the store: confirming enables it and publishes its current values to eBay.');
+  }else{
+    var reason=(why==='blocked')?tr('blocked in the database'):(tr('provider reports')+' '+esc(why));
+    el.innerHTML='<b>'+esc(v.id)+'</b> '+tr('cannot be enabled')+' ('+reason+') — '+tr('the store will not be on eBay after this.');
+  }
+}
 function openDupModal(ids){
   /* callers pass ids (board, cluster card) or records (table selection) — accept both */
   var sel=(ids&&ids.length>=2)?ids.map(function(x){return typeof x==='string'?findVendor(x):x;}).filter(Boolean):selectedVendors();
   if(sel.length<2){showToast('Select at least two records','Mark as duplicate needs two or more');return;}
   dupSel=sel;
   document.getElementById('dup-body').innerHTML=(sel.length===2)?dupPairBody(sel[0],sel[1]):dupClusterBody(sel);
+  dupKeepChanged();
   var btn=document.querySelector('#modal-dup .btn-primary');
   if(btn){btn.disabled=false;btn.textContent=tr(sel.length===2?'Mark duplicate':'Mark '+sel.length+' as one store');}
   openModal('modal-dup');applyLang();
@@ -2952,11 +2989,12 @@ function dupPairBody(a,b){
     +'</div>'
     +'<div class="rc-meta" style="margin-top:10px">Text score <b>'+j.score+'</b> · '+j.label+' — for reference only; the decision is yours.</div>'
     +'<div style="margin-top:14px"><label class="f-label">Keep as the store</label>'
-      +'<label style="margin-right:18px;font-size:12.5px"><input type="radio" name="dup-keep" value="'+esc(a.id)+'"'+(keep.id===a.id?' checked':'')+'> A · <span class="mono">'+esc(a.id)+'</span></label>'
-      +'<label style="font-size:12.5px"><input type="radio" name="dup-keep" value="'+esc(b.id)+'"'+(keep.id===b.id?' checked':'')+'> B · <span class="mono">'+esc(b.id)+'</span></label>'
+      +'<label style="margin-right:18px;font-size:12.5px"><input type="radio" name="dup-keep" value="'+esc(a.id)+'" onchange="dupKeepChanged()"'+(keep.id===a.id?' checked':'')+'> A · <span class="mono">'+esc(a.id)+'</span></label>'
+      +'<label style="font-size:12.5px"><input type="radio" name="dup-keep" value="'+esc(b.id)+'" onchange="dupKeepChanged()"'+(keep.id===b.id?' checked':'')+'> B · <span class="mono">'+esc(b.id)+'</span></label>'
     +'</div>'
-    +'<div class="warn-line" style="margin-top:14px"><b>The marker is the whole decision.</b> Both records keep their own ids and their own values; '
-      +'the duplicate is linked to the kept record. Only one of the two may be live — if the duplicate is live now, it comes off eBay when you confirm.</div>';
+    +'<div class="info-line" id="dup-outcome" style="margin-top:12px"></div>'
+    +'<div class="warn-line" style="margin-top:12px"><b>The marker is the whole decision.</b> Both records keep their own ids and their own values; '
+      +'the duplicate is linked to the kept record, and only one of the two may be enabled.</div>';
 }
 /* three or more: one keeper, everyone else points at it. The list is a picker, because
    the only question left is "which record is the store". */
@@ -2971,7 +3009,7 @@ function dupClusterBody(sel){
   }
   var rows=sel.map(function(v){
     return '<label class="dup-pick">'
-      +'<input type="radio" name="dup-keep" value="'+esc(v.id)+'"'+(v.id===keep.id?' checked':'')+'>'
+      +'<input type="radio" name="dup-keep" value="'+esc(v.id)+'" onchange="dupKeepChanged()"'+(v.id===keep.id?' checked':'')+'>'
       +'<span class="mono">'+esc(v.id)+'</span>'
       +'<b>'+esc(v.name)+'</b>'
       +'<em>'+esc([v.addr1,v.addr2].filter(Boolean).join(' '))+', '+esc(v.city)+' '+esc(v.state)+'</em>'
@@ -2981,6 +3019,7 @@ function dupClusterBody(sel){
   return '<div class="info-line">'+sel.length+' '+tr('records, one store')+'. '+tr('The one you keep stays the store; the others become duplicates of it — and anything live comes off eBay.')
     +'</div><div class="dup-picks">'+rows+'</div>'
     +'<div class="rc-meta" style="margin-top:10px">'+tr('Strongest pair in this group')+': <b>'+strongest+'</b> · '+tr('for reference only; the decision is yours')+'.</div>'
+    +'<div class="info-line" id="dup-outcome" style="margin-top:12px"></div>'
     +'<div class="warn-line" style="margin-top:12px"><b>'+tr('The marker is the whole decision.')+'</b> '
       +tr('Every record keeps its own id and its own values; the others point at the keeper with')+' <b>duplicate of</b>. '
       +tr('Only one of them may be live.')+'</div>';
@@ -3008,11 +3047,19 @@ function confirmDup(){
     log('VENDOR',currentUser.name,'DUPLICATE_MARKED',drop.id,'duplicate_of','—',keep.id,'no id changes hands');
   });
 
+  /* v8.4.0 — whoever is kept becomes the record eBay receives. Enabling here is not a
+     side effect to hide: it is the second half of "this record is the store". The gate
+     is the same one the switch uses, so an inactive or blocked keeper is never
+     published — the dialog has already said so. */
+  var enabledHere=false;
+  if(!keep.live&&!enableBlock(keep)){enableRecord(keep);enabledHere=true;}
+
   closeModal('modal-dup');dupSel=null;
   clearVendorSelection();renderVendor();updateBadges();
-  showToast('Marked as duplicate',dropped.length===1
+  showToast('Marked as duplicate',(dropped.length===1
     ? dropLabel(dropped[0])+' duplicates '+keep.id+' — ids untouched'
-    : dropped.length+' records now point at '+keep.id+' — ids untouched');
+    : dropped.length+' records now point at '+keep.id+' — ids untouched')
+    +(enabledHere?' · '+keep.id+' is now enabled':''));
 }
 function dropLabel(v){return v.id;}
 /* v8.0.0 — the OC list page, the sign-off flow and the OC batch modal are gone:/n   a record is the store, so there is no second object to list, sign off or batch. */
