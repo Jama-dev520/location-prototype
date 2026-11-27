@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v8.4.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v8.5.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -532,6 +532,13 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
 .dup-pick em{font-style:normal;font-size:11.5px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dup-pick i{font-style:normal;font-size:10px;color:var(--text-tertiary);text-align:right}
 .dup-pick i.on{color:var(--color-success);font-weight:600}
+
+/* v8.5.0 — the duplicate page: three filters, so the five-column grid would leave two
+   empty slots and make the bar look broken. */
+.filter-grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.dc-top{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding-bottom:10px;border-bottom:1px solid var(--bg-section)}
+.dc-legend{font-size:11px;color:var(--text-tertiary);white-space:nowrap}
+@media (max-width:1100px){ .filter-grid-3{grid-template-columns:1fr 1fr} .dc-legend{display:none} }
 </style>
 </head>
 <body class="show-phases">
@@ -539,11 +546,12 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v8.4.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v8.5.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage(\'p01\')">Vendor Location List</div>
     <div class="nav-group-label">Quality</div>
+    <div class="nav-item" data-nav="pdc" onclick="switchPage('pdc')">Duplicate Check <span class="tag" id="nav-dupcheck"></span></div>
     <div class="nav-item" data-nav="pdi" onclick="switchPage('pdi')">Data Issues <span class="tag" id="nav-issues">4</span></div>
     <div class="nav-item" data-nav="p03" onclick="switchPage('p03')">Change Log</div>
     <div class="nav-item" data-nav="p04" onclick="switchPage('p04')">Sync Status</div>
@@ -564,7 +572,7 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v8.4.0</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v8.5.0</span></div>
       </div>
     </div>
 
@@ -585,7 +593,7 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
             <div><label class="f-label" data-phase="1">Status</label><select id="v-f-status" onchange="applyVendorFilters()"><option value="">All</option><option value="active">active</option><option value="inactive">inactive</option><option value="removed">removed</option></select></div>
             <div><label class="f-label" data-phase="2">Enable</label><select id="v-f-live" onchange="applyVendorFilters()"><option value="">All</option><option value="yes">Enable</option><option value="no">Disable</option><option value="blocked">Blocked by system</option></select></div>
             <div><label class="f-label" data-phase="2">Change</label><select id="v-f-change" onchange="applyVendorFilters()"><option value="">All</option><option value="new">New</option><option value="changed">Changed</option><option value="none">No change</option></select></div>
-            <div><label class="f-label" data-phase="2">Duplicates</label><select id="v-f-dup" onchange="applyVendorFilters()"><option value="">All</option><option value="yes">Duplicated records</option><option value="no">No duplicate</option><option value="suspect">Suspected duplicates</option></select></div>
+            <div><label class="f-label" data-phase="2">Duplicates</label><select id="v-f-dup" onchange="applyVendorFilters()"><option value="">All</option><option value="yes">Duplicated records</option><option value="no">No duplicate</option></select></div>
             <div><label class="f-label" data-phase="1">Sweeper</label><select id="v-f-sweeper" onchange="applyVendorFilters()"><option value="">All</option><option>PUDO Inc</option><option>LMS</option></select></div>
             <div><label class="f-label" data-phase="1">Issues <span class="help-dot" onclick="openHelp()" title="What counts as an issue">?</span></label><select id="v-f-issues" onchange="applyVendorFilters()"><option value="">All</option><option value="open">Has open issue</option><option value="none">No issue</option></select></div>
           </div>
@@ -627,7 +635,30 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
               <tbody id="v-tbody"></tbody>
             </table>
           </div>
-          <div id="v-suspect" class="suspect" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="page" id="page-pdc">
+        <h2 class="page-title">Duplicate Check</h2>
+        <p class="page-desc" data-i18n="pdc.desc">Pairs the engine thinks may be one store, and nothing else. <b>A pair is the decision unit</b> — not a record. Pick a province and a city, choose the level, and the result arrives grouped by zip: groups of three or more on one card, single pairs on a row, HIGH first and MEDIUM folded away. Confirm one and it leaves this page; the record you keep is the one that goes to eBay.</p>
+
+        <div class="card">
+          <div class="filter-grid filter-grid-3">
+            <div><label class="f-label">Province</label><select id="dc-f-prov" onchange="applyDcFilters()"></select></div>
+            <div><label class="f-label">City</label><select id="dc-f-city" onchange="applyDcFilters()"></select></div>
+            <div><label class="f-label">Duplicate level</label><select id="dc-f-level" onchange="applyDcFilters()"><option value="">All</option><option value="HIGH">HIGH</option><option value="MEDIUM">MEDIUM</option></select></div>
+          </div>
+          <div class="filter-actions">
+            <span class="spacer"></span>
+            <button class="btn btn-secondary" onclick="resetDcFilters()">Reset</button>
+            <button class="btn btn-primary" onclick="applyDcFilters()">Apply Filters</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <div class="dc-top"><span class="result-meta" id="dc-meta" style="margin:0"></span>
+            <span class="dc-legend">HIGH ≥ 80 · MEDIUM 50–79 · LOW is not a duplicate and does not appear here</span></div>
+          <div id="dc-board" class="suspect" style="border:0;padding:12px 0 0"></div>
         </div>
       </div>
 
@@ -762,7 +793,7 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-<div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v8.4.0 (one record, one id, one list)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+<div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v8.5.0 (one record, one id, one list)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Where</th><th>Do</th><th>What it proves</th></tr></thead>
       <tbody>
@@ -774,7 +805,7 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
         <tr><td>6</td><td>Vendor list</td><td>Select <b>LOC-10024</b> and <b>LOC-00189</b>, then <b>Mark as duplicate</b></td><td>Two records, one store: the marker goes on the duplicate, no id changes hands, and only one of the pair can stay live</td></tr>
         <tr><td>7</td><td>Vendor list</td><td>Filter <b>Duplicates = Duplicated records</b></td><td>The pair comes back together, adjacent, the duplicate labelled with the record it duplicates</td></tr>
         <tr><td>8</td><td>Vendor list</td><td>Type <b>11210</b> into Zipcode</td><td>Every record in that zip, ranked by the duplicate-check score against the oldest record there — a lookup is a hunt for a duplicate, so the likely pair sits on top</td></tr>
-        <tr><td>9</td><td>Vendor list</td><td>Set <b>Duplicates = Suspected duplicates</b></td><td>The table is replaced by a board of pairs: pick a city, then a zip tab, then confirm one — it leaves the board and lands in the Duplicate column</td></tr>
+        <tr><td>9</td><td>Duplicate Check</td><td>Pick <b>Brooklyn</b>, then the <b>11210</b> tab</td><td>Pairs, not records: a group of three on one card, MEDIUM folded. Set the level to HIGH and the weak leads disappear; confirm one and it leaves the page</td></tr>
         <tr><td>10</td><td>Vendor list</td><td>Reset, then <b>Export CSV</b></td><td>One row per record with its live state and duplicate marker — the hand-off to anyone outside the console</td></tr>
         <tr><td>11</td><td>Data Issues</td><td>Apply the next provider sync</td><td>Issues that close themselves do; the ones that need a person stay open with a reason</td></tr>
       </tbody>
@@ -940,6 +971,13 @@ var I18N_ZH = {
   "the store will not be on eBay after this.":"确认后这家店不会出现在 eBay 上。",
   "blocked in the database":"在数据库里被拉黑",
   "provider reports":"供应商状态为",
+  "Duplicate Check":"重复门店检查",
+  "Duplicate level":"重复等级",
+  "No pair left in this city.":"这个城市已经没有待处理的配对了。",
+  "Pick another city, or widen the level.":"换一个城市，或者放宽等级。",
+  "No pair at this level in this scope.":"这个范围、这个等级下没有配对。",
+  "Widen the province or city, or add MEDIUM back.":"放宽省份或城市，或者把 MEDIUM 加回来。",
+  "HIGH ≥ 80 · MEDIUM 50–79 · LOW is not a duplicate and does not appear here":"HIGH ≥ 80 · MEDIUM 50–79 · LOW 不算重复，不会出现在这里",
   "anchor":"基准",
   "the anchor row — the oldest record in this zip":"基准行 —— 这个邮编下建档最早的那条",
   "duplicate-check score against the anchor row":"与基准行的判重分数（地址 40 · 邮编 25 · 州 15 · 城市 10 · 名称 10）",
@@ -1386,6 +1424,7 @@ var I18N_ZH = {
 var I18N_BLOCK = {
   "rollout.title":"<b>上线节奏</b>",
   "rollout.why":"为什么是这个顺序：重复判定决定一家店<b>挂几条记录</b>，所以 OC 列表在它之前做不准。",
+  "pdc.desc":"引擎认为可能是同一家店的那些配对，只有这些。<b>一次判定的单位是「一对」，不是一条记录</b> —— 选省份、选城市、选等级，结果按邮编分组：三条以上的合成一张卡，普通配对一行一条，HIGH 在前、MEDIUM 收起来。确认一对，它就从这页消失；你留下的那条记录，就是发给 eBay 的那条。",
   "p01.desc":"<b>一张表，一行一个决定。</b>供应商推来的记录全在这里，按上一次快照标出 <b>New</b> / <b>Changed</b> —— 包括已经推给 eBay 的那批。表里只有两个动作：把门店<b>加入白名单</b>（单条或批量 —— 这也是新值/变更值送到 eBay 的唯一路径），以及把一条记录<b>标记为另一条的重复</b> —— 标记就是全部关系，没有号会易主，因为 vendor location ID 本身就是身份。值仍然只读：数据错了就标异常，由供应商改源头。",
   "p02.desc":"<b>只有一个来源：</b><b>packagehub (LMS)</b> · <b>PUDOpoint (PUDO)</b> · <b>M&amp;MP</b> —— 它是什么、谁拥有，一个字段说完。客户看到的就是这条记录。<b>只有两个动作：启用、标记异常。</b>这里不能改数据 —— 地址错了不是拿键盘盖掉，是标给供应商去改。值<b>按记录整条取，不是逐字段拼</b>：<b>M&amp;MP</b>（自营）优先，其次 <b>LMS</b>；谁赢，这条店就整条由谁供数，<b>包括它空着的字段</b>。赢的那条没有电话，电话就是空的 —— 拿另一家补上，等于把「该催谁」这件事藏起来了。<b>一个门店可以挂两条记录（2:1）。</b>两条都列出来，一上一下，各自显示<b>自己</b>的值 —— 但<b>只有一条是供数来源</b>，下游读的就是它。换源不是拨开关，是重新签收：字段整条替换，基线重新记一次。",
   "pdup.desc":"两层，各问一个问题。<b>站点层：</b>这两条记录是不是同一个物理站点？一对记录只能靠<b>文本</b>成为候选 —— <b>Zip5 相同</b>，或清洗后地址完全一致（跨邮编）；每个字段<b>按比例</b>给分 —— 两个值<b>相邻字符对</b>的重合比例（先排序，词的先后不再影响结果）：地址 40 · 名称 10 · 邮编 25 · 州 15 · 城市 10。<b>判定只看文本：坐标并排显示给人看，一不计分、二不生成候选、三不改标签、四不算簇。</b>地理三项只买到入场券：Zip5、州、城市在地址一个字都没对上时就先给 50 分，所以 <b>进 MEDIUM 还要地址本身至少像一半</b>，不然总分再高也是 LOW。结果是 <b>HIGH</b> / <b>MEDIUM</b> / <b>LOW</b> 之一 —— 它只是排队顺序，不是决定。OC location ID 只在两种情况下自动发：桶里没有候选，或这条记录的所有配对都是 LOW（都不像）；MEDIUM 及以上等人确认。<b>映射层：</b>这个 <b>source_key</b> 对应哪个 OC，来源身份变了之后怎么变 —— <b>一次只判一个来源，从不按配对连带</b>。没有任何一步会自己合并、停用或阻断。",
@@ -1422,7 +1461,7 @@ var I18N_BLOCK = {
   "map.rules":"M2 · 只重判发生变更的那个来源 &nbsp;·&nbsp; M3 · 分配新 OC，旧映射进历史 &nbsp;·&nbsp; M4 · 未变更的一方绝不动 &nbsp;·&nbsp; M5 · 没人确认就不落库 &nbsp;·&nbsp; M6 · 两边在同一次推送里都变了 → 进人工",
   "dup.vs":"对比",
   "pull.hint":"标记 → 导出 → 供应商修正 → 再拉一次",
-  "wt.title":"演示脚本 —— v8.4.0（一条记录，一个身份，一张表）",
+  "wt.title":"演示脚本 —— v8.5.0（一条记录，一个身份，一张表）",
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
@@ -1497,6 +1536,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "8.5.0":"<b>配对队列有了自己的一页。</b>已标记的重复是记录上的事实；<i>疑似</i>重复是配对上的事实 —— 两样东西挤在记录表里，表就同时装着两种对象。现在 Quality 下有独立的 <b>Duplicate Check</b>：按 <b>Province / City / Duplicate level</b> 过滤（HIGH / MEDIUM，LOW 按定义就不是重复），结果是原来那块面板 —— 先城市、再「有配对的邮编」一个标签、三条以上合成一张卡、MEDIUM 折叠。记录表的 Duplicates 筛选退回 <i>Duplicated records</i> / <i>No duplicate</i>。",
   "8.4.0":"<b>留下这家店，就等于启用这家店。</b>`Mark as duplicate` 以前把保留方原样放着 —— 于是当在线的那条正好是被弃的一条时，运营刚定完「这家店是哪条记录」，店反而从 eBay 掉了。现在确认动作会**启用保留方**并发布它的当前值，闸门和开关是同一个：供应商报 <b>inactive</b> 的、数据库里被 block 的不会发布，弹框在点击前就写明。弹框还会按当前选中的记录写清结果，单选不再是盲选。",
   "8.3.1":"<b>开关读作 Enable / Disable，不再是 Live / Not live。</b>旧的那对词描述的是一种运营并不掌握的状态：控制台手里是一个开关，eBay 手里是可见性。现在行、列、筛选、两个判重弹框和导出 CSV 用同一套词 —— 这条记录在给 eBay 供数就是 <b>Enable</b>，不在供数就是 <b>Disable</b>。供应商关掉的店也显示同一个 <b>Disable</b>，只是置灰：读起来是「同一个开关，只是不能按」，而不是另一种状态。",
   "8.3.0":"<b>三条记录也可以是一家店，而且一次就能定。</b>`Mark as duplicate` 过去只收两行，第三条只能再做一遍，还得记住谁才是保留方。现在三条以上是一次决定：疑似面板上「共用同一条记录」的 HIGH 配对合成一张<b>簇卡片</b>（<i>3 条记录 · 3 组配对 · 最高 90</i>），点开是列出全部成员的<b>选择器</b>，确认后其余每条都写 <code>duplicate_of</code> —— 指向<b>保留方</b>，不是互相指，所以这一组始终是星形。组内任意一条上线，会把同组其余成员一起撤下，而不是只撤一条。",
@@ -1684,8 +1724,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='8.4.0';
+var APP_VERSION='8.5.0';
 var VERSIONS=[
+ {v:'8.5.0',type:'minor',date:'2026-11-27',desc:'<b>The pair queue got its own page.</b> A marked duplicate is a fact about a record; a <i>suspected</i> one is a fact about a pair, and the record list was carrying both. <b>Duplicate Check</b> now lives under Quality: filter by <b>Province</b>, <b>City</b> and <b>Duplicate level</b> (HIGH / MEDIUM — LOW is not a duplicate by definition), and the result is the same board as before — cities first, one tab per zip that has a pair, groups of three or more on one card, MEDIUM folded. The list\'s Duplicates filter is back to <i>Duplicated records</i> / <i>No duplicate</i>.'},
  {v:'8.4.0',type:'minor',date:'2026-11-27',desc:'<b>Keeping the store is enabling the store.</b> `Mark as duplicate` used to leave the keeper exactly as it was — so when the live record happened to be the one being dropped, the store went off eBay at the moment a person decided which record represented it. The confirmation now <b>enables the keeper</b> and publishes its current values, through the same gate as the switch: a record the provider calls <b>inactive</b>, or one blocked in the database, is not published and the dialog says so before the click. The dialog also names the outcome for whichever record is selected, so the radio is not a leap of faith.'},
  {v:'8.3.1',type:'patch',date:'2026-11-27',desc:'<b>The switch says Enable / Disable, not Live / Not live.</b> The old pair described a state the operator does not hold: the console holds a switch, eBay holds the visibility. Now the row, its column, the filter, both duplicate dialogs and the CSV export use one vocabulary — <b>Enable</b> when the record is supplying eBay, <b>Disable</b> when it is not. A store the provider closed shows the same <b>Disable</b>, greyed out, so it reads as one control that cannot be used rather than a different state.'},
  {v:'8.3.0',type:'minor',date:'2026-11-27',desc:'<b>Three records can be one store, in one move.</b> `Mark as duplicate` used to take exactly two rows, so a third record meant doing the same thing twice and remembering which one was the keeper. Now a group of three or more is one decision: on the suspected board the HIGH pairs that share a record render as a <b>cluster card</b> (<i>3 records · 3 pairs · strongest 90</i>), its button opens a <b>picker</b> listing every member, and confirming writes <code>duplicate_of</code> on all the others — at the <b>keeper</b>, never at each other, so the group stays a star. Going live on any member takes every other member off eBay, not just one.'},
@@ -2163,8 +2204,8 @@ function openVersionModal(){
 }
 
 /* ============ navigation ============ */
-var CRUMBS={p01:['Vendor Location List','provider data · read-only · flags, not edits'],pdi:['Data Issues','provider issues · drift · intake'],p03:['Change Log','every write and every flag'],p04:['Sync Status','daily provider runs'],pd:['Location Detail','vendor and OC share one record shape']};
-var CRUMBS_ZH={p01:['供应商门店列表','供应商数据 · 只读 · 只标记不改'],pdi:['数据异常','供应商异常 · 漂移 · 入池失败'],p03:['变更日志','每一次写入、每一次标记'],p04:['同步状态','每日供应商推送'],pd:['门店详情','供应商与 OC 共用同一种记录结构']};
+var CRUMBS={p01:['Vendor Location List','provider data · read-only · flags, not edits'],pdc:['Duplicate Check','pairs · HIGH first · one decision each'],pdi:['Data Issues','provider issues · drift · intake'],p03:['Change Log','every write and every flag'],p04:['Sync Status','daily provider runs'],pd:['Location Detail','vendor and OC share one record shape']};
+var CRUMBS_ZH={p01:['供应商门店列表','供应商数据 · 只读 · 只标记不改'],pdc:['重复门店检查','配对 · HIGH 在前 · 一次一个决定'],pdi:['数据异常','供应商异常 · 漂移 · 入池失败'],p03:['变更日志','每一次写入、每一次标记'],p04:['同步状态','每日供应商推送'],pd:['门店详情','供应商与 OC 共用同一种记录结构']};
 var curPage='p01';
 function switchPage(pid){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
@@ -2172,6 +2213,7 @@ function switchPage(pid){
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.toggle('active',n.getAttribute('data-nav')===pid);});
   curPage=pid; breadcrumb();
   if(pid==='p01')renderVendor();
+  if(pid==='pdc')renderDuplicatePage();
   if(pid==='pdup')renderDup(); if(pid==='pdi')renderIssuesPage();
   if(pid==='p03')renderLog(); if(pid==='p04')renderSync();
   updateBadges();
@@ -2195,6 +2237,8 @@ function updateBadges(){
   var waiting=VENDORS.filter(function(v){return !v.live&&!v.blocked;}).length;
   var n1=document.getElementById('nav-notlive'); if(n1)n1.textContent=waiting;
   var n2=document.getElementById('nav-dup'); if(n2)n2.textContent=DUPLICATES.filter(function(d){return d.status==='pending';}).length;
+  var n2b=document.getElementById('nav-dupcheck');
+  if(n2b)n2b.textContent=suspectPairs(VENDORS).length||'';
   var n3=document.getElementById('nav-issues'); if(n3)n3.textContent=ISSUES.filter(function(i){return i.status!=='fixed';}).length+INTAKE.filter(function(i){return i.status!=='fixed';}).length;
   var n4=document.getElementById('o-notlive-count'); if(n4)n4.textContent=waiting;
 }
@@ -2206,6 +2250,7 @@ function updateBadges(){
    keeps every preset, keyboard path and test that assigns .value working, and
    makes it impossible for the facet to drift out of sync with the filter. */
 var FACET_IDS=['v-f-prov','v-f-city','v-f-source','v-f-status','v-f-live','v-f-change','v-f-dup','v-f-sweeper','v-f-issues',
+               'dc-f-prov','dc-f-city','dc-f-level',
                'o-f-prov','o-f-city','o-f-source','o-f-status','o-f-live','o-f-issues'];
 var FACET={};
 function vals(id){
@@ -2391,11 +2436,7 @@ function vendorFilters(skipSource,skipGeo,skipCity,skipDup){
     if(f.dup.length&&!skipDup){
       /* both sides of a pair come back, so the relationship stays readable */
       var isDup=!!pairOf(v.id);
-      /* v8.1.1 — a third value: a record inside an unconfirmed HIGH / MEDIUM pair.
-         It answers "what should I look at", not "what is already decided". */
-      var hit=!!(SUSPECT_IDS[v.id]&&f.dup.indexOf('suspect')>=0)
-             || f.dup.indexOf(isDup?'yes':'no')>=0;
-      if(!hit)return false;
+      if(f.dup.indexOf(isDup?'yes':'no')<0)return false;
     }
     if(f.sweeper.length&&f.sweeper.indexOf(v.sweeper||'')<0)return false;
     if(f.issues.length){
@@ -2487,11 +2528,10 @@ function renderSourceFilter(kind){
 /* the Duplicates filter is the only static select, and its label carries a count, so
    it is rebuilt rather than patched: replacing an <option>'s text under the browser
    leaves the closed control showing the old label until the next real interaction. */
-function renderDupFilter(n){
+function renderDupFilter(){
   var sel=document.getElementById('v-f-dup'); if(!sel)return;
   var cur=vals('v-f-dup');
-  var opts=[['','All'],['yes','Duplicated records'],['no','No duplicate'],
-            ['suspect','Suspected duplicates'+(n?' · '+n:'')]];
+  var opts=[['','All'],['yes','Duplicated records'],['no','No duplicate']];
   sel.innerHTML=opts.map(function(o){
     return '<option value="'+o[0]+'"'+(o[0]&&cur.indexOf(o[0])>=0?' selected':'')+'>'+esc(tr(o[1]))+'</option>';
   }).join('');
@@ -2670,7 +2710,7 @@ var ZIP_SCORE={}, ZIP_ANCHOR=null;
    those rows into the table is how a 9-record zip becomes 11 pair-rows pretending to be
    records. So the filter opens a board instead: city first, then a tab per zip, then the
    pairs themselves — never more than one zip's worth of decisions on screen. */
-var SUSPECT_IDS={}, SUS_TAB=null;
+var SUSPECT_IDS={};
 function computeSuspects(){
   SUSPECT_IDS={};
   for(var i=0;i<VENDORS.length;i++)for(var j=i+1;j<VENDORS.length;j++){
@@ -2692,8 +2732,6 @@ function suspectPairs(rows){
   }
   return out.sort(function(x,y){return y.score-x.score||String(x.a.id).localeCompare(String(y.a.id));});
 }
-function pickSuspectCity(city){SUS_TAB=null;setFacet('v-f-city',[city]);applyVendorFilters();}
-function pickSuspectZip(z){SUS_TAB=z;renderVendor();}
 function openDupPair(a,b){openDupModal([a,b]);}
 function suspectPairCard(p){
   var a=p.a,b=p.b;
@@ -2747,18 +2785,19 @@ function suspectClusterCard(c){
     +'<button class="btn btn-primary btn-sm" onclick="openDupModal(['+ids+'])">'+tr('These '+c.ids.length+' are one store')+'</button>'
     +'</div>';
 }
-function renderSuspectBoard(pairs){
-  var el=document.getElementById('v-suspect'); if(!el)return;
-  var zipsAll=[]; pairs.forEach(function(p){if(zipsAll.indexOf(p.zip)<0)zipsAll.push(p.zip);});
-  var head='<div class="sus-head"><div><h3>'+tr('Suspected duplicates')+'</h3>'
-    +'<p>'+tr('Unconfirmed pairs at HIGH or MEDIUM. The list stays a table of records; a pair is the decision unit, so it gets its own board. Confirm one and it leaves this board.')+'</p></div>'
-    +'<div class="sus-count"><b>'+pairs.length+'</b> '+tr(pairs.length===1?'pair':'pairs')
-    +' · <b>'+zipsAll.length+'</b> '+tr(zipsAll.length===1?'zip':'zips')+'</div></div>';
-  var citySel=vals('v-f-city');
+/* v8.5.0 — the pair board has its own page, so it takes its scope from that page's
+   filters (province, city, level) instead of borrowing the record list's. Same drawing
+   rules as before: cities first when no city is picked, then one tab per zip that has
+   a pair, then the pairs — clusters of three or more as one card. */
+function dupBoardHTML(pairs,opt){
+  opt=opt||{};
+  var citySel=opt.citySel||[], cityFn=opt.cityFn||'', zipFn=opt.zipFn||'', tab=opt.tab||null;
   if(!pairs.length){
-    el.innerHTML=head+'<div class="sus-empty">'+tr('No suspected duplicate in this scope.')
-      +'<span>'+tr('Clear the Duplicates filter to go back to the record list.')+'</span></div>';
-    return;
+    /* an empty scope inside a chosen city is a different message from an empty page:
+       the city was right, it just has nothing left to review */
+    var msg=citySel.length?tr('No pair left in this city.'):tr(opt.empty||'No suspected duplicate in this scope.');
+    var hint=citySel.length?tr('Pick another city, or widen the level.'):(opt.emptyHint||'');
+    return '<div class="sus-empty">'+msg+(hint?'<span>'+tr(hint)+'</span>':'')+'</div>';
   }
   if(!citySel.length){
     var byCity={};
@@ -2766,20 +2805,19 @@ function renderSuspectBoard(pairs){
     var cards=Object.keys(byCity).sort(function(x,y){return byCity[y].length-byCity[x].length;}).map(function(c){
       var ps=byCity[c], zs=[];
       ps.forEach(function(p){if(zs.indexOf(p.zip)<0)zs.push(p.zip);});
-      return '<button class="sus-city" onclick="pickSuspectCity(\''+esc(c)+'\')">'
+      return '<button class="sus-city" onclick="'+cityFn+'(\''+esc(c)+'\')">'
         +'<b>'+esc(c)+'</b>'
         +'<span>'+zs.length+' '+tr(zs.length===1?'zip':'zips')+' · '+ps.length+' '+tr(ps.length===1?'pair':'pairs')+'</span>'
         +'<em>'+zs.map(esc).join(' · ')+'</em></button>';
     }).join('');
-    el.innerHTML=head+'<div class="sus-note">'+tr('No city selected — pick one. Suspected pairs are reviewed one city at a time, which is what keeps this board short.')+'</div>'
+    return '<div class="sus-note">'+tr('No city selected — pick one. Suspected pairs are reviewed one city at a time, which is what keeps this board short.')+'</div>'
       +'<div class="sus-cities">'+cards+'</div>';
-    return;
   }
   var zips=[]; pairs.forEach(function(p){if(zips.indexOf(p.zip)<0)zips.push(p.zip);});
-  var active=(SUS_TAB&&zips.indexOf(SUS_TAB)>=0)?SUS_TAB:zips[0];
+  var active=(tab&&zips.indexOf(tab)>=0)?tab:zips[0];
   var tabs=zips.map(function(z){
     var n=pairs.filter(function(p){return p.zip===z;}).length;
-    return '<button class="sus-tab'+(z===active?' active':'')+'" onclick="pickSuspectZip(\''+esc(z)+'\')">'
+    return '<button class="sus-tab'+(z===active?' active':'')+'" onclick="'+zipFn+'(\''+esc(z)+'\')">'
       +'<span class="mono">'+esc(z)+'</span><i>'+n+'</i></button>';
   }).join('');
   var list=pairs.filter(function(p){return p.zip===active;});
@@ -2795,25 +2833,86 @@ function renderSuspectBoard(pairs){
     })[0];
   }).filter(Boolean).sort(function(x,y){return y.score-x.score;});
   var highCount=multi.length+duos.length;
-  el.innerHTML=head+'<div class="sus-tabs">'+tabs+'</div><div class="sus-list">'
+  return '<div class="sus-tabs">'+tabs+'</div><div class="sus-list">'
     +(highCount?'<div class="sus-sec"><b>HIGH</b><span>'+tr('same street, same zip — read these first')+'</span></div>'
        +multi.map(suspectClusterCard).join('')+duos.map(suspectPairCard).join(''):'')
-    +(mid.length?'<details class="sus-more"'+(highCount?'':' open')+'><summary><b>MEDIUM</b> · '+mid.length+' '+tr('weak leads')+' — address overlap, likely different shops</summary>'+mid.map(suspectPairCard).join('')+'</details>':'')
+    +(mid.length?'<details class="sus-more"'+(highCount?'':' open')+'><summary><b>MEDIUM</b> · '+mid.length
+       +(highCount?(' '+tr('weak leads')+' — address overlap, likely different shops'):(' '+tr('pairs')))
+       +'</summary>'+mid.map(suspectPairCard).join('')+'</details>':'')
     +'</div>';
+}
+
+/* ---------- Duplicate Check page ---------- */
+var DC_TAB=null;
+function dcRows(){
+  var prov=vals('dc-f-prov'), city=vals('dc-f-city');
+  return VENDORS.filter(function(v){
+    if(v.duplicateOf)return false;            /* a marked record already has its store */
+    if(prov.length&&prov.indexOf(v.state)<0)return false;
+    if(city.length&&city.indexOf(v.city)<0)return false;
+    return true;
+  });
+}
+function dcPairs(){
+  var pairs=suspectPairs(dcRows());
+  var lv=vals('dc-f-level');
+  if(lv.length)pairs=pairs.filter(function(p){return lv.indexOf(p.label)>=0;});
+  return pairs;
+}
+function renderDcFilters(){
+  var pSel=document.getElementById('dc-f-prov'), cSel=document.getElementById('dc-f-city');
+  if(!pSel||!cSel)return;
+  var curP=vals('dc-f-prov'), curC=vals('dc-f-city'), pc={}, cc={};
+  VENDORS.forEach(function(v){
+    if(v.duplicateOf)return;
+    if(v.state)pc[v.state]=(pc[v.state]||0)+1;
+    if((!curP.length||curP.indexOf(v.state)>=0)&&v.city)cc[v.city]=(cc[v.city]||0)+1;
+  });
+  pSel.innerHTML='<option value="">'+tr('All')+'</option>'+Object.keys(pc).sort().map(function(k){
+    return '<option value="'+esc(k)+'" data-label="'+esc(k)+'" data-n="'+pc[k]+'"'+(curP.indexOf(k)>=0?' selected':'')+'>'+esc(k)+' · '+pc[k]+'</option>';
+  }).join('');
+  var keepC=curC.filter(function(c){return cc[c];});
+  cSel.innerHTML='<option value="">'+tr('All')+'</option>'+Object.keys(cc).sort().map(function(k){
+    return '<option value="'+esc(k)+'" data-label="'+esc(k)+'" data-n="'+cc[k]+'"'+(keepC.indexOf(k)>=0?' selected':'')+'>'+esc(k)+' · '+cc[k]+'</option>';
+  }).join('');
+  syncFacet('dc-f-prov');syncFacet('dc-f-city');
+  renderDcLevels();
+}
+function renderDcLevels(){
+  var sel=document.getElementById('dc-f-level'); if(!sel)return;
+  var cur=vals('dc-f-level');
+  var base=suspectPairs(dcRows());
+  var nH=base.filter(function(p){return p.label==='HIGH';}).length;
+  var nM=base.filter(function(p){return p.label==='MEDIUM';}).length;
+  sel.innerHTML='<option value="">'+tr('All')+'</option>'
+    +'<option value="HIGH"'+(cur.indexOf('HIGH')>=0?' selected':'')+'>HIGH · '+nH+'</option>'
+    +'<option value="MEDIUM"'+(cur.indexOf('MEDIUM')>=0?' selected':'')+'>MEDIUM · '+nM+'</option>';
+  syncFacet('dc-f-level');
+}
+function renderDuplicatePage(){
+  computeSuspects();
+  renderDcFilters();
+  var pairs=dcPairs();
+  var zips=[]; pairs.forEach(function(p){if(zips.indexOf(p.zip)<0)zips.push(p.zip);});
+  var meta=document.getElementById('dc-meta');
+  if(meta)meta.innerHTML=esc(tr(pairs.length+' pair(s)'))+' · '+esc(zips.length+' '+tr(zips.length===1?'zip':'zips'));
+  var el=document.getElementById('dc-board');
+  if(el)el.innerHTML=dupBoardHTML(pairs,{
+    citySel:vals('dc-f-city'), cityFn:'pickDcCity', zipFn:'pickDcZip', tab:DC_TAB,
+    empty:'No pair at this level in this scope.',
+    emptyHint:'Widen the province or city, or add MEDIUM back.'
+  });
+}
+function pickDcCity(city){DC_TAB=null;setFacet('dc-f-city',[city]);renderDuplicatePage();}
+function pickDcZip(z){DC_TAB=z;renderDuplicatePage();}
+function applyDcFilters(){renderDuplicatePage();}
+function resetDcFilters(){
+  ['dc-f-prov','dc-f-city','dc-f-level'].forEach(function(i){setFacet(i,[]);});
+  DC_TAB=null;renderDuplicatePage();
 }
 function renderVendor(){
   seedSyncLog();
   enforcePendingOffList();
-  computeSuspects();
-  var susMode=vals('v-f-dup').indexOf('suspect')>=0;
-  /* one pair list for both the board and the filter's own count, so the number on the
-     option can never disagree with what opening it shows */
-  var susPairs=suspectPairs(vendorFilters(false,false,false,true));
-  if(susMode)renderSuspectBoard(susPairs);
-  var tw=document.getElementById('v-table-wrap'), sb=document.getElementById('v-suspect');
-  if(tw)tw.style.display=susMode?'none':'';
-  if(sb)sb.style.display=susMode?'':'none';
-  renderDupFilter(susPairs.length);
   var rows=vendorFilters();
   /* v8.1.0 — a zip lookup is a hunt for a duplicate, so the rows are ranked by the
      duplicate check's own score against one anchor: address 40 · zip 25 · state 15 ·
@@ -2871,11 +2970,10 @@ function renderVendor(){
       +'<td class="mono" style="font-size:10.5px;white-space:nowrap">'+esc(v.updated||'—')+'</td>'
       +'</tr>';
   }).join('');
+  renderDupFilter();
   var meta=document.getElementById('v-result-meta');
-  meta.innerHTML=susMode
-    ? esc(tr(susPairs.length+' pair(s)'))+' · '+esc(tr(rows.length+' vendor location(s)'))
-    : esc(tr(rows.length+' vendor location(s)'))
-      +(ZIP_ANCHOR?' · <span class="sort-note">'+esc(tr('text score · anchor '+ZIP_ANCHOR.id))+'</span>':'');
+  meta.innerHTML=esc(tr(rows.length+' vendor location(s)'))
+    +(ZIP_ANCHOR?' · <span class="sort-note">'+esc(tr('text score · anchor '+ZIP_ANCHOR.id))+'</span>':'');
   var pn=document.getElementById('v-pull-note'); if(pn)pn.innerHTML=pullNote();
   renderGeoFilters('v');renderSourceFilter('v');
   updateVendorBatch();
@@ -3056,6 +3154,7 @@ function confirmDup(){
 
   closeModal('modal-dup');dupSel=null;
   clearVendorSelection();renderVendor();updateBadges();
+  if(document.getElementById('page-pdc').classList.contains('active'))renderDuplicatePage();
   showToast('Marked as duplicate',(dropped.length===1
     ? dropLabel(dropped[0])+' duplicates '+keep.id+' — ids untouched'
     : dropped.length+' records now point at '+keep.id+' — ids untouched')

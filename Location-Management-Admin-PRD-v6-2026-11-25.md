@@ -1,6 +1,6 @@
 # Location Management Admin Console — Product Requirements Document
 
-**Version 8.4.0 ｜ 2026-11-27 ｜ Status: draft for review**
+**Version 8.5.0 ｜ 2026-11-27 ｜ Status: draft for review**
 
 Companion files: clickable prototype (`index.html`), Duplicate check v3.0 (rule document), field mapping (v5.1.0, pending update to this model).
 
@@ -14,7 +14,7 @@ Version 6.0.0 collapses the console into **one list**. Sync state, the whitelist
 
 | | v5.1.0 | v6.0.0 |
 |---|---|---|
-| Pages | Vendor list, OC list, Duplicate Check | **Vendor Location List only** |
+| Pages | Vendor list, OC list, Duplicate Check | **one record list** (+ a Duplicate Check page for pairs, 8.5.0) |
 | Store identity | a second id (`OC-…`) held on a separate record | **the vendor location id itself**; duplicates linked by a marker |
 | Change awareness | implied by drift badges on the OC page | explicit **New / Changed** marker against the last snapshot |
 | Pushing to eBay | values flowed downstream on their own | **going live is the publish**; no separate apply step |
@@ -30,7 +30,7 @@ The rule document (Duplicate check v3.0) still governs how similarity is compute
 
 ### 2.1 In scope
 
-- One list of every vendor location the providers send, with its sync state, live state and OC location id.
+- One list of every vendor location the providers send, with its sync state, its Enable state and its duplicate marker.
 - Change detection against the previous sync snapshot, at field level.
 - Applying new or changed records to eBay, one at a time or in bulk.
 - Putting records on the whitelist (going live) and taking them off, one at a time or in bulk.
@@ -285,7 +285,7 @@ A duplicate is a **record**, not a store. It keeps its own values, its own issue
 | Value | Returns |
 |---|---|
 | `Duplicated records` | both sides of every group, keeper first, members adjacent |
-| `Suspected duplicates` | see 10.1 — a board of pairs and groups that are not marked yet |
+| `Suspected duplicates` | not a value any more; unmarked pairs belong to the Duplicate Check page (10.1) |
 | `No duplicate` | the rest |
 
 The filter reads the relationship, not the id.
@@ -326,30 +326,38 @@ All filters are multi-select with type-to-find. Values within one filter are OR;
 | Status | facet | provider status |
 | Enable | facet | `Enable` / `Disable` / `Blocked by system` |
 | Change | facet | `New` / `Changed` / `No change` |
-| Duplicates | facet | `Duplicated records` / `Suspected duplicates` / `No duplicate`; the option carries the pair count |
+| Duplicates | facet | `Duplicated records` / `No duplicate` — the pair queue lives on the Duplicate Check page (10.1) |
 | Sweeper | facet | `PUDO Inc` / `LMS` |
 | Issues | facet | has open issue / none |
 
-### 10.1 Suspected duplicates (8.2.0)
+### 10.1 Duplicate Check is its own page (8.5.0)
 
-A **marked** duplicate is a fact about a record — the row says `duplicate of` and the table is the right place for it. A **suspected** one is a fact about a *pair*, and one record can sit in several. Listing those as rows is what turns a nine-record zip into eleven rows that look like eleven stores, so `Duplicates = Suspected duplicates` opens a **board** instead of filtering the table.
+A **marked** duplicate is a fact about a record — the row says `duplicate of`, and the record list is the right place for it. A **suspected** one is a fact about a *pair*, and one record can sit in several. Keeping the queue inside the record list meant the list carried two different objects at once, so it moved out: **Duplicate Check** is a page under Quality, and the record list's `Duplicates` filter is back to `Duplicated records` / `No duplicate`.
 
-The board is always scoped, in three steps:
+The page asks three questions and nothing else:
+
+| Filter | Values | Notes |
+|---|---|---|
+| Province | facet | counts are records, not pairs |
+| City | facet | cascades from Province |
+| Duplicate level | `HIGH` / `MEDIUM` | `LOW` is not a duplicate by definition and never appears |
+
+The result is scoped in three steps, in the same order as the operator's question:
 
 | Step | Shown | Why |
 |---|---|---|
-| No city chosen | one card per city: `Brooklyn · 2 zips · 12 pairs` | Nothing is decided at city level, but it is the smallest unit an operator owns — and it keeps the next screen short |
-| City chosen | one tab per zip that **has** a pair, with the count; no tab for an empty zip | The zip is the neighbourhood a person can actually read; a tab that leads nowhere is a dead end |
-| Zip chosen | one card per group of three or more, then the plain pairs, HIGH first; MEDIUM collapsed behind one summary line | A pair is the decision unit, so it gets a row — and when three records are all HIGH against each other, three rows would pretend to be three decisions instead of one |
+| No city chosen | one card per city: `Brooklyn · 2 zips · 12 pairs` | the city is the smallest unit an operator owns, and it keeps the next screen short |
+| City chosen | one tab per zip that **has** a pair, with the count; no tab for an empty zip | the zip is the neighbourhood a person can actually read; a tab that leads nowhere is a dead end |
+| Zip chosen | one card per group of three or more, then the plain pairs, HIGH first; MEDIUM collapsed behind one summary line | a pair is the decision unit, so it gets a row — and when three records are all HIGH against each other, three rows would pretend to be three decisions instead of one |
 
 Rules:
 
-- The pair list is computed on **the same filters as the table** (source, status, live, change, issues). The city list and the zip tabs are derived from that result, so a tab can never open onto nothing.
-- Pairs where either record is already marked are excluded — a confirmed decision leaves the board and lives in the `Duplicate` column.
-- The city facet narrows itself to cities that have suspected pairs while this filter is on; it is therefore impossible to select a city that renders an empty board.
+- The pair list is computed from the page's own filters. The city list, the zip tabs and the level counts are all derived from the same result, so a tab can never open onto nothing.
+- Pairs where either record is already marked are excluded — a confirmed decision leaves the page and lives in the `Duplicate` column of the record list.
+- Confirming a pair or a group runs the flow in section 8: one keeper, everyone else points at it, the keeper is enabled.
+- When a city has no pair left, the page says so (`No pair left in this city`) and suggests picking another — it never shows an empty tab.
 - The score is the duplicate check's score, the same number the pair dialog prints.
-- A **cluster card** holds three or more records connected by HIGH pairs. It names the members, the number of pairs inside it and the strongest score, and offers one action — `These N are one store` — which opens the picker in 8.1. MEDIUM links never create a cluster: within one zip, zip + state + city already pay 50 points, so a MEDIUM edge between neighbours would chain a whole neighbourhood into one blob.
-- Clearing the filter brings the table back. The board never coexists with the table: they answer different questions.
+- A **cluster card** holds three or more records connected by HIGH pairs. It names the members, the number of pairs inside it and the strongest score, and offers one action — `These N are one store`. MEDIUM links never create a cluster: within one zip, zip + state + city already pay 50 points, so a MEDIUM edge between neighbours would chain a whole neighbourhood into one blob.
 
 ---
 
@@ -450,7 +458,7 @@ Errors worth designing for: switching a blocked store, going live on an `inactiv
 21. The QR column sits beside Sweeper and shows `QR` only where the source offers drop-off; elsewhere a dash.
 19. The id column and the id filter are both labelled `Vendor Location ID`; no bare "Location ID" survives in the interface.
 20. No `OC-…` id appears in the list, the filters, the profile, the export or the API. Release history is the only place the old id is still named.
-21. `Duplicates = Suspected duplicates` hides the record table and shows the pair board. With no city selected it lists cities that have pairs; with a city it lists one tab per zip that has a pair, and no tab otherwise.
+21. `Duplicate Check` is a page of its own, filtered by Province, City and Duplicate level. With no city selected it lists cities that have pairs; with a city it lists one tab per zip that has a pair, and no tab otherwise; `LOW` never appears.
 22. The board lists unmarked pairs only, HIGH before MEDIUM, each with both ids, the score and one `Mark as duplicate`; confirming a pair removes it from the board and writes `duplicate_of`.
 23. Three or more records connected by HIGH pairs appear as **one cluster card** with N members and one action; the action opens a picker listing every member, and confirming writes `duplicate_of = keeper` on all the others — never on another duplicate.
 24. Going live on any member of a group unlists every other member, and each unlist is logged with its own id.
@@ -483,4 +491,4 @@ Errors worth designing for: switching a blocked store, going live on an `inactiv
 
 ---
 
-*End of document. Version 8.4.0, 2026-11-27.*
+*End of document. Version 8.5.0, 2026-11-27.*

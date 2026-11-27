@@ -1,6 +1,6 @@
 # Location 管理后台 — 产品需求文档（中文版）
 
-**版本 8.4.0 ｜ 2026-11-27 ｜ 状态：待评审**
+**版本 8.5.0 ｜ 2026-11-27 ｜ 状态：待评审**
 
 配套文件：可交互原型（`index.html`）· 判重规则 `Deplicate-check-v3.0-2026-11-23.md` · 数据库字段映射（v5.1.0，尚未按本模型更新）
 
@@ -14,7 +14,7 @@
 
 | | v5.1.0 | v6.0.x |
 |---|---|---|
-| 页面 | 供应商列表 + OC 列表 + 重复检查 | **只有 Vendor Location List** |
+| 页面 | 供应商列表 + OC 列表 + 重复检查 | **一张记录表**（+ 8.5.0 起独立的 Duplicate Check 页，只放配对） |
 | 店铺身份 | 另一个号（`OC-…`），存在独立的店铺记录上 | **就是 vendor location ID 本身**；重复的两条靠标记关联 |
 | 变更感知 | OC 页面上的 drift 徽章，需自己推断 | 对照上一次快照显式标记 **New / Changed** |
 | 推送 eBay | 值自动流向下游 | **上线即发布**，没有单独的 apply 步骤 |
@@ -288,7 +288,7 @@ live = true
 | 取值 | 返回什么 |
 |---|---|
 | `Duplicated records` | 每一组的两端/全部成员，保留方在前、成员相邻 |
-| `Suspected duplicates` | 见 10.1 —— 尚未标记的配对与分组，用面板呈现 |
+| `Suspected duplicates` | 不再是一个取值；未标记的配对属于 Duplicate Check 页（10.1） |
 | `No duplicate` | 其余 |
 
 筛选读的是关系，不是号。
@@ -329,17 +329,25 @@ live = true
 | Status | facet | 供应商状态 |
 | Enable | facet | `Enable` / `Disable` / `Blocked by system` |
 | Change | facet | `New` / `Changed` / `No change` |
-| Duplicates | facet | `Duplicated records` / `Suspected duplicates` / `No duplicate`；选项上带配对数 |
+| Duplicates | facet | `Duplicated records` / `No duplicate` —— 配对队列在 Duplicate Check 页（10.1） |
 | Sweeper | facet | `PUDO Inc` / `LMS` |
 | Issues | facet | 有未关闭异常 / 无 |
 
 筛选区顺序：`Vendor Location ID · Name · Province · City · Zipcode · Source · Status · Enable · Change · Duplicates · Sweeper · Issues`。
 
-### 10.1 疑似重复（8.2.0）
+### 10.1 重复检查是独立的一页（8.5.0）
 
-**已标记**的重复是记录上的事实 —— 行上写着 `duplicate of`，它就该待在表里。**疑似**重复是**配对**上的事实，一条记录可以同时出现在好几对里。把它们铺成行，就是把「一个邮编 9 条记录、11 对关系」渲染成 11 行、看起来像 11 家店。所以 `Duplicates = Suspected duplicates` 不是过滤表格，而是**换一块面板**。
+**已标记**的重复是记录上的事实 —— 行上写着 `duplicate of`，它就该待在记录表里。**疑似**重复是**配对**上的事实，一条记录可以同时出现在好几对里。把队列塞在记录表里，等于一张表同时装着两种对象，所以它搬出去了：Quality 下多一个 **Duplicate Check** 页面，记录表的 `Duplicates` 筛选退回两个值 `Duplicated records` / `No duplicate`。
 
-面板永远是有范围的，三步：
+这页只问三件事：
+
+| 筛选 | 取值 | 说明 |
+|---|---|---|
+| Province | facet | 计数是记录数，不是配对数 |
+| City | facet | 随 Province 级联 |
+| Duplicate level | `HIGH` / `MEDIUM` | `LOW` 按定义就不是重复，永远不出现 |
+
+结果仍然分三步收窄，顺序与人的问法一致：
 
 | 步骤 | 看到什么 | 为什么 |
 |---|---|---|
@@ -349,12 +357,12 @@ live = true
 
 规则：
 
-- 配对列表用的是**和表格同一套筛选**（Source / Status / Enable / Change / Issues）。城市卡与邮编标签都由这个结果推出来，所以标签点进去不可能为空。
-- 任一方已被标记的配对一律排除 —— 已决的事离开面板，回到 `Duplicate` 列。
-- 这个筛选打开时，City facet 只列出**有疑似配对的城市**，因此不存在「选了一个城市却是空面板」。
+- 配对列表只由**这页自己的筛选**算出来。城市卡、邮编标签、等级计数都从同一个结果推出来，所以标签点进去不可能为空。
+- 任一方已被标记的配对一律排除 —— 已决的事离开这页，回到记录表的 `Duplicate` 列。
+- 在这里确认一对或一组，走的就是第 8 章那套：选一条留下，其余都指向它，留下那条同时被启用。
+- 一个城市已经没有待处理配对时，页面直说「这个城市已经没有待处理的配对了」，并建议换一个城市 —— 不会给一个空标签。
 - 分数就是判重的分数，与配对弹框里读到的是同一个数。
-- **簇卡片**装的是「被 HIGH 连起来的 3 条及以上记录」，写明成员、组内配对数和最高分，只给一个动作 `These N are one store`，点开就是 8.1 的选择器。MEDIUM 不参与组簇：同一个邮编里邮编+州+城市已经白送 50 分，一条 MEDIUM 边就能把整个街区串成一坨。
-- 清掉筛选，表格回来。面板与表格不共存 —— 它们回答的不是同一个问题。
+- **簇卡片**装的是「被 HIGH 连起来的 3 条及以上记录」，写明成员、组内配对数和最高分，只给一个动作 `These N are one store`。MEDIUM 不参与组簇：同一个邮编里邮编+州+城市已经白送 50 分，一条 MEDIUM 边就能把整个街区串成一坨。
 
 ---
 
@@ -454,7 +462,7 @@ new ──────────(上线)─────────> synced
 17. 导出每条供应商记录一行，带 ID、上线状态与重复标记。
 18. **表头第二列与第一个筛选标签都写作 `Vendor Location ID`**，不出现无前缀的「Location ID」。
 18b. **列表、筛选、详情页、导出、接口里都不出现 `OC-…` 编号**（只有版本历史里还会提到旧的号）。
-19. `Duplicates = Suspected duplicates` 隐藏记录表、显示配对面板；未选城市时列出有配对的城市，选中城市后每个**有**配对的邮编一个标签，没有配对的邮编不出标签。
+19. `Duplicate Check` 是独立一页，按 Province / City / Duplicate level 过滤；未选城市时列出有配对的城市，选中城市后每个**有**配对的邮编一个标签，没有配对的邮编不出标签；`LOW` 永不出现。
 20. 面板只列未标记的配对，HIGH 在前、MEDIUM 折叠；每行带两边 ID、分数与一个 `Mark as duplicate`；确认之后这对从面板消失并写入 `duplicate_of`。
 21. 三条及以上被 HIGH 连起来的记录，显示为**一张簇卡片**，写明 N 条成员、只给一个动作；点开是列出全部成员的选择器，确认后其余每条写 `duplicate_of = 保留方`，绝不指向另一条重复记录。
 22. 组内任意一条上线，其余成员全部被撤下，且每条撤下各自记日志。
@@ -489,4 +497,4 @@ new ──────────(上线)─────────> synced
 
 ---
 
-*文档结束。版本 8.4.0，2026-11-27。*
+*文档结束。版本 8.5.0，2026-11-27。*
