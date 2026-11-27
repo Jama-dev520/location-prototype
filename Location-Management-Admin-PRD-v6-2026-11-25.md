@@ -1,6 +1,6 @@
 # Location Management Admin Console — Product Requirements Document
 
-**Version 8.2.0 ｜ 2026-11-26 ｜ Status: draft for review**
+**Version 8.3.0 ｜ 2026-11-27 ｜ Status: draft for review**
 
 Companion files: clickable prototype (`index.html`), Duplicate check v3.0 (rule document), field mapping (v5.1.0, pending update to this model).
 
@@ -249,29 +249,43 @@ Batch add follows the same rules per row: an id is minted when missing, the swit
 
 ### 8.1 The decision
 
-Select exactly two rows, then `Mark as duplicate`. The dialog shows both records side by side (id, name, address, city, zip) and the similarity score as **reference only**. Two controls matter:
+A store may arrive as **two records or three or four**. The decision is the same shape at every size: pick **one record to keep**, and every other record in the group points at it.
 
-- **Keep as the store** — a radio choice of A or B, defaulting to whichever record is live.
-- **Nothing else.** There is no id to choose, type or merge: the marker `duplicate_of` is the entire decision, and both records keep their ids.
+| Group size | Where it starts | The dialog |
+|---|---|---|
+| 2 | two selected rows, or a pair row on the suspected board | both records side by side (id, name, address, city, zip) + the score as **reference only** |
+| 3+ | the cluster card on the suspected board, or 3 rows selected in the table | a **picker**: one row per record (id, name, address, live state), radio to keep one |
+
+- **Keep as the store** is the only control — a radio, defaulting to the record that is live, else the one with the earliest `created`, else the lowest id.
+- There is no id to choose, type or merge: `duplicate_of` **is** the decision, and every record keeps its own id.
 
 ### 8.2 Outcomes
 
 | Situation | Result |
 |---|---|
-| Neither is marked | the dropped record gets `duplicate_of = kept.id`; both keep their ids |
-| The pair is already marked | re-marking refreshes the direction; ids never change |
-| The dropped record is live | it is unlisted, because only one of a pair may supply the store |
-| The kept record was `duplicate_of` something else | the marker moves to the new primary |
+| Group of 2 | the other record gets `duplicate_of = kept.id` |
+| Group of 3+ | **every** other record gets `duplicate_of = kept.id` — a star, never a chain |
+| A dropped record is live | it is unlisted, because only one record of a store may supply eBay |
+| The kept record was itself a duplicate | that old link is cleared first, so the keeper becomes the root of its group |
+| Re-marking an already-marked group | the direction is refreshed; no id ever changes |
 
-After confirmation the dropped record gets `duplicate_of = kept.id`, and the pair is written to `duplicate_pair` with status `merged`. **No id is rewritten, merged or retired** — the operation writes a relationship, not an identity. If the dropped record was live, it is unlisted, because only one of a pair may supply the store.
+`duplicate_of` always points at the **keeper**, never at another duplicate. That is a rule, not a preference: "who is the store" has to be one hop away, because ordering, the `Duplicate` column, live exclusivity and the export all read it. A chain would make each of them walk.
+
+After confirmation each dropped record is written to `duplicate_pair` with status `merged`. **No id is rewritten, merged or retired** — the operation writes a relationship, not an identity.
 
 ### 8.3 What a duplicate is not
 
-A duplicate is a **record**, not a store. It keeps its own values, its own issues and its own history. It can be the live source if the operator prefers it (section 7.2). It cannot exist without a primary.
+A duplicate is a **record**, not a store. It keeps its own values, its own issues and its own history. It can be the live source if the operator prefers it (section 7.2) — going live on any member takes every other member off, not just the one the dialog named. It cannot exist without a primary, and it can never be a keeper.
 
 ### 8.4 Filtering duplicates
 
-`Duplicates` filter: `Duplicated records` returns both sides of every pair, primary and duplicate together, adjacent. `No duplicate` returns the rest. The filter reads the relationship, not the id.
+| Value | Returns |
+|---|---|
+| `Duplicated records` | both sides of every group, keeper first, members adjacent |
+| `Suspected duplicates` | see 10.1 — a board of pairs and groups that are not marked yet |
+| `No duplicate` | the rest |
+
+The filter reads the relationship, not the id.
 
 ---
 
@@ -323,7 +337,7 @@ The board is always scoped, in three steps:
 |---|---|---|
 | No city chosen | one card per city: `Brooklyn · 2 zips · 12 pairs` | Nothing is decided at city level, but it is the smallest unit an operator owns — and it keeps the next screen short |
 | City chosen | one tab per zip that **has** a pair, with the count; no tab for an empty zip | The zip is the neighbourhood a person can actually read; a tab that leads nowhere is a dead end |
-| Zip chosen | the pairs, HIGH first, MEDIUM collapsed behind one summary line | A pair is the decision unit, so it gets a row: both records side by side, the score, the distance, one `Mark as duplicate` |
+| Zip chosen | one card per group of three or more, then the plain pairs, HIGH first; MEDIUM collapsed behind one summary line | A pair is the decision unit, so it gets a row — and when three records are all HIGH against each other, three rows would pretend to be three decisions instead of one |
 
 Rules:
 
@@ -331,6 +345,7 @@ Rules:
 - Pairs where either record is already marked are excluded — a confirmed decision leaves the board and lives in the `Duplicate` column.
 - The city facet narrows itself to cities that have suspected pairs while this filter is on; it is therefore impossible to select a city that renders an empty board.
 - The score is the duplicate check's score, the same number the pair dialog prints.
+- A **cluster card** holds three or more records connected by HIGH pairs. It names the members, the number of pairs inside it and the strongest score, and offers one action — `These N are one store` — which opens the picker in 8.1. MEDIUM links never create a cluster: within one zip, zip + state + city already pay 50 points, so a MEDIUM edge between neighbours would chain a whole neighbourhood into one blob.
 - Clearing the filter brings the table back. The board never coexists with the table: they answer different questions.
 
 ---
@@ -434,6 +449,8 @@ Errors worth designing for: switching a blocked store, going live on an `inactiv
 20. No `OC-…` id appears in the list, the filters, the profile, the export or the API. Release history is the only place the old id is still named.
 21. `Duplicates = Suspected duplicates` hides the record table and shows the pair board. With no city selected it lists cities that have pairs; with a city it lists one tab per zip that has a pair, and no tab otherwise.
 22. The board lists unmarked pairs only, HIGH before MEDIUM, each with both ids, the score and one `Mark as duplicate`; confirming a pair removes it from the board and writes `duplicate_of`.
+23. Three or more records connected by HIGH pairs appear as **one cluster card** with N members and one action; the action opens a picker listing every member, and confirming writes `duplicate_of = keeper` on all the others — never on another duplicate.
+24. Going live on any member of a group unlists every other member, and each unlist is logged with its own id.
 
 ---
 
@@ -462,4 +479,4 @@ Errors worth designing for: switching a blocked store, going live on an `inactiv
 
 ---
 
-*End of document. Version 8.2.0, 2026-11-26.*
+*End of document. Version 8.3.0, 2026-11-27.*

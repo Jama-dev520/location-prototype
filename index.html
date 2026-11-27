@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Location Management Admin Console — Interactive Prototype (v8.2.0)</title>
+<title>Location Management Admin Console — Interactive Prototype (v8.3.0)</title>
 <style>
 .f-hint{font-weight:400;font-size:10px;color:var(--text-tertiary);white-space:nowrap}
 :root{
@@ -509,6 +509,29 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
 .sus-more summary{cursor:pointer;font-size:12px;color:var(--text-secondary);margin-bottom:var(--space-2)}
 .sus-empty{padding:var(--space-8);text-align:center;color:var(--text-tertiary);font-size:12.5px}
 .sus-empty span{display:block;margin-top:4px;font-size:11.5px}
+
+/* v8.3.0 — a cluster of three or more: one card, one decision, one keeper.
+   The picker inside the dialog is a list because the only question left is
+   "which of these records is the store". */
+.sus-cluster{border:1px solid #E2E8F0;border-radius:var(--radius-sm);padding:12px;margin-bottom:10px;background:#FCFDFF}
+.sus-cluster-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+.sus-cluster-head b{font-size:12.5px}
+.sus-cluster-head span{font-size:11.5px;color:var(--text-tertiary);font-family:var(--font-mono)}
+.sus-members{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-bottom:10px}
+.sus-member{display:flex;flex-direction:column;gap:2px;text-align:left;background:var(--bg-card);border:1px solid var(--bg-section);border-radius:var(--radius-sm);padding:8px 10px;cursor:pointer;font-family:inherit;min-width:0}
+.sus-member:hover{border-color:var(--color-primary);background:var(--color-primary-light)}
+.sus-member .mono{font-size:10.5px;color:var(--color-primary)}
+.sus-member b{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sus-member em{font-style:normal;font-size:11px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sus-member i.live{font-style:normal;font-size:9.5px;color:var(--color-success);font-weight:600}
+.dup-picks{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.dup-pick{display:grid;grid-template-columns:18px 96px 1fr 1.2fr 64px;gap:10px;align-items:center;border:1px solid var(--bg-section);border-radius:var(--radius-sm);padding:9px 11px;cursor:pointer;font-size:12.5px}
+.dup-pick:hover{border-color:#CBD5E1;background:var(--bg-hover)}
+.dup-pick .mono{font-size:11px;color:var(--color-primary)}
+.dup-pick b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dup-pick em{font-style:normal;font-size:11.5px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dup-pick i{font-style:normal;font-size:10px;color:var(--text-tertiary);text-align:right}
+.dup-pick i.on{color:var(--color-success);font-weight:600}
 </style>
 </head>
 <body class="show-phases">
@@ -516,7 +539,7 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
   <aside class="admin-sidebar">
     <div class="brand">
       <div class="brand-logo">LM</div>
-      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v8.2.0</div></div>
+      <div><div class="brand-name">Location Admin</div><div class="brand-sub">OC Internal Console · v8.3.0</div></div>
     </div>
     <div class="nav-group-label">Locations</div>
     <div class="nav-item active" data-nav="p01" onclick="switchPage(\'p01\')">Vendor Location List</div>
@@ -541,7 +564,7 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
           <button class="role-btn" id="role-viewer" onclick="setRole('viewer')">Viewer</button>
         </div>
         <div class="user-chip"><span class="avatar" id="user-initials">SL</span><span class="user-meta" id="user-name">Sarah Lin · Location Manager</span></div>
-        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v8.2.0</span></div>
+        <span id="clock" title="Console time (local)" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--text-tertiary);margin-right:12px;white-space:nowrap"></span><div class="ver-chip" onclick="openVersionModal()"><span class="dot"></span><span id="ver-chip-no">v8.3.0</span></div>
       </div>
     </div>
 
@@ -739,7 +762,7 @@ body.show-phases .f-label[data-phase="2"]::after{border-color:#FDBA74;background
 <button class="walkthrough-btn" onclick="toggleWalkthrough()">Walkthrough Script</button>
 <div class="walkthrough-panel" id="walkthrough">
   <div class="wt-inner">
-<div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v8.2.0 (one record, one id, one list)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
+<div class="wt-header"><h3 data-i18n="wt.title">Walkthrough — v8.3.0 (one record, one id, one list)</h3><span class="close" onclick="toggleWalkthrough()">✕</span></div>
     <table class="wt">
       <thead><tr><th>#</th><th>Where</th><th>Do</th><th>What it proves</th></tr></thead>
       <tbody>
@@ -899,6 +922,18 @@ var I18N_ZH = {
   "same street, same zip — read these first":"同一条街、同一个邮编 —— 先看这些",
   "weak leads":"弱线索",
   "Mark as duplicate":"标记为重复",
+  "records":"条记录",
+  "pairs":"组配对",
+  "strongest":"最高分",
+  "These {n} are one store":"这 {n} 条是同一家店",
+  "records, one store":"条记录、一家店",
+  "The one you keep stays the store; the others become duplicates of it — and anything live comes off eBay.":"留下来的那条就是这家店，其余变成它的重复记录；其中在线的会立刻从 eBay 撤下。",
+  "Strongest pair in this group":"这一组里最高的配对分",
+  "for reference only; the decision is yours":"仅供参考，判断权在你",
+  "The marker is the whole decision.":"标记本身就是全部决定。",
+  "Every record keeps its own id and its own values; the others point at the keeper with":"每条记录都保留自己的号和自己的值；其余的用",
+  "Only one of them may be live.":"同一家店只允许一条在线。",
+  "Mark duplicate":"标记为重复",
   "anchor":"基准",
   "the anchor row — the oldest record in this zip":"基准行 —— 这个邮编下建档最早的那条",
   "duplicate-check score against the anchor row":"与基准行的判重分数（地址 40 · 邮编 25 · 州 15 · 城市 10 · 名称 10）",
@@ -1379,11 +1414,13 @@ var I18N_BLOCK = {
   "map.rules":"M2 · 只重判发生变更的那个来源 &nbsp;·&nbsp; M3 · 分配新 OC，旧映射进历史 &nbsp;·&nbsp; M4 · 未变更的一方绝不动 &nbsp;·&nbsp; M5 · 没人确认就不落库 &nbsp;·&nbsp; M6 · 两边在同一次推送里都变了 → 进人工",
   "dup.vs":"对比",
   "pull.hint":"标记 → 导出 → 供应商修正 → 再拉一次",
-  "wt.title":"演示脚本 —— v8.2.0（一条记录，一个身份，一张表）",
+  "wt.title":"演示脚本 —— v8.3.0（一条记录，一个身份，一张表）",
 };
 
 /* ---- rules for text that carries a number, an id or a filename ---- */
 var I18N_RULES = [
+  [/^These (\d+) are one store$/, "这 $1 条是同一家店"],
+  [/^Mark (\d+) as one store$/, "标记 $1 条为同一家店"],
   [/^Suspected duplicates · (\d+)$/, "疑似重复 · $1"],
   [/^text score · anchor (LOC-\d+)$/, "文本分 · 基准 $1"],
   [/^(\d+) flagged field\(s\) are covered by this run\.$/, "本次推送覆盖 $1 个已标记字段。"],
@@ -1452,6 +1489,7 @@ var I18N_RULES = [
 ];
 
 var VER_ZH = {
+  "8.3.0":"<b>三条记录也可以是一家店，而且一次就能定。</b>`Mark as duplicate` 过去只收两行，第三条只能再做一遍，还得记住谁才是保留方。现在三条以上是一次决定：疑似面板上「共用同一条记录」的 HIGH 配对合成一张<b>簇卡片</b>（<i>3 条记录 · 3 组配对 · 最高 90</i>），点开是列出全部成员的<b>选择器</b>，确认后其余每条都写 <code>duplicate_of</code> —— 指向<b>保留方</b>，不是互相指，所以这一组始终是星形。组内任意一条上线，会把同组其余成员一起撤下，而不是只撤一条。",
   "8.2.0":"<b>Duplicates 筛选多了第三个值，而且它不是过滤表格，是换一块面板。</b>已标记的重复是记录上的事实；<b>疑似</b>重复是<i>配对</i>上的事实，一条记录可以同时出现在好几对里。铺成行的话，一个 9 条记录、11 对关系的邮编看起来就像 11 家店。所以 <b>疑似重复</b>会把表格收起来、直接给配对：永远带范围 —— 先城市，再「只给有配对的邮编」开标签，最后是配对本身，HIGH 在上、MEDIUM 折叠成一行。标记一对，确认后它就从这块面板消失。",
   "8.1.0":"<b>查邮编改成按判重分数排序，指纹删掉。</b>指纹（<code>addr_fingerprint</code>）原本是「先分桶再比」的召回手段；现在判定范围是全量，它成了一个没人打开的键 —— 删掉，而且没有任何规则挂在它上面。Zipcode 命中多行时，按<b>与配对弹框里同一个分数</b>降序：地址 40 · 邮编 25 · 州 15 · 城市 10 · 名称 10，分数直接印在行上。基准取<b>结果里建档最早的那条</b>，不是「当前第一行」—— 那个基准会随别的筛选漂移，整个列表看起来像数据变了。名称破平局，再按 ID；同一个邮编里邮编那 25 分是常数，不会影响排序。",
   "8.0.0":"<b>OC location ID 没有了。</b>它原本的用处是「几条来源记录喂一家店时，给这家店一个身份」；一条记录就是一家店之后，它只是同一个东西的第二个名字。现在 vendor location ID 就是身份，<b>live</b> / <b>blocked</b> / 重复标记都落在记录上。随之删掉的是那一列、那个筛选、发号序列和 OC 详情页；重复靠 <b>duplicate of</b> 关联，各自保留自己的号。",
@@ -1636,8 +1674,9 @@ function intakeOf(i){ return (LANG === 'zh' && INTAKE_ZH[i.vid]) ? INTAKE_ZH[i.v
 </script>
 <script>
 /* ============ v3 model ============ */
-var APP_VERSION='8.2.0';
+var APP_VERSION='8.3.0';
 var VERSIONS=[
+ {v:'8.3.0',type:'minor',date:'2026-11-27',desc:'<b>Three records can be one store, in one move.</b> `Mark as duplicate` used to take exactly two rows, so a third record meant doing the same thing twice and remembering which one was the keeper. Now a group of three or more is one decision: on the suspected board the HIGH pairs that share a record render as a <b>cluster card</b> (<i>3 records · 3 pairs · strongest 90</i>), its button opens a <b>picker</b> listing every member, and confirming writes <code>duplicate_of</code> on all the others — at the <b>keeper</b>, never at each other, so the group stays a star. Going live on any member takes every other member off eBay, not just one.'},
  {v:'8.2.0',type:'minor',date:'2026-11-26',desc:'<b>The Duplicates filter learned a third value, and it opens a board instead of filtering rows.</b> A marked duplicate is a fact about a record; a <b>suspected</b> one is a fact about a <i>pair</i>, and one record can sit in several. Drawn as rows, a nine-record zip with eleven pairs looks like eleven stores. So <b>Suspected duplicates</b> hides the table and shows the pairs, always scoped: a city first, then one tab per zip that actually has a pair, then the pairs — HIGH on top, MEDIUM folded behind one line. Marking one confirms it and it leaves the board.'},
  {v:'8.1.0',type:'minor',date:'2026-11-26',desc:'<b>A zip lookup now ranks by the duplicate score, and the fingerprint is gone.</b> The hash (`addr_fingerprint`) existed to bucket candidates before the scan; the scan covers the whole table now, so it was a key nobody turned — deleted, with no rule attached to it. A multi-row zip is ranked by <b>the same score the pair modal prints</b> — address 40 · zip 25 · state 15 · city 10 · name 10 — against <b>the oldest record in the result</b>, and the score is printed on the row. The anchor is not "the first row" on purpose: that base moves whenever another filter changes, which reads as if the data moved. Name breaks ties, then the id; the zip points are constant inside one lookup, so they cannot distort it.'},
  {v:'8.0.0',type:'major',date:'2026-11-25',desc:'<b>The OC location id is gone.</b> It existed to be one identity for a store that several source records fed; with one record per store it was a second name for the same thing. Now the vendor location id is the identity, and <b>live</b> / <b>blocked</b> / the duplicate marker live on the record. The column, the filter, the minting sequence and the OC profile all go with it; duplicates are linked by <b>duplicate of</b> and each keeps its own id.'},
@@ -2500,6 +2539,19 @@ function seedSyncLog(){
 /* v8.0.0 — the vendor location id is the identity. There is no second key: two records
    of the same store are linked by duplicate_of and nothing else. */
 function dupOf(vid){return DUPLICATES.filter(function(d){return d.status==='merged'&&d.locB===vid;})[0];}
+/* v8.3.0 — three records can be one store. `duplicate_of` always points at the
+   KEEPER, never at another duplicate: a chain would make "who is the store" a walk,
+   and every rule downstream (only one live, ordering, the Duplicate column) would have
+   to walk it too. So a cluster is a star, and rootOf() is the one place that knows it. */
+function rootOf(vid){
+  var v=findVendor(vid), seen={};
+  while(v&&v.duplicateOf&&!seen[v.id]){seen[v.id]=1; v=findVendor(v.duplicateOf);}
+  return v?v.id:vid;
+}
+function clusterOf(vid){
+  var root=rootOf(vid);
+  return VENDORS.filter(function(x){return x.id===root||x.duplicateOf===root;});
+}
 function pairOf(vid){
   var d=dupOf(vid);
   if(d)return d.locA;
@@ -2555,13 +2607,15 @@ function toggleLive(vid){
 /* v7.0.0 — two records of one store never both supply eBay. With one id per record
    the rule has to live on the pair, not on a shared value. */
 function releaseSibling(vid){
-  var sib=pairOf(vid); if(!sib)return;
-  var o=findVendor(sib);
-  if(o&&o.live){
+  /* a store may have two or three records; going live takes EVERY other one off, not
+     just the one pairOf() happens to return first */
+  var root=rootOf(vid);
+  clusterOf(vid).forEach(function(o){
+    if(o.id===vid||!o.live)return;
     o.live=false;o.listType='none';o.listRemovedReason='DUPLICATE_SWITCHED';o.updated=nowStr();
-    log('VENDOR',currentUser.name,'DUPLICATE_UNLISTED',sib,'live',true,false,'the other record of the same store went live');
-    log('VENDOR',currentUser.name,'WHITELIST_REMOVED',sib,'list_type','white','none','removed_reason=DUPLICATE_SWITCHED');
-  }
+    log('VENDOR',currentUser.name,'DUPLICATE_UNLISTED',o.id,'live',true,false,'another record of the same store went live');
+    log('VENDOR',currentUser.name,'WHITELIST_REMOVED',o.id,'list_type','white','none','removed_reason=DUPLICATE_SWITCHED');
+  });
 }
 /* liveBadge() is gone: every row renders liveSwitch(), and a record without an id is
    no longer a special case. Leaving the old "—" branch behind invited it back. */
@@ -2633,6 +2687,43 @@ function suspectPairCard(p){
     +'<div class="sus-act"><button class="btn btn-secondary btn-sm" onclick="openDupPair(\''+esc(a.id)+'\',\''+esc(b.id)+'\')">'+tr('Mark as duplicate')+'</button></div>'
     +'</div>';
 }
+/* HIGH edges only. One MEDIUM link between two neighbours used to chain a whole zip
+   into a single blob (zip+state+city already pay 50 of the 100 points), so a cluster
+   is built from the pairs a person would call "same street" and nothing weaker. */
+function highClusters(list){
+  var parent={};
+  function find(x){while(parent[x]!==x){parent[x]=parent[parent[x]];x=parent[x];}return x;}
+  function union(a,b){a=find(a);b=find(b);if(a!==b)parent[b]=a;}
+  list.forEach(function(p){
+    if(p.label!=='HIGH')return;
+    if(!parent[p.a.id])parent[p.a.id]=p.a.id;
+    if(!parent[p.b.id])parent[p.b.id]=p.b.id;
+    union(p.a.id,p.b.id);
+  });
+  var groups={};
+  Object.keys(parent).forEach(function(id){var r=find(id);(groups[r]=groups[r]||[]).push(id);});
+  return Object.keys(groups).map(function(r){
+    var ids=groups[r];
+    var ps=list.filter(function(p){return p.label==='HIGH'&&ids.indexOf(p.a.id)>=0&&ids.indexOf(p.b.id)>=0;});
+    var best=ps.slice().sort(function(x,y){return y.score-x.score;})[0];
+    return {ids:ids,members:ids.map(findVendor).filter(Boolean),pairs:ps,score:best?best.score:0};
+  }).sort(function(x,y){return y.ids.length-x.ids.length||y.score-x.score;});
+}
+function suspectClusterCard(c){
+  var members=c.members.map(function(v){
+    return '<button class="sus-member" onclick="openVendorDetail(\''+esc(v.id)+'\')">'
+      +'<span class="mono">'+esc(v.id)+'</span><b>'+esc(v.name)+'</b>'
+      +'<em>'+esc([v.addr1,v.addr2].filter(Boolean).join(' '))+'</em>'
+      +(v.live?'<i class="live">Live</i>':'')+'</button>';
+  }).join('');
+  var ids=c.ids.map(function(id){return "\'"+esc(id)+"\'";}).join(',');
+  return '<div class="sus-cluster">'
+    +'<div class="sus-cluster-head"><b>'+c.ids.length+' '+tr('records')+' · '+c.pairs.length+' '+tr('pairs')+'</b>'
+    +'<span>'+tr('strongest')+' '+c.score+'</span></div>'
+    +'<div class="sus-members">'+members+'</div>'
+    +'<button class="btn btn-primary btn-sm" onclick="openDupModal(['+ids+'])">'+tr('These '+c.ids.length+' are one store')+'</button>'
+    +'</div>';
+}
 function renderSuspectBoard(pairs){
   var el=document.getElementById('v-suspect'); if(!el)return;
   var zipsAll=[]; pairs.forEach(function(p){if(zipsAll.indexOf(p.zip)<0)zipsAll.push(p.zip);});
@@ -2669,11 +2760,22 @@ function renderSuspectBoard(pairs){
       +'<span class="mono">'+esc(z)+'</span><i>'+n+'</i></button>';
   }).join('');
   var list=pairs.filter(function(p){return p.zip===active;});
-  var high=list.filter(function(p){return p.label==='HIGH';});
   var mid=list.filter(function(p){return p.label==='MEDIUM';});
+  /* HIGH first: a group of three or more becomes one card, because it is one decision.
+     Its internal pairs are listed inside the card, not as three rows pretending to be
+     three separate problems. */
+  var groups=highClusters(list);
+  var multi=groups.filter(function(g){return g.ids.length>=3;});
+  var duos=groups.filter(function(g){return g.ids.length===2;}).map(function(g){
+    return list.filter(function(p){
+      return p.label==='HIGH'&&((p.a.id===g.ids[0]&&p.b.id===g.ids[1])||(p.a.id===g.ids[1]&&p.b.id===g.ids[0]));
+    })[0];
+  }).filter(Boolean).sort(function(x,y){return y.score-x.score;});
+  var highCount=multi.length+duos.length;
   el.innerHTML=head+'<div class="sus-tabs">'+tabs+'</div><div class="sus-list">'
-    +(high.length?'<div class="sus-sec"><b>HIGH</b><span>'+tr('same street, same zip — read these first')+'</span></div>'+high.map(suspectPairCard).join(''):'')
-    +(mid.length?'<details class="sus-more"'+(high.length?'':' open')+'><summary><b>MEDIUM</b> · '+mid.length+' '+tr('weak leads')+' — address overlap, likely different shops</summary>'+mid.map(suspectPairCard).join('')+'</details>':'')
+    +(highCount?'<div class="sus-sec"><b>HIGH</b><span>'+tr('same street, same zip — read these first')+'</span></div>'
+       +multi.map(suspectClusterCard).join('')+duos.map(suspectPairCard).join(''):'')
+    +(mid.length?'<details class="sus-more"'+(highCount?'':' open')+'><summary><b>MEDIUM</b> · '+mid.length+' '+tr('weak leads')+' — address overlap, likely different shops</summary>'+mid.map(suspectPairCard).join('')+'</details>':'')
     +'</div>';
 }
 function renderVendor(){
@@ -2779,8 +2881,12 @@ function updateVendorBatch(){
   var sc=document.getElementById('v-sel-count'); if(sc)sc.textContent=n+' selected';
   var dupBtn=document.getElementById('btn-mark-dup');
   if(dupBtn){
-    dupBtn.disabled=(n!==2);
-    dupBtn.title=(n===2)?'Mint one OC location for these two records':'Select exactly two records';
+    /* v8.3.0 — a group may be two, three or more; the dialog changes shape, the
+       action does not */
+    dupBtn.disabled=(n<2);
+    dupBtn.title=(n<2)?'Select at least two records'
+      :(n===2?'Mark one of these two as the duplicate of the other'
+             :'Mark these '+n+' records as one store — pick the one to keep');
   }
 }
 /* v7.1.0 — Apply to eBay is gone. A value reaches eBay by going live, and nothing
@@ -2817,10 +2923,17 @@ function batchWhitelist(action){
 /* ---------- mark as duplicate ---------- */
 var dupSel=null;
 function openDupModal(ids){
-  var sel=(ids&&ids.length===2)?ids.map(findVendor).filter(Boolean):selectedVendors();
-  if(sel.length!==2){showToast('Select two records','Mark as duplicate needs exactly two');return;}
+  /* callers pass ids (board, cluster card) or records (table selection) — accept both */
+  var sel=(ids&&ids.length>=2)?ids.map(function(x){return typeof x==='string'?findVendor(x):x;}).filter(Boolean):selectedVendors();
+  if(sel.length<2){showToast('Select at least two records','Mark as duplicate needs two or more');return;}
   dupSel=sel;
-  var a=sel[0],b=sel[1];
+  document.getElementById('dup-body').innerHTML=(sel.length===2)?dupPairBody(sel[0],sel[1]):dupClusterBody(sel);
+  var btn=document.querySelector('#modal-dup .btn-primary');
+  if(btn){btn.disabled=false;btn.textContent=tr(sel.length===2?'Mark duplicate':'Mark '+sel.length+' as one store');}
+  openModal('modal-dup');applyLang();
+}
+/* two records: the comparison is the decision, so it keeps the side-by-side layout */
+function dupPairBody(a,b){
   /* default keep: whichever one is live, else A */
   var keep=(a.live&&!b.live)?a:((b.live&&!a.live)?b:a);
   var j=judge(stOf(a),stOf(b));
@@ -2829,7 +2942,7 @@ function openDupModal(ids){
     ['City / Province',a.city+', '+a.state,b.city+', '+b.state],
     ['Zip',zip5(a.postal),zip5(b.postal)],
     ['Live',a.live?'Live':'Not live',b.live?'Live':'Not live']];
-  var html='<div style="display:grid;grid-template-columns:140px 1fr 1fr;gap:7px 14px;font-size:12.5px">'
+  return '<div style="display:grid;grid-template-columns:140px 1fr 1fr;gap:7px 14px;font-size:12.5px">'
     +'<b></b><b class="mono">'+esc(a.id)+'</b><b class="mono">'+esc(b.id)+'</b>'
     +rows.map(function(r){return '<span style="color:var(--text-tertiary)">'+r[0]+'</span><span>'+esc(r[1]||'—')+'</span><span>'+esc(r[2]||'—')+'</span>';}).join('')
     +'</div>'
@@ -2840,37 +2953,64 @@ function openDupModal(ids){
     +'</div>'
     +'<div class="warn-line" style="margin-top:14px"><b>The marker is the whole decision.</b> Both records keep their own ids and their own values; '
       +'the duplicate is linked to the kept record. Only one of the two may be live — if the duplicate is live now, it comes off eBay when you confirm.</div>';
-  document.getElementById('dup-body').innerHTML=html;
-  var btn=document.querySelector('#modal-dup .btn-primary');
-  if(btn){btn.disabled=false;btn.textContent='Mark duplicate';}
-  openModal('modal-dup');applyLang();
+}
+/* three or more: one keeper, everyone else points at it. The list is a picker, because
+   the only question left is "which record is the store". */
+function dupClusterBody(sel){
+  var live=sel.filter(function(v){return v.live;})[0];
+  var keep=live||sel.slice().sort(function(a,b){
+    return String(a.created||'9999').localeCompare(String(b.created||'9999'))||String(a.id).localeCompare(String(b.id));
+  })[0];
+  var strongest=0;
+  for(var i=0;i<sel.length;i++)for(var j=i+1;j<sel.length;j++){
+    strongest=Math.max(strongest,textScore(stOf(sel[i]),stOf(sel[j])));
+  }
+  var rows=sel.map(function(v){
+    return '<label class="dup-pick">'
+      +'<input type="radio" name="dup-keep" value="'+esc(v.id)+'"'+(v.id===keep.id?' checked':'')+'>'
+      +'<span class="mono">'+esc(v.id)+'</span>'
+      +'<b>'+esc(v.name)+'</b>'
+      +'<em>'+esc([v.addr1,v.addr2].filter(Boolean).join(' '))+', '+esc(v.city)+' '+esc(v.state)+'</em>'
+      +'<i class="'+(v.live?'on':'')+'">'+esc(v.live?'Live':'Not live')+'</i>'
+      +'</label>';
+  }).join('');
+  return '<div class="info-line">'+sel.length+' '+tr('records, one store')+'. '+tr('The one you keep stays the store; the others become duplicates of it — and anything live comes off eBay.')
+    +'</div><div class="dup-picks">'+rows+'</div>'
+    +'<div class="rc-meta" style="margin-top:10px">'+tr('Strongest pair in this group')+': <b>'+strongest+'</b> · '+tr('for reference only; the decision is yours')+'.</div>'
+    +'<div class="warn-line" style="margin-top:12px"><b>'+tr('The marker is the whole decision.')+'</b> '
+      +tr('Every record keeps its own id and its own values; the others point at the keeper with')+' <b>duplicate of</b>. '
+      +tr('Only one of them may be live.')+'</div>';
 }
 function confirmDup(){
-  if(!dupSel)return;
-  var a=dupSel[0],b=dupSel[1];
-  var picked=(document.querySelector('input[name="dup-keep"]:checked')||{}).value||a.id;
-  var keep=(picked===a.id)?a:b, drop=(picked===a.id)?b:a;
+  if(!dupSel||dupSel.length<2)return;
+  var members=dupSel.slice();
+  var picked=(document.querySelector('input[name="dup-keep"]:checked')||{}).value||members[0].id;
+  var keep=findVendor(picked)||members[0];
+  /* a keeper is never itself a duplicate: if it was, the old link is dropped here so
+     the group stays a star with one root */
+  keep.duplicateOf=null;
 
-  drop.duplicateOf=keep.id;
-  if(keep.duplicateOf)keep.duplicateOf=null;
-
-  /* only one of the pair may supply the store */
-  if(drop.live){
-    drop.live=false;drop.listType='none';drop.listRemovedReason='DUPLICATE_SWITCHED';drop.updated=nowStr();
-    log('VENDOR',currentUser.name,'DUPLICATE_UNLISTED',drop.id,'live',true,false,'the store stays live on the kept record');
-    log('VENDOR',currentUser.name,'WHITELIST_REMOVED',drop.id,'list_type','white','none','removed_reason=DUPLICATE_SWITCHED');
-  }
-
-  DUPLICATES.push({pairId:'DUP-'+String(DUPLICATES.length+1).padStart(3,'0'),
-    locA:keep.id,locB:drop.id,status:'merged',
-    score:judge(stOf(keep),stOf(drop)).score,diff:{},detectedAt:nowStr()});
-  log('VENDOR',currentUser.name,'DUPLICATE_MARKED',drop.id,'duplicate_of','—',keep.id,'no id changes hands');
+  var dropped=members.filter(function(x){return x.id!==keep.id;});
+  dropped.forEach(function(drop){
+    drop.duplicateOf=keep.id;
+    if(drop.live){
+      drop.live=false;drop.listType='none';drop.listRemovedReason='DUPLICATE_SWITCHED';drop.updated=nowStr();
+      log('VENDOR',currentUser.name,'DUPLICATE_UNLISTED',drop.id,'live',true,false,'the store stays live on the kept record');
+      log('VENDOR',currentUser.name,'WHITELIST_REMOVED',drop.id,'list_type','white','none','removed_reason=DUPLICATE_SWITCHED');
+    }
+    DUPLICATES.push({pairId:'DUP-'+String(DUPLICATES.length+1).padStart(3,'0'),
+      locA:keep.id,locB:drop.id,status:'merged',
+      score:judge(stOf(keep),stOf(drop)).score,diff:{},detectedAt:nowStr()});
+    log('VENDOR',currentUser.name,'DUPLICATE_MARKED',drop.id,'duplicate_of','—',keep.id,'no id changes hands');
+  });
 
   closeModal('modal-dup');dupSel=null;
   clearVendorSelection();renderVendor();updateBadges();
-  showToast('Marked as duplicate',drop.id+' duplicates '+keep.id+' — ids untouched');
+  showToast('Marked as duplicate',dropped.length===1
+    ? dropLabel(dropped[0])+' duplicates '+keep.id+' — ids untouched'
+    : dropped.length+' records now point at '+keep.id+' — ids untouched');
 }
-
+function dropLabel(v){return v.id;}
 /* v8.0.0 — the OC list page, the sign-off flow and the OC batch modal are gone:/n   a record is the store, so there is no second object to list, sign off or batch. */
 
 /* ============ duplicate check — v5.1.0 ============

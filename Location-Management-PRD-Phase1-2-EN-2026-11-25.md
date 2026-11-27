@@ -176,7 +176,7 @@ Multi-select facets, OR inside a filter, AND between filters; `Reset` clears eve
 | Filter for what moved | `Change = New` / `Changed` | the pending work, as a view |
 | Go live | the `Live` switch | writes the current values to eBay, flips the switch |
 | Batch go live / take down | select rows → `Add to whitelist & apply` / `Remove from whitelist` | per row, with processed and skipped counts |
-| Mark two records as one store | select exactly two → `Mark as duplicate` | writes `duplicate_of`; nothing is minted or merged |
+| Mark records as one store | select two or more → `Mark as duplicate` | writes `duplicate_of`; with a group, one keeper is picked and the rest point at it; nothing is minted or merged |
 | Open a record | click the id | profile, five tabs |
 | Flag a data issue | profile | unchanged |
 | Export | `Export CSV` | id, live, duplicate marker, QR, issue count |
